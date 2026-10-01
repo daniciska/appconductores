@@ -7,7 +7,13 @@
 > - **P11:** ok → el titular sin suscripción ve un adelanto anónimo.
 > - **P13:** distintos planes de suscripción según volumen de búsquedas.
 > - **P14:** cobro dentro y fuera de la app.
-> - Pendientes: P1, P2, P4–P7, P9, P12, P15, P16 y correcciones a campos C#/T#.
+> - **P2:** sí → un solo perfil titular con selector; Experiencia/Contrato por búsqueda.
+> - **P4:** sí → M1, M3 y M5 también son filtros obligatorios. Quedan 3 variables en el % (M2, M4, M6).
+> - **P8:** sí → agente de IA pre-revisa; persona decide dudas y rechazos.
+> - **P10 (ampliación):** el conductor ve cuántas veces ha hecho match; el resto, configurable más adelante.
+> - **P13:** planes Básico (1), Flota chica (5), Flota (20). Precios por definir.
+> - **Campos C#/T#:** sin correcciones por ahora.
+> - Pendientes: P1, P5–P7, P9, P12, P15, P16; nombre de la app.
 
 **Cómo corregirla:** cada campo, filtro, variable, documento y pregunta tiene un código: C, T, F, M, D y P. Puedes contestar, por ejemplo, "C6 sacar", "T14 agregar opción Mañana", "M1 que sea filtro", "F3 sacar" o "P5: más de 80 %".
 
