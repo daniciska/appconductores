@@ -40,7 +40,7 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 ## Decisiones pendientes (preguntar antes de construir)
 
 ### Producto
-- [ ] Campos exactos de cada perfil — *propuesta en revisión por la dueña* (`docs/propuesta-campos.md`).
+- [ ] Campos exactos de cada perfil — *propuesta en revisión por la dueña* (`docs/propuesta-campos.md`, preguntas P1–P16).
 - [ ] ¿Titular persona natural y empresa son el mismo tipo de perfil o dos distintos?
 - [ ] Qué variables entran al cálculo de match y si alguna es filtro obligatorio.
 - [ ] Qué documentos se verifican y cómo.
@@ -70,6 +70,15 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - **Configurable =** mediante un **panel de administración**.
 - **Cuentas de desarrollador:** aún no existen (Apple ni Google).
 
+## Documentos de referencia
+
+- `docs/propuesta-campos.md` — propuesta de campos (C# conductor, T# titular, F# filtros, M# variables de match, D# documentos, P# preguntas). **Es una propuesta, no una decisión.**
+- `docs/propuesta-nombres.md` — nombres candidatos con conflictos encontrados. **Propuesta.**
+- `docs/investigacion/contexto-chile.md` — licencias, documentos verificables, Ley 21.719 / 19.628, Ley 21.553, modalidades de contrato.
+- `docs/investigacion/mercado-avisos.md` — cómo se publicitan conductores/titulares hoy, competidores (Uber Match, Portal Conductores, etc.).
+
+Lo marcado **[verificar]** en esos documentos no está confirmado y no debe tratarse como hecho.
+
 ## Estado del repositorio
 
-Repositorio recién creado. Sin código todavía.
+Sin código todavía. Solo documentación y propuestas.
