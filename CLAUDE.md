@@ -42,12 +42,11 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 ### Producto
 - [ ] Campos exactos de "información personal", "información de empresa", "experiencia" y "modo de contrato".
 - [ ] ¿Titular persona natural y empresa son el mismo tipo de perfil o dos distintos?
-- [ ] ¿Cómo funciona el match? (búsqueda/filtros manuales, sugerencias automáticas, "me interesa" mutuo, etc.)
-- [ ] ¿Qué pasa después del match? (chat en la app, mostrar contacto, nada más en el MVP)
+- [ ] Criterios de compatibilidad para las sugerencias automáticas de match.
+- [ ] ¿El contacto se muestra al instante o solo cuando el titular paga?
+- [ ] Forma de cobro al titular (suscripción, pago por contacto, otra) y medio de pago.
 - [ ] Tipos de vehículo considerados.
-- [ ] País/es de lanzamiento.
 - [ ] ¿Verificación de documentos (licencia, antecedentes) en el MVP o después?
-- [ ] Modelo de monetización (gratis, suscripción, pago por contacto, etc.) y si aplica en el MVP.
 - [ ] Nombre de la app / marca.
 
 ### Técnico
@@ -58,11 +57,14 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - [ ] Cuentas de desarrollador de Apple y Google (¿existen ya?).
 
 ### Legal
-- [ ] Términos y condiciones, política de privacidad y tratamiento de datos personales según el país de lanzamiento.
+- [ ] Términos y condiciones, política de privacidad y tratamiento de datos personales según la normativa chilena.
 
 ## Decisiones tomadas
 
-_(vacío — se irá completando)_
+- **País de lanzamiento del MVP:** Chile.
+- **Match:** sugerencias automáticas según compatibilidad de perfiles (criterios de compatibilidad *por definir*).
+- **Después del match:** se muestra el contacto (teléfono/email) y siguen por fuera de la app. Sin chat interno en el MVP.
+- **Monetización MVP:** se cobra al titular/empresa (forma de cobro —suscripción, pago por contacto u otra— *por definir*).
 
 ## Estado del repositorio
 
