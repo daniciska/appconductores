@@ -1,5 +1,14 @@
 # Propuesta de campos MVP para corregir
 
+> **Respuestas de la dueña (1-oct-2026)**
+> - **P3:** sí → F1 (vehículo), F2 (licencia) y F3 (región) son filtros obligatorios, fuera del %.
+> - **P8:** pregunta si la revisión de documentos puede hacerla un agente (IA). *En evaluación.*
+> - **P10:** por ahora solo el titular ve el contacto del conductor. El conductor usa la app gratis.
+> - **P11:** ok → el titular sin suscripción ve un adelanto anónimo.
+> - **P13:** distintos planes de suscripción según volumen de búsquedas.
+> - **P14:** cobro dentro y fuera de la app.
+> - Pendientes: P1, P2, P4–P7, P9, P12, P15, P16 y correcciones a campos C#/T#.
+
 **Cómo corregirla:** cada campo, filtro, variable, documento y pregunta tiene un código: C, T, F, M, D y P. Puedes contestar, por ejemplo, "C6 sacar", "T14 agregar opción Mañana", "M1 que sea filtro", "F3 sacar" o "P5: más de 80 %".
 
 ## Resumen

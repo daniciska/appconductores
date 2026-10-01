@@ -40,14 +40,14 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 ## Decisiones pendientes (preguntar antes de construir)
 
 ### Producto
-- [ ] Campos exactos de cada perfil — *propuesta en revisión por la dueña* (`docs/propuesta-campos.md`, preguntas P1–P16).
-- [ ] ¿Titular persona natural y empresa son el mismo tipo de perfil o dos distintos?
-- [ ] Qué variables entran al cálculo de match y si alguna es filtro obligatorio.
-- [ ] Qué documentos se verifican y cómo.
-- [ ] Precio de la suscripción y medio de pago.
-- [ ] Qué puede ver/hacer un titular sin suscripción activa (¿nada, o registrarse y ver un adelanto?).
-- [ ] ¿El conductor usa la app gratis?
-- [ ] Nombre de la app / marca — *propuestas en revisión*.
+- [ ] Campos exactos de cada perfil (C#, T#) — *propuesta en revisión* (`docs/propuesta-campos.md`).
+- [ ] P2: ¿titular persona natural y empresa en un solo perfil con selector? ¿Experiencia/Contrato del titular van por "búsqueda"?
+- [ ] P4: ¿modo de contrato (M1), turno (M3) o garantía (M5) pasan a ser filtros obligatorios?
+- [ ] P5–P7, P9, P12, P15, P16 de `docs/propuesta-campos.md`.
+- [ ] P8: ¿revisión de documentos por agente de IA? ¿Cómo? (ver propuesta en la conversación: agente pre-revisa, humano decide dudas/rechazos). Plazo de revisión comprometido.
+- [ ] Planes de suscripción: cuántas búsquedas activas incluye cada plan y precio de cada uno.
+- [ ] Después del match, ¿qué ve el conductor? (no ve el contacto del titular; ¿se le avisa que hubo match? ¿ve nombre/oferta?)
+- [ ] Nombre de la app / marca — *propuestas en revisión* (`docs/propuesta-nombres.md`).
 
 ### Técnico
 - [ ] Stack móvil (por ejemplo, multiplataforma vs. nativo).
@@ -57,6 +57,7 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 
 ### Legal
 - [ ] Términos y condiciones, política de privacidad y tratamiento de datos personales según la normativa chilena.
+- [ ] P1: consulta con abogado (Hoja de Vida, fotos de documentos, base legal, revisión automatizada por IA, transferencia internacional de datos).
 
 ## Decisiones tomadas
 
@@ -64,8 +65,13 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - **Tipos de vehículo:** todos.
 - **Modos de contrato (opciones iniciales, configurables):** arriendo fijo; % de ganancia; % sobre producción.
 - **Match:** automático. Se calcula el % de variables que coinciden entre conductor y titular; si coinciden en **80% o más** hay match. El umbral es configurable.
-- **Después del match:** se muestra el contacto (teléfono/email) y siguen por fuera de la app. Sin chat interno en el MVP.
-- **Monetización MVP:** suscripción mensual que paga el titular/empresa. Sin pago no tiene acceso.
+- **Filtros obligatorios del match (P3):** tipo de vehículo (F1), licencia habilitante (F2) y misma región (F3) quedan **fuera del %**: si no se cumplen, no hay match.
+- **Después del match:** sin chat interno en el MVP; siguen por fuera de la app.
+- **Contacto (P10):** por ahora **solo el titular ve el contacto del conductor**. El conductor no ve el contacto del titular.
+- **Monetización MVP:** suscripción mensual que paga el titular/empresa. **El conductor usa la app gratis** (por ahora).
+- **Planes (P13):** distintas suscripciones según volumen de búsquedas activas (planes y precios por definir).
+- **Titular sin suscripción (P11):** no ve perfiles ni contactos; sí ve un **adelanto anónimo** (ej. "hay 8 conductores verificados para tu búsqueda").
+- **Cobro (P14):** **dentro y fuera de la app** (compra integrada de Apple/Google + pago web). Ver restricciones de tiendas en `docs/propuesta-campos.md` P14 [verificar].
 - **Verificación de documentos:** sí, incluida en el MVP.
 - **Configurable =** mediante un **panel de administración**.
 - **Cuentas de desarrollador:** aún no existen (Apple ni Google).
