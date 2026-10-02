@@ -43,7 +43,7 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - [ ] P5–P7, P9, P12, P15, P16 de `docs/propuesta-campos.md`.
 - [ ] Plazo comprometido de revisión de documentos.
 - [ ] Precio de cada plan de suscripción.
-- [ ] Nombre de la app / marca — *por definir* (`docs/propuesta-nombres.md`).
+- [ ] Nombre definitivo de la app / marca (hoy provisorio: **Dale Contacto**; falta revisar INAPI, dominios y tiendas).
 
 ### Técnico
 - [ ] Proveedor de SMS (ej. Twilio) — *se deja para después*; mientras tanto, números de prueba de Supabase.
@@ -79,6 +79,8 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - **Calidad visual:** la dueña exige una app que se vea y funcione **profesional, de calidad, no ordinaria**. Diseño cuidado (sistema de diseño consistente, tipografía, espaciado, animaciones sutiles, estados de carga/vacío/error). Las pantallas se aprueban con maquetas antes de programarlas.
 - **Cuenta Supabase:** ya existe (de la dueña).
 - **Rama principal:** `main`.
+- **Nombre provisorio:** **Dale Contacto** (para maquetas y desarrollo; fácil de cambiar).
+- **Referencias visuales:** Fintual, Uber, apps minimalistas. Casi negro sobre blanco, grises neutros, mucho espacio y **un solo acento** (amarillo). Maquetas: https://claude.ai/artifact/N5JbJkK1ub26v14FpzhcAg (en revisión).
 - **Backend:** **Supabase** (base de datos, autenticación y archivos), por ahora.
 - **Panel de administración:** **web**.
 - **Inicio de sesión:** **número de celular + código SMS**.
