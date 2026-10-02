@@ -40,16 +40,15 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 ## Decisiones pendientes (preguntar antes de construir)
 
 ### Producto
-- [ ] Con P4 aprobado quedan solo 3 variables en el % (M2 zona, M4 años, M6 estacionamiento): con 80% deben coincidir las 3. ¿Se mantiene así, se baja el umbral o alguna variable vuelve al %?
 - [ ] P5–P7, P9, P12, P15, P16 de `docs/propuesta-campos.md`.
 - [ ] Plazo comprometido de revisión de documentos.
 - [ ] Precio de cada plan de suscripción.
 - [ ] Nombre de la app / marca — *por definir* (`docs/propuesta-nombres.md`).
 
 ### Técnico
-- [ ] Framework multiplataforma: React Native (Expo) o Flutter.
-- [ ] Proveedor de SMS para el inicio de sesión (Supabase usa uno externo, ej. Twilio; tiene costo por SMS).
-- [ ] Crear cuentas: Supabase, Apple Developer y Google Play (a nombre de la dueña).
+- [ ] Proveedor de SMS (ej. Twilio) — *se deja para después*; mientras tanto, números de prueba de Supabase.
+- [ ] Crear cuentas Apple Developer y Google Play (a nombre de la dueña).
+- [ ] Identidad visual (colores, tipografía, logo) — depende del nombre/marca.
 
 ### Legal
 - [ ] Términos y condiciones, política de privacidad y tratamiento de datos personales según la normativa chilena.
@@ -60,7 +59,7 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - **País de lanzamiento del MVP:** Chile.
 - **Tipos de vehículo:** todos.
 - **Modos de contrato (opciones iniciales, configurables):** arriendo fijo; % de ganancia; % sobre producción.
-- **Match:** automático. Se calcula el % de variables que coinciden entre conductor y titular; si coinciden en **80% o más** hay match. El umbral es configurable.
+- **Match:** automático. Se calcula el % de variables que coinciden entre conductor y titular. **Umbral inicial: 66%** (con las 3 variables actuales —M2 zona, M4 años, M6 estacionamiento— se acepta que falle 1). El umbral, las variables del %, los filtros y los pesos deben ser **configurables desde el panel**, porque se agregarán variables y el umbral cambiará.
 - **Filtros obligatorios del match (P3):** tipo de vehículo (F1), licencia habilitante (F2) y misma región (F3) quedan **fuera del %**: si no se cumplen, no hay match.
 - **Después del match:** sin chat interno en el MVP; siguen por fuera de la app.
 - **Campos de perfil:** se aprueba por ahora la propuesta C1–C18 y T1–T19 de `docs/propuesta-campos.md` (sin correcciones).
@@ -76,7 +75,10 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - **Verificación de documentos:** sí, incluida en el MVP.
 - **Configurable =** mediante un **panel de administración**.
 - **Cuentas de desarrollador:** aún no existen. Se crearán **a nombre de la dueña (persona natural)**, con la idea de pasarlas a una empresa más adelante.
-- **App:** una sola app **multiplataforma** (iPhone y Android).
+- **App:** una sola app **multiplataforma** (iPhone y Android) con **React Native + Expo**, en TypeScript (mismo lenguaje para app, panel y funciones de servidor).
+- **Calidad visual:** la dueña exige una app que se vea y funcione **profesional, de calidad, no ordinaria**. Diseño cuidado (sistema de diseño consistente, tipografía, espaciado, animaciones sutiles, estados de carga/vacío/error). Las pantallas se aprueban con maquetas antes de programarlas.
+- **Cuenta Supabase:** ya existe (de la dueña).
+- **Rama principal:** `main`.
 - **Backend:** **Supabase** (base de datos, autenticación y archivos), por ahora.
 - **Panel de administración:** **web**.
 - **Inicio de sesión:** **número de celular + código SMS**.
