@@ -47,10 +47,9 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - [ ] Nombre de la app / marca — *por definir* (`docs/propuesta-nombres.md`).
 
 ### Técnico
-- [ ] Stack móvil (por ejemplo, multiplataforma vs. nativo).
-- [ ] Backend / base de datos / autenticación.
-- [ ] Método de registro e inicio de sesión.
-- [ ] Crear cuentas de desarrollador de Apple y Google Play (no existen aún) — ¿a nombre de persona o de empresa?
+- [ ] Framework multiplataforma: React Native (Expo) o Flutter.
+- [ ] Proveedor de SMS para el inicio de sesión (Supabase usa uno externo, ej. Twilio; tiene costo por SMS).
+- [ ] Crear cuentas: Supabase, Apple Developer y Google Play (a nombre de la dueña).
 
 ### Legal
 - [ ] Términos y condiciones, política de privacidad y tratamiento de datos personales según la normativa chilena.
@@ -76,7 +75,11 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - **Cobro (P14):** **dentro y fuera de la app** (compra integrada de Apple/Google + pago web). Ver restricciones de tiendas en `docs/propuesta-campos.md` P14 [verificar].
 - **Verificación de documentos:** sí, incluida en el MVP.
 - **Configurable =** mediante un **panel de administración**.
-- **Cuentas de desarrollador:** aún no existen (Apple ni Google).
+- **Cuentas de desarrollador:** aún no existen. Se crearán **a nombre de la dueña (persona natural)**, con la idea de pasarlas a una empresa más adelante.
+- **App:** una sola app **multiplataforma** (iPhone y Android).
+- **Backend:** **Supabase** (base de datos, autenticación y archivos), por ahora.
+- **Panel de administración:** **web**.
+- **Inicio de sesión:** **número de celular + código SMS**.
 
 ## Documentos de referencia
 
