@@ -42,6 +42,9 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 ### Producto
 - [ ] P5–P7, P9, P12, P15, P16 de `docs/propuesta-campos.md`.
 - [ ] Plazo comprometido de revisión de documentos.
+- [ ] Criterios de rechazo de Hoja de Vida y antecedentes, y cada cuánto se renuevan.
+- [ ] Mensajes: ¿el titular también puede escribir primero? ¿Un titular **sin plan** puede leer/responder mensajes? ¿Reportar/bloquear (exigido por las tiendas)? ¿Cuánto tiempo se guardan los mensajes?
+- [ ] Zonas: revisar la propuesta de `docs/propuesta-zonas.md`.
 - [ ] Precio de cada plan de suscripción.
 - [ ] Nombre definitivo de la app / marca (hoy provisorio: **Dale Contacto**; falta revisar INAPI, dominios y tiendas).
 
@@ -61,12 +64,16 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - **Modos de contrato (opciones iniciales, configurables):** arriendo fijo; % de ganancia; % sobre producción.
 - **Match:** automático. Se calcula el % de variables que coinciden entre conductor y titular. **Umbral inicial: 66%** (con las 3 variables actuales —M2 zona, M4 años, M6 estacionamiento— se acepta que falle 1). El umbral, las variables del %, los filtros y los pesos deben ser **configurables desde el panel**, porque se agregarán variables y el umbral cambiará.
 - **Filtros obligatorios del match (P3):** tipo de vehículo (F1), licencia habilitante (F2) y misma región (F3) quedan **fuera del %**: si no se cumplen, no hay match.
-- **Después del match:** sin chat interno en el MVP; siguen por fuera de la app.
+- **Mensajes dentro de la app (cambia la decisión anterior de "sin chat"):** el conductor puede enviar un **mensaje privado** al titular/empresa de un match. El **contacto personal del titular/empresa no se muestra**, salvo que el titular lo **revele a un conductor en particular** con una función dentro de su perfil/conversación. La idea es conversar un poco antes de pasar a contacto fuera de la app.
+- **Favoritos:** el conductor puede marcar como favoritos sus matches (búsquedas/titulares) y el titular/empresa puede marcar como favoritos a sus conductores.
 - **Campos de perfil:** se aprueba por ahora la propuesta C1–C18 y T1–T19 de `docs/propuesta-campos.md` (sin correcciones).
 - **Perfil titular (P2):** un solo perfil con selector "Persona natural / Empresa". Los bloques Experiencia y Contrato del titular van por **búsqueda** (un vehículo o grupo de vehículos iguales).
-- **Filtros adicionales (P4):** modo de contrato (M1), turno (M3) y garantía (M5) también pasan a ser **filtros obligatorios**, fuera del %.
+- **Filtros adicionales (P4):** modo de contrato (M1) y turno (M3) también son **filtros obligatorios**, fuera del %.
+- **Garantía:** la dueña indica que en la práctica no existe → queda como **campo opcional** (C13 y T15). **No es filtro.** Por ahora tampoco entra al % (interpretación de Claude, por confirmar).
+- **Zonas (M2):** se comparan por **zona = grupo de comunas** dentro de una región. Ejemplo de la dueña para la RM: zona Oriente, Poniente, Sur, Norte. Propuesta para todas las regiones en `docs/propuesta-zonas.md` (en revisión). Editables desde el panel.
+- **Documentos obligatorios del conductor:** cédula, licencia, **Hoja de Vida del Conductor** y **Certificado de Antecedentes para fines especiales** (la dueña lo pide según la ley vigente y la que viene). Revisión: **agente de IA + persona** (ver P8). Riesgo legal por datos de infracciones penales (Ley 21.719 art. 25): ver `docs/investigacion/documentos-y-mensajes.md` [verificar con abogado].
 - **Revisión de documentos (P8):** sistema mixto. Un **agente de IA pre-revisa** (lee el documento y compara con lo declarado); los casos claros se aprueban automáticamente y las dudas y rechazos los decide una **persona** en el panel [verificar con abogado: decisiones automatizadas y transferencia internacional de datos].
-- **Qué ve el conductor tras un match:** solo **cuántas veces ha hecho match** (o que no ha hecho). Qué más ve debe ser **configurable** desde el panel y se decide más adelante.
+- **Qué ve el conductor tras un match:** con los mensajes y favoritos, el conductor necesita ver **la lista de sus matches** (tipo de vehículo, comuna, modo, turno, nombre del titular/empresa) **sin el contacto** del titular. *Propuesta en maquetas, por confirmar.* Debe ser configurable desde el panel.
 - **Contacto (P10):** por ahora **solo el titular ve el contacto del conductor**. El conductor no ve el contacto del titular.
 - **Monetización MVP:** suscripción mensual que paga el titular/empresa. **El conductor usa la app gratis** (por ahora).
 - **Planes (P13):** distintas suscripciones según volumen de búsquedas activas. Propuesta inicial aceptada (configurable): **Básico** 1 búsqueda, **Flota chica** 5, **Flota** 20. Precios por definir.
