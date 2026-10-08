@@ -40,6 +40,8 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 ## Decisiones pendientes (preguntar antes de construir)
 
 ### Producto
+> **En pausa (8-oct):** por pedido de la dueña, las decisiones de documentos (criterios, renovación, alcance por tipo de vehículo), mensajes y zonas quedan en espera hasta revisar el prototipo completo de la experiencia del conductor.
+
 - [ ] P5–P7, P9, P12, P15, P16 de `docs/propuesta-campos.md`.
 - [ ] Plazo comprometido de revisión de documentos.
 - [ ] Criterios de rechazo de Hoja de Vida y antecedentes, y cada cuánto se renuevan.
