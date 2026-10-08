@@ -90,7 +90,7 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - **Rama principal:** `main`.
 - **Lenguaje de la app:** hablar de **vehículos** en general, no de taxis (la app cubre todos los tipos de vehículo).
 - **Nombre provisorio:** **Dale Contacto** (para maquetas y desarrollo; fácil de cambiar).
-- **Referencias visuales:** Fintual, Uber, apps minimalistas. Casi negro sobre blanco, grises neutros, mucho espacio y **un solo acento** (amarillo). Maquetas: https://claude.ai/artifact/N5JbJkK1ub26v14FpzhcAg (en revisión).
+- **Referencias visuales:** Fintual, Uber, apps minimalistas. Casi negro sobre blanco, grises neutros, mucho espacio y **un solo acento** (amarillo). Maquetas: https://claude.ai/artifact/N5JbJkK1ub26v14FpzhcAg (en revisión). Página **"Experiencia del conductor"**: prototipo navegable de 25 pantallas (A ingreso, B perfil en 5 pasos, C documentos y estados, D matches y mensajes, E perfil y cuenta), en revisión por la dueña.
 - **Backend:** **Supabase** (base de datos, autenticación y archivos), por ahora.
 - **Panel de administración:** **web**.
 - **Inicio de sesión:** **número de celular + código SMS**.
