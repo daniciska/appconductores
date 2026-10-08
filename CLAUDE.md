@@ -79,6 +79,7 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - **Calidad visual:** la dueña exige una app que se vea y funcione **profesional, de calidad, no ordinaria**. Diseño cuidado (sistema de diseño consistente, tipografía, espaciado, animaciones sutiles, estados de carga/vacío/error). Las pantallas se aprueban con maquetas antes de programarlas.
 - **Cuenta Supabase:** ya existe (de la dueña).
 - **Rama principal:** `main`.
+- **Lenguaje de la app:** hablar de **vehículos** en general, no de taxis (la app cubre todos los tipos de vehículo).
 - **Nombre provisorio:** **Dale Contacto** (para maquetas y desarrollo; fácil de cambiar).
 - **Referencias visuales:** Fintual, Uber, apps minimalistas. Casi negro sobre blanco, grises neutros, mucho espacio y **un solo acento** (amarillo). Maquetas: https://claude.ai/artifact/N5JbJkK1ub26v14FpzhcAg (en revisión).
 - **Backend:** **Supabase** (base de datos, autenticación y archivos), por ahora.
