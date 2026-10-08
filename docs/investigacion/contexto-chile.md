@@ -1,5 +1,7 @@
 # Contexto chileno para definir campos y documentos (app conductores ↔ titulares)
 
+> **Actualización 8-oct-2026:** ver correcciones en `documentos-y-mensajes.md` §9 (Ley 21.733, art. 25 incluye infracciones administrativas, estado de la Ley 21.553 y de la postergación de la Ley 21.719).
+
 > **Nota de método.** Desde este entorno el proxy bloqueó el acceso directo a los sitios oficiales (chileatiende.gob.cl, bcn.cl, registrocivil.cl, sii.cl), así que no los pude abrir. Los datos salen de resultados de búsqueda que citan esas páginas y de medios y blogs chilenos. Antes de publicar, revisa en el sitio oficial todo lo marcado **[verificar]**. Fecha de corte: 1-oct-2026.
 
 ---

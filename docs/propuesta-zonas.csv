@@ -1,0 +1,347 @@
+region,zona,comuna
+Arica y Parinacota,Arica y Camarones,Arica
+Arica y Parinacota,Arica y Camarones,Camarones
+Arica y Parinacota,Altiplano (Parinacota),Putre
+Arica y Parinacota,Altiplano (Parinacota),General Lagos
+Tarapacá,Gran Iquique,Iquique
+Tarapacá,Gran Iquique,Alto Hospicio
+Tarapacá,Provincia del Tamarugal,Pozo Almonte
+Tarapacá,Provincia del Tamarugal,Pica
+Tarapacá,Provincia del Tamarugal,Huara
+Tarapacá,Provincia del Tamarugal,Camiña
+Tarapacá,Provincia del Tamarugal,Colchane
+Antofagasta,Antofagasta y alrededores,Antofagasta
+Antofagasta,Antofagasta y alrededores,Mejillones
+Antofagasta,Antofagasta y alrededores,Sierra Gorda
+Antofagasta,Calama y El Loa,Calama
+Antofagasta,Calama y El Loa,San Pedro de Atacama
+Antofagasta,Calama y El Loa,Ollagüe
+Antofagasta,Tocopilla y María Elena,Tocopilla
+Antofagasta,Tocopilla y María Elena,María Elena
+Antofagasta,Taltal,Taltal
+Atacama,Provincia de Copiapó,Copiapó
+Atacama,Provincia de Copiapó,Tierra Amarilla
+Atacama,Provincia de Copiapó,Caldera
+Atacama,Provincia de Chañaral,Chañaral
+Atacama,Provincia de Chañaral,Diego de Almagro
+Atacama,Provincia de Huasco,Vallenar
+Atacama,Provincia de Huasco,Freirina
+Atacama,Provincia de Huasco,Huasco
+Atacama,Provincia de Huasco,Alto del Carmen
+Coquimbo,La Serena y Coquimbo,La Serena
+Coquimbo,La Serena y Coquimbo,Coquimbo
+Coquimbo,La Serena y Coquimbo,La Higuera
+Coquimbo,La Serena y Coquimbo,Andacollo
+Coquimbo,Valle de Elqui,Vicuña
+Coquimbo,Valle de Elqui,Paiguano
+Coquimbo,Provincia de Limarí,Ovalle
+Coquimbo,Provincia de Limarí,Monte Patria
+Coquimbo,Provincia de Limarí,Punitaqui
+Coquimbo,Provincia de Limarí,Río Hurtado
+Coquimbo,Provincia de Limarí,Combarbalá
+Coquimbo,Provincia de Choapa,Illapel
+Coquimbo,Provincia de Choapa,Salamanca
+Coquimbo,Provincia de Choapa,Los Vilos
+Coquimbo,Provincia de Choapa,Canela
+Valparaíso,Gran Valparaíso,Valparaíso
+Valparaíso,Gran Valparaíso,Viña del Mar
+Valparaíso,Gran Valparaíso,Concón
+Valparaíso,Gran Valparaíso,Quilpué
+Valparaíso,Gran Valparaíso,Villa Alemana
+Valparaíso,Gran Valparaíso,Casablanca
+Valparaíso,Litoral Norte,Quintero
+Valparaíso,Litoral Norte,Puchuncaví
+Valparaíso,Litoral Norte,Zapallar
+Valparaíso,Litoral Norte,Papudo
+Valparaíso,La Ligua y Petorca,La Ligua
+Valparaíso,La Ligua y Petorca,Cabildo
+Valparaíso,La Ligua y Petorca,Petorca
+Valparaíso,Quillota y Limache,Quillota
+Valparaíso,Quillota y Limache,Calera
+Valparaíso,Quillota y Limache,La Cruz
+Valparaíso,Quillota y Limache,Hijuelas
+Valparaíso,Quillota y Limache,Nogales
+Valparaíso,Quillota y Limache,Limache
+Valparaíso,Quillota y Limache,Olmué
+Valparaíso,Aconcagua (San Felipe y Los Andes),San Felipe
+Valparaíso,Aconcagua (San Felipe y Los Andes),Catemu
+Valparaíso,Aconcagua (San Felipe y Los Andes),Llaillay
+Valparaíso,Aconcagua (San Felipe y Los Andes),Panquehue
+Valparaíso,Aconcagua (San Felipe y Los Andes),Putaendo
+Valparaíso,Aconcagua (San Felipe y Los Andes),Santa María
+Valparaíso,Aconcagua (San Felipe y Los Andes),Los Andes
+Valparaíso,Aconcagua (San Felipe y Los Andes),Calle Larga
+Valparaíso,Aconcagua (San Felipe y Los Andes),Rinconada
+Valparaíso,Aconcagua (San Felipe y Los Andes),San Esteban
+Valparaíso,Litoral Central (San Antonio),San Antonio
+Valparaíso,Litoral Central (San Antonio),Cartagena
+Valparaíso,Litoral Central (San Antonio),El Tabo
+Valparaíso,Litoral Central (San Antonio),El Quisco
+Valparaíso,Litoral Central (San Antonio),Algarrobo
+Valparaíso,Litoral Central (San Antonio),Santo Domingo
+Valparaíso,Isla de Pascua,Isla de Pascua
+Valparaíso,Juan Fernández,Juan Fernández
+Metropolitana de Santiago,Zona Centro,Santiago
+Metropolitana de Santiago,Zona Norte,Conchalí
+Metropolitana de Santiago,Zona Norte,Huechuraba
+Metropolitana de Santiago,Zona Norte,Independencia
+Metropolitana de Santiago,Zona Norte,Quilicura
+Metropolitana de Santiago,Zona Norte,Recoleta
+Metropolitana de Santiago,Zona Norte,Renca
+Metropolitana de Santiago,Zona Oriente,La Reina
+Metropolitana de Santiago,Zona Oriente,Las Condes
+Metropolitana de Santiago,Zona Oriente,Lo Barnechea
+Metropolitana de Santiago,Zona Oriente,Macul
+Metropolitana de Santiago,Zona Oriente,Ñuñoa
+Metropolitana de Santiago,Zona Oriente,Peñalolén
+Metropolitana de Santiago,Zona Oriente,Providencia
+Metropolitana de Santiago,Zona Oriente,Vitacura
+Metropolitana de Santiago,Zona Poniente,Cerrillos
+Metropolitana de Santiago,Zona Poniente,Cerro Navia
+Metropolitana de Santiago,Zona Poniente,Estación Central
+Metropolitana de Santiago,Zona Poniente,Lo Prado
+Metropolitana de Santiago,Zona Poniente,Maipú
+Metropolitana de Santiago,Zona Poniente,Pudahuel
+Metropolitana de Santiago,Zona Poniente,Quinta Normal
+Metropolitana de Santiago,Zona Sur,El Bosque
+Metropolitana de Santiago,Zona Sur,La Cisterna
+Metropolitana de Santiago,Zona Sur,La Florida
+Metropolitana de Santiago,Zona Sur,La Granja
+Metropolitana de Santiago,Zona Sur,La Pintana
+Metropolitana de Santiago,Zona Sur,Lo Espejo
+Metropolitana de Santiago,Zona Sur,Pedro Aguirre Cerda
+Metropolitana de Santiago,Zona Sur,San Joaquín
+Metropolitana de Santiago,Zona Sur,San Miguel
+Metropolitana de Santiago,Zona Sur,San Ramón
+Metropolitana de Santiago,Zona Sur,Puente Alto
+Metropolitana de Santiago,Zona Sur,San Bernardo
+Metropolitana de Santiago,Zona Sur,Pirque
+Metropolitana de Santiago,Zona Sur,San José de Maipo
+Metropolitana de Santiago,Provincia de Chacabuco,Colina
+Metropolitana de Santiago,Provincia de Chacabuco,Lampa
+Metropolitana de Santiago,Provincia de Chacabuco,Tiltil
+Metropolitana de Santiago,Maipo Rural,Buin
+Metropolitana de Santiago,Maipo Rural,Paine
+Metropolitana de Santiago,Maipo Rural,Calera de Tango
+Metropolitana de Santiago,Provincia de Talagante,Talagante
+Metropolitana de Santiago,Provincia de Talagante,El Monte
+Metropolitana de Santiago,Provincia de Talagante,Isla de Maipo
+Metropolitana de Santiago,Provincia de Talagante,Padre Hurtado
+Metropolitana de Santiago,Provincia de Talagante,Peñaflor
+Metropolitana de Santiago,Provincia de Melipilla,Melipilla
+Metropolitana de Santiago,Provincia de Melipilla,Alhué
+Metropolitana de Santiago,Provincia de Melipilla,Curacaví
+Metropolitana de Santiago,Provincia de Melipilla,María Pinto
+Metropolitana de Santiago,Provincia de Melipilla,San Pedro
+Libertador General Bernardo O'Higgins,Gran Rancagua,Rancagua
+Libertador General Bernardo O'Higgins,Gran Rancagua,Machalí
+Libertador General Bernardo O'Higgins,Gran Rancagua,Graneros
+Libertador General Bernardo O'Higgins,Gran Rancagua,Codegua
+Libertador General Bernardo O'Higgins,Gran Rancagua,Mostazal
+Libertador General Bernardo O'Higgins,Gran Rancagua,Olivar
+Libertador General Bernardo O'Higgins,Gran Rancagua,Doñihue
+Libertador General Bernardo O'Higgins,Cachapoal Sur (Rengo),Requínoa
+Libertador General Bernardo O'Higgins,Cachapoal Sur (Rengo),Rengo
+Libertador General Bernardo O'Higgins,Cachapoal Sur (Rengo),Malloa
+Libertador General Bernardo O'Higgins,Cachapoal Sur (Rengo),Quinta de Tilcoco
+Libertador General Bernardo O'Higgins,Cachapoal Poniente (San Vicente–Peumo),Coinco
+Libertador General Bernardo O'Higgins,Cachapoal Poniente (San Vicente–Peumo),Coltauco
+Libertador General Bernardo O'Higgins,Cachapoal Poniente (San Vicente–Peumo),Las Cabras
+Libertador General Bernardo O'Higgins,Cachapoal Poniente (San Vicente–Peumo),Peumo
+Libertador General Bernardo O'Higgins,Cachapoal Poniente (San Vicente–Peumo),Pichidegua
+Libertador General Bernardo O'Higgins,Cachapoal Poniente (San Vicente–Peumo),San Vicente
+Libertador General Bernardo O'Higgins,San Fernando,San Fernando
+Libertador General Bernardo O'Higgins,San Fernando,Chimbarongo
+Libertador General Bernardo O'Higgins,San Fernando,Placilla
+Libertador General Bernardo O'Higgins,San Fernando,Nancagua
+Libertador General Bernardo O'Higgins,Valle de Colchagua (Santa Cruz),Santa Cruz
+Libertador General Bernardo O'Higgins,Valle de Colchagua (Santa Cruz),Chépica
+Libertador General Bernardo O'Higgins,Valle de Colchagua (Santa Cruz),Palmilla
+Libertador General Bernardo O'Higgins,Valle de Colchagua (Santa Cruz),Peralillo
+Libertador General Bernardo O'Higgins,Valle de Colchagua (Santa Cruz),Lolol
+Libertador General Bernardo O'Higgins,Valle de Colchagua (Santa Cruz),Pumanque
+Libertador General Bernardo O'Higgins,Costa (Cardenal Caro),Pichilemu
+Libertador General Bernardo O'Higgins,Costa (Cardenal Caro),Marchihue
+Libertador General Bernardo O'Higgins,Costa (Cardenal Caro),La Estrella
+Libertador General Bernardo O'Higgins,Costa (Cardenal Caro),Litueche
+Libertador General Bernardo O'Higgins,Costa (Cardenal Caro),Navidad
+Libertador General Bernardo O'Higgins,Costa (Cardenal Caro),Paredones
+Maule,Gran Talca,Talca
+Maule,Gran Talca,Maule
+Maule,Gran Talca,San Clemente
+Maule,Gran Talca,Pelarco
+Maule,Gran Talca,Pencahue
+Maule,Gran Talca,San Rafael
+Maule,Gran Talca,Río Claro
+Maule,Costa de Talca (Constitución),Constitución
+Maule,Costa de Talca (Constitución),Empedrado
+Maule,Costa de Talca (Constitución),Curepto
+Maule,Gran Curicó,Curicó
+Maule,Gran Curicó,Molina
+Maule,Gran Curicó,Teno
+Maule,Gran Curicó,Romeral
+Maule,Gran Curicó,Rauco
+Maule,Gran Curicó,Sagrada Familia
+Maule,Costa de Curicó (Licantén),Hualañé
+Maule,Costa de Curicó (Licantén),Licantén
+Maule,Costa de Curicó (Licantén),Vichuquén
+Maule,Gran Linares,Linares
+Maule,Gran Linares,Yerbas Buenas
+Maule,Gran Linares,Colbún
+Maule,Gran Linares,Longaví
+Maule,Gran Linares,Villa Alegre
+Maule,Gran Linares,San Javier
+Maule,Parral y Retiro,Parral
+Maule,Parral y Retiro,Retiro
+Maule,Provincia de Cauquenes,Cauquenes
+Maule,Provincia de Cauquenes,Chanco
+Maule,Provincia de Cauquenes,Pelluhue
+Ñuble,Gran Chillán,Chillán
+Ñuble,Gran Chillán,Chillán Viejo
+Ñuble,Gran Chillán,Pinto
+Ñuble,Gran Chillán,Coihueco
+Ñuble,Punilla (San Carlos),San Carlos
+Ñuble,Punilla (San Carlos),San Nicolás
+Ñuble,Punilla (San Carlos),Ñiquén
+Ñuble,Punilla (San Carlos),San Fabián
+Ñuble,Diguillín Sur (Bulnes–Yungay),Bulnes
+Ñuble,Diguillín Sur (Bulnes–Yungay),Quillón
+Ñuble,Diguillín Sur (Bulnes–Yungay),San Ignacio
+Ñuble,Diguillín Sur (Bulnes–Yungay),El Carmen
+Ñuble,Diguillín Sur (Bulnes–Yungay),Pemuco
+Ñuble,Diguillín Sur (Bulnes–Yungay),Yungay
+Ñuble,Valle del Itata,Quirihue
+Ñuble,Valle del Itata,Cobquecura
+Ñuble,Valle del Itata,Coelemu
+Ñuble,Valle del Itata,Ninhue
+Ñuble,Valle del Itata,Portezuelo
+Ñuble,Valle del Itata,Ránquil
+Ñuble,Valle del Itata,Treguaco
+Biobío,Gran Concepción,Concepción
+Biobío,Gran Concepción,Talcahuano
+Biobío,Gran Concepción,Hualpén
+Biobío,Gran Concepción,San Pedro de la Paz
+Biobío,Gran Concepción,Chiguayante
+Biobío,Gran Concepción,Penco
+Biobío,Gran Concepción,Tomé
+Biobío,Gran Concepción,Hualqui
+Biobío,Gran Concepción,Coronel
+Biobío,Gran Concepción,Lota
+Biobío,Gran Concepción,Florida
+Biobío,Gran Concepción,Santa Juana
+Biobío,Arauco Norte,Arauco
+Biobío,Arauco Norte,Curanilahue
+Biobío,Arauco Norte,Los Álamos
+Biobío,Arauco Norte,Lebu
+Biobío,Arauco Sur,Cañete
+Biobío,Arauco Sur,Contulmo
+Biobío,Arauco Sur,Tirúa
+Biobío,Los Ángeles y alrededores,Los Ángeles
+Biobío,Los Ángeles y alrededores,Negrete
+Biobío,Los Ángeles y alrededores,Nacimiento
+Biobío,Los Ángeles y alrededores,Mulchén
+Biobío,Biobío Norte,Cabrero
+Biobío,Biobío Norte,Yumbel
+Biobío,Biobío Norte,Laja
+Biobío,Biobío Norte,San Rosendo
+Biobío,Biobío Cordillera,Tucapel
+Biobío,Biobío Cordillera,Antuco
+Biobío,Biobío Cordillera,Quilleco
+Biobío,Biobío Cordillera,Santa Bárbara
+Biobío,Biobío Cordillera,Quilaco
+Biobío,Biobío Cordillera,Alto Biobío
+La Araucanía,Gran Temuco,Temuco
+La Araucanía,Gran Temuco,Padre Las Casas
+La Araucanía,Gran Temuco,Lautaro
+La Araucanía,Gran Temuco,Perquenco
+La Araucanía,Gran Temuco,Cholchol
+La Araucanía,Gran Temuco,Galvarino
+La Araucanía,Gran Temuco,Freire
+La Araucanía,Costa Araucanía,Nueva Imperial
+La Araucanía,Costa Araucanía,Carahue
+La Araucanía,Costa Araucanía,Saavedra
+La Araucanía,Costa Araucanía,Teodoro Schmidt
+La Araucanía,Costa Araucanía,Toltén
+La Araucanía,Cautín Sur,Pitrufquén
+La Araucanía,Cautín Sur,Gorbea
+La Araucanía,Cautín Sur,Loncoche
+La Araucanía,Zona Lacustre,Villarrica
+La Araucanía,Zona Lacustre,Pucón
+La Araucanía,Zona Lacustre,Curarrehue
+La Araucanía,Precordillera,Vilcún
+La Araucanía,Precordillera,Cunco
+La Araucanía,Precordillera,Melipeuco
+La Araucanía,Malleco Poniente,Angol
+La Araucanía,Malleco Poniente,Renaico
+La Araucanía,Malleco Poniente,Los Sauces
+La Araucanía,Malleco Poniente,Purén
+La Araucanía,Malleco Poniente,Lumaco
+La Araucanía,Malleco Poniente,Traiguén
+La Araucanía,Malleco Oriente,Victoria
+La Araucanía,Malleco Oriente,Collipulli
+La Araucanía,Malleco Oriente,Ercilla
+La Araucanía,Malleco Oriente,Curacautín
+La Araucanía,Malleco Oriente,Lonquimay
+Los Ríos,Gran Valdivia,Valdivia
+Los Ríos,Gran Valdivia,Corral
+Los Ríos,Valdivia Norte,Mariquina
+Los Ríos,Valdivia Norte,Lanco
+Los Ríos,Valdivia Norte,Máfil
+Los Ríos,Panguipulli y Los Lagos,Panguipulli
+Los Ríos,Panguipulli y Los Lagos,Los Lagos
+Los Ríos,Ranco y Paillaco,La Unión
+Los Ríos,Ranco y Paillaco,Río Bueno
+Los Ríos,Ranco y Paillaco,Futrono
+Los Ríos,Ranco y Paillaco,Lago Ranco
+Los Ríos,Ranco y Paillaco,Paillaco
+Los Lagos,Gran Puerto Montt,Puerto Montt
+Los Lagos,Gran Puerto Montt,Puerto Varas
+Los Lagos,Gran Puerto Montt,Llanquihue
+Los Lagos,Gran Puerto Montt,Frutillar
+Los Lagos,Gran Puerto Montt,Cochamó
+Los Lagos,Llanquihue Poniente,Calbuco
+Los Lagos,Llanquihue Poniente,Maullín
+Los Lagos,Llanquihue Poniente,Los Muermos
+Los Lagos,Llanquihue Poniente,Fresia
+Los Lagos,Provincia de Osorno,Osorno
+Los Lagos,Provincia de Osorno,San Pablo
+Los Lagos,Provincia de Osorno,San Juan de la Costa
+Los Lagos,Provincia de Osorno,Río Negro
+Los Lagos,Provincia de Osorno,Purranque
+Los Lagos,Provincia de Osorno,Puyehue
+Los Lagos,Provincia de Osorno,Puerto Octay
+Los Lagos,Chiloé Norte,Ancud
+Los Lagos,Chiloé Norte,Quemchi
+Los Lagos,Chiloé Centro,Castro
+Los Lagos,Chiloé Centro,Dalcahue
+Los Lagos,Chiloé Centro,Chonchi
+Los Lagos,Chiloé Centro,Curaco de Vélez
+Los Lagos,Chiloé Centro,Quinchao
+Los Lagos,Chiloé Centro,Puqueldón
+Los Lagos,Chiloé Sur,Quellón
+Los Lagos,Chiloé Sur,Queilén
+Los Lagos,Provincia de Palena,Chaitén
+Los Lagos,Provincia de Palena,Futaleufú
+Los Lagos,Provincia de Palena,Palena
+Los Lagos,Provincia de Palena,Hualaihué
+Aysén del General Carlos Ibáñez del Campo,Coyhaique y Puerto Aysén,Coyhaique
+Aysén del General Carlos Ibáñez del Campo,Coyhaique y Puerto Aysén,Aysén
+Aysén del General Carlos Ibáñez del Campo,Aysén Norte,Cisnes
+Aysén del General Carlos Ibáñez del Campo,Aysén Norte,Lago Verde
+Aysén del General Carlos Ibáñez del Campo,Aysén Norte,Guaitecas
+Aysén del General Carlos Ibáñez del Campo,General Carrera,Chile Chico
+Aysén del General Carlos Ibáñez del Campo,General Carrera,Río Ibáñez
+Aysén del General Carlos Ibáñez del Campo,Capitán Prat,Cochrane
+Aysén del General Carlos Ibáñez del Campo,Capitán Prat,O'Higgins
+Aysén del General Carlos Ibáñez del Campo,Capitán Prat,Tortel
+Magallanes y de la Antártica Chilena,Punta Arenas,Punta Arenas
+Magallanes y de la Antártica Chilena,Punta Arenas,Laguna Blanca
+Magallanes y de la Antártica Chilena,Punta Arenas,Río Verde
+Magallanes y de la Antártica Chilena,Punta Arenas,San Gregorio
+Magallanes y de la Antártica Chilena,Última Esperanza,Natales
+Magallanes y de la Antártica Chilena,Última Esperanza,Torres del Paine
+Magallanes y de la Antártica Chilena,Tierra del Fuego,Porvenir
+Magallanes y de la Antártica Chilena,Tierra del Fuego,Primavera
+Magallanes y de la Antártica Chilena,Tierra del Fuego,Timaukel
+Magallanes y de la Antártica Chilena,Antártica Chilena,Cabo de Hornos
+Magallanes y de la Antártica Chilena,Antártica Chilena,Antártica

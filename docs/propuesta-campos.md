@@ -13,7 +13,12 @@
 > - **P10 (ampliación):** el conductor ve cuántas veces ha hecho match; el resto, configurable más adelante.
 > - **P13:** planes Básico (1), Flota chica (5), Flota (20). Precios por definir.
 > - **Campos C#/T#:** sin correcciones por ahora.
-> - Pendientes: P1, P5–P7, P9, P12, P15, P16; nombre de la app.
+> - **(8-oct) Garantía:** no es filtro; campo opcional (C13, T15). Ya no aplica "M5 como filtro".
+> - **(8-oct) Zonas (M2/P6):** por grupos de comunas → ver `docs/propuesta-zonas.md`.
+> - **(8-oct) Documentos:** Hoja de Vida (C18) pasa a **obligatoria** y se agrega el **Certificado de Antecedentes para fines especiales** (C19, obligatorio). Ya no está en "qué dejé fuera". Ver riesgos y opciones en `docs/investigacion/documentos-y-mensajes.md`.
+> - **(8-oct) Nuevas funciones:** mensajes privados conductor ↔ titular dentro de la app (contacto del titular oculto salvo que lo revele) y favoritos en ambos lados.
+> - **Las tablas de abajo son la versión original** (6 variables, 80 %). La versión vigente del match está en `CLAUDE.md`.
+> - Pendientes: P1, P5, P7, P9, P12, P15, P16; nombre de la app.
 
 **Cómo corregirla:** cada campo, filtro, variable, documento y pregunta tiene un código: C, T, F, M, D y P. Puedes contestar, por ejemplo, "C6 sacar", "T14 agregar opción Mañana", "M1 que sea filtro", "F3 sacar" o "P5: más de 80 %".
 
