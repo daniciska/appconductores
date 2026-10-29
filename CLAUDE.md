@@ -44,6 +44,7 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 
 - [ ] P5–P7, P9, P12, P15, P16 de `docs/propuesta-campos.md`.
 - [ ] Plazo comprometido de revisión de documentos.
+- [ ] Enlaces directos del Registro Civil para la Hoja de Vida y el Certificado de antecedentes, y si son gratis en línea [verificar].
 - [ ] Modelo de contrato en espera: ¿se pide más adelante (por ejemplo, al hacer match) o no se pide? Mientras tanto, ¿el match no filtra por M1?
 - [ ] Turnos y días: ¿se agrega "Festivos"? Para el match, ¿el conductor debe tener todos los días que pide el titular o basta con que coincida al menos uno?
 - [ ] Paso 4: si el conductor marca un negocio que su licencia no permite, ¿se deja marcar (y el match lo filtra por licencia) o se muestra en gris con la licencia que pide?
