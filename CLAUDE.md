@@ -51,7 +51,7 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - [ ] Nombre definitivo de la app / marca (hoy provisorio: **Dale Contacto**; falta revisar INAPI, dominios y tiendas).
 
 ### Técnico
-- [ ] Proveedor de SMS (ej. Twilio) — *se deja para después*; mientras tanto, números de prueba de Supabase.
+- [ ] Proveedor de SMS (ej. Twilio) — *se deja para después*; mientras tanto, números de prueba de Supabase. **Ojo:** los números de prueba no sirven para personas reales; un piloto con usuarios reales necesita proveedor (ver `docs/plan-lanzamiento.md`).
 - [ ] Crear cuentas Apple Developer y Google Play (a nombre de la dueña).
 - [ ] Identidad visual (colores, tipografía, logo) — depende del nombre/marca.
 
@@ -96,6 +96,8 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - **Inicio de sesión:** **número de celular + código SMS**.
 
 ## Documentos de referencia
+
+- `docs/plan-lanzamiento.md` — plan de 2 semanas (2 al 13-nov-2026) para un piloto cerrado operativo: alcance, estructura técnica, calendario, tareas de la dueña y decisiones que lo bloquean. **Propuesta, por confirmar.**
 
 - `docs/propuesta-campos.md` — propuesta de campos (C# conductor, T# titular, F# filtros, M# variables de match, D# documentos, P# preguntas). **Es una propuesta, no una decisión.**
 - `docs/propuesta-nombres.md` — nombres candidatos con conflictos encontrados. **Propuesta.**
