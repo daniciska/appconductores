@@ -1,0 +1,5359 @@
+{
+ "grupos": [
+  {
+   "id": "cuentas",
+   "nombre": "Personas y cuentas",
+   "descripcion": "Quién entra a la app con su celular (conductores, titulares y el equipo), qué autorizó, qué recordatorios se le enviaron, qué pidió sobre sus datos y qué hizo el equipo en el panel."
+  },
+  {
+   "id": "conductor",
+   "nombre": "Perfil del conductor",
+   "descripcion": "Lo que llena el conductor en sus 5 secciones: datos y licencia (con su disponibilidad), dónde vive, experiencia por tamaño de vehículo, cómo quiere trabajar y documentos. El modelo de contrato quedó en espera."
+  },
+  {
+   "id": "titular",
+   "nombre": "Titulares y búsquedas",
+   "descripcion": "La persona natural o empresa que busca conductores y cada búsqueda que publica (un vehículo o varios iguales)."
+  },
+  {
+   "id": "match",
+   "nombre": "Match",
+   "descripcion": "Las parejas conductor–búsqueda que coinciden, los favoritos de cada lado, lo que cada uno decidió compartir, el registro de quién recibió datos y las reglas del cálculo (filtros, variables, pesos)."
+  },
+  {
+   "id": "documentos",
+   "nombre": "Documentos y verificación",
+   "descripcion": "Qué documentos se piden, cada documento subido, cada revisión (sistema automático + persona) y el RUN confirmado de cada persona."
+  },
+  {
+   "id": "mensajes",
+   "nombre": "Mensajes y seguridad",
+   "descripcion": "Mensajes privados dentro de un match, reportes y bloqueos (lo exigen Apple y Google)."
+  },
+  {
+   "id": "cobro",
+   "nombre": "Planes y cobro",
+   "descripcion": "Los planes de suscripción del titular y la suscripción de cada uno (App Store, Google Play o pago web)."
+  },
+  {
+   "id": "configuracion",
+   "nombre": "Catálogos y ajustes del panel",
+   "descripcion": "Todo lo que el equipo cambia desde el panel sin reprogramar: negocios, tamaños de vehículo, clases de licencia, listas de opciones, regiones, zonas y comunas, preguntas de los formularios, textos de autorización y plazos."
+  }
+ ],
+ "entidades": [
+  {
+   "id": "cuentas",
+   "nombre": "Cuenta",
+   "grupo": "cuentas",
+   "descripcion": "Una fila por cada persona que entra con su celular: conductor, titular o alguien del equipo. Guarda lo común: celular, correo y nombre. Nace al confirmar el código del celular, antes de las autorizaciones y del Paso 1.",
+   "para_que": "Sin cuenta no hay usuarios: es el inicio de sesión con celular y código por WhatsApp o SMS (decidido), y evita repetir nombre y contacto en dos lugares.",
+   "estado": "decidido",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "ID de la cuenta",
+     "tipo": "id",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Número interno único. Es el mismo que crea el inicio de sesión (Supabase) al confirmar el código del celular: la cuenta nace ahí, para que las autorizaciones de 'Antes de empezar' tengan a quién quedar asociadas.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "celular",
+     "nombre": "Celular",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Número +56 confirmado con un código por WhatsApp, o por SMS si no llega. Con él se entra a la app y es el teléfono de contacto. Cambiarlo exige confirmar el número nuevo (el correo sirve de respaldo).",
+     "quien_ve": "La persona y el equipo. El del conductor: el titular con plan, tras el match (condiciones en R7). El del titular: solo el conductor con quien el titular lo compartió",
+     "codigo": "C3, T6",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "celular_verificado_en",
+     "nombre": "Celular verificado el",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Cuándo se confirmó el código. Lo escribe solo el sistema.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "email",
+     "nombre": "Correo electrónico",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Obligatorio para todos (decidido) como dato de respaldo: recuperar la cuenta, cambiar de número y recibir comprobantes de pago. No se usa para entrar. La app no deja guardar el Paso 1 sin él; en la base solo puede estar vacío entre el código y el Paso 1.",
+     "quien_ve": "La persona y el equipo. El del conductor: el titular con plan, tras el match (condiciones en R7). El del titular: solo el conductor con quien el titular lo compartió",
+     "codigo": "C4, T7",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "email_confirmado_en",
+     "nombre": "Correo confirmado el",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Cuándo confirmó su correo con un código o un enlace. Vacío = sin confirmar. Lo escribe solo el sistema (MD7).",
+     "quien_ve": "La persona y el equipo",
+     "codigo": "C4",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "nombres",
+     "nombre": "Nombres",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Paso 1 del conductor: obligatorio para registrarse (lo exige la app con *). El equipo lo compara con la cédula. En el titular se propone la misma forma (MD8).",
+     "quien_ve": "La persona y el equipo. El del conductor: el titular con plan, tras el match. El del titular: los conductores con match",
+     "codigo": "C1, T2",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "primer_apellido",
+     "nombre": "Primer apellido",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Paso 1 del conductor: obligatorio para registrarse (lo exige la app con *).",
+     "quien_ve": "La persona y el equipo. El del conductor: el titular con plan, tras el match. El del titular: los conductores con match",
+     "codigo": "C1, T2",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "segundo_apellido",
+     "nombre": "Segundo apellido",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Opcional ('si tienes').",
+     "quien_ve": "La persona y el equipo. El del conductor: el titular con plan, tras el match. El del titular: los conductores con match",
+     "codigo": "C1, T2",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "estado",
+     "nombre": "Estado de la cuenta",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: Activa; Suspendida; Eliminación en curso. Una cuenta suspendida (por ejemplo, tras un reporte) o en eliminación no entra al match ni puede escribir. Solo lo cambian el equipo o el sistema.",
+     "quien_ve": "La persona y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "tokens_avisos",
+     "nombre": "Celulares para avisos",
+     "tipo": "json",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Dato técnico para enviar avisos a la app (nuevo match, mensaje nuevo, documento revisado). Los avisos en el celular aún no están decididos.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "creado_en",
+     "nombre": "Cuenta creada el",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Cuándo se confirmó el código del celular por primera vez. La fecha de registro como conductor está en el Conductor.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    }
+   ]
+  },
+  {
+   "id": "miembros_equipo",
+   "nombre": "Miembro del equipo",
+   "grupo": "cuentas",
+   "descripcion": "Las personas del equipo que usan el panel y el rol de cada una: Revisor o Administrador.",
+   "para_que": "Seguridad: el rol va aparte para que nadie pueda dárselo a sí mismo desde la app; solo un Administrador lo asigna.",
+   "estado": "propuesta",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "Cuenta del miembro",
+     "tipo": "referencia",
+     "referencia": "cuentas",
+     "obligatorio": true,
+     "descripcion": "Es el mismo identificador de la cuenta: la persona del equipo entra con su celular, como todos.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "rol",
+     "nombre": "Rol",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: Revisor (documentos y reportes); Administrador (además cambia la configuración del panel y asigna roles).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "activo",
+     "nombre": "Activo",
+     "tipo": "si_no",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Desactivar en vez de borrar: quien deja el equipo pierde el acceso al panel de inmediato.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "creado_por",
+     "nombre": "Agregado por",
+     "tipo": "referencia",
+     "referencia": "cuentas",
+     "obligatorio": true,
+     "descripcion": "Administrador que lo agregó (por una función del servidor; queda en el registro de acciones).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "creado_en",
+     "nombre": "Agregado el",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Cuándo se le dio el rol.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    }
+   ]
+  },
+  {
+   "id": "consentimientos",
+   "nombre": "Autorización aceptada",
+   "grupo": "cuentas",
+   "descripcion": "Registro de cada autorización que acepta una persona, apuntando a la versión exacta del texto que aceptó, con la fecha. Nunca se modifica: retirar una autorización solo anota la fecha de retiro.",
+   "para_que": "Ley: poder demostrar qué aceptó cada persona y cuándo (Ley 21.719); Google exige aceptar los términos antes de escribir mensajes.",
+   "estado": "propuesta",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "ID",
+     "tipo": "id",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Número interno.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "cuenta_id",
+     "nombre": "Persona",
+     "tipo": "referencia",
+     "referencia": "cuentas",
+     "obligatorio": true,
+     "descripcion": "Quién aceptó. Siempre es la persona con la sesión abierta.",
+     "quien_ve": "La persona y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "texto_autorizacion_id",
+     "nombre": "Qué autorizó (y en qué versión)",
+     "tipo": "referencia",
+     "referencia": "textos_autorizacion",
+     "obligatorio": true,
+     "descripcion": "La versión exacta del texto que aceptó (ej. 'Términos y privacidad v1', 'Compartir mi ficha y mi contacto v1'). Reemplaza al antiguo 'tipo' + 'versión'.",
+     "quien_ve": "La persona y el equipo",
+     "codigo": "P1",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "aceptado_en",
+     "nombre": "Aceptado el",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Fecha y hora en que marcó la casilla. La pone el servidor.",
+     "quien_ve": "La persona y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "revocado_en",
+     "nombre": "Retirado el",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Si la persona la retira (propuesta: desde 'Mis autorizaciones', MD32). Retirar 'compartir mi ficha' la saca del match; retirar los recordatorios por WhatsApp hace que se envíen solo por correo.",
+     "quien_ve": "La persona y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    }
+   ]
+  },
+  {
+   "id": "avisos_enviados",
+   "nombre": "Recordatorio enviado",
+   "grupo": "cuentas",
+   "descripcion": "Cada recordatorio o aviso que se le envía a una persona, con el canal y la fecha. Parte con los recordatorios para completar el perfil.",
+   "para_que": "Venta: recuperar a quien dejó el perfil a medias sin pasarse de la frecuencia ni del máximo que fije el panel (decidido: hay que registrar cada envío).",
+   "estado": "decidido",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "ID",
+     "tipo": "id",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Número interno.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "cuenta_id",
+     "nombre": "Persona",
+     "tipo": "referencia",
+     "referencia": "cuentas",
+     "obligatorio": true,
+     "descripcion": "A quién se le envió.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "motivo",
+     "nombre": "Motivo",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: Completar el perfil (decidido); Documento por vencer; Reconfirmar disponibilidad (estas dos, propuesta).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "canal",
+     "nombre": "Canal",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: WhatsApp; Correo. Cuál va primero está pendiente (MD6). Por WhatsApp solo si la persona tiene vigente esa autorización (propuesta, MD32).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "documento_id",
+     "nombre": "Documento",
+     "tipo": "referencia",
+     "referencia": "documentos",
+     "obligatorio": false,
+     "descripcion": "Solo si el aviso es por un documento por vencer.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "enviado_en",
+     "nombre": "Enviado el",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Cuándo se envió. Sirve para respetar cada cuánto y cuántas veces se envía.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
+    }
+   ]
+  },
+  {
+   "id": "solicitudes_derechos",
+   "nombre": "Solicitud sobre mis datos",
+   "grupo": "cuentas",
+   "descripcion": "Cada pedido que hace una persona sobre sus datos: borrar su cuenta, pedir una copia, corregir un dato, oponerse a un uso o llevárselos (portabilidad), con su plazo de respuesta y qué se hizo.",
+   "para_que": "Ley y tiendas: la Ley 21.719 da estos derechos con plazos de respuesta, y Google Play exige un enlace web para pedir el borrado de la cuenta.",
+   "estado": "propuesta",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "ID",
+     "tipo": "id",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Número interno.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "cuenta_id",
+     "nombre": "Persona",
+     "tipo": "referencia",
+     "referencia": "cuentas",
+     "obligatorio": false,
+     "descripcion": "Quién la pidió. Se desvincula cuando la solicitud termina (por ejemplo, tras borrar la cuenta).",
+     "quien_ve": "La persona y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "tipo",
+     "nombre": "Qué pide",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: Borrar mi cuenta; Copia de mis datos; Corregir un dato; Oponerme a un uso; Llevarme mis datos (portabilidad).",
+     "quien_ve": "La persona y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "canal",
+     "nombre": "Por dónde llegó",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: App ('Eliminar mi cuenta' u otra opción de Perfil); Web (enlace que exige Google Play, a veces sin sesión).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "celular_web",
+     "nombre": "Celular de quien pide por la web",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Si llega por la web sin sesión: el celular, confirmado con un código antes de aceptar la solicitud.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "detalle",
+     "nombre": "Detalle",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Lo que pide, en sus palabras (ej. qué dato corregir).",
+     "quien_ve": "La persona y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "estado",
+     "nombre": "Estado",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: Recibida; En curso; Resuelta; Rechazada (con motivo).",
+     "quien_ve": "La persona y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "recibida_en",
+     "nombre": "Recibida el",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "La pone el servidor.",
+     "quien_ve": "La persona y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "responder_antes_de",
+     "nombre": "Responder antes del",
+     "tipo": "fecha",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Plazo de respuesta, calculado con el ajuste 'días para responder solicitudes' [verificar plazo legal con abogado].",
+     "quien_ve": "La persona y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "resuelta_en",
+     "nombre": "Resuelta el",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Cuándo se cerró.",
+     "quien_ve": "La persona y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "resuelta_por",
+     "nombre": "Resuelta por",
+     "tipo": "referencia",
+     "referencia": "cuentas",
+     "obligatorio": false,
+     "descripcion": "Persona del equipo que la cerró.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "que_se_conservo",
+     "nombre": "Qué se conservó y por qué",
+     "tipo": "texto_largo",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "En un borrado: qué datos se guardaron igual y por qué (ej. pagos por ley tributaria, reportes abiertos), según indiquen el abogado y el contador (MD23).",
+     "quien_ve": "La persona y el equipo",
+     "codigo": "",
+     "estado": "pendiente",
+     "configurable": false
+    }
+   ]
+  },
+  {
+   "id": "acciones_equipo",
+   "nombre": "Acción del equipo",
+   "grupo": "cuentas",
+   "descripcion": "Registro, que no se puede modificar, de lo que hace cada persona del equipo con datos delicados o con la configuración: abrir un archivo de documento, ver un RUN, leer una conversación reportada, decidir un documento, suspender una cuenta, cambiar un rol o cambiar un catálogo, regla o ajuste.",
+   "para_que": "Ley y seguridad: poder demostrar quién vio datos delicados (Hoja de Vida, antecedentes, mensajes) y por qué, y quién cambió la configuración del panel.",
+   "estado": "propuesta",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "ID",
+     "tipo": "id",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Número interno.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "cuenta_id",
+     "nombre": "Persona del equipo",
+     "tipo": "referencia",
+     "referencia": "cuentas",
+     "obligatorio": true,
+     "descripcion": "Quién lo hizo (la sesión abierta en el panel).",
+     "quien_ve": "Solo los administradores",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "accion",
+     "nombre": "Qué hizo",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: Ver archivo de documento; Ver RUN; Leer conversación reportada; Decidir documento; Suspender o reactivar cuenta; Cambiar rol; Cambiar configuración; Responder solicitud sobre datos.",
+     "quien_ve": "Solo los administradores",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "objeto",
+     "nombre": "Sobre qué",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Qué tabla y qué fila, ej. 'Documento 123', 'Ajuste umbral_match', 'Negocio Taxi'.",
+     "quien_ve": "Solo los administradores",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "motivo",
+     "nombre": "Por qué",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "El reporte, la revisión o la solicitud que lo justifica.",
+     "quien_ve": "Solo los administradores",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "cambio",
+     "nombre": "Valor anterior y nuevo",
+     "tipo": "json",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Solo en cambios de configuración: cómo estaba y cómo quedó.",
+     "quien_ve": "Solo los administradores",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "creado_en",
+     "nombre": "Fecha",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "La pone el servidor.",
+     "quien_ve": "Solo los administradores",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    }
+   ]
+  },
+  {
+   "id": "conductores",
+   "nombre": "Conductor",
+   "grupo": "conductor",
+   "descripcion": "El perfil de trabajo de cada conductor: sus licencias, dónde vive, en qué quiere trabajar, en qué turnos y días (el modelo de contrato quedó en espera). Su nombre y contacto están en la Cuenta, su RUN en 'Identidad verificada' y su experiencia en 'Experiencia por tamaño de vehículo'.",
+   "para_que": "Match y venta: son los datos que se comparan con cada búsqueda y la ficha por la que paga el titular.",
+   "estado": "decidido",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "Cuenta del conductor",
+     "tipo": "referencia",
+     "referencia": "cuentas",
+     "obligatorio": true,
+     "descripcion": "Es el mismo identificador de la cuenta: un perfil de conductor por cuenta.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "estado_perfil",
+     "nombre": "Estado del perfil",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Se calcula solo (lo escribe el sistema). Opciones fijas: Incompleto (se registró con el Paso 1 y eligió 'Guardar y terminar después') o Completo (las 5 secciones listas). Con perfil incompleto no entra al match. El avance se muestra como 'N de 5 pasos listos · %'. Qué exige cada sección: MD36.",
+     "quien_ve": "El conductor y el equipo",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "perfil_completo_en",
+     "nombre": "Perfil completado el",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Cuándo quedaron listas las 5 secciones. Desde ahí dejan de enviarse los recordatorios. Lo escribe el sistema.",
+     "quien_ve": "El conductor y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "clases_licencia_declaradas",
+     "nombre": "Clases de licencia que declara",
+     "tipo": "lista_multiple",
+     "referencia": "clases_licencia",
+     "obligatorio": true,
+     "descripcion": "Paso 1 (obligatorio para registrarse): marca todas las que aparecen en su licencia. Lo declarado no cuenta para el match: sirve para compararlo con la foto de la licencia.",
+     "quien_ve": "El conductor y el equipo",
+     "codigo": "C7",
+     "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "clases_licencia_revisadas",
+     "nombre": "Clases de licencia revisadas",
+     "tipo": "lista_multiple",
+     "referencia": "clases_licencia",
+     "obligatorio": false,
+     "descripcion": "Las clases que la revisión confirmó en la foto de la licencia. Solo estas cuentan para el filtro de licencia (F2) y solo estas ve el titular ('Licencia A2 · B revisada'). Las escribe solo la revisión; el conductor no puede cambiarlas.",
+     "quien_ve": "El conductor, el equipo y el titular con plan, tras el match",
+     "codigo": "C7, D2",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "direccion",
+     "nombre": "Dirección",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Paso 2 (obligatoria para completar el perfil). La dirección que eligió de las sugerencias de Google Maps. Es privada y no se usa para el match.",
+     "quien_ve": "El conductor y el equipo. Un titular solo si hay match vigente y el conductor tocó 'Compartir mi dirección' en esa conversación (R8)",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "google_place_id",
+     "nombre": "Identificador del lugar en Google",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Código que entrega Google Maps para la dirección elegida; permite volver a leer la comuna. Guardarlo depende de las condiciones de uso de Google [verificar] (MD5).",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "pendiente",
+     "configurable": false
+    },
+    {
+     "id": "direccion_detalle",
+     "nombre": "Depto, casa o block",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Opcional. Tiene la misma privacidad que la dirección.",
+     "quien_ve": "El conductor y el equipo. Un titular solo si hay match vigente y el conductor tocó 'Compartir mi dirección' (R8)",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "comuna_id",
+     "nombre": "Comuna (verificada)",
+     "tipo": "referencia",
+     "referencia": "comunas",
+     "obligatorio": true,
+     "descripcion": "Se completa sola con la dirección (el conductor no la escribe); de ella salen su zona y su región. Es lo único del domicilio que usa el match: región (F3) y zona (M2). Se eliminaron 'otras comunas donde puede retirar' (C6) y 'cualquier comuna de mi región'.",
+     "quien_ve": "El conductor, el equipo y el titular con plan, tras el match ('Vive en [comuna]')",
+     "codigo": "C5",
+     "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "negocios",
+     "nombre": "En qué quiere trabajar",
+     "tipo": "lista_multiple",
+     "referencia": "negocios",
+     "obligatorio": true,
+     "descripcion": "Paso 4 (obligatorio para completar el perfil): '¿En qué te gustaría trabajar?'. El negocio en que quiere participar, ej. Taxi, Transporte por aplicación, Moto delivery. Marca varios. Se muestran todos los negocios activos del catálogo (decidido); la licencia se revisa en el filtro F2 con las clases revisadas (R21, MD31). Filtro F1. Reemplaza a 'tipos de vehículo que quiere manejar'.",
+     "quien_ve": "El conductor, el equipo y el titular con plan, tras el match",
+     "codigo": "C8",
+     "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "turnos",
+     "nombre": "Preferencia de turno",
+     "tipo": "lista_multiple",
+     "referencia": "opciones",
+     "obligatorio": true,
+     "descripcion": "Paso 4. Lista 'turno': Día; Noche (puede marcar los dos). Antes eran 4 opciones que mezclaban turno y días. Filtro obligatorio (M3).",
+     "quien_ve": "El conductor, el equipo y el titular con plan, tras el match",
+     "codigo": "C12, M3",
+     "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "dias_trabajo",
+     "nombre": "Días que puede trabajar",
+     "tipo": "lista_multiple",
+     "referencia": "opciones",
+     "obligatorio": true,
+     "descripcion": "Paso 4: 'Días que puedes trabajar'. Lista 'día de la semana': lunes a domingo; marca todos los que pueda. Si se agrega 'Festivos' y cómo se compara con la búsqueda está pendiente (MD30).",
+     "quien_ve": "El conductor, el equipo y el titular con plan, tras el match",
+     "codigo": "C12",
+     "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "tiene_estacionamiento",
+     "nombre": "Tiene estacionamiento seguro",
+     "tipo": "si_no",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Paso 4: 'Tengo estacionamiento seguro para el vehículo'. Declarado: no se verifica. Variable M6.",
+     "quien_ve": "El conductor, el equipo y el titular con plan, tras el match (marcado 'declarado')",
+     "codigo": "C14, M6",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "modos_contrato",
+     "nombre": "Modos de contrato que acepta",
+     "tipo": "lista_multiple",
+     "referencia": "opciones",
+     "obligatorio": false,
+     "descripcion": "EN ESPERA desde el 29-oct, hasta nuevo aviso: no se pide en el registro (puede que sea algo posterior). Antes era el Paso 5 · Modelo de contrato: 'Modos de contrato que aceptas' (puede marcar más de uno). Lista 'modo de contrato': Arriendo fijo; % de ganancia; % sobre producción. Filtro obligatorio (M1).",
+     "quien_ve": "El conductor, el equipo y el titular con plan, tras el match",
+     "codigo": "C11, M1",
+     "estado": "en_espera",
+     "configurable": true
+    },
+    {
+     "id": "tramo_garantia_id",
+     "nombre": "Garantía máxima que puede pagar",
+     "tipo": "referencia",
+     "referencia": "opciones",
+     "obligatorio": false,
+     "descripcion": "EN ESPERA desde el 29-oct, junto con el modelo de contrato. Antes era el Paso 5 · Modelo de contrato, opcional. Lista 'tramo de garantía'. No es filtro y hoy no entra al %. Podría contar como dato de situación económica [verificar con abogado, P1].",
+     "quien_ve": "El conductor y el equipo (qué ve el titular: MD26)",
+     "codigo": "C13",
+     "estado": "en_espera",
+     "configurable": true
+    },
+    {
+     "id": "disponible",
+     "nombre": "Disponible para trabajar",
+     "tipo": "si_no",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Paso 1 (registro mínimo), justo después de las clases de licencia: interruptor 'Disponible para trabajar', encendido por defecto. Sí = Disponible; No = Pausado. Se puede cambiar desde el inicio. Si está pausado no entra al match.",
+     "quien_ve": "El conductor y el equipo",
+     "codigo": "C15",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "disponibilidad_confirmada_en",
+     "nombre": "Última vez que confirmó disponibilidad",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "La app pregunta '¿Sigues buscando vehículo?' cada N días (ajuste del panel; propuesta 30). Si no responde, un proceso diario lo pausa.",
+     "quien_ve": "El conductor y el equipo",
+     "codigo": "C15, P16",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "estado_verificacion",
+     "nombre": "Estado de verificación",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Se calcula solo con sus documentos (lo escribe el sistema). Opciones fijas: Sin documentos; En revisión; Verificado (los 4 aprobados y vigentes); Con un documento no aprobado o vencido. Solo 'Verificado' entra al match.",
+     "quien_ve": "El conductor y el equipo; el titular solo ve las insignias",
+     "codigo": "C16–C19, P8",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "datos_extra",
+     "nombre": "Campos agregados desde el panel",
+     "tipo": "json",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Respuestas a los campos nuevos que el equipo cree en 'Campo de formulario', sin reprogramar la app.",
+     "quien_ve": "Según lo que diga cada campo en 'Campo de formulario'",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "creado_en",
+     "nombre": "Registrado como conductor el",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Cuándo guardó el Paso 1 (desde ahí queda registrado).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "actualizado_en",
+     "nombre": "Última modificación",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Cuándo cambió su perfil por última vez (dispara recalcular sus matches).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    }
+   ]
+  },
+  {
+   "id": "experiencia_conductor",
+   "nombre": "Experiencia por tamaño de vehículo",
+   "grupo": "conductor",
+   "descripcion": "Una fila por cada tamaño de vehículo que el conductor marcó en el Paso 3, con sus años de experiencia (ej. Auto, 5 años; Van, 2 años).",
+   "para_que": "Venta y match: muestra la experticia del conductor según el tamaño del vehículo y sirve para la variable años (M4), cuya forma de comparar está pendiente (MD1).",
+   "estado": "decidido",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "ID",
+     "tipo": "id",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Número interno. No puede repetirse el mismo tamaño para el mismo conductor.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "conductor_id",
+     "nombre": "Conductor",
+     "tipo": "referencia",
+     "referencia": "conductores",
+     "obligatorio": true,
+     "descripcion": "De quién es la experiencia.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "tamano_vehiculo_id",
+     "nombre": "Tamaño de vehículo",
+     "tipo": "referencia",
+     "referencia": "tamanos_vehiculo",
+     "obligatorio": true,
+     "descripcion": "El tamaño que marcó ('¿Qué vehículos has manejado?'). Un tamaño sin marcar no guarda fila.",
+     "quien_ve": "El conductor, el equipo y el titular con plan, tras el match",
+     "codigo": "C9",
+     "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "anos",
+     "nombre": "Años de experiencia",
+     "tipo": "numero",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Años con ese tamaño, de 0 a 50. Declarado: no se verifica. Reemplaza al total general de años (C9). Qué años ve el titular en la ficha: MD1.",
+     "quien_ve": "El conductor, el equipo y el titular con plan, tras el match (marcado 'declarado')",
+     "codigo": "C9, M4",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "actualizado_en",
+     "nombre": "Última modificación",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Cuándo cambió (dispara recalcular sus matches).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    }
+   ]
+  },
+  {
+   "id": "titulares",
+   "nombre": "Titular",
+   "grupo": "titular",
+   "descripcion": "Los datos de la persona natural o de la empresa que busca conductores. Su nombre y contacto están en la Cuenta; sus vehículos van en Búsquedas.",
+   "para_que": "Venta: es quien paga la suscripción, y el conductor sabe con quién trata.",
+   "estado": "decidido",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "Cuenta del titular",
+     "tipo": "referencia",
+     "referencia": "cuentas",
+     "obligatorio": true,
+     "descripcion": "Es el mismo identificador de la cuenta: un perfil de titular por cuenta.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "tipo_titular",
+     "nombre": "Tipo de titular",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: Persona natural o Empresa. Define si se piden razón social y RUT de la empresa.",
+     "quien_ve": "El titular, el equipo y los conductores con match",
+     "codigo": "T1, P2",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "razon_social",
+     "nombre": "Razón social",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Solo empresa (ahí es obligatorio). Es el nombre que ve el conductor; si es persona natural, ve el nombre de la cuenta.",
+     "quien_ve": "El titular, el equipo y los conductores con match",
+     "codigo": "T4",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "rut_empresa",
+     "nombre": "RUT de la empresa",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Solo empresa (ahí es obligatorio). Con revisión del dígito verificador; el equipo lo revisa en el SII ('Empresa revisada en SII').",
+     "quien_ve": "El titular, el equipo y los conductores con match",
+     "codigo": "T5, T19",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "datos_extra",
+     "nombre": "Campos agregados desde el panel",
+     "tipo": "json",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Respuestas a campos nuevos del titular creados en el panel (por ejemplo, giro y dirección tributaria si se decide emitir factura, MD25).",
+     "quien_ve": "Según lo que diga cada campo en 'Campo de formulario'",
+     "codigo": "P14",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "creado_en",
+     "nombre": "Creado el",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Cuándo se registró como titular.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    }
+   ]
+  },
+  {
+   "id": "busquedas",
+   "nombre": "Búsqueda",
+   "grupo": "titular",
+   "descripcion": "Lo que publica un titular para un vehículo o un grupo de vehículos iguales: en qué negocio, dónde se retira y en qué condiciones.",
+   "para_que": "Match: el match se calcula entre un conductor y una búsqueda. Venta: el plan limita cuántas búsquedas puede tener activas.",
+   "estado": "decidido",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "ID",
+     "tipo": "id",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Número interno.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "titular_id",
+     "nombre": "Titular",
+     "tipo": "referencia",
+     "referencia": "titulares",
+     "obligatorio": true,
+     "descripcion": "Quién publica la búsqueda.",
+     "quien_ve": "El titular, el equipo y los conductores con match",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "negocio_id",
+     "nombre": "Negocio",
+     "tipo": "referencia",
+     "referencia": "negocios",
+     "obligatorio": true,
+     "descripcion": "Uno por búsqueda (antes 'tipo de vehículo', T8). La licencia exigida (T9) no se guarda: sale sola del negocio. Filtros F1 y F2. La maqueta 'Nueva búsqueda' todavía dice 'Tipo de vehículo' (MD2).",
+     "quien_ve": "El titular, el equipo y los conductores con match",
+     "codigo": "T8, T9",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "comuna_retiro_id",
+     "nombre": "Comuna donde se retira el vehículo",
+     "tipo": "referencia",
+     "referencia": "comunas",
+     "obligatorio": true,
+     "descripcion": "De ella salen la región (filtro F3) y la zona (variable M2).",
+     "quien_ve": "El titular, el equipo y los conductores con match",
+     "codigo": "T12",
+     "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "modos_contrato",
+     "nombre": "Modos de contrato que ofrece",
+     "tipo": "lista_multiple",
+     "referencia": "opciones",
+     "obligatorio": true,
+     "descripcion": "Lista 'modo de contrato'. Filtro obligatorio (M1): debe haber al menos uno en común con el conductor. Mientras el modelo de contrato del conductor esté en espera, este filtro no se aplica (propuesta, MD39).",
+     "quien_ve": "El titular, el equipo y los conductores con match",
+     "codigo": "T13, M1",
+     "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "turnos",
+     "nombre": "Turnos",
+     "tipo": "lista_multiple",
+     "referencia": "opciones",
+     "obligatorio": true,
+     "descripcion": "Lista 'turno' (las mismas opciones del conductor: Día; Noche). Filtro obligatorio (M3). La maqueta 'Nueva búsqueda' todavía muestra las 4 opciones antiguas (MD30).",
+     "quien_ve": "El titular, el equipo y los conductores con match",
+     "codigo": "T14, M3",
+     "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "dias_trabajo",
+     "nombre": "Días de trabajo",
+     "tipo": "lista_multiple",
+     "referencia": "opciones",
+     "obligatorio": true,
+     "descripcion": "Días en que se debe manejar el vehículo. Lista 'día de la semana' (lunes a domingo). Cómo se compara con los días del conductor está pendiente (MD30). Falta agregarlo a la maqueta 'Nueva búsqueda'.",
+     "quien_ve": "El titular, el equipo y los conductores con match",
+     "codigo": "T14",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "anos_minimos",
+     "nombre": "Años mínimos de experiencia",
+     "tipo": "numero",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "0 = sin mínimo (valor inicial). Variable M4; cómo se compara con la experiencia por tamaño está pendiente (MD1).",
+     "quien_ve": "El titular, el equipo y los conductores con match",
+     "codigo": "T10, M4",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "exige_estacionamiento",
+     "nombre": "Exige estacionamiento seguro",
+     "tipo": "si_no",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Variable M6: si lo exige, el conductor debe tenerlo; si no lo exige, coincide.",
+     "quien_ve": "El titular, el equipo y los conductores con match",
+     "codigo": "T11, M6",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "garantia_monto",
+     "nombre": "Garantía exigida",
+     "tipo": "numero",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Opcional, en pesos; vacío o 0 = no exige ('Garantía: No exige'). No es filtro y hoy no entra al %.",
+     "quien_ve": "El titular, el equipo y los conductores con match",
+     "codigo": "T15",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "detalle_oferta",
+     "nombre": "Detalle de la oferta",
+     "tipo": "texto_largo",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Máximo 300 caracteres. Ej.: modelo y año, monto de la entrega, quién paga bencina y TAG.",
+     "quien_ve": "El titular, el equipo y los conductores con match",
+     "codigo": "T16, P7",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "detalle_oculto",
+     "nombre": "Detalle ocultado por el equipo",
+     "tipo": "si_no",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "El equipo puede ocultar textos discriminatorios (ej. 'mayor de 45 años') hasta que el titular los corrija. Solo lo cambia el equipo.",
+     "quien_ve": "El titular y el equipo",
+     "codigo": "T16",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "estado",
+     "nombre": "Estado de la búsqueda",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: Activa, Pausada o Cubierta. Solo las activas entran al match y cuentan para el límite del plan.",
+     "quien_ve": "El titular y el equipo",
+     "codigo": "T17",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "datos_extra",
+     "nombre": "Campos agregados desde el panel",
+     "tipo": "json",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Respuestas a campos nuevos de la búsqueda creados en el panel (por ejemplo, monto y periodicidad si se aprueba P7, MD27).",
+     "quien_ve": "Según lo que diga cada campo en 'Campo de formulario'",
+     "codigo": "P7",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "creado_en",
+     "nombre": "Publicada el",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Cuándo se creó la búsqueda.",
+     "quien_ve": "El titular y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "actualizado_en",
+     "nombre": "Última modificación",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Cuándo cambió por última vez (dispara recalcular sus matches).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    }
+   ]
+  },
+  {
+   "id": "matches",
+   "nombre": "Match",
+   "grupo": "match",
+   "descripcion": "Cada pareja conductor–búsqueda que cumple los filtros y llega al umbral. Guarda cuánto coinciden y lo que cada lado decidió compartir. También es la conversación entre ambos. Los favoritos y el registro de entrega de datos van en tablas aparte.",
+   "para_que": "Match y venta: es lo que ve cada lado y lo que el plan del titular desbloquea.",
+   "estado": "decidido",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "ID",
+     "tipo": "id",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Número interno. No puede haber dos matches para el mismo conductor y la misma búsqueda.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "conductor_id",
+     "nombre": "Conductor",
+     "tipo": "referencia",
+     "referencia": "conductores",
+     "obligatorio": true,
+     "descripcion": "El conductor del match.",
+     "quien_ve": "El conductor, el titular con plan y el equipo",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "busqueda_id",
+     "nombre": "Búsqueda",
+     "tipo": "referencia",
+     "referencia": "busquedas",
+     "obligatorio": true,
+     "descripcion": "La búsqueda del titular con la que coincide.",
+     "quien_ve": "El conductor, el titular y el equipo",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "vigente",
+     "nombre": "Match vigente",
+     "tipo": "si_no",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Sí mientras se cumplan las condiciones previas, los filtros y el umbral. Si deja de cumplirse, se oculta pero no se borra (MD14). Lo escribe solo el cálculo del match; igual, las funciones que entregan datos revisan las condiciones en el momento (R7).",
+     "quien_ve": "Solo el equipo (la app lo usa para mostrar u ocultar)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "coinciden",
+     "nombre": "Variables que coinciden",
+     "tipo": "numero",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "La 'N' de 'Coincide N de M' (ej. 2). Lo escribe el cálculo.",
+     "quien_ve": "El conductor, el titular con plan y el equipo",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "total",
+     "nombre": "Variables evaluadas",
+     "tipo": "numero",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "La 'M' de 'Coincide N de M' (hoy 3: zona, años, estacionamiento).",
+     "quien_ve": "El conductor, el titular con plan y el equipo",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "porcentaje",
+     "nombre": "% de coincidencia",
+     "tipo": "numero",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Sirve para ordenar los resultados ('Ordenados por coincidencia').",
+     "quien_ve": "El titular con plan y el equipo",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "no_coinciden",
+     "nombre": "En qué no coinciden",
+     "tipo": "lista_multiple",
+     "referencia": "reglas_match",
+     "obligatorio": false,
+     "descripcion": "Las variables que fallaron, para mostrar '2 de 3 · sin estacionamiento' u 'otra zona'.",
+     "quien_ve": "El conductor, el titular con plan y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "creado_en",
+     "nombre": "Fecha del match",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Se muestra como 'Hicieron match · fecha'.",
+     "quien_ve": "El conductor, el titular y el equipo",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "calculado_en",
+     "nombre": "Último cálculo",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Cuándo se recalculó por última vez.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "contacto_titular_compartido_en",
+     "nombre": "Titular compartió su contacto el",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Cuándo el titular tocó 'Compartir' en la conversación con este conductor (la maqueta del titular dice 'teléfono y email'; MD16). Vacío = oculto. Antes se avisa que no se puede deshacer. Lo anota una función del servidor con su propia hora; queda además en 'Entrega de datos'.",
+     "quien_ve": "El conductor, el titular y el equipo",
+     "codigo": "P10",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "direccion_compartida_en",
+     "nombre": "Conductor compartió su dirección el",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Cuándo el conductor tocó 'Compartir mi dirección' en esta conversación: es su autorización para que este titular vea su dirección. Vacío = no la ve. Lo anota una función del servidor; queda además en 'Entrega de datos'.",
+     "quien_ve": "El conductor, el titular y el equipo",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
+    }
+   ]
+  },
+  {
+   "id": "favoritos",
+   "nombre": "Favorito",
+   "grupo": "match",
+   "descripcion": "Cada match que una persona marcó como favorito: el conductor marca búsquedas o titulares; el titular marca conductores dentro de una búsqueda. Cada uno ve solo los suyos.",
+   "para_que": "Venta: está decidido que los dos lados tienen favoritos; van en una tabla aparte para que ninguno vea los favoritos del otro.",
+   "estado": "decidido",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "ID",
+     "tipo": "id",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Número interno. No puede repetirse la misma persona con el mismo match.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "cuenta_id",
+     "nombre": "Quién lo marcó",
+     "tipo": "referencia",
+     "referencia": "cuentas",
+     "obligatorio": true,
+     "descripcion": "El conductor o el titular del match. Siempre la persona con la sesión abierta.",
+     "quien_ve": "Solo quien lo marcó",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "match_id",
+     "nombre": "Match",
+     "tipo": "referencia",
+     "referencia": "matches",
+     "obligatorio": true,
+     "descripcion": "El match marcado (pestaña 'Favoritos' de Mis matches o de Resultados).",
+     "quien_ve": "Solo quien lo marcó",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "creado_en",
+     "nombre": "Marcado el",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Cuándo lo marcó. Quitar el favorito borra la fila.",
+     "quien_ve": "Solo quien lo marcó",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    }
+   ]
+  },
+  {
+   "id": "entregas_datos",
+   "nombre": "Entrega de datos",
+   "grupo": "match",
+   "descripcion": "Registro, que nadie puede modificar y que no se borra con el match, de cada vez que los datos de una persona llegan a otra: la ficha y el contacto del conductor al titular, la dirección del conductor o el contacto del titular al conductor.",
+   "para_que": "Ley y confianza: alimenta 'Quién recibió mis datos' y prueba qué se entregó, a quién y cuándo, aunque después se borre el match o la cuenta de quien los recibió.",
+   "estado": "propuesta",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "ID",
+     "tipo": "id",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Número interno.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "match_id",
+     "nombre": "Match",
+     "tipo": "referencia",
+     "referencia": "matches",
+     "obligatorio": false,
+     "descripcion": "El match en que ocurrió. Si el match se borra, la fila se conserva.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "de_cuenta_id",
+     "nombre": "De quién son los datos",
+     "tipo": "referencia",
+     "referencia": "cuentas",
+     "obligatorio": true,
+     "descripcion": "La persona dueña de los datos entregados.",
+     "quien_ve": "La persona dueña de los datos y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "a_cuenta_id",
+     "nombre": "Quién los recibió",
+     "tipo": "referencia",
+     "referencia": "cuentas",
+     "obligatorio": false,
+     "descripcion": "La cuenta que recibió los datos. Queda vacía si esa cuenta se borra.",
+     "quien_ve": "La persona dueña de los datos y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "nombre_receptor",
+     "nombre": "Nombre de quien los recibió",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Nombre del titular o razón social (o del conductor) guardado en ese momento, para que 'Quién recibió mis datos' siga mostrando quién fue.",
+     "quien_ve": "La persona dueña de los datos y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "negocio_id",
+     "nombre": "Negocio de la búsqueda",
+     "tipo": "referencia",
+     "referencia": "negocios",
+     "obligatorio": false,
+     "descripcion": "Lo que muestra 'Quién recibió mis datos' junto al nombre y la fecha.",
+     "quien_ve": "La persona dueña de los datos y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "que_se_entrego",
+     "nombre": "Qué se entregó",
+     "tipo": "lista_multiple",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: Ficha; Teléfono; Correo; Dirección; Contacto del titular.",
+     "quien_ve": "La persona dueña de los datos y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "origen",
+     "nombre": "Desde dónde",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: Apertura de la ficha; Compartir en la conversación; Lista de resultados (solo si se decide registrarla, MD33).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "entregado_en",
+     "nombre": "Fecha",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "La pone el servidor. Es la fecha que ve el conductor en 'Quién recibió mis datos'.",
+     "quien_ve": "La persona dueña de los datos y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    }
+   ]
+  },
+  {
+   "id": "reglas_match",
+   "nombre": "Regla del match",
+   "grupo": "match",
+   "descripcion": "La lista de criterios del match (negocio, licencia, región, modo, zona, turno, años, garantía, estacionamiento, días de trabajo) y cómo cuenta cada uno: filtro obligatorio, variable del % con su peso, o apagado.",
+   "para_que": "Configuración: cambiar filtros, variables y pesos desde el panel sin reprogramar (decidido). El umbral está en Ajustes.",
+   "estado": "decidido",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "ID",
+     "tipo": "id",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Número interno.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "codigo",
+     "nombre": "Código",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "F1, F2, F3, M1 a M7 (M7 = días de trabajo, nuevo); las nuevas siguen la numeración.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "F1–F3, M1–M7",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "nombre",
+     "nombre": "Nombre",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Ej.: Negocio, Licencia, Región, Modo de contrato, Zona, Turno, Años de experiencia, Garantía, Estacionamiento, Días de trabajo.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "uso",
+     "nombre": "Cómo cuenta",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: Filtro obligatorio; Variable del %; Apagado. Hoy: filtros F1, F2, F3, M1 y M3; variables M2, M4 y M6; garantía (M5) apagada. Días de trabajo (M7): cómo cuenta está pendiente (MD30); mientras tanto, apagada (propuesta).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "P3, P4",
+     "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "peso",
+     "nombre": "Peso",
+     "tipo": "numero",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Cuánto vale dentro del %. Hoy 1 en todas. Solo aplica a las variables del %.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "campo_conductor_id",
+     "nombre": "Dato del conductor",
+     "tipo": "referencia",
+     "referencia": "campos_perfil",
+     "obligatorio": false,
+     "descripcion": "Solo para las formas de comparar genéricas ('al menos uno en común', 'si se exige, debe tenerlo') y los campos nuevos creados en el panel (ej. 'turnos'). Las formas ya programadas (F1, F2, F3, M2, M4) saben solas qué datos usan.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "campo_busqueda_id",
+     "nombre": "Dato de la búsqueda",
+     "tipo": "referencia",
+     "referencia": "campos_perfil",
+     "obligatorio": false,
+     "descripcion": "Con qué dato de la búsqueda se compara, en las mismas formas genéricas.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "comparacion",
+     "nombre": "Forma de comparar",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones ya programadas: El negocio de la búsqueda está entre los del conductor (F1); Alguna clase de licencia revisada habilita el negocio (F2); Misma región (F3); Al menos uno en común (M1, M3); Misma zona (M2); Años iguales o mayores al mínimo (M4, forma pendiente); Si se exige, debe tenerlo (M6); Días: todos los de la búsqueda, o al menos uno en común (M7, pendiente). F1, F2, F3, M2 y M4 usan datos fijos (clases revisadas, región y zona de la comuna, experiencia por tamaño). Una forma nueva requiere programar.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "texto_si_falla",
+     "nombre": "Texto cuando no coincide",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Lo que se muestra en el resultado, ej. 'sin estacionamiento', 'otra zona'.",
+     "quien_ve": "El conductor y el titular (en el resultado del match)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "orden",
+     "nombre": "Orden",
+     "tipo": "numero",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Orden en el panel y en la ficha.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "actualizado_por",
+     "nombre": "Último cambio hecho por",
+     "tipo": "referencia",
+     "referencia": "cuentas",
+     "obligatorio": false,
+     "descripcion": "Persona del equipo que hizo el último cambio (el historial completo queda en 'Acción del equipo').",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "actualizado_en",
+     "nombre": "Último cambio el",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Cuándo se cambió por última vez.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    }
+   ]
+  },
+  {
+   "id": "identidades",
+   "nombre": "Identidad verificada",
+   "grupo": "documentos",
+   "descripcion": "El RUN de cada persona, leído de la foto de su cédula al verificarla y confirmado por una persona del equipo. Va aparte para que solo el equipo pueda verlo.",
+   "para_que": "Verificación: une la cuenta a una cédula real y evita cuentas duplicadas (decidido: el RUN no se pide en el formulario).",
+   "estado": "decidido",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "Cuenta",
+     "tipo": "referencia",
+     "referencia": "cuentas",
+     "obligatorio": true,
+     "descripcion": "Es el mismo identificador de la cuenta: una identidad por cuenta.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "run",
+     "nombre": "RUN",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Lo lee el sistema automático de la cédula y lo confirma una persona del equipo. Único por rol (C2 y T3 aprobados): no puede haber dos conductores ni dos titulares con el mismo RUN. Si ya existe, la cédula va a la cola del equipo con el motivo 'RUN ya registrado en otra cuenta'.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "C2, T3",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "documento_id",
+     "nombre": "Cédula de origen",
+     "tipo": "referencia",
+     "referencia": "documentos",
+     "obligatorio": true,
+     "descripcion": "La cédula de la que se leyó el RUN.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "D1",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "confirmado_por",
+     "nombre": "Confirmado por",
+     "tipo": "referencia",
+     "referencia": "cuentas",
+     "obligatorio": true,
+     "descripcion": "Persona del equipo que comparó el RUN leído con la foto. Propuesta: siempre una persona, aunque el resto de la cédula lo apruebe el sistema (MD37).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "confirmado_en",
+     "nombre": "Confirmado el",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "La pone el servidor.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    }
+   ]
+  },
+  {
+   "id": "tipos_documento",
+   "nombre": "Tipo de documento",
+   "grupo": "documentos",
+   "descripcion": "Los documentos que se piden y sus reglas: cédula, licencia, Hoja de Vida y certificado de antecedentes del conductor; cédula del titular y RUT de la empresa en el SII (este último sin archivo).",
+   "para_que": "Ley y venta: define qué se verifica, con qué plazos y qué se guarda; los documentos exigidos se cambian desde el panel.",
+   "estado": "decidido",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "ID",
+     "tipo": "id",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Número interno.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "nombre",
+     "nombre": "Nombre",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Ej.: Cédula de identidad; Licencia de conducir; Hoja de Vida del Conductor; Certificado de antecedentes para fines especiales; Cédula del titular; RUT de la empresa en el SII.",
+     "quien_ve": "Todos",
+     "codigo": "D1–D5, C16–C19, T18, T19",
+     "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "para_quien",
+     "nombre": "Para quién",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: Conductor, Titular, Titular empresa.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "obligatorio",
+     "nombre": "Obligatorio",
+     "tipo": "si_no",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Conductor: los 4 son obligatorios y sin ellos aprobados y vigentes no entra al match (decidido). Titular: por decidir (P12, MD22).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "P12",
+     "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "formato",
+     "nombre": "Formato",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: Foto; PDF tal como se descargó; Sin archivo (el equipo lo revisa en línea, como el RUT en el SII).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "instrucciones",
+     "nombre": "Instrucciones para la persona",
+     "tipo": "texto_largo",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Texto guía: qué lado fotografiar ('Foto del frente', 'Foto donde se vean las clases'), cómo obtenerlo gratis con ClaveÚnica, cuántos días de antigüedad se aceptan.",
+     "quien_ve": "La persona que lo sube",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "enlace_obtener",
+     "nombre": "Enlace para obtenerlo",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Enlace que se muestra como botón en 'Tus documentos' para conseguir el documento. Por ahora, la portada del Registro Civil para la Hoja de Vida y el Certificado de antecedentes ('¿Te falta la Hoja de Vida o el certificado de antecedentes? Pídelos en línea con tu ClaveÚnica'). Los enlaces directos están por verificar.",
+     "quien_ve": "Todos",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "antiguedad_maxima_dias",
+     "nombre": "Antigüedad máxima al subirlo (días)",
+     "tipo": "numero",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Hoja de Vida y antecedentes: PDF emitido hace N días o menos (propuesta 30; el verificador del Registro Civil funciona hasta 60). Vacío = no aplica.",
+     "quien_ve": "La persona y el equipo",
+     "codigo": "P16",
+     "estado": "pendiente",
+     "configurable": true
+    },
+    {
+     "id": "renovar_cada_meses",
+     "nombre": "Renovar cada (meses)",
+     "tipo": "numero",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Cada cuánto se vuelve a pedir (Hoja de Vida y antecedentes; en pausa, MD18). Vacío = vence según la fecha del propio documento (cédula, licencia).",
+     "quien_ve": "La persona y el equipo",
+     "codigo": "",
+     "estado": "pendiente",
+     "configurable": true
+    },
+    {
+     "id": "negocios",
+     "nombre": "Exigido solo para estos negocios",
+     "tipo": "lista_multiple",
+     "referencia": "negocios",
+     "obligatorio": false,
+     "descripcion": "Vacío = para todos (como está decidido hoy). Permitiría exigir un documento solo donde la ley lo pide (tema en pausa, MD19).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "P15",
+     "estado": "pendiente",
+     "configurable": true
+    },
+    {
+     "id": "revision_automatica",
+     "nombre": "Pre-revisión automática",
+     "tipo": "si_no",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Si un agente de IA lo pre-revisa y puede aprobar solo los casos claros. Rechazar lo decide siempre una persona. En la cédula, el RUN lo confirma siempre una persona (propuesta, MD37).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "P8",
+     "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "permite_detalle_libre",
+     "nombre": "Permite escribir un detalle libre",
+     "tipo": "si_no",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "No en Hoja de Vida, antecedentes y licencia: el motivo se elige de la lista y el texto para la persona sale de 'Qué puedes hacer' del motivo, para que nadie escriba anotaciones, condenas ni datos de salud.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "texto_insignia",
+     "nombre": "Texto de la insignia",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Lo único que ve la contraparte, ej. 'Cédula revisada', 'Licencia A2 · B revisada', 'Empresa revisada en SII'. Vacío = sin insignia propia. Las de Hoja de Vida y antecedentes podrían comunicar datos de infracciones [verificar con abogado, P1] (MD35).",
+     "quien_ve": "Todos",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "dias_borrar_archivo",
+     "nombre": "Días para borrar el archivo tras decidir",
+     "tipo": "numero",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Puede ser distinto por documento. Plazo del abogado (P1, MD20).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "P16",
+     "estado": "pendiente",
+     "configurable": true
+    },
+    {
+     "id": "meses_conservar_historial",
+     "nombre": "Meses para conservar documentos reemplazados o no aprobados",
+     "tipo": "numero",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Cuánto se guardan las filas (ya sin archivo) de documentos reemplazados o no aprobados antes de borrarlas. Valor con el abogado (MD38).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "pendiente",
+     "configurable": true
+    },
+    {
+     "id": "orden",
+     "nombre": "Orden",
+     "tipo": "numero",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Orden en 'Tus documentos' (Documento 1 de 4…).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "activo",
+     "nombre": "Activo",
+     "tipo": "si_no",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Desactivar en vez de borrar.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    }
+   ]
+  },
+  {
+   "id": "documentos",
+   "nombre": "Documento subido",
+   "grupo": "documentos",
+   "descripcion": "Cada documento que sube una persona y su estado actual. El archivo se borra después de decidir; quedan solo el estado, las fechas y el motivo. El detalle de cada revisión está en 'Revisión de documento'.",
+   "para_que": "Venta y ley: las insignias 'revisado' son lo que se vende, y queda registro de cada decisión (revisión con IA + persona).",
+   "estado": "decidido",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "ID",
+     "tipo": "id",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Número interno. Cada nueva subida es una fila nueva; las anteriores se borran según 'meses para conservar' del tipo de documento.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "cuenta_id",
+     "nombre": "Dueño del documento",
+     "tipo": "referencia",
+     "referencia": "cuentas",
+     "obligatorio": true,
+     "descripcion": "El conductor o titular que lo subió. Siempre la persona con la sesión abierta.",
+     "quien_ve": "La persona y el equipo",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "tipo_documento_id",
+     "nombre": "Tipo de documento",
+     "tipo": "referencia",
+     "referencia": "tipos_documento",
+     "obligatorio": true,
+     "descripcion": "Cédula, licencia, Hoja de Vida, antecedentes, etc.",
+     "quien_ve": "La persona y el equipo",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "archivo",
+     "nombre": "Archivo",
+     "tipo": "archivo",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Foto o PDF en un espacio privado; el equipo lo abre solo con enlaces que duran pocos minutos y cada apertura queda en 'Acción del equipo'. Se borra tras la decisión, al reemplazarse, o si nunca se envió a revisión (R14). Vacío en documentos sin archivo (RUT en el SII).",
+     "quien_ve": "Solo el equipo de revisión y el sistema automático. Nunca la contraparte",
+     "codigo": "C16–C19, T18, P1",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "estado",
+     "nombre": "Estado",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: Subido (aún no enviado a revisión); En revisión automática; En revisión del equipo; Aprobado; No aprobado; Vencido; Reemplazado. 'Vence pronto' se calcula con la fecha de vencimiento. Lo cambian solo la revisión y el sistema: la persona solo sube y envía.",
+     "quien_ve": "La persona y el equipo; la contraparte solo ve la insignia si está aprobado",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "subido_en",
+     "nombre": "Subido el",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "La pone el servidor.",
+     "quien_ve": "La persona y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "enviado_en",
+     "nombre": "Enviado a revisión el",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Cuándo tocó 'Enviar a revisión'. Ordena la cola por antigüedad. Si queda vacío, el archivo se borra tras el plazo de Ajustes (con aviso previo).",
+     "quien_ve": "La persona y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "emitido_en",
+     "nombre": "Fecha de emisión",
+     "tipo": "fecha",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "La anota la revisión. Para revisar que el PDF tenga N días o menos.",
+     "quien_ve": "La persona y el equipo",
+     "codigo": "P16",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "vence_en",
+     "nombre": "Vence el",
+     "tipo": "fecha",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Vencimiento de la cédula, próximo control de la licencia o fecha de renovación (Hoja de Vida, antecedentes). La anota la revisión. El titular no lo ve: un control más corto de lo normal podría dejar ver un dato de salud.",
+     "quien_ve": "La persona y el equipo",
+     "codigo": "D1, D2",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "aprobado_automaticamente",
+     "nombre": "Aprobado sin intervención de una persona",
+     "tipo": "si_no",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Sí si lo aprobó solo el sistema automático. Lo escribe el sistema; sirve para explicar la decisión si la persona lo pide (decisiones automatizadas).",
+     "quien_ve": "La persona y el equipo",
+     "codigo": "P8",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "revisado_en",
+     "nombre": "Fecha de la decisión",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Fecha de la decisión vigente. Es la fecha de la insignia ('revisada el dd/mm/aaaa').",
+     "quien_ve": "La persona, el equipo y la contraparte (en la insignia)",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "motivo_rechazo_id",
+     "nombre": "Motivo de rechazo",
+     "tipo": "referencia",
+     "referencia": "opciones",
+     "obligatorio": false,
+     "descripcion": "Lista 'motivo de rechazo': Ilegible; El nombre o el RUN no coinciden; Vencido o emitido fuera de plazo; No es el documento pedido; Folio no verificable; RUN ya registrado en otra cuenta; Otro. Criterios de fondo de Hoja de Vida y antecedentes: en pausa.",
+     "quien_ve": "La persona y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "motivo_rechazo_detalle",
+     "nombre": "Detalle para la persona",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Lo que ve en 'No aprobado · Motivo', ej. 'la foto no se lee bien'. Solo si el tipo de documento permite detalle libre; si no, se muestra el texto 'Qué puedes hacer' del motivo.",
+     "quien_ve": "La persona y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "otra_revision_pedida_en",
+     "nombre": "Pidió otra revisión el",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Cuando la persona no está de acuerdo ('No estoy de acuerdo: pedir otra revisión'); vuelve a la cola y la decide otra persona del equipo.",
+     "quien_ve": "La persona y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "archivo_borrado_en",
+     "nombre": "Archivo borrado el",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Cuándo se borró el archivo. Las copias de respaldo se borran en su propio plazo (se informa en la Política de privacidad).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "P1",
+     "estado": "propuesta",
+     "configurable": false
+    }
+   ]
+  },
+  {
+   "id": "revisiones_documento",
+   "nombre": "Revisión de documento",
+   "grupo": "documentos",
+   "descripcion": "Cada revisión de cada documento, en orden: la pre-revisión automática, la decisión de una persona y, si se pide, la segunda revisión. Nunca se sobrescribe ni se modifica.",
+   "para_que": "Ley: prueba que la revisión humana es real y permite explicar una decisión automatizada si la persona lo pide (art. 8° bis, Ley 21.719) [verificar con abogado].",
+   "estado": "propuesta",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "ID",
+     "tipo": "id",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Número interno.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "documento_id",
+     "nombre": "Documento",
+     "tipo": "referencia",
+     "referencia": "documentos",
+     "obligatorio": true,
+     "descripcion": "El documento revisado.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "etapa",
+     "nombre": "Etapa",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: Pre-revisión automática; Revisión de una persona; Segunda revisión (la hace otra persona del equipo).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "P8",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "resultado",
+     "nombre": "Resultado",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: Aprobar; Tiene dudas (solo en la pre-revisión automática); No aprobar. La IA solo propone; si no es 'Aprobar' con todo claro, decide una persona.",
+     "quien_ve": "Solo el equipo (a la persona se le informa que hubo pre-revisión)",
+     "codigo": "P8",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "motivo_id",
+     "nombre": "Motivo",
+     "tipo": "referencia",
+     "referencia": "opciones",
+     "obligatorio": false,
+     "descripcion": "Código de la lista 'motivo de rechazo'. El sistema automático responde solo con estos códigos, nunca con texto copiado del documento.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "detalle",
+     "nombre": "Nota interna",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Nota corta, solo en documentos que permiten detalle libre. Nunca anotaciones, condenas, restricciones ni datos de salud.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "revisor_id",
+     "nombre": "Revisado por",
+     "tipo": "referencia",
+     "referencia": "cuentas",
+     "obligatorio": false,
+     "descripcion": "Persona del equipo. Vacío solo en la pre-revisión automática; obligatorio en todo 'No aprobar'.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "P8",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "version_sistema",
+     "nombre": "Versión del sistema automático",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Qué modelo e instrucciones hicieron la pre-revisión, para poder explicarla después.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "comprobado_registro_civil",
+     "nombre": "Comprobado en el Registro Civil",
+     "tipo": "si_no",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Si se comprobó la autenticidad del PDF en el verificador del Registro Civil (folio o código) [verificar].",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "creado_en",
+     "nombre": "Fecha",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "La pone el servidor.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    }
+   ]
+  },
+  {
+   "id": "mensajes",
+   "nombre": "Mensaje",
+   "grupo": "mensajes",
+   "descripcion": "Los mensajes privados entre un conductor y un titular dentro de un match. La conversación es el propio match.",
+   "para_que": "Venta: conversar un poco antes de pasar al contacto fuera de la app (decidido).",
+   "estado": "decidido",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "ID",
+     "tipo": "id",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Número interno.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "match_id",
+     "nombre": "Conversación (match)",
+     "tipo": "referencia",
+     "referencia": "matches",
+     "obligatorio": true,
+     "descripcion": "El match al que pertenece el mensaje.",
+     "quien_ve": "El conductor y el titular de ese match",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "autor_id",
+     "nombre": "Escrito por",
+     "tipo": "referencia",
+     "referencia": "cuentas",
+     "obligatorio": true,
+     "descripcion": "Quién lo envió (conductor o titular). Siempre la persona con la sesión abierta.",
+     "quien_ve": "El conductor y el titular de ese match",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "texto",
+     "nombre": "Texto",
+     "tipo": "texto_largo",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Solo texto, sin fotos ni archivos adjuntos (para que no circulen documentos).",
+     "quien_ve": "El conductor y el titular de ese match; el equipo solo si la conversación fue reportada",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "estado",
+     "nombre": "Estado",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: Visible; Retenido por el filtro automático (Apple exige filtrar contenido objetable); Ocultado por el equipo tras un reporte. Solo lo cambian el filtro y el equipo.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "enviado_en",
+     "nombre": "Enviado el",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "La pone el servidor ([hh:mm] en la lista de mensajes).",
+     "quien_ve": "El conductor y el titular de ese match",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "leido_en",
+     "nombre": "Leído el",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Para mostrar 'Leído' y el número de mensajes nuevos.",
+     "quien_ve": "El conductor y el titular de ese match",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    }
+   ]
+  },
+  {
+   "id": "reportes",
+   "nombre": "Reporte",
+   "grupo": "mensajes",
+   "descripcion": "Los reportes de una conversación o de una persona (spam, acoso, pide dinero, oferta falsa, otro) y cómo los resolvió el equipo.",
+   "para_que": "Tiendas: Apple (guía 1.2) y Google Play exigen poder reportar y atender los reportes a tiempo.",
+   "estado": "propuesta",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "ID",
+     "tipo": "id",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Número interno.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "match_id",
+     "nombre": "Conversación reportada",
+     "tipo": "referencia",
+     "referencia": "matches",
+     "obligatorio": false,
+     "descripcion": "El match cuya conversación se reporta. Solo esa conversación la puede leer el equipo, y cada lectura queda en 'Acción del equipo'.",
+     "quien_ve": "Quien reporta y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "reporta_id",
+     "nombre": "Quién reporta",
+     "tipo": "referencia",
+     "referencia": "cuentas",
+     "obligatorio": true,
+     "descripcion": "La persona que hizo el reporte. Siempre la persona con la sesión abierta.",
+     "quien_ve": "Solo el equipo (el reportado no sabe quién lo reportó)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "reportado_id",
+     "nombre": "Persona reportada",
+     "tipo": "referencia",
+     "referencia": "cuentas",
+     "obligatorio": true,
+     "descripcion": "La persona contra quien es el reporte.",
+     "quien_ve": "Quien reporta y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "motivo_id",
+     "nombre": "Motivo",
+     "tipo": "referencia",
+     "referencia": "opciones",
+     "obligatorio": true,
+     "descripcion": "Lista 'motivo de reporte': Spam o publicidad; Ofensivo o acoso; Pide dinero o datos bancarios; La oferta parece falsa; Otro motivo.",
+     "quien_ve": "Quien reporta y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "detalle",
+     "nombre": "Detalle",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Lo que quiera agregar quien reporta.",
+     "quien_ve": "Quien reporta y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "estado",
+     "nombre": "Estado",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: Abierto o Resuelto. Mientras esté abierto, la conversación no se borra por plazo.",
+     "quien_ve": "Quien reporta y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "resolucion",
+     "nombre": "Qué se hizo",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Ej.: sin acción, mensaje ocultado, cuenta suspendida.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "resuelto_por",
+     "nombre": "Resuelto por",
+     "tipo": "referencia",
+     "referencia": "cuentas",
+     "obligatorio": false,
+     "descripcion": "Persona del equipo que lo resolvió.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "creado_en",
+     "nombre": "Reportado el",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "La pone el servidor. Sirve para medir el tiempo de respuesta.",
+     "quien_ve": "Quien reporta y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "resuelto_en",
+     "nombre": "Resuelto el",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Cuándo se cerró.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    }
+   ]
+  },
+  {
+   "id": "bloqueos",
+   "nombre": "Bloqueo",
+   "grupo": "mensajes",
+   "descripcion": "Quién bloqueó a quién. Quien es bloqueado no puede escribir y deja de aparecer en los matches de quien lo bloqueó.",
+   "para_que": "Tiendas: bloquear usuarios es obligatorio en apps con mensajes entre personas.",
+   "estado": "propuesta",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "ID",
+     "tipo": "id",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Número interno. No puede repetirse la misma pareja.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "bloquea_id",
+     "nombre": "Quién bloquea",
+     "tipo": "referencia",
+     "referencia": "cuentas",
+     "obligatorio": true,
+     "descripcion": "La persona que bloqueó (lo ve en 'Conversaciones bloqueadas' y puede desbloquear). Siempre la persona con la sesión abierta.",
+     "quien_ve": "Quien bloquea y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "bloqueado_id",
+     "nombre": "Persona bloqueada",
+     "tipo": "referencia",
+     "referencia": "cuentas",
+     "obligatorio": true,
+     "descripcion": "La persona bloqueada (en todas sus búsquedas, si es titular; MD15). No se le avisa.",
+     "quien_ve": "Quien bloquea y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "creado_en",
+     "nombre": "Bloqueado el",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "La pone el servidor.",
+     "quien_ve": "Quien bloquea y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    }
+   ]
+  },
+  {
+   "id": "planes",
+   "nombre": "Plan",
+   "grupo": "cobro",
+   "descripcion": "Los planes de suscripción mensual del titular y cuántas búsquedas activas incluye cada uno.",
+   "para_que": "Venta: es lo que paga el titular (decidido: Básico 1, Flota chica 5, Flota 20; precios por definir).",
+   "estado": "decidido",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "ID",
+     "tipo": "id",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Número interno.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "nombre",
+     "nombre": "Nombre del plan",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Básico, Flota chica, Flota.",
+     "quien_ve": "Todos",
+     "codigo": "P13",
+     "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "busquedas_activas_max",
+     "nombre": "Búsquedas activas incluidas",
+     "tipo": "numero",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "1, 5 y 20 respectivamente.",
+     "quien_ve": "Todos",
+     "codigo": "P13",
+     "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "precio_mensual",
+     "nombre": "Precio mensual (CLP)",
+     "tipo": "numero",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Por definir. En Apple y Google el precio se fija también en cada tienda.",
+     "quien_ve": "Todos",
+     "codigo": "P13, P14",
+     "estado": "pendiente",
+     "configurable": true
+    },
+    {
+     "id": "recomendado",
+     "nombre": "Marcar como recomendado",
+     "tipo": "si_no",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Muestra la etiqueta 'Recomendado' en la pantalla de planes.",
+     "quien_ve": "Todos",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "codigo_app_store",
+     "nombre": "Código del producto en App Store",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Para conectar la compra dentro de la app en iPhone.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "P14",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "codigo_google_play",
+     "nombre": "Código del producto en Google Play",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Para conectar la compra dentro de la app en Android.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "P14",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "orden",
+     "nombre": "Orden",
+     "tipo": "numero",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Orden en la pantalla de planes.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "activo",
+     "nombre": "Disponible para comprar",
+     "tipo": "si_no",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Desactivar en vez de borrar (quien ya lo tiene lo conserva).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    }
+   ]
+  },
+  {
+   "id": "suscripciones",
+   "nombre": "Suscripción",
+   "grupo": "cobro",
+   "descripcion": "La suscripción de cada titular: qué plan tiene, por dónde pagó y hasta cuándo está pagada. Se escribe solo con avisos verificados de App Store, Google Play o la pasarela web.",
+   "para_que": "Venta: decide si el titular ve fichas y contactos o solo el adelanto anónimo.",
+   "estado": "decidido",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "ID",
+     "tipo": "id",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Número interno.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "titular_id",
+     "nombre": "Titular",
+     "tipo": "referencia",
+     "referencia": "titulares",
+     "obligatorio": true,
+     "descripcion": "Quién paga.",
+     "quien_ve": "El titular y el equipo",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "plan_id",
+     "nombre": "Plan",
+     "tipo": "referencia",
+     "referencia": "planes",
+     "obligatorio": true,
+     "descripcion": "Qué plan compró.",
+     "quien_ve": "El titular y el equipo",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "canal",
+     "nombre": "Dónde pagó",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: App Store, Google Play, Pago web (decidido: dentro y fuera de la app).",
+     "quien_ve": "El titular y el equipo",
+     "codigo": "P14",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "estado",
+     "nombre": "Estado",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: Activa; Cancelada (sigue vigente hasta fin de mes); Vencida; Problema con el pago. Lo escribe solo el sistema.",
+     "quien_ve": "El titular y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "inicio_en",
+     "nombre": "Inicio",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Cuándo empezó.",
+     "quien_ve": "El titular y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "vence_en",
+     "nombre": "Pagada hasta",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Da acceso a fichas y contactos mientras esta fecha no haya pasado. Se actualiza en cada renovación mensual; solo la escribe el sistema.",
+     "quien_ve": "El titular y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "codigo_compra",
+     "nombre": "Código de la compra",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Identificador que entrega la tienda o la pasarela web, para cuadrar los pagos. El comprobante se envía al correo de la cuenta.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "creado_en",
+     "nombre": "Creada el",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Cuándo se registró.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "actualizado_en",
+     "nombre": "Última actualización",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Último aviso recibido de la tienda o de la pasarela.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    }
+   ]
+  },
+  {
+   "id": "listas",
+   "nombre": "Lista de opciones",
+   "grupo": "configuracion",
+   "descripcion": "Las listas simples que usa la app: modo de contrato, turno, día de la semana, tramo de garantía, motivo de rechazo y motivo de reporte. Cada opción pertenece a una de estas listas.",
+   "para_que": "Configuración sin errores: evita que un error de tipeo cree una lista nueva y que se guarde, por ejemplo, un turno como modo de contrato.",
+   "estado": "propuesta",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "ID",
+     "tipo": "id",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Número interno.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "clave",
+     "nombre": "Nombre interno",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Nombre fijo que usa el sistema: modo_contrato, turno, dia_semana, tramo_garantia, motivo_rechazo, motivo_reporte. Las listas de campos nuevos creados en el panel tienen su propio nombre interno.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "nombre",
+     "nombre": "Nombre visible",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Cómo se ve en el panel, ej. 'Días de la semana'.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    }
+   ]
+  },
+  {
+   "id": "opciones",
+   "nombre": "Opción de lista",
+   "grupo": "configuracion",
+   "descripcion": "Las opciones de las listas simples que se eligen en la app: modos de contrato, turnos (Día, Noche), días de la semana, tramos de garantía, motivos de rechazo y motivos de reporte. Una sola tabla para todas.",
+   "para_que": "Configuración: agregar, renombrar u ocultar opciones desde el panel sin reprogramar (ej. un nuevo modo de contrato o 'Festivos').",
+   "estado": "decidido",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "ID",
+     "tipo": "id",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Número interno.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "lista_id",
+     "nombre": "Lista a la que pertenece",
+     "tipo": "referencia",
+     "referencia": "listas",
+     "obligatorio": true,
+     "descripcion": "Ej.: modo de contrato, turno, día de la semana. La base revisa que cada opción guardada en un perfil o búsqueda sea de la lista que corresponde a ese campo.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "nombre",
+     "nombre": "Texto de la opción",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Lo que se muestra, ej. 'Arriendo fijo', 'Noche', 'Miércoles', 'La foto no se lee bien'.",
+     "quien_ve": "Todos",
+     "codigo": "C11, C12, C13, T13, T14",
+     "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "nombre_corto",
+     "nombre": "Texto corto",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Opcional, para botones chicos, ej. 'Lu' para Lunes en el Paso 4.",
+     "quien_ve": "Todos",
+     "codigo": "C12",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "descripcion",
+     "nombre": "Explicación",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "La definición de cada modo de contrato (texto por definir, P9) o, en un motivo de rechazo, 'Qué puedes hacer' (ej. 'Sube una foto nueva, con buena luz y sin reflejos').",
+     "quien_ve": "Todos",
+     "codigo": "P9",
+     "estado": "pendiente",
+     "configurable": true
+    },
+    {
+     "id": "valor",
+     "nombre": "Valor en pesos",
+     "tipo": "numero",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Solo para los tramos de garantía: el tope del tramo (ej. 150000).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "C13",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "orden",
+     "nombre": "Orden",
+     "tipo": "numero",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Orden en que aparece en la app y en el panel (los días, de lunes a domingo).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "activa",
+     "nombre": "Visible en la app",
+     "tipo": "si_no",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Se oculta en vez de borrarse, para no romper perfiles o búsquedas que ya la usan.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    }
+   ]
+  },
+  {
+   "id": "clases_licencia",
+   "nombre": "Clase de licencia",
+   "grupo": "configuracion",
+   "descripcion": "Las clases de licencia de Chile: A1, A2, A3, A4, A5, B, C, D y las antiguas A1 y A2 (antes de 1997).",
+   "para_que": "Ley y match: la Ley 18.290 fija qué clase exige cada vehículo; de aquí salen las casillas del Paso 1 y el filtro de licencia (F2).",
+   "estado": "decidido",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "ID",
+     "tipo": "id",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Número interno.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "codigo",
+     "nombre": "Código",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Lo que se ve en la casilla, ej. 'A2', 'B', 'A1 antigua'.",
+     "quien_ve": "Todos",
+     "codigo": "C7",
+     "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "nombre",
+     "nombre": "Nombre completo",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Ej. 'A1 antigua (antes de 1997)'.",
+     "quien_ve": "Todos",
+     "codigo": "C7",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "es_antigua",
+     "nombre": "Es antigua",
+     "tipo": "si_no",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Las clases antiguas (antes de 1997) se asignan a negocios de forma provisional [verificar].",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "orden",
+     "nombre": "Orden",
+     "tipo": "numero",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Orden en que aparece en la app y en el panel.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "activa",
+     "nombre": "Visible en la app",
+     "tipo": "si_no",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Se oculta en vez de borrarse, para no romper perfiles que ya la usan.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    }
+   ]
+  },
+  {
+   "id": "negocios",
+   "nombre": "Negocio",
+   "grupo": "configuracion",
+   "descripcion": "El catálogo de negocios en que el conductor quiere trabajar y que elige cada búsqueda: Taxi, Radiotaxi ejecutivo, Transporte por aplicación, Van o bus de turismo, Bus interurbano, Camión de carga interurbano, Camión de carga urbano (por confirmar), Moto delivery. Cada negocio dice qué clases de licencia lo habilitan.",
+   "para_que": "Match y ley: reemplaza a 'tipos de vehículo' en los filtros de negocio (F1) y de licencia (F2); la licencia exigida de cada búsqueda sale de aquí.",
+   "estado": "decidido",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "ID",
+     "tipo": "id",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Número interno.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "nombre",
+     "nombre": "Nombre",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Ej.: Taxi; Transporte por aplicación (antes 'Uber u otra app'); Van o bus de turismo; Moto delivery. Sin marcas en el nombre. El catálogo puede crecer (hay propuestas en revisión).",
+     "quien_ve": "Todos",
+     "codigo": "C8, T8",
+     "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "ejemplo",
+     "nombre": "Ejemplo",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Texto en gris entre paréntesis junto al nombre en el Paso 4 y en 'Nueva búsqueda', ej. '(traslados al aeropuerto, empresas)', '(Uber, Cabify)', '(tours, traslados, eventos)', '(entre ciudades)', '(reparto dentro de la ciudad)', '(PedidosYa, Rappi)'. Taxi no lleva. Uso de marcas de terceros: MD4.",
+     "quien_ve": "Todos",
+     "codigo": "C8",
+     "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "clases_habilitantes",
+     "nombre": "Clases de licencia que lo habilitan",
+     "tipo": "lista_multiple",
+     "referencia": "clases_licencia",
+     "obligatorio": true,
+     "descripcion": "Ej.: Taxi: A1, A2, A3 y A1 antigua (provisional); Transporte por aplicación: hoy B. Valores iniciales por confirmar (MD3); se corrigen en el panel cuando cambie la ley (Ley 21.553) [verificar]. La usa el filtro F2 con las clases revisadas.",
+     "quien_ve": "Todos (como 'Licencia exigida')",
+     "codigo": "T9, F2",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "tamanos_relacionados",
+     "nombre": "Tamaños de vehículo relacionados",
+     "tipo": "lista_multiple",
+     "referencia": "tamanos_vehiculo",
+     "obligatorio": false,
+     "descripcion": "Propuesta para la variable años (M4): qué tamaños cuentan como experiencia para este negocio (ej. Taxi → Auto). Pendiente de la dueña (MD1).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "M4",
+     "estado": "pendiente",
+     "configurable": true
+    },
+    {
+     "id": "nota",
+     "nombre": "Nota",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Fundamento o advertencia, ej. 'licencias antiguas: provisional'.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "orden",
+     "nombre": "Orden",
+     "tipo": "numero",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Orden en el Paso 4 y en 'Nueva búsqueda'.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "activo",
+     "nombre": "Visible en la app",
+     "tipo": "si_no",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Se oculta en vez de borrarse, para no romper perfiles o búsquedas que ya lo usan. El Paso 4 muestra todos los activos.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    }
+   ]
+  },
+  {
+   "id": "tamanos_vehiculo",
+   "nombre": "Tamaño de vehículo",
+   "grupo": "configuracion",
+   "descripcion": "El catálogo de tamaños de vehículo con que se mide la experiencia del conductor: Auto, Camioneta, Van, Camión 3/4, Grúa de autos, Moto, Bus, Camión pesado.",
+   "para_que": "Venta y match: es la base del Paso 3 ('¿Qué vehículos has manejado?').",
+   "estado": "decidido",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "ID",
+     "tipo": "id",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Número interno.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "nombre",
+     "nombre": "Nombre",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Ej.: Auto; Van; Grúa de autos; Camión pesado (nombre por confirmar, MD4). El catálogo puede crecer (hay propuestas en revisión).",
+     "quien_ve": "Todos",
+     "codigo": "C9",
+     "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "orden",
+     "nombre": "Orden",
+     "tipo": "numero",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Orden en el Paso 3.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "activo",
+     "nombre": "Visible en la app",
+     "tipo": "si_no",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Se oculta en vez de borrarse, para no romper la experiencia ya guardada.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    }
+   ]
+  },
+  {
+   "id": "regiones",
+   "nombre": "Región",
+   "grupo": "configuracion",
+   "descripcion": "Las 16 regiones de Chile.",
+   "para_que": "Match: misma región es filtro obligatorio (F3).",
+   "estado": "decidido",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "Código oficial",
+     "tipo": "id",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Código territorial oficial de la región.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "nombre",
+     "nombre": "Nombre",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Ej. 'Metropolitana de Santiago'.",
+     "quien_ve": "Todos",
+     "codigo": "F3",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "orden",
+     "nombre": "Orden",
+     "tipo": "numero",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "De norte a sur.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    }
+   ]
+  },
+  {
+   "id": "zonas",
+   "nombre": "Zona",
+   "grupo": "configuracion",
+   "descripcion": "Grupos de comunas cercanas dentro de una región (ej. en la RM: Oriente, Poniente, Sur, Norte). Carga inicial: las 81 zonas de la propuesta (en revisión).",
+   "para_que": "Match: la variable zona (M2) compara zonas, no comunas exactas (decidido).",
+   "estado": "decidido",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "ID",
+     "tipo": "id",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Número interno.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "region_id",
+     "nombre": "Región",
+     "tipo": "referencia",
+     "referencia": "regiones",
+     "obligatorio": true,
+     "descripcion": "Una zona nunca cruza regiones.",
+     "quien_ve": "Todos",
+     "codigo": "F3",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "nombre",
+     "nombre": "Nombre de la zona",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Ej.: Zona Oriente, Gran Concepción. Se muestra junto a la comuna ('[Comuna] · Zona [Zona]').",
+     "quien_ve": "Todos",
+     "codigo": "M2, P6",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "orden",
+     "nombre": "Orden",
+     "tipo": "numero",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Orden dentro de la región.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "activa",
+     "nombre": "Activa",
+     "tipo": "si_no",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Desactivar en vez de borrar.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    }
+   ]
+  },
+  {
+   "id": "comunas",
+   "nombre": "Comuna",
+   "grupo": "configuracion",
+   "descripcion": "Las 346 comunas de Chile, cada una con su región y la zona a la que pertenece.",
+   "para_que": "Match: región (F3) y zona (M2); permite reconocer la comuna de la dirección del conductor y llenar el selector de la búsqueda.",
+   "estado": "decidido",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "Código oficial (CUT)",
+     "tipo": "id",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Código Único Territorial de la comuna.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "nombre",
+     "nombre": "Nombre oficial",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Como figura en el listado oficial (SUBDERE).",
+     "quien_ve": "Todos",
+     "codigo": "C5, T12",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "nombres_alternativos",
+     "nombre": "Otros nombres",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Formas de uso común y cómo las escribe Google Maps (ej. 'Paihuano', 'Llay-Llay'), para reconocer la comuna de la dirección y para el buscador.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "region_id",
+     "nombre": "Región",
+     "tipo": "referencia",
+     "referencia": "regiones",
+     "obligatorio": true,
+     "descripcion": "Región oficial. Debe ser la misma de su zona.",
+     "quien_ve": "Todos",
+     "codigo": "F3",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "zona_id",
+     "nombre": "Zona",
+     "tipo": "referencia",
+     "referencia": "zonas",
+     "obligatorio": true,
+     "descripcion": "La zona a la que pertenece; se cambia desde el panel.",
+     "quien_ve": "Todos",
+     "codigo": "M2",
+     "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "activa",
+     "nombre": "Visible en el selector",
+     "tipo": "si_no",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Ej.: comuna Antártica oculta (por decidir).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    }
+   ]
+  },
+  {
+   "id": "campos_perfil",
+   "nombre": "Campo de formulario",
+   "grupo": "configuracion",
+   "descripcion": "La lista de preguntas de los formularios del conductor, del titular y de la búsqueda: su texto, en qué paso van, si son obligatorias para registrarse o para completar el perfil, para qué se piden y si la contraparte las ve después del match.",
+   "para_que": "Configuración: cambiar, agregar u ocultar campos desde el panel sin reescribir la app (regla 'todo configurable'), decidir qué ve cada lado tras el match y no pedir datos sin finalidad.",
+   "estado": "propuesta",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "ID",
+     "tipo": "id",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Número interno.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "formulario",
+     "nombre": "Formulario",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: Conductor, Titular, Búsqueda.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "clave",
+     "nombre": "Nombre interno del dato",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Los campos base apuntan a su columna (ej. 'turnos', 'dias_trabajo'); los nuevos se guardan en 'Campos agregados desde el panel'.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "etiqueta",
+     "nombre": "Pregunta que se muestra",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Ej.: '¿En qué te gustaría trabajar?', 'Preferencia de turno', 'Días que puedes trabajar', 'Modos de contrato que aceptas'.",
+     "quien_ve": "Quien llena el formulario",
+     "codigo": "C1–C15, T1–T17",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "ayuda",
+     "nombre": "Texto guía",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Corto, ej.: 'Puedes marcar los dos', 'Marca todos los que puedas'.",
+     "quien_ve": "Quien llena el formulario",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "tipo_dato",
+     "nombre": "Tipo de respuesta",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: Texto; Texto largo; Número; Sí/No; Una opción de una lista; Varias opciones de una lista; Negocios; Clases de licencia; Comuna; Dirección (Google Maps); Años por tamaño. Uno nuevo requiere programar.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "lista_opciones_id",
+     "nombre": "Lista de opciones que usa",
+     "tipo": "referencia",
+     "referencia": "listas",
+     "obligatorio": false,
+     "descripcion": "Solo si la respuesta es de una lista (ej. 'turno', 'día de la semana'). Los catálogos (negocios, clases, comunas, tamaños) salen del tipo de respuesta.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "obligatorio",
+     "nombre": "Obligatorio",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: No; Para registrarse (Paso 1 del conductor); Para completar el perfil o publicar la búsqueda. Se marca con * en la app y, si falta, aparece una alerta y el campo se marca en rojo. Un campo usado como filtro no puede ser opcional.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "aplica_a",
+     "nombre": "Aplica a",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: Todos; Solo persona natural; Solo empresa (ej. razón social).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "T4, T5",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "minimo",
+     "nombre": "Mínimo",
+     "tipo": "numero",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Ej.: años desde 0.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "maximo",
+     "nombre": "Máximo",
+     "tipo": "numero",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Ej.: 300 caracteres en el detalle de la oferta, años hasta 50.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "P16",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "paso",
+     "nombre": "Paso o bloque",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Conductor: Paso 1 Tus datos; Paso 2 Dónde vives; Paso 3 Tu experiencia; Paso 4 ¿Cómo quieres trabajar? (negocios, turno, días, estacionamiento). Modelo de contrato: en espera. Los documentos del Paso 5 salen de 'Tipo de documento'.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "orden",
+     "nombre": "Orden",
+     "tipo": "numero",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Orden dentro del paso.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "quien_ve",
+     "nombre": "Quién lo ve",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: Solo el equipo; La persona y el equipo; También la contraparte después del match. Las funciones que entregan la ficha usan esta lista para saber qué campos devolver.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "P10",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "finalidad",
+     "nombre": "Para qué se pide",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Ej.: 'filtro de turno del match', 'mostrar al titular'. Obligatorio: un dato sin uso no se pide (minimizar datos).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "categoria_dato",
+     "nombre": "Tipo de dato",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: Común; Sensible o que puede discriminar (edad, sexo, nacionalidad, salud, situación económica, antecedentes). Un campo nuevo de la segunda categoría no se puede activar sin revisión legal.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "es_base",
+     "nombre": "Campo base",
+     "tipo": "si_no",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Sí = lo usa el match o la ley: se puede cambiar su texto y orden, no borrarlo.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "activo",
+     "nombre": "Visible en la app",
+     "tipo": "si_no",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Ocultar un campo nuevo sin borrar lo ya respondido.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    }
+   ]
+  },
+  {
+   "id": "textos_autorizacion",
+   "nombre": "Texto de autorización",
+   "grupo": "configuracion",
+   "descripcion": "Cada autorización que se pide (términos y privacidad, compartir la ficha, revisión de documentos, normas de mensajes…) en cada una de sus versiones, con su texto o enlace. Una fila por versión; las anteriores nunca se borran.",
+   "para_que": "Ley y configuración: saber qué versión exacta aceptó cada persona, pedir aceptar de nuevo cuando cambia un texto y agregar una autorización sin reprogramar.",
+   "estado": "propuesta",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "ID",
+     "tipo": "id",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Número interno.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "clave",
+     "nombre": "Qué autorización es",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Se repite en cada versión. Hoy (pantalla 'Antes de empezar'): terminos_privacidad (Términos y privacidad + mayor de 18); compartir_ficha (ficha y contacto, teléfono y correo, con el titular al hacer match); revision_documentos (sistema automático + persona; se puede pedir otra revisión); normas_mensajes. Propuestas: recordatorios_whatsapp, recordatorios_correo, uso_datos_titular (MD32).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "P1",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "nombre",
+     "nombre": "Nombre",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Lo que se muestra, ej. 'Revisión de mis documentos'.",
+     "quien_ve": "Quien la acepta",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "texto",
+     "nombre": "Texto de la casilla",
+     "tipo": "texto_largo",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Corto (el detalle legal va en los Términos y la Política). Ej.: 'Autorizo que, cuando haga match, se compartan mi ficha y mi contacto (teléfono y email) con ese titular'.",
+     "quien_ve": "Quien la acepta",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "enlace",
+     "nombre": "Enlace al documento completo",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Enlace a los Términos o la Política de privacidad de esa versión.",
+     "quien_ve": "Quien la acepta",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "version",
+     "nombre": "Versión",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Ej. 'v1', 'v2'.",
+     "quien_ve": "Quien la acepta",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "para_quien",
+     "nombre": "Para quién",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: Conductor; Titular; Todos.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "obligatoria",
+     "nombre": "Obligatoria",
+     "tipo": "si_no",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Si no se puede usar la app sin aceptarla. Las de recordatorios serían opcionales.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "exige_aceptar_de_nuevo",
+     "nombre": "Exige aceptar de nuevo",
+     "tipo": "si_no",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Si esta versión obliga a aceptar otra vez a quienes aceptaron la anterior (un cambio de forma no lo exige).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "vigente",
+     "nombre": "Versión vigente",
+     "tipo": "si_no",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "La versión que se pide hoy; solo una por autorización.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "vigente_desde",
+     "nombre": "Vigente desde",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Cuándo se empezó a pedir esta versión. La pone el sistema al marcarla vigente.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "orden",
+     "nombre": "Orden",
+     "tipo": "numero",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Orden en la pantalla 'Antes de empezar'.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    }
+   ]
+  },
+  {
+   "id": "ajustes",
+   "nombre": "Ajuste general",
+   "grupo": "configuracion",
+   "descripcion": "Números y reglas generales que se cambian desde el panel: umbral del match (66, decidido), forma de comparar con el umbral, plazos de disponibilidad, avisos, recordatorios, revisión, conservación y borrado de datos, búsquedas sin plan, límites contra la recolección masiva y si el conductor ve su lista de matches.",
+   "para_que": "Configuración: cambiar el umbral y los plazos sin reprogramar (decidido).",
+   "estado": "decidido",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "Nombre del ajuste",
+     "tipo": "id",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Ej.: umbral_match (66, decidido); forma_umbral ('igual o mayor', propuesta, MD28); dias_reconfirmar_disponibilidad (30, propuesta); dias_aviso_vencimiento (7, propuesta); recordatorio_perfil_cada_dias, recordatorio_perfil_maximo y recordatorio_perfil_primer_canal (pendientes, MD6); horas_plazo_revision (pendiente, MD21); dias_borrar_archivos_no_enviados (pendiente, abogado); busquedas_sin_plan (pendiente, MD10); meses_conservar_mensajes (MD13), meses_conservar_matches_no_vigentes, dias_conservar_conversacion_reportada, meses_conservar_reportes, meses_conservar_avisos y meses_borrar_cuenta_incompleta (pendientes, abogado, MD38); dias_responder_solicitudes [verificar con abogado]; max_conductores_nuevos_por_titular_mes y max_cambios_por_busqueda (pendientes, MD34); conductor_ve_lista_matches (sí, propuesta).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "P5, P16",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "valor",
+     "nombre": "Valor",
+     "tipo": "json",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "El número o la opción elegida (ej. 66).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "descripcion",
+     "nombre": "Para qué sirve",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Explicación en el panel; para el umbral muestra 'con esta configuración se acepta que fallen N variables'.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "actualizado_por",
+     "nombre": "Último cambio hecho por",
+     "tipo": "referencia",
+     "referencia": "cuentas",
+     "obligatorio": false,
+     "descripcion": "Persona del equipo que lo cambió (el historial queda en 'Acción del equipo').",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "actualizado_en",
+     "nombre": "Último cambio el",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Cuándo se cambió.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    }
+   ]
+  }
+ ],
+ "relaciones": [
+  {
+   "de": "cuentas",
+   "a": "conductores",
+   "cardinalidad": "1-1",
+   "descripcion": "Una cuenta puede tener un perfil de conductor (mismo identificador)."
+  },
+  {
+   "de": "cuentas",
+   "a": "titulares",
+   "cardinalidad": "1-1",
+   "descripcion": "Una cuenta puede tener un perfil de titular (mismo identificador)."
+  },
+  {
+   "de": "cuentas",
+   "a": "identidades",
+   "cardinalidad": "1-1",
+   "descripcion": "Una cuenta tiene a lo más un RUN confirmado (mismo identificador)."
+  },
+  {
+   "de": "cuentas",
+   "a": "identidades",
+   "cardinalidad": "1-N",
+   "descripcion": "Una persona del equipo confirma muchos RUN (campo 'Confirmado por')."
+  },
+  {
+   "de": "documentos",
+   "a": "identidades",
+   "cardinalidad": "1-1",
+   "descripcion": "El RUN se leyó de una cédula subida."
+  },
+  {
+   "de": "cuentas",
+   "a": "miembros_equipo",
+   "cardinalidad": "1-1",
+   "descripcion": "Una cuenta puede ser miembro del equipo con un rol (mismo identificador)."
+  },
+  {
+   "de": "cuentas",
+   "a": "miembros_equipo",
+   "cardinalidad": "1-N",
+   "descripcion": "Un Administrador agrega a otros miembros (campo 'Agregado por')."
+  },
+  {
+   "de": "cuentas",
+   "a": "consentimientos",
+   "cardinalidad": "1-N",
+   "descripcion": "Cada persona acepta varias autorizaciones, y cada versión nueva queda registrada."
+  },
+  {
+   "de": "textos_autorizacion",
+   "a": "consentimientos",
+   "cardinalidad": "1-N",
+   "descripcion": "Cada aceptación apunta a la versión exacta del texto que se aceptó."
+  },
+  {
+   "de": "cuentas",
+   "a": "avisos_enviados",
+   "cardinalidad": "1-N",
+   "descripcion": "A cada persona se le pueden enviar varios recordatorios."
+  },
+  {
+   "de": "documentos",
+   "a": "avisos_enviados",
+   "cardinalidad": "1-N",
+   "descripcion": "Aviso de que un documento está por vencer."
+  },
+  {
+   "de": "cuentas",
+   "a": "solicitudes_derechos",
+   "cardinalidad": "1-N",
+   "descripcion": "Quién pide algo sobre sus datos y quién del equipo lo resuelve (dos vínculos)."
+  },
+  {
+   "de": "cuentas",
+   "a": "acciones_equipo",
+   "cardinalidad": "1-N",
+   "descripcion": "Cada persona del equipo deja varias acciones registradas."
+  },
+  {
+   "de": "cuentas",
+   "a": "documentos",
+   "cardinalidad": "1-N",
+   "descripcion": "Cada persona sube varios documentos (y nuevas versiones al renovarlos)."
+  },
+  {
+   "de": "tipos_documento",
+   "a": "documentos",
+   "cardinalidad": "1-N",
+   "descripcion": "Cada documento subido es de un tipo (cédula, licencia, Hoja de Vida, antecedentes…)."
+  },
+  {
+   "de": "opciones",
+   "a": "documentos",
+   "cardinalidad": "1-N",
+   "descripcion": "Motivo de rechazo vigente, de la lista 'motivo de rechazo'."
+  },
+  {
+   "de": "documentos",
+   "a": "revisiones_documento",
+   "cardinalidad": "1-N",
+   "descripcion": "Cada documento tiene una o más revisiones (automática, persona, segunda revisión)."
+  },
+  {
+   "de": "cuentas",
+   "a": "revisiones_documento",
+   "cardinalidad": "1-N",
+   "descripcion": "Una persona del equipo hace muchas revisiones (campo 'Revisado por')."
+  },
+  {
+   "de": "opciones",
+   "a": "revisiones_documento",
+   "cardinalidad": "1-N",
+   "descripcion": "Motivo de cada revisión, de la lista 'motivo de rechazo'."
+  },
+  {
+   "de": "tipos_documento",
+   "a": "negocios",
+   "cardinalidad": "N-N",
+   "descripcion": "Para qué negocios se exige cada documento (lista dentro del tipo de documento; vacío = todos; en pausa)."
+  },
+  {
+   "de": "comunas",
+   "a": "conductores",
+   "cardinalidad": "1-N",
+   "descripcion": "Comuna verificada de la dirección del conductor."
+  },
+  {
+   "de": "conductores",
+   "a": "clases_licencia",
+   "cardinalidad": "N-N",
+   "descripcion": "Clases de licencia declaradas y revisadas (dos listas dentro del conductor)."
+  },
+  {
+   "de": "conductores",
+   "a": "negocios",
+   "cardinalidad": "N-N",
+   "descripcion": "Negocios en que quiere trabajar (lista dentro del conductor)."
+  },
+  {
+   "de": "conductores",
+   "a": "opciones",
+   "cardinalidad": "N-N",
+   "descripcion": "Turnos, días de trabajo y modos de contrato que acepta (listas dentro del conductor)."
+  },
+  {
+   "de": "opciones",
+   "a": "conductores",
+   "cardinalidad": "1-N",
+   "descripcion": "Tramo de garantía elegido (opcional)."
+  },
+  {
+   "de": "conductores",
+   "a": "experiencia_conductor",
+   "cardinalidad": "1-N",
+   "descripcion": "Un conductor tiene una fila de experiencia por cada tamaño que marcó."
+  },
+  {
+   "de": "tamanos_vehiculo",
+   "a": "experiencia_conductor",
+   "cardinalidad": "1-N",
+   "descripcion": "Cada fila de experiencia es de un tamaño del catálogo."
+  },
+  {
+   "de": "conductores",
+   "a": "tamanos_vehiculo",
+   "cardinalidad": "N-N",
+   "descripcion": "Tamaños que ha manejado, con sus años; la tabla intermedia es 'Experiencia por tamaño de vehículo'."
+  },
+  {
+   "de": "negocios",
+   "a": "clases_licencia",
+   "cardinalidad": "N-N",
+   "descripcion": "Clases que habilitan cada negocio (lista dentro del negocio); la usa el filtro F2."
+  },
+  {
+   "de": "negocios",
+   "a": "tamanos_vehiculo",
+   "cardinalidad": "N-N",
+   "descripcion": "Tamaños relacionados con cada negocio, para la variable años (lista dentro del negocio; pendiente)."
+  },
+  {
+   "de": "regiones",
+   "a": "zonas",
+   "cardinalidad": "1-N",
+   "descripcion": "Una región tiene varias zonas."
+  },
+  {
+   "de": "regiones",
+   "a": "comunas",
+   "cardinalidad": "1-N",
+   "descripcion": "Una región tiene varias comunas."
+  },
+  {
+   "de": "zonas",
+   "a": "comunas",
+   "cardinalidad": "1-N",
+   "descripcion": "Cada zona agrupa varias comunas de la misma región; cada comuna está en una sola zona."
+  },
+  {
+   "de": "titulares",
+   "a": "busquedas",
+   "cardinalidad": "1-N",
+   "descripcion": "Un titular publica varias búsquedas (limitadas por su plan)."
+  },
+  {
+   "de": "negocios",
+   "a": "busquedas",
+   "cardinalidad": "1-N",
+   "descripcion": "Cada búsqueda es de un negocio; de él sale la licencia exigida."
+  },
+  {
+   "de": "comunas",
+   "a": "busquedas",
+   "cardinalidad": "1-N",
+   "descripcion": "Comuna donde se retira el vehículo de la búsqueda."
+  },
+  {
+   "de": "busquedas",
+   "a": "opciones",
+   "cardinalidad": "N-N",
+   "descripcion": "Modos de contrato, turnos y días de trabajo de la búsqueda (listas dentro de la búsqueda)."
+  },
+  {
+   "de": "conductores",
+   "a": "busquedas",
+   "cardinalidad": "N-N",
+   "descripcion": "Un conductor coincide con muchas búsquedas y viceversa; la tabla intermedia es Match."
+  },
+  {
+   "de": "conductores",
+   "a": "matches",
+   "cardinalidad": "1-N",
+   "descripcion": "Un conductor tiene varios matches."
+  },
+  {
+   "de": "busquedas",
+   "a": "matches",
+   "cardinalidad": "1-N",
+   "descripcion": "Una búsqueda tiene varios matches (los conductores que coinciden)."
+  },
+  {
+   "de": "matches",
+   "a": "reglas_match",
+   "cardinalidad": "N-N",
+   "descripcion": "En qué variables no coincide cada match (lista dentro del match)."
+  },
+  {
+   "de": "matches",
+   "a": "favoritos",
+   "cardinalidad": "1-N",
+   "descripcion": "Un match puede ser favorito del conductor, del titular o de ambos (una fila por persona)."
+  },
+  {
+   "de": "cuentas",
+   "a": "favoritos",
+   "cardinalidad": "1-N",
+   "descripcion": "Cada persona marca varios favoritos."
+  },
+  {
+   "de": "matches",
+   "a": "entregas_datos",
+   "cardinalidad": "1-N",
+   "descripcion": "Entregas de datos ocurridas en un match (ficha y contacto, dirección, contacto del titular); se conservan aunque el match se borre."
+  },
+  {
+   "de": "cuentas",
+   "a": "entregas_datos",
+   "cardinalidad": "1-N",
+   "descripcion": "De quién son los datos y quién los recibió (dos vínculos)."
+  },
+  {
+   "de": "negocios",
+   "a": "entregas_datos",
+   "cardinalidad": "1-N",
+   "descripcion": "Negocio de la búsqueda que se muestra en 'Quién recibió mis datos'."
+  },
+  {
+   "de": "campos_perfil",
+   "a": "reglas_match",
+   "cardinalidad": "1-N",
+   "descripcion": "Una regla genérica compara un campo del conductor con uno de la búsqueda (dos vínculos, opcionales)."
+  },
+  {
+   "de": "cuentas",
+   "a": "reglas_match",
+   "cardinalidad": "1-N",
+   "descripcion": "Quién del equipo hizo el último cambio a una regla."
+  },
+  {
+   "de": "matches",
+   "a": "mensajes",
+   "cardinalidad": "1-N",
+   "descripcion": "Cada match es una conversación con varios mensajes."
+  },
+  {
+   "de": "cuentas",
+   "a": "mensajes",
+   "cardinalidad": "1-N",
+   "descripcion": "Autor de cada mensaje."
+  },
+  {
+   "de": "matches",
+   "a": "reportes",
+   "cardinalidad": "1-N",
+   "descripcion": "Una conversación puede recibir reportes."
+  },
+  {
+   "de": "cuentas",
+   "a": "reportes",
+   "cardinalidad": "1-N",
+   "descripcion": "Quién reporta, a quién se reporta y quién del equipo lo resolvió (tres vínculos)."
+  },
+  {
+   "de": "opciones",
+   "a": "reportes",
+   "cardinalidad": "1-N",
+   "descripcion": "Motivo del reporte, de la lista 'motivo de reporte'."
+  },
+  {
+   "de": "cuentas",
+   "a": "bloqueos",
+   "cardinalidad": "1-N",
+   "descripcion": "Quién bloquea y quién queda bloqueado (dos vínculos)."
+  },
+  {
+   "de": "cuentas",
+   "a": "cuentas",
+   "cardinalidad": "N-N",
+   "descripcion": "Bloqueos entre personas; la tabla intermedia es Bloqueo."
+  },
+  {
+   "de": "titulares",
+   "a": "suscripciones",
+   "cardinalidad": "1-N",
+   "descripcion": "Un titular puede tener varias suscripciones en el tiempo (solo una vigente a la vez)."
+  },
+  {
+   "de": "planes",
+   "a": "suscripciones",
+   "cardinalidad": "1-N",
+   "descripcion": "Cada suscripción es de un plan."
+  },
+  {
+   "de": "listas",
+   "a": "opciones",
+   "cardinalidad": "1-N",
+   "descripcion": "Cada lista tiene varias opciones; cada opción es de una sola lista."
+  },
+  {
+   "de": "listas",
+   "a": "campos_perfil",
+   "cardinalidad": "1-N",
+   "descripcion": "Un campo de opciones usa una lista."
+  },
+  {
+   "de": "cuentas",
+   "a": "ajustes",
+   "cardinalidad": "1-N",
+   "descripcion": "Quién del equipo hizo el último cambio a un ajuste."
+  }
+ ],
+ "reglas": [
+  {
+   "id": "R1",
+   "nombre": "Registro mínimo y perfil completo",
+   "descripcion": "La cuenta nace al confirmar el código del celular; luego la persona acepta las autorizaciones ('Antes de empezar'). Con el Paso 1 (correo, nombres y apellidos, clases de licencia y 'Disponible para trabajar'; el celular ya está verificado) el conductor queda registrado y elige 'Guardar y continuar' o 'Guardar y terminar después'. Su perfil queda 'Incompleto' hasta tener listas las 5 secciones: tus datos y licencia (incluye 'Disponible para trabajar'), dónde vives, tu experiencia, cómo quieres trabajar y documentos (el modelo de contrato quedó en espera). El avance se muestra como 'N de 6 pasos listos · %'. Mientras tanto no entra al match. Qué exige cada sección está pendiente (MD36); qué campos se piden para registrarse o para completar el perfil se define en 'Campo de formulario' y lo valida la app (asterisco, alerta y campo en rojo).",
+   "entidades": [
+    "cuentas",
+    "consentimientos",
+    "conductores",
+    "experiencia_conductor",
+    "documentos",
+    "campos_perfil"
+   ]
+  },
+  {
+   "id": "R2",
+   "nombre": "Recordatorios para completar el perfil",
+   "descripcion": "Mientras el perfil esté incompleto se le envían recordatorios por WhatsApp o correo. Cada envío queda registrado con canal y fecha. Cada cuánto, cuántas veces como máximo y qué canal va primero se fijan en Ajustes (pendientes, MD6). Por WhatsApp solo si la persona tiene vigente la autorización de recordatorios por WhatsApp (propuesta, MD32 [verificar política de WhatsApp Business]); si no, por correo. Cada mensaje dice cómo darse de baja. Al completar el perfil se dejan de enviar.",
+   "entidades": [
+    "avisos_enviados",
+    "conductores",
+    "cuentas",
+    "consentimientos",
+    "textos_autorizacion",
+    "ajustes"
+   ]
+  },
+  {
+   "id": "R3",
+   "nombre": "Condiciones previas del match",
+   "descripcion": "Antes de calcular nada se exige: conductor con perfil 'Completo', 'Verificado' (sus 4 documentos aprobados y vigentes), 'Disponible', cuenta activa (no suspendida ni en eliminación) y autorización 'compartir mi ficha' vigente; búsqueda 'Activa' de un titular con cuenta activa; y que ninguno haya bloqueado al otro. Si falta una, no hay match.",
+   "entidades": [
+    "conductores",
+    "busquedas",
+    "documentos",
+    "tipos_documento",
+    "cuentas",
+    "consentimientos",
+    "bloqueos",
+    "matches"
+   ]
+  },
+  {
+   "id": "R4",
+   "nombre": "Filtros obligatorios (fuera del %)",
+   "descripcion": "Cada regla con uso 'Filtro obligatorio' debe cumplirse sí o sí. Hoy: F1 el negocio de la búsqueda está entre los que marcó el conductor; F2 alguna clase de licencia REVISADA del conductor está entre las que habilitan ese negocio; F3 la comuna del conductor y la de retiro están en la misma región; M1 al menos un modo de contrato en común; M3 al menos un turno en común (Día o Noche). Días de trabajo (M7): cómo se comparan y si es filtro o variable está pendiente (MD30). Que F1 y F2 se apliquen por negocio es propuesta (MD2). La garantía no es filtro. Mientras el modelo de contrato esté en espera, M1 queda desactivado (propuesta, MD39).",
+   "entidades": [
+    "reglas_match",
+    "conductores",
+    "busquedas",
+    "negocios",
+    "clases_licencia",
+    "comunas",
+    "opciones"
+   ]
+  },
+  {
+   "id": "R5",
+   "nombre": "Porcentaje y umbral",
+   "descripcion": "Con las reglas 'Variable del %' (hoy M2 zona, M4 años y M6 estacionamiento, peso 1): hay match si (peso de lo que coincide) × 100 ≥ umbral × (peso total), comparando fracciones exactas; con umbral 66 y 3 variables se acepta que falle 1 (2 de 3). Zona: la comuna de retiro está en la misma zona que la comuna del conductor. Años: forma pendiente (MD1); propuesta: los años del conductor en los tamaños relacionados con el negocio de la búsqueda alcanzan el mínimo. Estacionamiento: si se exige, debe tenerlo. Lo que el titular no exige cuenta como coincidencia. Se guarda 'N de M' y en qué no coinciden. '≥' o '>' está pendiente (MD28).",
+   "entidades": [
+    "reglas_match",
+    "ajustes",
+    "matches",
+    "zonas",
+    "comunas",
+    "experiencia_conductor",
+    "negocios"
+   ]
+  },
+  {
+   "id": "R6",
+   "nombre": "Recalcular sin borrar",
+   "descripcion": "El match se recalcula cuando cambia un perfil de conductor, su experiencia, una búsqueda, un documento, una suscripción, un bloqueo, una autorización (por ejemplo, se retira 'compartir mi ficha'), el estado de una cuenta (suspensión o pedido de borrado) o la configuración (reglas, umbral, zonas, negocios y sus licencias o tamaños). Además, un proceso diario revisa lo que vence por fecha: suscripciones, documentos y disponibilidad. Los matches no se borran: si dejan de cumplirse pasan a 'no vigente' y se ocultan; se conservan favoritos, mensajes y lo compartido, hasta el plazo de conservación (R25).",
+   "entidades": [
+    "matches",
+    "conductores",
+    "experiencia_conductor",
+    "busquedas",
+    "documentos",
+    "suscripciones",
+    "bloqueos",
+    "consentimientos",
+    "cuentas",
+    "reglas_match",
+    "ajustes",
+    "negocios",
+    "zonas"
+   ]
+  },
+  {
+   "id": "R7",
+   "nombre": "Quién ve qué (seguridad en la base de datos)",
+   "descripcion": "Se aplica en la propia base de datos, no solo en la pantalla. Como la seguridad por filas de Supabase (Row Level Security) protege filas completas y no columnas sueltas: (1) la contraparte nunca lee directo las tablas Cuenta, Conductor, Experiencia, Match ni Documento; recibe la ficha, el nombre, el contacto y la dirección por funciones del servidor que revisan las condiciones en ese momento y devuelven solo los campos permitidos en 'Campo de formulario'; (2) lo más delicado va en tablas aparte: el RUN (Identidad verificada, solo el equipo), los favoritos (cada uno ve los suyos), las revisiones de documentos (solo el equipo) y los roles del equipo. Un titular ve la ficha y el contacto (teléfono y correo) de un conductor solo si: su suscripción tiene 'Pagada hasta' futura, el match está vigente, el conductor tiene vigente 'compartir mi ficha', ambas cuentas están activas y no hay bloqueo. El contacto del titular lo ve solo el conductor con quien lo compartió. Los archivos de documentos: solo el equipo, en un espacio privado. El conductor ve su lista de matches (negocio, comuna, modo, turno, nombre del titular o empresa) sin el contacto del titular.",
+   "entidades": [
+    "cuentas",
+    "identidades",
+    "conductores",
+    "experiencia_conductor",
+    "titulares",
+    "matches",
+    "favoritos",
+    "documentos",
+    "revisiones_documento",
+    "suscripciones",
+    "consentimientos",
+    "bloqueos",
+    "campos_perfil",
+    "miembros_equipo"
+   ]
+  },
+  {
+   "id": "R8",
+   "nombre": "Dirección del conductor privada",
+   "descripcion": "La dirección se elige con sugerencias de Google Maps; se guardan la dirección, el identificador del lugar [verificar condiciones de Google], el depto/casa/block y la comuna que sale de ella. Para el match solo se usa la comuna (y su zona y región). La dirección solo la recibe un titular, por una función del servidor, si el match está vigente y el conductor tocó 'Compartir mi dirección' en esa conversación; queda la fecha en el match y una fila en 'Entrega de datos'.",
+   "entidades": [
+    "conductores",
+    "comunas",
+    "matches",
+    "entregas_datos"
+   ]
+  },
+  {
+   "id": "R9",
+   "nombre": "Contacto del titular oculto",
+   "descripcion": "Ningún conductor ve el contacto del titular, salvo que el titular toque 'Compartir' en la conversación con ese conductor (qué comparte: MD16). Antes se le avisa que no se puede deshacer; queda la fecha en el match y una fila en 'Entrega de datos'. El conductor siempre ve el nombre o la razón social.",
+   "entidades": [
+    "matches",
+    "titulares",
+    "cuentas",
+    "entregas_datos"
+   ]
+  },
+  {
+   "id": "R10",
+   "nombre": "Adelanto anónimo para el titular sin plan",
+   "descripcion": "El match se calcula igual pague o no. Si el titular no tiene suscripción vigente, una función del servidor solo le entrega el número de matches vigentes de cada búsqueda ('[N] conductores verificados coinciden con tu búsqueda'); no tiene acceso a las filas de Match (ni qué conductor, ni coincidencias). Ver el adelanto no cuenta como entrega de datos.",
+   "entidades": [
+    "matches",
+    "busquedas",
+    "suscripciones"
+   ]
+  },
+  {
+   "id": "R11",
+   "nombre": "Plan y límite de búsquedas",
+   "descripcion": "Una suscripción está vigente si su fecha 'Pagada hasta' no ha pasado (aunque esté cancelada). Las búsquedas activas de un titular no pueden superar las del plan (1, 5 o 20; 'Búsqueda 2 de 5 en tu plan'); sin plan rige el ajuste 'búsquedas sin plan' (pendiente, MD10). Pausadas y cubiertas no cuentan. Propuesta: un titular no puede tener dos suscripciones vigentes a la vez; la app no ofrece comprar si ya tiene una por otro canal y, si igual ocurre, rige la del plan con más búsquedas y el equipo gestiona el reembolso.",
+   "entidades": [
+    "suscripciones",
+    "planes",
+    "busquedas",
+    "ajustes"
+   ]
+  },
+  {
+   "id": "R12",
+   "nombre": "Registro de quién recibió los datos",
+   "descripcion": "Cada vez que los datos de una persona llegan a otra se agrega una fila en 'Entrega de datos' (qué, a quién, en qué negocio, desde dónde y cuándo), que nadie puede modificar y que no se borra con el match: la primera vez que un titular con plan abre la ficha y el contacto (teléfono y correo) de un conductor; cuando el conductor comparte su dirección; cuando el titular comparte su contacto. Si también se registra que el nombre aparezca en la lista de Resultados está pendiente (MD33). 'Quién recibió mis datos' se lee de ahí (titular o empresa, negocio y fecha). Cuánto se conserva tras borrar una cuenta: abogado (MD23).",
+   "entidades": [
+    "entregas_datos",
+    "matches",
+    "conductores",
+    "titulares",
+    "cuentas"
+   ]
+  },
+  {
+   "id": "R13",
+   "nombre": "Revisión de documentos: IA + persona",
+   "descripcion": "Al enviar un documento, un agente de IA lo compara con lo declarado (nombre, clases, fechas) y propone, respondiendo solo con códigos de la lista de motivos. Solo si propone 'Aprobar', todo está claro y el tipo de documento lo permite, se aprueba solo (queda marcado). Las dudas y los rechazos van a la cola del panel por antigüedad y los decide una persona; todo rechazo tiene revisor. Propuesta: la cédula pasa siempre por una persona para confirmar el RUN (MD37); si el RUN ya existe en otra cuenta del mismo rol, va a la cola con ese motivo. La persona sabe que hubo pre-revisión y puede pedir otra revisión, que decide otra persona del equipo. Cada etapa queda en 'Revisión de documento'. Lista cerrada de lo que se guarda: de la cédula, solo el RUN (en Identidad verificada), si el nombre coincide y el vencimiento; de la licencia, solo las clases y el próximo control; de la Hoja de Vida y los antecedentes, solo la fecha de emisión, si el folio es válido y el resultado. Nunca fecha de nacimiento, sexo, nacionalidad, foto, firma, número de documento, domicilio, anotaciones, condenas ni restricciones. Al proveedor de IA se le exige no guardar los archivos ni entrenar con ellos [verificar con abogado: decisiones automatizadas y transferencia internacional].",
+   "entidades": [
+    "documentos",
+    "revisiones_documento",
+    "tipos_documento",
+    "identidades",
+    "conductores",
+    "cuentas",
+    "consentimientos",
+    "opciones"
+   ]
+  },
+  {
+   "id": "R14",
+   "nombre": "Borrado de archivos tras la revisión",
+   "descripcion": "Un proceso diario borra el archivo: (a) N días después de decidir, según el tipo de documento (plazo del abogado, MD20); (b) apenas se sube un reemplazo; (c) si se subió y nunca se envió a revisión, tras el plazo de Ajustes y con aviso previo. Anota 'archivo borrado el'. Las filas de documentos reemplazados o no aprobados se borran tras 'meses para conservar' del tipo de documento; queda la fila aprobada vigente. Los archivos van en un espacio privado y el equipo los abre con enlaces de pocos minutos (cada apertura queda en 'Acción del equipo'). Las copias de respaldo se borran en su propio plazo, que se informa en la Política de privacidad. Propuesta técnica a evaluar: cifrar cada archivo con su propia clave y destruirla al borrar.",
+   "entidades": [
+    "documentos",
+    "tipos_documento",
+    "ajustes",
+    "acciones_equipo"
+   ]
+  },
+  {
+   "id": "R15",
+   "nombre": "Vencimiento y renovación de documentos",
+   "descripcion": "Al subir, se rechaza un PDF emitido hace más días de los permitidos (propuesta: 30). Cada documento tiene 'vence el': vencimiento de la cédula, próximo control de la licencia, o renovación de Hoja de Vida y antecedentes (cada cuántos meses: pendiente, MD18). N días antes (propuesta: 7) se avisa y queda registrado; al vencer pasa a 'Vencido' y el conductor sale del match hasta renovarlo. El titular nunca ve estas fechas.",
+   "entidades": [
+    "documentos",
+    "tipos_documento",
+    "conductores",
+    "avisos_enviados",
+    "ajustes"
+   ]
+  },
+  {
+   "id": "R16",
+   "nombre": "Reconfirmar disponibilidad",
+   "descripcion": "Cada N días (propuesta: 30) la app pregunta '¿Sigues buscando vehículo?'. Si no responde, un proceso diario lo deja 'Pausado' y sale del match hasta que lo reactive.",
+   "entidades": [
+    "conductores",
+    "ajustes",
+    "avisos_enviados"
+   ]
+  },
+  {
+   "id": "R17",
+   "nombre": "Mensajes",
+   "descripcion": "Solo se escribe dentro de un match vigente; hoy inicia el conductor (lo del titular y del titular sin plan está pendiente, MD11 y MD12). Solo texto, sin adjuntos; un filtro automático retiene contenido objetable. Antes de escribir, los dos participantes deben haber aceptado los términos y las normas de mensajes, y esas normas deben informar que un filtro automático revisa los mensajes y que el equipo lee las conversaciones reportadas [verificar con abogado]. Solo los dos participantes leen la conversación; el equipo solo lee las reportadas. Un bloqueado no puede escribir. Se borran según el plazo de conservación (pendiente, MD13), salvo las conversaciones con reportes abiertos.",
+   "entidades": [
+    "mensajes",
+    "matches",
+    "consentimientos",
+    "textos_autorizacion",
+    "bloqueos",
+    "reportes",
+    "ajustes"
+   ]
+  },
+  {
+   "id": "R18",
+   "nombre": "Reportar y bloquear",
+   "descripcion": "Reportar crea un reporte con motivo que entra a la cola del panel; el equipo lee solo esa conversación (queda en 'Acción del equipo') y puede ocultar mensajes o suspender la cuenta (la cuenta suspendida sale del match y no puede escribir). Bloquear crea un bloqueo: el bloqueado no puede escribir y sus matches con quien lo bloqueó se ocultan; desbloquear borra el bloqueo. Lo exigen Apple y Google.",
+   "entidades": [
+    "reportes",
+    "bloqueos",
+    "mensajes",
+    "cuentas",
+    "matches",
+    "acciones_equipo"
+   ]
+  },
+  {
+   "id": "R19",
+   "nombre": "Borrar cuenta",
+   "descripcion": "Desde la app ('Eliminar mi cuenta') o con un enlace web para Google Play: crea una 'Solicitud sobre mis datos'. Antes se ofrece pausar. La cuenta pasa a 'Eliminación en curso' y sale del match de inmediato. Se borran en cascada: perfil de conductor o titular, experiencia, búsquedas, documentos y sus archivos, identidad, matches, mensajes, favoritos, bloqueos y recordatorios. Se conserva solo lo que indiquen el abogado y el contador (MD23), por ejemplo autorizaciones, entregas de datos, reportes abiertos y pagos, y se anota en la solicitud. Si paga por App Store o Google Play, se le avisa que debe cancelar la suscripción en la tienda [verificar].",
+   "entidades": [
+    "cuentas",
+    "solicitudes_derechos",
+    "conductores",
+    "experiencia_conductor",
+    "titulares",
+    "busquedas",
+    "documentos",
+    "identidades",
+    "matches",
+    "mensajes",
+    "favoritos",
+    "bloqueos",
+    "avisos_enviados",
+    "consentimientos",
+    "entregas_datos",
+    "reportes",
+    "suscripciones"
+   ]
+  },
+  {
+   "id": "R20",
+   "nombre": "Autorizaciones",
+   "descripcion": "Cada autorización es una casilla aparte y se guarda apuntando a la versión exacta de su texto. Si una versión nueva exige aceptar de nuevo, se pide al entrar. El registro nunca se modifica: retirar solo anota la fecha. Vigente = aceptó la versión vigente (o una anterior que no exige aceptar de nuevo) y no la retiró. Retirar 'compartir mi ficha' saca al conductor del match. Propuesta: pantalla 'Mis autorizaciones' en Seguridad y privacidad para verlas y retirarlas (MD32).",
+   "entidades": [
+    "consentimientos",
+    "textos_autorizacion",
+    "cuentas",
+    "matches"
+   ]
+  },
+  {
+   "id": "R21",
+   "nombre": "Licencia y negocio en el match",
+   "descripcion": "El Paso 4 muestra todos los negocios activos del catálogo (decidido). La tabla negocio → clases se usa en el filtro F2 con las clases revisadas: un negocio marcado que ninguna clase revisada habilita no pasa el filtro. Si cambia esa tabla, se recalcula. Qué ve el conductor si marca un negocio que sus clases declaradas no habilitan: MD31.",
+   "entidades": [
+    "negocios",
+    "clases_licencia",
+    "conductores",
+    "matches"
+   ]
+  },
+  {
+   "id": "R22",
+   "nombre": "Configurar sin reprogramar",
+   "descripcion": "Solo el rol Administrador cambia opciones y listas, negocios, tamaños, clases de licencia, regiones, zonas y comunas, documentos exigidos, planes, reglas del match, campos de formularios, textos de autorización y ajustes. Cada catálogo tiene nombre editable, orden y activo/inactivo: lo que ya está en uso se oculta, no se borra. La base revisa que cada opción guardada sea de la lista que corresponde al campo. Una comuna solo puede estar en una zona de su misma región. Los campos nuevos se guardan en 'Campos agregados desde el panel', necesitan una finalidad y no pueden ser de la categoría sensible sin revisión legal; los campos base no se pueden borrar. Cada cambio de reglas, umbral, zonas o negocios recalcula los matches, el panel muestra cuántas variables pueden fallar, y todo cambio queda en 'Acción del equipo'.",
+   "entidades": [
+    "listas",
+    "opciones",
+    "negocios",
+    "tamanos_vehiculo",
+    "clases_licencia",
+    "regiones",
+    "zonas",
+    "comunas",
+    "tipos_documento",
+    "planes",
+    "reglas_match",
+    "campos_perfil",
+    "textos_autorizacion",
+    "ajustes",
+    "miembros_equipo",
+    "acciones_equipo"
+   ]
+  },
+  {
+   "id": "R23",
+   "nombre": "Datos que no se repiten",
+   "descripcion": "RUN único por rol: no hay dos conductores ni dos titulares con el mismo RUN (C2 y T3 aprobados). Un perfil de conductor, uno de titular y una identidad por cuenta; una fila de experiencia por conductor y tamaño; un match por conductor y búsqueda; un favorito por persona y match; un bloqueo por pareja; cada comuna en una sola zona de su región; una sola versión vigente por autorización; y (propuesta) un titular sin dos suscripciones vigentes a la vez.",
+   "entidades": [
+    "identidades",
+    "cuentas",
+    "conductores",
+    "titulares",
+    "experiencia_conductor",
+    "matches",
+    "favoritos",
+    "bloqueos",
+    "comunas",
+    "textos_autorizacion",
+    "suscripciones"
+   ]
+  },
+  {
+   "id": "R24",
+   "nombre": "Quién escribe qué",
+   "descripcion": "La persona solo crea o cambia lo suyo: su correo y nombre, los datos de formulario de su perfil y de sus búsquedas, subir y enviar documentos, sus mensajes, reportes, bloqueos, favoritos y autorizaciones. Al crear una fila, el autor es siempre la cuenta de la sesión abierta y las fechas las pone el servidor. Solo el sistema o el equipo escriben: estado de la cuenta, celular y correo verificados, RUN, roles del equipo, estado del perfil y de verificación, clases revisadas, fechas y resultado de la revisión de documentos, el cálculo del match, lo compartido (por funciones que identifican a quien actúa), el estado de los mensajes, el detalle ocultado de una búsqueda y las suscripciones (solo con avisos verificados de App Store, Google Play o la pasarela). Las autorizaciones, las revisiones de documentos, las entregas de datos y las acciones del equipo son de solo agregar.",
+   "entidades": [
+    "cuentas",
+    "identidades",
+    "miembros_equipo",
+    "conductores",
+    "busquedas",
+    "documentos",
+    "revisiones_documento",
+    "matches",
+    "mensajes",
+    "reportes",
+    "bloqueos",
+    "favoritos",
+    "consentimientos",
+    "entregas_datos",
+    "suscripciones",
+    "acciones_equipo"
+   ]
+  },
+  {
+   "id": "R25",
+   "nombre": "Plazos de conservación",
+   "descripcion": "Un proceso diario aplica los plazos de Ajustes (valores pendientes, con el abogado, MD38): mensajes, matches no vigentes, conversaciones reportadas después de resolverse, reportes resueltos, recordatorios enviados, cuentas con perfil incompleto e inactivas (con aviso previo), y archivos y documentos (R14). El borrado de mensajes se salta los matches con reportes abiertos.",
+   "entidades": [
+    "ajustes",
+    "mensajes",
+    "matches",
+    "reportes",
+    "avisos_enviados",
+    "cuentas",
+    "conductores",
+    "documentos"
+   ]
+  },
+  {
+   "id": "R26",
+   "nombre": "Panel seguro y registro de acciones del equipo",
+   "descripcion": "El panel entra con la sesión de cada persona del equipo y con permisos según su rol, nunca con la clave maestra de Supabase en el navegador. El equipo lee mensajes solo de matches con reporte y archivos solo para revisarlos. Cada apertura de archivo, vista de RUN, lectura de conversación reportada, decisión de documento, suspensión, cambio de rol o de configuración queda en 'Acción del equipo', que no se puede modificar. Propuesta: segundo factor para las cuentas del equipo.",
+   "entidades": [
+    "miembros_equipo",
+    "acciones_equipo",
+    "cuentas",
+    "documentos",
+    "identidades",
+    "mensajes",
+    "reportes"
+   ]
+  },
+  {
+   "id": "R27",
+   "nombre": "Solicitudes sobre los datos",
+   "descripcion": "Cada pedido de copia, corrección, oposición, portabilidad o borrado queda registrado con su plazo de respuesta (ajuste 'días para responder solicitudes' [verificar plazo legal con abogado]), quién lo resolvió y qué se conservó y por qué. Si llega por la web sin sesión, se confirma el celular con un código antes de aceptarlo.",
+   "entidades": [
+    "solicitudes_derechos",
+    "cuentas",
+    "ajustes",
+    "acciones_equipo"
+   ]
+  },
+  {
+   "id": "R28",
+   "nombre": "Límites contra la recolección masiva (propuesta)",
+   "descripcion": "Para que un titular con varias búsquedas no vaya cambiando comuna o negocio para juntar los contactos de muchos conductores: ajustes con un máximo de conductores nuevos cuyos datos recibe un titular por mes y de cambios de comuna o negocio por búsqueda activa, y una alerta en el panel si 'Entrega de datos' muestra un volumen anormal. Los Términos del titular prohíben usar los datos para otro fin. Si se aplica y con qué valores lo decide la dueña (MD34).",
+   "entidades": [
+    "ajustes",
+    "entregas_datos",
+    "busquedas",
+    "titulares",
+    "planes"
+   ]
+  }
+ ],
+ "pendientes": [
+  {
+   "id": "MD1",
+   "pregunta": "M4 (años): con la experiencia por tamaño, ¿cómo se compara con el mínimo de la búsqueda? ¿Y qué años ve el titular en la ficha (hoy la maqueta 'Ficha' muestra un solo número, '[N] años')?",
+   "opciones": "a) Propuesta: el panel define qué tamaños se relacionan con cada negocio y se toman los años del conductor en el tamaño relacionado con más años. b) Se suman los años de todos los tamaños relacionados. c) El titular elige el tamaño en la búsqueda. d) M4 sale del % hasta definirlo. Ficha: mostrar la lista 'tamaño · años' o solo los años del tamaño relacionado.",
+   "entidades": [
+    "experiencia_conductor",
+    "negocios",
+    "tamanos_vehiculo",
+    "busquedas",
+    "reglas_match"
+   ]
+  },
+  {
+   "id": "MD2",
+   "pregunta": "¿Cada búsqueda elige un negocio (en vez de 'tipo de vehículo')?",
+   "opciones": "a) Sí: F1 = el negocio de la búsqueda está entre los del conductor y F2 = el conductor tiene una licencia revisada que habilita ese negocio (propuesta). b) La búsqueda elige negocio y además tamaño de vehículo. Las maquetas del titular ('Nueva búsqueda', 'Resultados', 'Ficha', 'Inicio titular') y el 'Detalle del match' del conductor todavía dicen 'Tipo de vehículo' y muestran los turnos antiguos.",
+   "entidades": [
+    "busquedas",
+    "negocios",
+    "reglas_match"
+   ]
+  },
+  {
+   "id": "MD3",
+   "pregunta": "¿Qué clases de licencia habilitan cada negocio?",
+   "opciones": "Confirmar la tabla inicial (ej. Taxi y Radiotaxi ejecutivo: A1, A2, A3 y A1 antigua; Transporte por aplicación: B hoy; Bus interurbano: A3; Moto delivery: C; Van o bus de turismo y camiones: por definir) [verificar con Ley 18.290 y Ley 21.553].",
+   "entidades": [
+    "negocios",
+    "clases_licencia"
+   ]
+  },
+  {
+   "id": "MD4",
+   "pregunta": "Catálogos en revisión",
+   "opciones": "Confirmar 'Camión de carga urbano', el nombre 'Camión pesado' y las demás propuestas de negocios y tamaños antes de cargarlos. ¿Se pueden usar marcas de terceros en los ejemplos en gris (Uber, Cabify, Turbus, Pullman Bus, PedidosYa, Rappi)? a) Sí; b) Usar solo descripciones genéricas [verificar uso de marcas].",
+   "entidades": [
+    "negocios",
+    "tamanos_vehiculo"
+   ]
+  },
+  {
+   "id": "MD5",
+   "pregunta": "Google Maps: ¿qué datos de la dirección se pueden guardar?",
+   "opciones": "Revisar condiciones de Google: a) texto de la dirección + identificador del lugar (propuesta); b) solo el texto y la comuna. Además: costo por uso [verificar].",
+   "entidades": [
+    "conductores",
+    "comunas"
+   ]
+  },
+  {
+   "id": "MD6",
+   "pregunta": "Recordatorios para completar el perfil",
+   "opciones": "Cada cuánto (ej. a los 2 días, luego semanal), cuántas veces como máximo y qué canal va primero: a) WhatsApp; b) correo.",
+   "entidades": [
+    "avisos_enviados",
+    "ajustes"
+   ]
+  },
+  {
+   "id": "MD7",
+   "pregunta": "Correo: ¿se confirma y cuándo?",
+   "opciones": "a) Con un código o enlace al registrarse (propuesta), sin bloquear el registro. b) Obligatorio confirmarlo antes de entrar al match o de pagar. c) No se confirma.",
+   "entidades": [
+    "cuentas"
+   ]
+  },
+  {
+   "id": "MD8",
+   "pregunta": "Titular: ¿nombre en 3 campos y RUN desde su cédula?",
+   "opciones": "a) Igual que el conductor: nombres, primer y segundo apellido; RUN solo si se le pide la cédula (P12). b) Nombre en un solo campo.",
+   "entidades": [
+    "cuentas",
+    "titulares",
+    "identidades",
+    "tipos_documento"
+   ]
+  },
+  {
+   "id": "MD9",
+   "pregunta": "¿Una misma persona puede ser conductor y titular con el mismo celular?",
+   "opciones": "a) Sí, una cuenta con dos perfiles (propuesta; es lo que permite el modelo). b) No, tendría que usar otro número. En ambos casos el RUN es único por rol (C2 y T3 aprobados).",
+   "entidades": [
+    "cuentas",
+    "conductores",
+    "titulares",
+    "identidades"
+   ]
+  },
+  {
+   "id": "MD10",
+   "pregunta": "Titular sin plan: ¿cuántas búsquedas puede publicar para ver el adelanto anónimo?",
+   "opciones": "a) 1 (propuesta). b) Las mismas del plan Básico. c) Ninguna: solo ve un adelanto general por zona.",
+   "entidades": [
+    "busquedas",
+    "ajustes",
+    "planes"
+   ]
+  },
+  {
+   "id": "MD11",
+   "pregunta": "¿El conductor ve sus matches con titulares que no tienen plan, y puede escribirles?",
+   "opciones": "a) No los ve hasta que el titular active un plan. b) Los ve, pero no puede escribir. c) Los ve y escribe; el titular lee solo cuando pague.",
+   "entidades": [
+    "matches",
+    "mensajes",
+    "suscripciones"
+   ]
+  },
+  {
+   "id": "MD12",
+   "pregunta": "Mensajes del titular",
+   "opciones": "¿El titular también puede escribir primero (la ficha tiene 'Enviar mensaje')? ¿Un titular sin plan puede leer o responder? a) Sí / no; b) solo responde; c) lee pero no responde.",
+   "entidades": [
+    "mensajes",
+    "matches",
+    "planes"
+   ]
+  },
+  {
+   "id": "MD13",
+   "pregunta": "¿Cuánto tiempo se guardan los mensajes?",
+   "opciones": "a) N meses desde el último mensaje (ej. 6 o 12). b) Mientras existan el match y las dos cuentas. En ambos casos, las conversaciones reportadas se guardan hasta resolver el caso, más un plazo.",
+   "entidades": [
+    "mensajes",
+    "reportes",
+    "ajustes"
+   ]
+  },
+  {
+   "id": "MD14",
+   "pregunta": "Cuando un match deja de cumplirse, ¿qué pasa con la conversación y los favoritos?",
+   "opciones": "a) Se ocultan, pero se conservan por si vuelve a coincidir (propuesta). b) Desaparece todo. c) La conversación sigue visible, marcada 'ya no coincide'.",
+   "entidades": [
+    "matches",
+    "mensajes",
+    "favoritos"
+   ]
+  },
+  {
+   "id": "MD15",
+   "pregunta": "Bloquear: ¿a quién alcanza?",
+   "opciones": "a) A la persona completa, en todas sus búsquedas (propuesta, como dice la maqueta). b) Solo a ese match.",
+   "entidades": [
+    "bloqueos",
+    "matches"
+   ]
+  },
+  {
+   "id": "MD16",
+   "pregunta": "Compartir contacto del titular y dirección del conductor",
+   "opciones": "¿Qué comparte el titular: a) teléfono y correo (como dice la maqueta del titular: 'Tu teléfono y email están ocultos'); b) solo teléfono (lo único que muestra hoy la conversación del conductor)? ¿Vale para esa conversación (propuesta) o para el conductor en todas las búsquedas del titular? ¿El conductor puede dejar de compartir su dirección?",
+   "entidades": [
+    "matches",
+    "cuentas",
+    "conductores",
+    "entregas_datos"
+   ]
+  },
+  {
+   "id": "MD17",
+   "pregunta": "¿Se filtran teléfonos y correos escritos en los mensajes?",
+   "opciones": "a) No. b) Sí, se ocultan hasta que el titular comparta su contacto. c) Solo se muestra un aviso.",
+   "entidades": [
+    "mensajes"
+   ]
+  },
+  {
+   "id": "MD18",
+   "pregunta": "¿Cada cuánto se renuevan la Hoja de Vida y el certificado de antecedentes? (en pausa)",
+   "opciones": "a) Los dos cada 6 meses, para todos. b) Cada 6 meses para pasajeros y apps; cada 12 para carga y reparto.",
+   "entidades": [
+    "tipos_documento",
+    "documentos"
+   ]
+  },
+  {
+   "id": "MD19",
+   "pregunta": "¿Los 4 documentos se piden para todos los negocios? (en pausa)",
+   "opciones": "a) Los 4 para todos (como está decidido hoy). b) Hoja de Vida y antecedentes solo donde la ley los exige, configurable por negocio.",
+   "entidades": [
+    "tipos_documento",
+    "negocios"
+   ]
+  },
+  {
+   "id": "MD20",
+   "pregunta": "¿Cuánto tiempo después de decidir se borra el archivo? (abogado, P1)",
+   "opciones": "a) Apenas se decide. b) Unos días (ej. 7), para atender una segunda revisión. c) El plazo que indique el abogado, que puede ser distinto por documento.",
+   "entidades": [
+    "tipos_documento",
+    "documentos",
+    "ajustes"
+   ]
+  },
+  {
+   "id": "MD21",
+   "pregunta": "Plazo de revisión de documentos que se promete ('Normalmente en [plazo]')",
+   "opciones": "a) 24 horas. b) 48 horas. c) Otro.",
+   "entidades": [
+    "ajustes",
+    "documentos"
+   ]
+  },
+  {
+   "id": "MD22",
+   "pregunta": "Verificación del titular (P12)",
+   "opciones": "a) Cédula obligatoria, revisada antes de cobrar. b) Obligatoria, pero ve contactos apenas paga. c) Opcional (solo da la insignia).",
+   "entidades": [
+    "tipos_documento",
+    "documentos",
+    "suscripciones"
+   ]
+  },
+  {
+   "id": "MD23",
+   "pregunta": "Al borrar una cuenta, ¿se conserva algo?",
+   "opciones": "a) Nada, se borra todo (como dice la pantalla 'Eliminar cuenta'). b) Se conservan por un plazo las autorizaciones, las entregas de datos, los reportes y los pagos (ley tributaria), como prueba legal [verificar con abogado y contador]; la pantalla tendría que decirlo.",
+   "entidades": [
+    "cuentas",
+    "solicitudes_derechos",
+    "consentimientos",
+    "entregas_datos",
+    "reportes",
+    "suscripciones"
+   ]
+  },
+  {
+   "id": "MD24",
+   "pregunta": "Si el plan vence o baja a uno con menos búsquedas, ¿qué pasa con las que sobran?",
+   "opciones": "a) Se pausan solas las más nuevas (propuesta). b) El titular elige cuáles pausar.",
+   "entidades": [
+    "busquedas",
+    "suscripciones",
+    "planes"
+   ]
+  },
+  {
+   "id": "MD25",
+   "pregunta": "Cobro web y factura (P14)",
+   "opciones": "¿Con qué pasarela se cobra el pago web (Flow, Mercado Pago, Webpay u otra)? ¿Las empresas necesitan factura? Si sí, se agregan giro y dirección tributaria al titular empresa desde el panel.",
+   "entidades": [
+    "suscripciones",
+    "planes",
+    "titulares",
+    "campos_perfil"
+   ]
+  },
+  {
+   "id": "MD26",
+   "pregunta": "Garantía: confirmar que queda fuera del % y decidir qué ve el titular",
+   "opciones": "a) No ve nada de la garantía del conductor (propuesta). b) Ve 'cumple tu garantía: sí/no'. c) Ve el tramo. Antes, el abogado debe decir si el tramo es un dato de situación económica (P1); si lo es, se pide una autorización aparte o se deja de pedir mientras no tenga uso.",
+   "entidades": [
+    "conductores",
+    "busquedas",
+    "reglas_match"
+   ]
+  },
+  {
+   "id": "MD27",
+   "pregunta": "¿Se agregan monto y periodicidad (o el %) de la oferta como campos aparte? (P7)",
+   "opciones": "a) No, solo en el detalle de la oferta (hoy). b) Sí, como dato visible en la ficha, no como variable; se agregan desde el panel.",
+   "entidades": [
+    "busquedas",
+    "campos_perfil"
+   ]
+  },
+  {
+   "id": "MD28",
+   "pregunta": "P5: ¿'igual o mayor' (≥) o 'mayor' (>) que el umbral?",
+   "opciones": "a) ≥ (propuesta). b) >. Con 3 variables y 66 % da lo mismo; importa al agregar variables.",
+   "entidades": [
+    "ajustes",
+    "reglas_match"
+   ]
+  },
+  {
+   "id": "MD29",
+   "pregunta": "Búsqueda: ¿la comuna de retiro se elige igual que la del conductor (dirección con Google Maps)?",
+   "opciones": "a) No, el titular elige solo la comuna (como la maqueta). b) Sí, con dirección privada que solo ve el conductor tras el match.",
+   "entidades": [
+    "busquedas",
+    "comunas"
+   ]
+  },
+  {
+   "id": "MD30",
+   "pregunta": "Días de trabajo y turnos: ¿cómo se comparan entre conductor y búsqueda?",
+   "opciones": "Días: a) todos los días de la búsqueda deben estar entre los del conductor; b) basta al menos uno en común. ¿Es filtro obligatorio como el turno, o entra al %? ¿Se agrega 'Festivos' a la lista? La maqueta 'Nueva búsqueda' tiene opciones antiguas ('Vehículo a cargo 24 h', 'Fines de semana'): ¿'Vehículo a cargo' pasa a ser un dato aparte o se elimina? Mientras tanto, la regla 'Días de trabajo' (M7) queda apagada (propuesta).",
+   "entidades": [
+    "conductores",
+    "busquedas",
+    "opciones",
+    "reglas_match"
+   ]
+  },
+  {
+   "id": "MD31",
+   "pregunta": "Paso 4: si el conductor marca un negocio que sus clases declaradas no habilitan, ¿qué pasa?",
+   "opciones": "a) Se deja marcar sin aviso (no hará match por el filtro de licencia). b) Aparece en gris y no se puede marcar. c) Se deja marcar con un aviso 'tu licencia no habilita este negocio' (propuesta).",
+   "entidades": [
+    "conductores",
+    "negocios",
+    "clases_licencia"
+   ]
+  },
+  {
+   "id": "MD32",
+   "pregunta": "Autorizaciones nuevas (dueña y abogado)",
+   "opciones": "a) Agregar (propuesta): 'Recibir recordatorios por WhatsApp' y 'por correo', opcionales y con baja [verificar política de WhatsApp Business]; compromiso del titular de usar los datos de conductores solo para contratar; normas de mensajes ampliadas (filtro automático y lectura de conversaciones reportadas), que acepten conductor y titular; y una pantalla 'Mis autorizaciones' en Seguridad y privacidad para verlas y retirarlas. b) Solo las que el abogado considere obligatorias.",
+   "entidades": [
+    "textos_autorizacion",
+    "consentimientos",
+    "avisos_enviados",
+    "mensajes"
+   ]
+  },
+  {
+   "id": "MD33",
+   "pregunta": "El titular con plan ve el nombre del conductor en la lista de Resultados antes de abrir su ficha: ¿eso cuenta como entrega de datos?",
+   "opciones": "a) Sí: se registra también la primera vez que aparece en Resultados. b) La lista muestra solo iniciales y comuna hasta abrir la ficha. c) Solo se registra la apertura de la ficha (como hoy).",
+   "entidades": [
+    "entregas_datos",
+    "matches"
+   ]
+  },
+  {
+   "id": "MD34",
+   "pregunta": "Límites contra la recolección masiva de contactos",
+   "opciones": "a) Máximo de conductores nuevos cuyos datos recibe un titular por mes y de cambios de comuna o negocio por búsqueda activa (valores a definir), más alerta en el panel. b) Solo alerta en el panel. c) Sin límites (los planes dicen 'contactos ilimitados').",
+   "entidades": [
+    "ajustes",
+    "entregas_datos",
+    "busquedas",
+    "planes"
+   ]
+  },
+  {
+   "id": "MD35",
+   "pregunta": "Insignias de Hoja de Vida y antecedentes (abogado, P1)",
+   "opciones": "a) Una insignia por documento (como la maqueta 'Ficha'). b) Una sola insignia 'Documentos revisados'. c) Ninguna: el titular solo sabe que todos los conductores tienen sus documentos revisados.",
+   "entidades": [
+    "tipos_documento",
+    "documentos"
+   ]
+  },
+  {
+   "id": "MD36",
+   "pregunta": "¿Qué exige cada sección del perfil para contar como 'lista'?",
+   "opciones": "a) Propuesta: Paso 2 dirección elegida; Paso 3 al menos un tamaño marcado (los años pueden ser 0); Paso 4 al menos un negocio, un turno y un día; Paso 5 los 4 documentos enviados a revisión. b) Igual, pero el Paso 3 es opcional para quien no tiene experiencia. c) El Paso 5 (documentos) cuenta como listo solo con los 4 aprobados.",
+   "entidades": [
+    "conductores",
+    "experiencia_conductor",
+    "documentos",
+    "campos_perfil"
+   ]
+  },
+  {
+   "id": "MD37",
+   "pregunta": "¿Quién confirma el RUN leído de la cédula?",
+   "opciones": "a) Siempre una persona del equipo: la cédula nunca se aprueba sola (propuesta). b) Basta la lectura automática si el nombre coincide. c) El propio conductor lo confirma en la app.",
+   "entidades": [
+    "identidades",
+    "documentos",
+    "tipos_documento"
+   ]
+  },
+  {
+   "id": "MD38",
+   "pregunta": "Plazos de conservación de datos (abogado)",
+   "opciones": "Definir valores para: matches no vigentes, conversaciones reportadas después de resolverse, reportes resueltos, recordatorios enviados, documentos reemplazados o no aprobados, archivos subidos y nunca enviados, cuentas con perfil incompleto e inactivas (con aviso previo) y plazo para responder solicitudes sobre los datos.",
+   "entidades": [
+    "ajustes",
+    "tipos_documento",
+    "matches",
+    "reportes",
+    "avisos_enviados",
+    "cuentas",
+    "solicitudes_derechos"
+   ]
+  },
+  {
+   "id": "MD39",
+   "pregunta": "Modelo de contrato en espera: ¿se pide más adelante (por ejemplo, al hacer match) o no se pide? Mientras tanto, ¿el match deja de filtrar por modo de contrato (M1)?",
+   "opciones": "a) El match no filtra por M1 mientras esté en espera (propuesta). b) Se sigue filtrando con lo que pida el titular y el conductor acepta todos los modos por defecto.",
+   "entidades": [
+    "conductores",
+    "busquedas",
+    "reglas_match"
+   ]
+  }
+ ],
+ "cambios": [
+  {
+   "n": 22,
+   "fecha": "2026-10-29",
+   "cambio": "La disponibilidad para trabajar (sí o no, con su fecha) se guarda desde el registro mínimo (Paso 1), no solo desde el inicio. Viene en \"sí\" por defecto.",
+   "porque": "La dueña pidió preguntarla al registrarse, justo después de la clase de licencia.",
+   "origen": "Comentario",
+   "entidades": [
+    "conductores"
+   ]
+  },
+  {
+   "n": 21,
+   "fecha": "2026-10-29",
+   "cambio": "La configuración del panel suma un enlace para obtener cada documento (por ahora, la portada del Registro Civil para la Hoja de Vida y el Certificado de antecedentes). Los enlaces directos están por verificar.",
+   "porque": "La dueña pidió sugerir un enlace directo al Registro Civil para obtener los documentos.",
+   "origen": "Comentario",
+   "entidades": [
+    "tipos_documento"
+   ]
+  },
+  {
+   "n": 20,
+   "fecha": "2026-10-29",
+   "cambio": "Los modos de contrato del conductor y su garantía máxima quedan en espera: no se piden en el registro. Las tablas se conservan marcadas \"en espera\". Propuesta: el filtro M1 (modo de contrato) se desactiva en el match mientras tanto. El perfil vuelve a tener 5 secciones (se revierte el cambio 15).",
+   "porque": "La dueña dejó el modelo de contrato en espera hasta nuevo aviso: puede que no se necesite en el registro y sea algo posterior.",
+   "origen": "Comentario",
+   "entidades": [
+    "conductores",
+    "busquedas",
+    "reglas_match"
+   ]
+  },
+  {
+   "n": 19,
+   "fecha": "2026-10-29",
+   "cambio": "El catálogo de negocios suma un campo opcional \"ejemplo\", un texto en gris que se muestra junto al nombre. Por ejemplo, \"Transporte por aplicación\" lleva \"(Uber, Cabify)\" y \"Moto delivery\" lleva \"(PedidosYa, Rappi)\". Todos los negocios menos Taxi tienen uno. Se edita desde el panel.",
+   "porque": "La dueña pidió mostrar ejemplos entre paréntesis en gris.",
+   "origen": "Comentario",
+   "entidades": [
+    "negocios"
+   ]
+  },
+  {
+   "n": 18,
+   "fecha": "2026-10-29",
+   "cambio": "El catálogo de turnos queda en Día y Noche (antes 4 opciones), y se agrega un catálogo de días de la semana (lunes a domingo). El conductor guarda turnos (varios) y días (varios); la búsqueda del titular también deberá indicar turno y días. Pendiente: cómo comparar los días en el match (todos o al menos uno) y si se agrega \"Festivos\".",
+   "porque": "La dueña pidió separar la preferencia de turno (día o noche) de los días en que puede trabajar, con los 7 días para marcar.",
+   "origen": "Comentario",
+   "entidades": [
+    "conductores",
+    "busquedas",
+    "opciones"
+   ]
+  },
+  {
+   "n": 17,
+   "fecha": "2026-10-29",
+   "cambio": "En el catálogo de negocios, \"Uber u otra app\" pasa a \"Transporte por aplicación\". Solo cambia el nombre visible.",
+   "porque": "La dueña pidió un nombre más elegante y formal, sin marcas.",
+   "origen": "Comentario",
+   "entidades": [
+    "negocios"
+   ]
+  },
+  {
+   "n": 16,
+   "fecha": "2026-10-29",
+   "cambio": "El Paso 4 muestra todos los negocios del catálogo, no solo los que permite la licencia. No cambian las tablas: la tabla negocio → licencias se sigue usando en el filtro F2 del match. Pendiente: si un negocio no permitido se deja marcar o aparece en gris.",
+   "porque": "La dueña pidió incluir todos los negocios que indicó.",
+   "origen": "Comentario",
+   "entidades": [
+    "negocios",
+    "conductores"
+   ]
+  },
+  {
+   "n": 15,
+   "fecha": "2026-10-29",
+   "cambio": "El perfil del conductor pasa de 5 a 6 secciones: el modelo de contrato (modos de contrato y garantía máxima) se separa de \"¿Cómo quieres trabajar?\" (negocio, turnos y estacionamiento). El avance del perfil se cuenta sobre 6 secciones. No cambian las tablas.",
+   "porque": "La dueña pidió que el modelo de contrato vaya en una hoja separada.",
+   "origen": "Comentario",
+   "entidades": [
+    "conductores",
+    "campos_perfil"
+   ]
+  },
+  {
+   "n": 14,
+   "fecha": "2026-10-29",
+   "cambio": "Paso 3: la experiencia se guarda como años por cada tamaño. Se marca el tamaño y luego se ingresan sus años; una fila sin marcar no guarda años.",
+   "porque": "La dueña pidió una tabla: vehículo a la izquierda y \"Años de experiencia\" a la derecha, activos solo en los vehículos marcados.",
+   "origen": "Comentario (dibujo)",
+   "entidades": [
+    "experiencia_conductor"
+   ]
+  },
+  {
+   "n": 13,
+   "fecha": "2026-10-29",
+   "cambio": "Catálogo de tamaños: \"Grúa\" pasa a \"Grúa de autos\" y \"Camión + grande\" a \"Camión pesado\" (nombre por confirmar).",
+   "porque": "\"Grúa\" era ambiguo (grúa de autos, camión pluma o grúa horquilla, que pide otra licencia). La dueña pidió otro nombre para el camión grande.",
+   "origen": "Comentario",
+   "entidades": [
+    "tamanos_vehiculo"
+   ]
+  },
+  {
+   "n": 12,
+   "fecha": "2026-10-29",
+   "cambio": "Nuevo catálogo negocios (en qué quiere trabajar el conductor): Taxi, Radiotaxi ejecutivo, Uber u otra app, Van o bus de turismo, Bus interurbano, Camión de carga interurbano, Camión de carga urbano (por confirmar), Moto delivery. Va con una tabla negocio → clases de licencia. Reemplaza a \"tipos de vehículo\" en los filtros F1 y F2.",
+   "porque": "Lo que el conductor quiere manejar es \"el negocio en el que quiere participar\", no la experiencia.",
+   "origen": "Comentario + Decisión",
+   "entidades": [
+    "negocios",
+    "clases_licencia",
+    "conductores",
+    "busquedas"
+   ]
+  },
+  {
+   "n": 11,
+   "fecha": "2026-10-29",
+   "cambio": "Nuevo catálogo tamaños de vehículo: Auto, Camioneta, Van, Camión 3/4, Grúa de autos, Moto, Bus, Camión pesado. Nueva tabla experiencia del conductor (conductor × tamaño, con años).",
+   "porque": "La experiencia mide la experticia según las dimensiones del vehículo, y se pueden marcar varios.",
+   "origen": "Comentario + Decisión",
+   "entidades": [
+    "tamanos_vehiculo",
+    "experiencia_conductor"
+   ]
+  },
+  {
+   "n": 10,
+   "fecha": "2026-10-29",
+   "cambio": "M4 (años), propuesta pendiente: tabla negocio → tamaños relacionados, para comparar los años del conductor en esos tamaños contra el mínimo de la búsqueda.",
+   "porque": "Al pasar los años a \"por tamaño\", el match necesita saber qué tamaños cuentan para cada negocio.",
+   "origen": "Pendiente de la dueña",
+   "entidades": [
+    "negocios",
+    "tamanos_vehiculo",
+    "busquedas"
+   ]
+  },
+  {
+   "n": 9,
+   "fecha": "2026-10-29",
+   "cambio": "Se eliminan C10 (\"Tu experiencia en pocas palabras\") y el total general de años (C9).",
+   "porque": "La dueña pidió eliminar el texto libre. El total queda reemplazado por los años por tamaño.",
+   "origen": "Comentario",
+   "entidades": [
+    "conductores",
+    "experiencia_conductor"
+   ]
+  },
+  {
+   "n": 8,
+   "fecha": "2026-10-29",
+   "cambio": "\"En qué quiere trabajar\" pasa del Paso 3 al Paso 4 (\"¿Cómo quieres trabajar?\"). No cambia la estructura de datos.",
+   "porque": "No es experiencia.",
+   "origen": "Comentario",
+   "entidades": [
+    "conductores"
+   ]
+  },
+  {
+   "n": 7,
+   "fecha": "2026-10-29",
+   "cambio": "Se eliminan C6 (\"otras comunas donde puede retirar\") y la opción \"cualquier comuna de mi región\". La zona del conductor sale solo de la comuna de su dirección.",
+   "porque": "La dueña indicó que no es relevante.",
+   "origen": "Comentario",
+   "entidades": [
+    "conductores",
+    "zonas",
+    "comunas"
+   ]
+  },
+  {
+   "n": 6,
+   "fecha": "2026-10-29",
+   "cambio": "Dirección del conductor: dirección elegida desde Google Maps, identificador del lugar [verificar qué permite guardar Google], depto/casa/block (opcional) y comuna verificada (de ella salen zona y región). Nuevo registro de direcciones compartidas (a qué titular y cuándo).",
+   "porque": "Así se obtiene la comuna exacta para el match. La dirección es privada y solo se entrega tras un match si el conductor lo autoriza (\"Compartir mi dirección\").",
+   "origen": "Comentario + Decisión",
+   "entidades": [
+    "conductores",
+    "comunas",
+    "matches",
+    "entregas_datos"
+   ]
+  },
+  {
+   "n": 5,
+   "fecha": "2026-10-29",
+   "cambio": "Estado del perfil (incompleto / completo) y registro de recordatorios enviados (canal y fecha; frecuencia por definir).",
+   "porque": "El conductor queda registrado con el Paso 1 y puede terminar después. Con perfil incompleto no entra al match y se le recuerda por WhatsApp o correo.",
+   "origen": "Comentario + Decisión",
+   "entidades": [
+    "conductores",
+    "avisos_enviados"
+   ]
+  },
+  {
+   "n": 4,
+   "fecha": "2026-10-29",
+   "cambio": "Registro mínimo: celular verificado, correo, nombres y apellidos y clases de licencia (se piden en el Paso 1).",
+   "porque": "La dueña pidió poder registrarse con datos incompletos y captarlo después.",
+   "origen": "Comentario",
+   "entidades": [
+    "conductores",
+    "clases_licencia"
+   ]
+  },
+  {
+   "n": 3,
+   "fecha": "2026-10-29",
+   "cambio": "Correo obligatorio para todos (conductores, titulares y empresas) como dato de respaldo. Propuesta: confirmarlo con código o enlace. Entrada con celular y código por WhatsApp, con SMS de respaldo.",
+   "porque": "Sirve para recuperar la cuenta, cambiar de número y recibir comprobantes de pago. No se usa para entrar.",
+   "origen": "Comentario + Decisión",
+   "entidades": [
+    "cuentas"
+   ]
+  },
+  {
+   "n": 2,
+   "fecha": "2026-10-29",
+   "cambio": "RUN: no se pide en el formulario. Se lee de la cédula al verificarla y lo ve solo el equipo. Es único, para evitar cuentas duplicadas.",
+   "porque": "La dueña indicó que no es necesario pedirlo.",
+   "origen": "Comentario",
+   "entidades": [
+    "identidades",
+    "documentos"
+   ]
+  },
+  {
+   "n": 1,
+   "fecha": "2026-10-29",
+   "cambio": "Nombre en tres campos: nombres, primer apellido y segundo apellido (opcional).",
+   "porque": "La dueña pidió los campos por separado.",
+   "origen": "Comentario",
+   "entidades": [
+    "cuentas"
+   ]
+  },
+  {
+   "n": 0,
+   "fecha": "2026-10-29",
+   "cambio": "Versión inicial del modelo a partir de la propuesta de campos C1–C18 y T1–T19 aprobada, con dos borradores (MVP simple y configurable desde el panel), una síntesis y dos revisiones (cobertura y privacidad).",
+   "porque": "Base para construir en Supabase.",
+   "origen": "Decisión",
+   "entidades": []
+  }
+ ]
+}

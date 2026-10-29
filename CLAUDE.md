@@ -120,6 +120,8 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 ## Documentos de referencia
 
 - `docs/plan.md` — plan de trabajo por fases y lo que depende de la dueña. **Mantener actualizado.**
+- `docs/modelo-datos.json` — modelo de datos (34 tablas). Página interactiva para revisarlo: https://claude.ai/artifact/1ACYaM3MWdn1yiMpe7pwkK. **Se actualiza con cada cambio de la maqueta.**
+- `docs/modelo-datos-cambios.md` — registro de qué cambió en el modelo y por qué.
 - `docs/terminos-y-privacidad.md` — lista de lo que deben cubrir los Términos y la Política de privacidad. **Agregar un punto cada vez que una decisión lo requiera.**
 - `docs/propuesta-campos.md` — propuesta de campos (C# conductor, T# titular, F# filtros, M# variables de match, D# documentos, P# preguntas). **Es una propuesta, no una decisión.**
 - `docs/propuesta-nombres.md` — nombres candidatos con conflictos encontrados. **Propuesta.**

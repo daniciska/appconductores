@@ -12,7 +12,7 @@ Actualizado: 29-oct-2026. Se actualiza a medida que avanzamos.
 ## Fase 1 — Diseño (en curso)
 
 1. [ ] Pulir el prototipo del conductor (la dueña lo recorre y comenta).
-2. [ ] **Modelo de datos interactivo**: tablas, campos y relaciones; la dueña marca cada campo "queda / cambiar / sacar". *(en curso)*
+2. [ ] **Modelo de datos interactivo**: tablas, campos y relaciones; la dueña marca cada campo "queda / cambiar / sacar". *(publicado, en revisión: https://claude.ai/artifact/1ACYaM3MWdn1yiMpe7pwkK)*
    - Se actualiza cada vez que cambia una pantalla de la maqueta; el porqué de cada cambio queda en `docs/modelo-datos-cambios.md`.
 3. [ ] Prototipo del titular, con el mismo detalle (registro, verificación, búsquedas, resultados, planes y pago, mensajes, compartir contacto).
 4. [ ] Maquetas del panel de administración (revisión de documentos, configuración de campos, catálogos, reglas de match y zonas, reportes, usuarios).
