@@ -13,6 +13,7 @@ Actualizado: 29-oct-2026. Se actualiza a medida que avanzamos.
 
 1. [ ] Pulir el prototipo del conductor (la dueña lo recorre y comenta).
 2. [ ] **Modelo de datos interactivo**: tablas, campos y relaciones; la dueña marca cada campo "queda / cambiar / sacar". *(en curso)*
+   - Se actualiza cada vez que cambia una pantalla de la maqueta; el porqué de cada cambio queda en `docs/modelo-datos-cambios.md`.
 3. [ ] Prototipo del titular, con el mismo detalle (registro, verificación, búsquedas, resultados, planes y pago, mensajes, compartir contacto).
 4. [ ] Maquetas del panel de administración (revisión de documentos, configuración de campos, catálogos, reglas de match y zonas, reportes, usuarios).
 5. [ ] Retomar lo que está en pausa: documentos, mensajes y zonas.
