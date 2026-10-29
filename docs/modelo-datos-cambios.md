@@ -8,6 +8,7 @@ Origen: **Comentario** = comentario de la dueña en la maqueta · **Decisión** 
 
 | # | Cambio en los datos | Por qué | Origen |
 |---|---|---|---|
+| 15 | El perfil del conductor pasa de 5 a **6 secciones**: el **modelo de contrato** (modos de contrato y garantía máxima) se separa de "¿Cómo quieres trabajar?" (negocio, turnos y estacionamiento). El avance del perfil se cuenta sobre 6 secciones. No cambian las tablas. | La dueña pidió que el modelo de contrato vaya en una hoja separada. | Comentario |
 | 14 | Paso 3: la experiencia se guarda como **años por cada tamaño**. Se marca el tamaño y luego se ingresan sus años; una fila sin marcar no guarda años. | La dueña pidió una tabla: vehículo a la izquierda y "Años de experiencia" a la derecha, activos solo en los vehículos marcados. | Comentario (dibujo) |
 | 13 | Catálogo de tamaños: "Grúa" pasa a **"Grúa de autos"** y "Camión + grande" a **"Camión pesado"** (nombre por confirmar). | "Grúa" era ambiguo (grúa de autos, camión pluma o grúa horquilla, que pide otra licencia). La dueña pidió otro nombre para el camión grande. | Comentario |
 | 12 | Nuevo catálogo **negocios** (en qué quiere trabajar el conductor): Taxi, Radiotaxi ejecutivo, Uber u otra app, Van o bus de turismo, Bus interurbano, Camión de carga interurbano, Camión de carga urbano (por confirmar), Moto delivery. Va con una tabla **negocio → clases de licencia**. Reemplaza a "tipos de vehículo" en los filtros F1 y F2. | Lo que el conductor quiere manejar es "el negocio en el que quiere participar", no la experiencia. | Comentario + Decisión |
