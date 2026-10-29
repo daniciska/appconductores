@@ -8,6 +8,7 @@ Origen: **Comentario** = comentario de la dueña en la maqueta · **Decisión** 
 
 | # | Cambio en los datos | Por qué | Origen |
 |---|---|---|---|
+| 16 | El Paso 4 muestra **todos los negocios** del catálogo, no solo los que permite la licencia. No cambian las tablas: la tabla negocio → licencias se sigue usando en el filtro F2 del match. Pendiente: si un negocio no permitido se deja marcar o aparece en gris. | La dueña pidió incluir todos los negocios que indicó. | Comentario |
 | 15 | El perfil del conductor pasa de 5 a **6 secciones**: el **modelo de contrato** (modos de contrato y garantía máxima) se separa de "¿Cómo quieres trabajar?" (negocio, turnos y estacionamiento). El avance del perfil se cuenta sobre 6 secciones. No cambian las tablas. | La dueña pidió que el modelo de contrato vaya en una hoja separada. | Comentario |
 | 14 | Paso 3: la experiencia se guarda como **años por cada tamaño**. Se marca el tamaño y luego se ingresan sus años; una fila sin marcar no guarda años. | La dueña pidió una tabla: vehículo a la izquierda y "Años de experiencia" a la derecha, activos solo en los vehículos marcados. | Comentario (dibujo) |
 | 13 | Catálogo de tamaños: "Grúa" pasa a **"Grúa de autos"** y "Camión + grande" a **"Camión pesado"** (nombre por confirmar). | "Grúa" era ambiguo (grúa de autos, camión pluma o grúa horquilla, que pide otra licencia). La dueña pidió otro nombre para el camión grande. | Comentario |
