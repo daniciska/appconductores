@@ -97,6 +97,7 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 
 ## Documentos de referencia
 
+- `docs/plan.md` — plan de trabajo por fases y lo que depende de la dueña. **Mantener actualizado.**
 - `docs/propuesta-campos.md` — propuesta de campos (C# conductor, T# titular, F# filtros, M# variables de match, D# documentos, P# preguntas). **Es una propuesta, no una decisión.**
 - `docs/propuesta-nombres.md` — nombres candidatos con conflictos encontrados. **Propuesta.**
 - `docs/investigacion/contexto-chile.md` — licencias, documentos verificables, Ley 21.719 / 19.628, Ley 21.553, modalidades de contrato.
