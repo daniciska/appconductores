@@ -8,6 +8,7 @@ Origen: **Comentario** = comentario de la dueña en la maqueta · **Decisión** 
 
 | # | Cambio en los datos | Por qué | Origen |
 |---|---|---|---|
+| 22 | La **disponibilidad para trabajar** (sí o no, con su fecha) se guarda desde el **registro mínimo** (Paso 1), no solo desde el inicio. Viene en "sí" por defecto. | La dueña pidió preguntarla al registrarse, justo después de la clase de licencia. | Comentario |
 | 21 | La configuración del panel suma un **enlace para obtener cada documento** (por ahora, la portada del Registro Civil para la Hoja de Vida y el Certificado de antecedentes). Los enlaces directos están por verificar. | La dueña pidió sugerir un enlace directo al Registro Civil para obtener los documentos. | Comentario |
 | 20 | Los **modos de contrato del conductor** y su **garantía máxima** quedan **en espera**: no se piden en el registro. Las tablas se conservan marcadas "en espera". Propuesta: el filtro M1 (modo de contrato) se desactiva en el match mientras tanto. El perfil vuelve a tener **5 secciones** (se revierte el cambio 15). | La dueña dejó el modelo de contrato en espera hasta nuevo aviso: puede que no se necesite en el registro y sea algo posterior. | Comentario |
 | 19 | El catálogo de negocios suma un campo opcional **"ejemplo"**, un texto en gris que se muestra junto al nombre. Por ejemplo, "Transporte por aplicación" lleva "(Uber, Cabify)" y "Moto delivery" lleva "(PedidosYa, Rappi)". Todos los negocios menos Taxi tienen uno. Se edita desde el panel. | La dueña pidió mostrar ejemplos entre paréntesis en gris. | Comentario |
