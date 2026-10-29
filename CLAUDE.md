@@ -44,6 +44,7 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 
 - [ ] P5–P7, P9, P12, P15, P16 de `docs/propuesta-campos.md`.
 - [ ] Plazo comprometido de revisión de documentos.
+- [ ] Variable M4 (años) con experiencia por vehículo. *Propuesta:* comparar los años del conductor con el tipo de vehículo de la búsqueda contra el mínimo del titular. ¿O se mantiene también un total general de años?
 - [ ] Recordatorios para completar el perfil: cada cuánto, cuántas veces y por qué canal primero (WhatsApp o correo).
 - [ ] Criterios de rechazo de Hoja de Vida y antecedentes, y cada cuánto se renuevan.
 - [ ] Mensajes: ¿el titular también puede escribir primero? ¿Un titular **sin plan** puede leer/responder mensajes? ¿Reportar/bloquear (exigido por las tiendas)? ¿Cuánto tiempo se guardan los mensajes?
@@ -80,6 +81,8 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - **Textos en pantalla:** cortos; el detalle legal (privacidad, uso de datos) va en los Términos y la Política de privacidad, no en las pantallas.
 - **Formularios (estilo):** los campos obligatorios se marcan con **asterisco (*)**, sin explicaciones largas debajo; si se intenta guardar sin un dato obligatorio, aparece una **alerta** y el campo se marca en rojo.
 - **Zona del conductor:** se usa **solo la comuna de su dirección** (y su zona). Se eliminan las "otras comunas donde puede retirar" (C6) y la opción "cualquier comuna de mi región".
+- **Experiencia del conductor (Paso 3):** "¿Qué vehículos has manejado?", con **selección múltiple** sobre el catálogo completo de tipos de vehículo y **años con cada vehículo marcado**. Se eliminan el texto libre "Tu experiencia en pocas palabras" (C10) y el total general de años.
+- **Vehículos con los que quiere trabajar (C8):** no son experiencia. Van en el **Paso 4 "¿Cómo quieres trabajar?"**, con selección múltiple y solo los tipos que permite su licencia. El registro sigue en **5 pasos**.
 - **Perfil titular (P2):** un solo perfil con selector "Persona natural / Empresa". Los bloques Experiencia y Contrato del titular van por **búsqueda** (un vehículo o grupo de vehículos iguales).
 - **Filtros adicionales (P4):** modo de contrato (M1) y turno (M3) también son **filtros obligatorios**, fuera del %.
 - **Garantía:** la dueña indica que en la práctica no existe → queda como **campo opcional** (C13 y T15). **No es filtro.** Por ahora tampoco entra al % (interpretación de Claude, por confirmar).
