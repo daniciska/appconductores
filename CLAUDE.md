@@ -105,6 +105,7 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - `docs/investigacion/contexto-chile.md` — licencias, documentos verificables, Ley 21.719 / 19.628, Ley 21.553, modalidades de contrato.
 - `docs/propuesta-zonas.md` y `docs/propuesta-zonas.csv` — propuesta de zonas (81 zonas, 346 comunas). **Propuesta.**
 - `docs/investigacion/documentos-y-mensajes.md` — Hoja de Vida y antecedentes (ley vigente y próxima, riesgo Ley 21.719 art. 25, revisión con IA, criterios de rechazo, renovación) y reglas de tiendas para mensajería.
+- `docs/investigacion/cuentas-tiendas.md` — costo y proceso de las cuentas Apple Developer y Google Play (persona natural, Chile), cobro de suscripciones, impuestos [verificar con contador].
 - `docs/investigacion/mercado-avisos.md` — cómo se publicitan conductores/titulares hoy, competidores (Uber Match, Portal Conductores, etc.).
 
 Lo marcado **[verificar]** en esos documentos no está confirmado y no debe tratarse como hecho.
