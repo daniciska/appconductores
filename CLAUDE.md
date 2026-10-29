@@ -58,7 +58,7 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - [ ] Identidad visual (colores, tipografía, logo) — depende del nombre/marca.
 
 ### Legal
-- [ ] Términos y condiciones, política de privacidad y tratamiento de datos personales según la normativa chilena.
+- [ ] Términos y condiciones, política de privacidad y tratamiento de datos personales según la normativa chilena. Lo que deben cubrir: `docs/terminos-y-privacidad.md`.
 - [ ] P1: consulta con abogado (Hoja de Vida, fotos de documentos, base legal, revisión automatizada por IA, transferencia internacional de datos).
 
 ## Decisiones tomadas
@@ -77,6 +77,7 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - **Contacto del conductor compartido tras el match:** **teléfono y correo** (los dos).
 - **Registro mínimo del conductor (Paso 1):** celular verificado, correo, nombres y apellidos y **clases de licencia**. Al guardar, el conductor **ya queda registrado** y puede elegir **"Guardar y continuar"** o **"Guardar y terminar después"** (perfil incompleto). El resto (dónde vive, experiencia, cómo trabaja, documentos) se completa después. Con perfil incompleto **no entra al match**. Se le **recuerda por WhatsApp o correo** que complete su perfil (frecuencia por definir).
 - **Dirección del conductor (Paso 2):** se pide la **dirección**, con **sugerencias de dirección completa desde Google Maps** (Places). De la dirección elegida se obtiene la **comuna verificada** (y su zona y región), que es la que se usa para el match. La dirección **no se muestra a nadie**; solo se entrega a un titular **si hay match y el conductor lo autoriza** ("Compartir mi dirección" en la conversación).
+- **Textos en pantalla:** cortos; el detalle legal (privacidad, uso de datos) va en los Términos y la Política de privacidad, no en las pantallas.
 - **Formularios (estilo):** los campos obligatorios se marcan con **asterisco (*)**, sin explicaciones largas debajo; si se intenta guardar sin un dato obligatorio, aparece una **alerta** y el campo se marca en rojo.
 - **Perfil titular (P2):** un solo perfil con selector "Persona natural / Empresa". Los bloques Experiencia y Contrato del titular van por **búsqueda** (un vehículo o grupo de vehículos iguales).
 - **Filtros adicionales (P4):** modo de contrato (M1) y turno (M3) también son **filtros obligatorios**, fuera del %.
@@ -108,6 +109,7 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 ## Documentos de referencia
 
 - `docs/plan.md` — plan de trabajo por fases y lo que depende de la dueña. **Mantener actualizado.**
+- `docs/terminos-y-privacidad.md` — lista de lo que deben cubrir los Términos y la Política de privacidad. **Agregar un punto cada vez que una decisión lo requiera.**
 - `docs/propuesta-campos.md` — propuesta de campos (C# conductor, T# titular, F# filtros, M# variables de match, D# documentos, P# preguntas). **Es una propuesta, no una decisión.**
 - `docs/propuesta-nombres.md` — nombres candidatos con conflictos encontrados. **Propuesta.**
 - `docs/investigacion/contexto-chile.md` — licencias, documentos verificables, Ley 21.719 / 19.628, Ley 21.553, modalidades de contrato.
