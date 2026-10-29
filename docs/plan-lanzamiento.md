@@ -165,7 +165,8 @@ Herramientas propuestas (confirmar): **pnpm** para manejar el repo, **Expo Route
 | Crear cuenta Apple Developer (USD 99/año) | 30-oct | Instalar en iPhone (día 5) |
 | Crear cuenta Google Play Console (USD 25, verificación de identidad) | 30-oct | Prueba en Android y el conteo de 14 días |
 | Acceso a Supabase | 30-oct | Todo |
-| Proveedor de SMS (ej. Twilio) + presupuesto | 2-nov | Que personas reales entren a la app |
+| Cuenta Twilio (SMS ahora, WhatsApp después) | 2-nov | Que personas reales entren a la app |
+| Cuenta Meta Business a su nombre + número dedicado para WhatsApp; iniciar verificación | 30-oct | Código por WhatsApp (puede tardar días) |
 | Reunir 12+ testers Android y un piloto de conductores y titulares | 6-nov | Piloto y publicación en Google Play |
 | Aprobar maquetas del titular | 4-nov | Días 6-7 |
 | Abogado: política de privacidad, términos, consentimientos | 11-nov | Envío a Apple y publicación |
@@ -181,7 +182,7 @@ Herramientas propuestas (confirmar): **pnpm** para manejar el repo, **Expo Route
 3. **Mensajes:** ¿opción A (fuera del piloto) u opción B (mensajes simples)? Si es B, faltan las respuestas sobre mensajes que están en pausa (quién escribe primero, titular sin plan, reportar/bloquear).
 4. **Documentos en el piloto:** ¿se piden los 4 (cédula, licencia, Hoja de Vida, antecedentes) aunque la consulta con el abogado no esté hecha? ¿Qué criterio usa la persona que revisa para rechazar? (hoy en pausa).
 5. **Zonas:** ¿se carga la propuesta de `docs/propuesta-zonas.md` tal cual para el piloto (editable después)?
-6. **Proveedor de SMS:** ¿se contrata ya Twilio u otro?
+6. ~~**Proveedor de SMS**~~ — **Decidido (29-oct):** WhatsApp principal + SMS respaldo, vía Twilio; Meta Business a nombre de la dueña.
 7. **Panel web:** ¿Next.js en Vercel está bien?
 8. **Zona del piloto:** ¿todo Chile o partir captando en una región (ej. RM)? La app funciona igual; solo cambia dónde se buscan los testers.
 

@@ -51,7 +51,7 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - [ ] Nombre definitivo de la app / marca (hoy provisorio: **Dale Contacto**; falta revisar INAPI, dominios y tiendas).
 
 ### Técnico
-- [ ] Proveedor de SMS (ej. Twilio) — *se deja para después*; mientras tanto, números de prueba de Supabase. **Ojo:** los números de prueba no sirven para personas reales; un piloto con usuarios reales necesita proveedor (ver `docs/plan-lanzamiento.md`).
+- [ ] Crear cuenta Twilio y cuenta Meta Business (verificación de empresa para WhatsApp), a nombre de la dueña. Conseguir un número dedicado para WhatsApp.
 - [ ] Crear cuentas Apple Developer y Google Play (a nombre de la dueña).
 - [ ] Identidad visual (colores, tipografía, logo) — depende del nombre/marca.
 
@@ -94,6 +94,7 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - **Backend:** **Supabase** (base de datos, autenticación y archivos), por ahora.
 - **Panel de administración:** **web**.
 - **Inicio de sesión:** **número de celular + código SMS**.
+- **Envío del código (29-oct):** **WhatsApp como canal principal y SMS como respaldo**, ambos vía **Twilio** (un solo proveedor). El piloto parte con SMS mientras Meta aprueba la verificación; luego se activa WhatsApp sin cambiar la app. La cuenta **Meta Business** se crea **a nombre de la dueña (persona natural)**.
 
 ## Documentos de referencia
 
