@@ -44,6 +44,7 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 
 - [ ] P5–P7, P9, P12, P15, P16 de `docs/propuesta-campos.md`.
 - [ ] Plazo comprometido de revisión de documentos.
+- [ ] Recordatorios para completar el perfil: cada cuánto, cuántas veces y por qué canal primero (WhatsApp o correo).
 - [ ] Criterios de rechazo de Hoja de Vida y antecedentes, y cada cuánto se renuevan.
 - [ ] Mensajes: ¿el titular también puede escribir primero? ¿Un titular **sin plan** puede leer/responder mensajes? ¿Reportar/bloquear (exigido por las tiendas)? ¿Cuánto tiempo se guardan los mensajes?
 - [ ] Zonas: revisar la propuesta de `docs/propuesta-zonas.md`.
@@ -52,7 +53,6 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 
 ### Técnico
 - [ ] Proveedor para enviar el código por **WhatsApp y SMS** (ej. Twilio; confirmar que Supabase lo soporta [verificar]) — *se deja para después*; mientras tanto, números de prueba de Supabase.
-- [ ] ¿El correo del conductor se comparte con el titular tras el match, o solo el teléfono? (hoy la autorización dice "teléfono y email").
 - [ ] Crear cuentas Apple Developer y Google Play (a nombre de la dueña).
 - [ ] Identidad visual (colores, tipografía, logo) — depende del nombre/marca.
 
@@ -73,6 +73,8 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - **Nombre del conductor (C1):** se pide en campos separados: **Nombres**, **Primer apellido** y **Segundo apellido (opcional)**.
 - **RUN del conductor (C2):** **no se pide en el formulario**. Se obtiene de la foto de la cédula durante la verificación (el agente lo lee, la persona lo confirma) y solo lo ve el equipo. Sirve para verificar identidad y evitar cuentas duplicadas.
 - **Email del conductor (C4):** ver "Correo electrónico (todos)". *Propuesta:* confirmarlo con un código o enlace al correo.
+- **Contacto del conductor compartido tras el match:** **teléfono y correo** (los dos).
+- **Registro mínimo del conductor (Paso 1):** celular verificado, correo, nombres y apellidos y **clases de licencia**. Al guardar, el conductor **ya queda registrado** y puede elegir **"Guardar y continuar"** o **"Guardar y terminar después"** (perfil incompleto). El resto (dónde vive, experiencia, cómo trabaja, documentos) se completa después. Con perfil incompleto **no entra al match**. Se le **recuerda por WhatsApp o correo** que complete su perfil (frecuencia por definir).
 - **Perfil titular (P2):** un solo perfil con selector "Persona natural / Empresa". Los bloques Experiencia y Contrato del titular van por **búsqueda** (un vehículo o grupo de vehículos iguales).
 - **Filtros adicionales (P4):** modo de contrato (M1) y turno (M3) también son **filtros obligatorios**, fuera del %.
 - **Garantía:** la dueña indica que en la práctica no existe → queda como **campo opcional** (C13 y T15). **No es filtro.** Por ahora tampoco entra al % (interpretación de Claude, por confirmar).
