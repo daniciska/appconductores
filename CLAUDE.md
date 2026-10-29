@@ -69,6 +69,8 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - **Mensajes dentro de la app (cambia la decisión anterior de "sin chat"):** el conductor puede enviar un **mensaje privado** al titular/empresa de un match. El **contacto personal del titular/empresa no se muestra**, salvo que el titular lo **revele a un conductor en particular** con una función dentro de su perfil/conversación. La idea es conversar un poco antes de pasar a contacto fuera de la app.
 - **Favoritos:** el conductor puede marcar como favoritos sus matches (búsquedas/titulares) y el titular/empresa puede marcar como favoritos a sus conductores.
 - **Campos de perfil:** se aprueba por ahora la propuesta C1–C18 y T1–T19 de `docs/propuesta-campos.md` (sin correcciones).
+- **Nombre del conductor (C1):** se pide en campos separados: **Nombres**, **Primer apellido** y **Segundo apellido (opcional)**.
+- **RUN del conductor (C2):** **no se pide en el formulario**. Se obtiene de la foto de la cédula durante la verificación (el agente lo lee, la persona lo confirma) y solo lo ve el equipo. Sirve para verificar identidad y evitar cuentas duplicadas.
 - **Perfil titular (P2):** un solo perfil con selector "Persona natural / Empresa". Los bloques Experiencia y Contrato del titular van por **búsqueda** (un vehículo o grupo de vehículos iguales).
 - **Filtros adicionales (P4):** modo de contrato (M1) y turno (M3) también son **filtros obligatorios**, fuera del %.
 - **Garantía:** la dueña indica que en la práctica no existe → queda como **campo opcional** (C13 y T15). **No es filtro.** Por ahora tampoco entra al % (interpretación de Claude, por confirmar).
