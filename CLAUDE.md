@@ -52,6 +52,7 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - [ ] Nombre definitivo de la app / marca (hoy provisorio: **Dale Contacto**; falta revisar INAPI, dominios y tiendas).
 
 ### Técnico
+- [ ] Cuenta de Google Cloud para Google Maps Places (sugerencias de dirección): costo por uso y condiciones de qué datos se pueden guardar [verificar].
 - [ ] Proveedor para enviar el código por **WhatsApp y SMS** (ej. Twilio; confirmar que Supabase lo soporta [verificar]) — *se deja para después*; mientras tanto, números de prueba de Supabase.
 - [ ] Crear cuentas Apple Developer y Google Play (a nombre de la dueña).
 - [ ] Identidad visual (colores, tipografía, logo) — depende del nombre/marca.
@@ -75,6 +76,7 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - **Email del conductor (C4):** ver "Correo electrónico (todos)". *Propuesta:* confirmarlo con un código o enlace al correo.
 - **Contacto del conductor compartido tras el match:** **teléfono y correo** (los dos).
 - **Registro mínimo del conductor (Paso 1):** celular verificado, correo, nombres y apellidos y **clases de licencia**. Al guardar, el conductor **ya queda registrado** y puede elegir **"Guardar y continuar"** o **"Guardar y terminar después"** (perfil incompleto). El resto (dónde vive, experiencia, cómo trabaja, documentos) se completa después. Con perfil incompleto **no entra al match**. Se le **recuerda por WhatsApp o correo** que complete su perfil (frecuencia por definir).
+- **Dirección del conductor (Paso 2):** se pide la **dirección**, con **sugerencias de dirección completa desde Google Maps** (Places). De la dirección elegida se obtiene la **comuna verificada** (y su zona y región), que es la que se usa para el match. La dirección **no se muestra a nadie**; solo se entrega a un titular **si hay match y el conductor lo autoriza** ("Compartir mi dirección" en la conversación).
 - **Perfil titular (P2):** un solo perfil con selector "Persona natural / Empresa". Los bloques Experiencia y Contrato del titular van por **búsqueda** (un vehículo o grupo de vehículos iguales).
 - **Filtros adicionales (P4):** modo de contrato (M1) y turno (M3) también son **filtros obligatorios**, fuera del %.
 - **Garantía:** la dueña indica que en la práctica no existe → queda como **campo opcional** (C13 y T15). **No es filtro.** Por ahora tampoco entra al % (interpretación de Claude, por confirmar).
