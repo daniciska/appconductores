@@ -3109,6 +3109,18 @@
      "configurable": true
     },
     {
+     "id": "habilita_clase_b",
+     "nombre": "También habilita la clase B",
+     "tipo": "si_no",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Si quien tiene esta clase puede manejar lo que pide B. Propuesta: sí para A1 a A5 (ChileAtiende) y para A1 y A2 antiguas (CONASET) [verificar art. 12 de la Ley 18.290]. Se configura una sola vez aquí y no en cada negocio.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "F2",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
      "id": "orden",
      "nombre": "Orden",
      "tipo": "numero",
@@ -3184,9 +3196,21 @@
      "tipo": "lista_multiple",
      "referencia": "clases_licencia",
      "obligatorio": true,
-     "descripcion": "Ej.: Taxi: A1, A2, A3 y A1 antigua (provisional); Transporte por aplicación: hoy B. Valores iniciales por confirmar (MD3); se corrigen en el panel cuando cambie la ley (Ley 21.553) [verificar]. La usa el filtro F2 con las clases revisadas.",
+     "descripcion": "Clases que habilitan el negocio (filtro F2). Propuesta en docs/propuesta-catalogos.md: Taxi, Radiotaxi y Taxi colectivo: A1, A2, A3 y A1 antigua; Transporte por aplicación: grupo B hoy; Bus interurbano: A3; Moto delivery: C. En turismo, reparto y carga depende del peso o de los pasajeros del vehículo (MD40). La A2 no cuenta para buses porque no se puede comprobar su antigüedad ni el número de asientos. Por confirmar (MD3); se corrige en el panel.",
      "quien_ve": "Todos (como 'Licencia exigida')",
      "codigo": "T9, F2",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "habilitante_hasta",
+     "nombre": "Clase habilita hasta",
+     "tipo": "json",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Fecha de término opcional por clase, ej. 'B habilita Transporte por aplicación hasta el fin del plazo de 12 meses de la Ley 21.553'. Así nadie queda fuera del match antes de tiempo cuando cambia la ley [verificar con abogado].",
+     "quien_ve": "Solo el equipo",
+     "codigo": "F2",
      "estado": "propuesta",
      "configurable": true
     },
@@ -4739,7 +4763,7 @@
   {
    "id": "MD3",
    "pregunta": "¿Qué clases de licencia habilitan cada negocio?",
-   "opciones": "Confirmar la tabla inicial (ej. Taxi y Radiotaxi ejecutivo: A1, A2, A3 y A1 antigua; Transporte por aplicación: B hoy; Bus interurbano: A3; Moto delivery: C; Van o bus de turismo y camiones: por definir) [verificar con Ley 18.290 y Ley 21.553].",
+   "opciones": "Confirmar la tabla inicial (ej. Taxi y Radiotaxi ejecutivo: A1, A2, A3 y A1 antigua; Transporte por aplicación: B hoy; Bus interurbano: A3; Moto delivery: C; Van o bus de turismo y camiones: por definir) [verificar con Ley 18.290 y Ley 21.553]. Propuesta revisada en docs/propuesta-catalogos.md (incluye la corrección: las A1 y A2 antiguas también habilitan la B, según CONASET; la A2 no cuenta para buses).",
    "entidades": [
     "negocios",
     "clases_licencia"
@@ -4748,7 +4772,7 @@
   {
    "id": "MD4",
    "pregunta": "Catálogos en revisión",
-   "opciones": "Confirmar 'Camión de carga urbano', el nombre 'Camión pesado' y las demás propuestas de negocios y tamaños antes de cargarlos. ¿Se pueden usar marcas de terceros en los ejemplos en gris (Uber, Cabify, Turbus, Pullman Bus, PedidosYa, Rappi)? a) Sí; b) Usar solo descripciones genéricas [verificar uso de marcas].",
+   "opciones": "Confirmar 'Camión de carga urbano', el nombre 'Camión pesado' y las demás propuestas de negocios y tamaños antes de cargarlos. ¿Se pueden usar marcas de terceros en los ejemplos en gris (Uber, Cabify, Turbus, Pullman Bus, PedidosYa, Rappi)? a) Sí; b) Usar solo descripciones genéricas [verificar uso de marcas]. Propuestas nuevas (docs/propuesta-catalogos.md): tamaños 'Tracto con rampla' y 'Minibús'; negocios 'Taxi colectivo' y 'Reparto en furgón'. Grúa de autos como negocio solo si hay titulares que la busquen.",
    "entidades": [
     "negocios",
     "tamanos_vehiculo"
@@ -5103,9 +5127,49 @@
     "busquedas",
     "reglas_match"
    ]
+  },
+  {
+   "id": "MD40",
+   "pregunta": "En turismo, reparto y carga, la licencia depende del vehículo. ¿La búsqueda del titular hace una pregunta más solo en esos negocios?",
+   "opciones": "a) Sí (propuesta): en carga, '¿Pesa más de 3.500 kg?' y '¿Es tracto con rampla?'; en pasajeros, '¿Cuántos pasajeros?' (hasta 9, 10 a 17, 18 a 32, más de 32). La licencia exigida sale del negocio más esa respuesta. b) No: solo el negocio, con la licencia del vehículo más grande (deja fuera a algunos conductores).",
+   "entidades": [
+    "busquedas",
+    "negocios",
+    "reglas_match"
+   ]
+  },
+  {
+   "id": "MD41",
+   "pregunta": "Años del Paso 3: ¿son años trabajando (con pago) o manejando en general? ¿Y el SUV va en Auto o en Camioneta?",
+   "opciones": "a) Años trabajando y SUV en Auto, con Camioneta solo para pick-up (propuesta). b) Años manejando en general. c) SUV en Camioneta.",
+   "entidades": [
+    "experiencia_conductor",
+    "tamanos_vehiculo"
+   ]
+  },
+  {
+   "id": "MD42",
+   "pregunta": "Con el umbral de 66 % y 3 variables, si solo falla M4 (años) queda 2 de 3 (66,7 %) y el match se da igual: los años solos nunca excluyen. ¿Está bien así?",
+   "opciones": "a) Sí, los años son negociables (como se decidió en P3/P4). b) Subir el umbral o darle más peso a M4. c) Convertir los años en filtro solo en algunos negocios.",
+   "entidades": [
+    "reglas_match",
+    "ajustes"
+   ]
   }
  ],
  "cambios": [
+  {
+   "n": 23,
+   "fecha": "2026-10-29",
+   "cambio": "Según la propuesta de catálogos (`docs/propuesta-catalogos.md`): clases de licencia suma \"también habilita la clase B\" (una sola vez, no en cada negocio); negocios suma una fecha de término por clase (para la transición de la Ley 21.553); se actualiza la tabla negocio → licencias propuesta y se agregan las preguntas MD40 a MD42. Los catálogos no cambian hasta que la dueña apruebe.",
+   "porque": "La investigación y su revisión encontraron que la licencia depende del vehículo en turismo, reparto y carga, que las clases antiguas también habilitan la B y que la ley de apps tendrá un plazo de transición.",
+   "origen": "Propuesta",
+   "entidades": [
+    "clases_licencia",
+    "negocios",
+    "busquedas"
+   ]
+  },
   {
    "n": 22,
    "fecha": "2026-10-29",

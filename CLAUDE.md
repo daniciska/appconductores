@@ -44,6 +44,7 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 
 - [ ] P5–P7, P9, P12, P15, P16 de `docs/propuesta-campos.md`.
 - [ ] Plazo comprometido de revisión de documentos.
+- [ ] Propuesta de catálogos (`docs/propuesta-catalogos.md`): sumar Tracto con rampla y Minibús (tamaños), Taxi colectivo y Reparto en furgón (negocios); grúa de autos como negocio; camión de carga urbano; años trabajando o manejando; SUV; marcas en los textos grises; pregunta de peso o pasajeros en la búsqueda; dejar fuera escolar, ambulancia, chofer particular y maquinaria.
 - [ ] Enlaces directos del Registro Civil para la Hoja de Vida y el Certificado de antecedentes, y si son gratis en línea [verificar].
 - [ ] Modelo de contrato en espera: ¿se pide más adelante (por ejemplo, al hacer match) o no se pide? Mientras tanto, ¿el match no filtra por M1?
 - [ ] Turnos y días: ¿se agrega "Festivos"? Para el match, ¿el conductor debe tener todos los días que pide el titular o basta con que coincida al menos uno?
@@ -126,6 +127,7 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - `docs/propuesta-campos.md` — propuesta de campos (C# conductor, T# titular, F# filtros, M# variables de match, D# documentos, P# preguntas). **Es una propuesta, no una decisión.**
 - `docs/propuesta-nombres.md` — nombres candidatos con conflictos encontrados. **Propuesta.**
 - `docs/investigacion/contexto-chile.md` — licencias, documentos verificables, Ley 21.719 / 19.628, Ley 21.553, modalidades de contrato.
+- `docs/propuesta-catalogos.md` — propuesta de tamaños de vehículo y negocios con sus licencias. **Propuesta.**
 - `docs/propuesta-zonas.md` y `docs/propuesta-zonas.csv` — propuesta de zonas (81 zonas, 346 comunas). **Propuesta.**
 - `docs/investigacion/documentos-y-mensajes.md` — Hoja de Vida y antecedentes (ley vigente y próxima, riesgo Ley 21.719 art. 25, revisión con IA, criterios de rechazo, renovación) y reglas de tiendas para mensajería.
 - `docs/investigacion/mercado-avisos.md` — cómo se publicitan conductores/titulares hoy, competidores (Uber Match, Portal Conductores, etc.).
