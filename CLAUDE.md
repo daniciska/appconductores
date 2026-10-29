@@ -79,6 +79,7 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - **Dirección del conductor (Paso 2):** se pide la **dirección**, con **sugerencias de dirección completa desde Google Maps** (Places). De la dirección elegida se obtiene la **comuna verificada** (y su zona y región), que es la que se usa para el match. La dirección **no se muestra a nadie**; solo se entrega a un titular **si hay match y el conductor lo autoriza** ("Compartir mi dirección" en la conversación).
 - **Textos en pantalla:** cortos; el detalle legal (privacidad, uso de datos) va en los Términos y la Política de privacidad, no en las pantallas.
 - **Formularios (estilo):** los campos obligatorios se marcan con **asterisco (*)**, sin explicaciones largas debajo; si se intenta guardar sin un dato obligatorio, aparece una **alerta** y el campo se marca en rojo.
+- **Zona del conductor:** se usa **solo la comuna de su dirección** (y su zona). Se eliminan las "otras comunas donde puede retirar" (C6) y la opción "cualquier comuna de mi región".
 - **Perfil titular (P2):** un solo perfil con selector "Persona natural / Empresa". Los bloques Experiencia y Contrato del titular van por **búsqueda** (un vehículo o grupo de vehículos iguales).
 - **Filtros adicionales (P4):** modo de contrato (M1) y turno (M3) también son **filtros obligatorios**, fuera del %.
 - **Garantía:** la dueña indica que en la práctica no existe → queda como **campo opcional** (C13 y T15). **No es filtro.** Por ahora tampoco entra al % (interpretación de Claude, por confirmar).
