@@ -83,7 +83,7 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - **Cobro (P14):** **dentro y fuera de la app** (compra integrada de Apple/Google + pago web). Ver restricciones de tiendas en `docs/propuesta-campos.md` P14 [verificar].
 - **Verificación de documentos:** sí, incluida en el MVP.
 - **Configurable =** mediante un **panel de administración**.
-- **Cuentas de desarrollador:** aún no existen. Se crearán **a nombre de la dueña (persona natural)**, con la idea de pasarlas a una empresa más adelante.
+- **Cuentas de desarrollador:** aún no existen. Se crearán **a nombre de la dueña (persona natural)**, con la idea de pasarlas a una empresa más adelante. **Confirmado (29-oct):** cuentas personales por ahora (la dueña no tiene empresa). Se acepta que en Google Play, al cobrar suscripciones, quede pública la dirección del perfil de pagos, y que en Apple aparezca su nombre legal como vendedor. El paso a empresa (requiere SpA/EIRL, D-U-N-S, sitio web y correo con dominio) queda como futuro. Ver `docs/investigacion/cuentas-tiendas.md`.
 - **App:** una sola app **multiplataforma** (iPhone y Android) con **React Native + Expo**, en TypeScript (mismo lenguaje para app, panel y funciones de servidor).
 - **Calidad visual:** la dueña exige una app que se vea y funcione **profesional, de calidad, no ordinaria**. Diseño cuidado (sistema de diseño consistente, tipografía, espaciado, animaciones sutiles, estados de carga/vacío/error). Las pantallas se aprueban con maquetas antes de programarlas.
 - **Cuenta Supabase:** ya existe (de la dueña).
