@@ -4,6 +4,12 @@ Cada vez que cambia una pantalla de la maqueta o una decisión, se anota aquí *
 
 Origen: **Comentario** = comentario de la dueña en la maqueta · **Decisión** = decisión registrada en `CLAUDE.md`.
 
+## 2026-10-30
+
+| # | Cambio en los datos | Por qué | Origen |
+|---|---|---|---|
+| 24 | **Catálogos aprobados.** Tamaños: se suman **Minibús** y **Tracto con rampla** (10 en total), cada uno con un texto de **ayuda** (ej. "SUV va en Auto"). Negocios: se suman **Taxi colectivo**, **Reparto en furgón** y **Grúa de autos** (11 en total); "Radiotaxi ejecutivo" pasa a **"Taxi ejecutivo"**; los ejemplos en gris quedan **sin marcas**. Los **años** del Paso 3 son años **manejando en general** (no solo con pago). | La dueña respondió la propuesta de catálogos: sí a los 4 ítems nuevos, sí a la grúa como negocio (conoce dueños que buscan conductor), se queda Camión de carga urbano, años manejando, SUV en Auto (vehículo liviano), ejemplos genéricos y Taxi ejecutivo. | Decisión |
+
 ## 2026-10-29
 
 | # | Cambio en los datos | Por qué | Origen |

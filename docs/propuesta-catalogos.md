@@ -1,6 +1,8 @@
 # Propuesta de catálogos: experiencia (tamaño) y negocios
 
-**Es una propuesta, no una decisión.** Fecha de corte: 29-oct-2026. Lo marcado **[verificar]** no está confirmado. Varias fuentes oficiales (bcn.cl, iura.cl, chiletrabajos.cl) no se pudieron abrir desde la sesión: lo legal sale de extractos del buscador y hay que confirmarlo en el texto vigente.
+**Respuestas de la dueña (30-oct):** sí a Tracto con rampla y Minibús; sí a Taxi colectivo y Reparto en furgón; sí a Grúa de autos como negocio (conoce dueños que buscan conductor); se queda Camión de carga urbano; los años son **manejando** en general; el SUV va en Auto (vehículo liviano); ejemplos **genéricos, sin marcas**; "Radiotaxi ejecutivo" pasa a **"Taxi ejecutivo"**. Siguen abiertas las preguntas 9 a 11 y el nombre "Camión pesado".
+
+**El resto es una propuesta, no una decisión.** Fecha de corte: 29-oct-2026. Lo marcado **[verificar]** no está confirmado. Varias fuentes oficiales (bcn.cl, iura.cl, chiletrabajos.cl) no se pudieron abrir desde la sesión: lo legal sale de extractos del buscador y hay que confirmarlo en el texto vigente.
 
 Se hizo en tres pasos: tres investigaciones en paralelo (tamaños, negocios y licencias), una síntesis y dos revisiones independientes (licencias y producto). Este documento ya incluye las correcciones de las revisiones.
 

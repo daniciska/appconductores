@@ -966,7 +966,7 @@
      "tipo": "numero",
      "referencia": "",
      "obligatorio": true,
-     "descripcion": "Años con ese tamaño, de 0 a 50. Declarado: no se verifica. Reemplaza al total general de años (C9). Qué años ve el titular en la ficha: MD1.",
+     "descripcion": "Años manejando ese tamaño de vehículo, en general (no solo trabajando con pago), decidido el 30-oct. De 0 a 50. Declarado: no se verifica.",
      "quien_ve": "El conductor, el equipo y el titular con plan, tras el match (marcado 'declarado')",
      "codigo": "C9, M4",
      "estado": "decidido",
@@ -3150,7 +3150,7 @@
    "id": "negocios",
    "nombre": "Negocio",
    "grupo": "configuracion",
-   "descripcion": "El catálogo de negocios en que el conductor quiere trabajar y que elige cada búsqueda: Taxi, Radiotaxi ejecutivo, Transporte por aplicación, Van o bus de turismo, Bus interurbano, Camión de carga interurbano, Camión de carga urbano (por confirmar), Moto delivery. Cada negocio dice qué clases de licencia lo habilitan.",
+   "descripcion": "El catálogo de negocios en que el conductor quiere trabajar (Paso 4) y que elige cada búsqueda: Taxi, Taxi colectivo, Taxi ejecutivo, Transporte por aplicación, Van o bus de turismo, Bus interurbano, Camión de carga interurbano, Camión de carga urbano, Reparto en furgón, Grúa de autos y Moto delivery.",
    "para_que": "Match y ley: reemplaza a 'tipos de vehículo' en los filtros de negocio (F1) y de licencia (F2); la licencia exigida de cada búsqueda sale de aquí.",
    "estado": "decidido",
    "campos": [
@@ -3172,7 +3172,7 @@
      "tipo": "texto",
      "referencia": "",
      "obligatorio": true,
-     "descripcion": "Ej.: Taxi; Transporte por aplicación (antes 'Uber u otra app'); Van o bus de turismo; Moto delivery. Sin marcas en el nombre. El catálogo puede crecer (hay propuestas en revisión).",
+     "descripcion": "Ej.: Taxi; Taxi ejecutivo (antes 'Radiotaxi ejecutivo'); Transporte por aplicación (antes 'Uber u otra app'); Reparto en furgón; Grúa de autos. Sin marcas en el nombre. El catálogo puede crecer desde el panel.",
      "quien_ve": "Todos",
      "codigo": "C8, T8",
      "estado": "decidido",
@@ -3184,7 +3184,7 @@
      "tipo": "texto",
      "referencia": "",
      "obligatorio": false,
-     "descripcion": "Texto en gris entre paréntesis junto al nombre en el Paso 4 y en 'Nueva búsqueda', ej. '(traslados al aeropuerto, empresas)', '(Uber, Cabify)', '(tours, traslados, eventos)', '(entre ciudades)', '(reparto dentro de la ciudad)', '(PedidosYa, Rappi)'. Taxi no lleva. Uso de marcas de terceros: MD4.",
+     "descripcion": "Texto en gris entre paréntesis junto al nombre, en el Paso 4 y en 'Nueva búsqueda'. Ejemplos genéricos, sin marcas (decidido el 30-oct): '(recorrido fijo)', '(radiotaxi, aeropuerto)', '(apps de pasajeros)', '(viajes entre ciudades)', '(última milla, paquetes)', '(rescate y traslado de vehículos)', '(comercios, farmacias)'.",
      "quien_ve": "Todos",
      "codigo": "C8",
      "estado": "decidido",
@@ -3196,7 +3196,7 @@
      "tipo": "lista_multiple",
      "referencia": "clases_licencia",
      "obligatorio": true,
-     "descripcion": "Clases que habilitan el negocio (filtro F2). Propuesta en docs/propuesta-catalogos.md: Taxi, Radiotaxi y Taxi colectivo: A1, A2, A3 y A1 antigua; Transporte por aplicación: grupo B hoy; Bus interurbano: A3; Moto delivery: C. En turismo, reparto y carga depende del peso o de los pasajeros del vehículo (MD40). La A2 no cuenta para buses porque no se puede comprobar su antigüedad ni el número de asientos. Por confirmar (MD3); se corrige en el panel.",
+     "descripcion": "Clases que habilitan el negocio (filtro F2). Propuesta en docs/propuesta-catalogos.md: Taxi, Radiotaxi y Taxi colectivo: A1, A2, A3 y A1 antigua; Transporte por aplicación: grupo B hoy; Bus interurbano: A3; Moto delivery: C. En turismo, reparto y carga depende del peso o de los pasajeros del vehículo (MD40). La A2 no cuenta para buses porque no se puede comprobar su antigüedad ni el número de asientos. Por confirmar (MD3); se corrige en el panel. Nuevos: Taxi colectivo como Taxi; Reparto en furgón: grupo B (A4 si pesa más de 3.500 kg); Grúa de autos: según su peso, como los camiones.",
      "quien_ve": "Todos (como 'Licencia exigida')",
      "codigo": "T9, F2",
      "estado": "propuesta",
@@ -3220,7 +3220,7 @@
      "tipo": "lista_multiple",
      "referencia": "tamanos_vehiculo",
      "obligatorio": false,
-     "descripcion": "Propuesta para la variable años (M4): qué tamaños cuentan como experiencia para este negocio (ej. Taxi → Auto). Pendiente de la dueña (MD1).",
+     "descripcion": "Qué tamaños cuentan como experiencia para este negocio en la variable años (M4). Propuesta (docs/propuesta-catalogos.md): Taxi, Taxi ejecutivo y Transporte por aplicación → Auto; Taxi colectivo → Auto, Van; Van o bus de turismo → Van, Minibús, Bus; Bus interurbano → Bus; camiones → Camión 3/4, Camión pesado, Tracto; Reparto en furgón → Van, Camioneta; Grúa de autos → Grúa de autos; Moto delivery → Moto. Pendiente de la dueña (MD1).",
      "quien_ve": "Solo el equipo",
      "codigo": "M4",
      "estado": "pendiente",
@@ -3268,7 +3268,7 @@
    "id": "tamanos_vehiculo",
    "nombre": "Tamaño de vehículo",
    "grupo": "configuracion",
-   "descripcion": "El catálogo de tamaños de vehículo con que se mide la experiencia del conductor: Auto, Camioneta, Van, Camión 3/4, Grúa de autos, Moto, Bus, Camión pesado.",
+   "descripcion": "El catálogo de tamaños de vehículo con que se mide la experiencia del conductor (Paso 3): Auto (incluye SUV, vehículo liviano), Camioneta (pick-up), Van (hasta 17 pasajeros), Minibús (18 a 32 asientos), Camión 3/4, Grúa de autos, Moto, Bus (más de 32), Camión pesado y Tracto con rampla.",
    "para_que": "Venta y match: es la base del Paso 3 ('¿Qué vehículos has manejado?').",
    "estado": "decidido",
    "campos": [
@@ -3290,10 +3290,22 @@
      "tipo": "texto",
      "referencia": "",
      "obligatorio": true,
-     "descripcion": "Ej.: Auto; Van; Grúa de autos; Camión pesado (nombre por confirmar, MD4). El catálogo puede crecer (hay propuestas en revisión).",
+     "descripcion": "Ej.: Auto; Van; Minibús; Grúa de autos; Camión pesado (nombre por confirmar); Tracto con rampla. El catálogo puede crecer desde el panel.",
      "quien_ve": "Todos",
      "codigo": "C9",
      "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "ayuda",
+     "nombre": "Ayuda",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Texto corto que aclara el tamaño y se muestra bajo la tabla del Paso 3, ej. 'SUV va en Auto', 'Van: hasta 17 pasajeros', 'Minibús: 18 a 32 asientos', 'Bus: más de 32'.",
+     "quien_ve": "Todos",
+     "codigo": "",
+     "estado": "propuesta",
      "configurable": true
     },
     {
@@ -4771,8 +4783,8 @@
   },
   {
    "id": "MD4",
-   "pregunta": "Catálogos en revisión",
-   "opciones": "Confirmar 'Camión de carga urbano', el nombre 'Camión pesado' y las demás propuestas de negocios y tamaños antes de cargarlos. ¿Se pueden usar marcas de terceros en los ejemplos en gris (Uber, Cabify, Turbus, Pullman Bus, PedidosYa, Rappi)? a) Sí; b) Usar solo descripciones genéricas [verificar uso de marcas]. Propuestas nuevas (docs/propuesta-catalogos.md): tamaños 'Tracto con rampla' y 'Minibús'; negocios 'Taxi colectivo' y 'Reparto en furgón'. Grúa de autos como negocio solo si hay titulares que la busquen.",
+   "pregunta": "Catálogos: lo que queda por decidir",
+   "opciones": "Aprobado el 30-oct (cambio 24): Tracto con rampla y Minibús, Taxi colectivo, Reparto en furgón y Grúa de autos; se queda Camión de carga urbano; ejemplos sin marcas; Taxi ejecutivo. Queda: ¿se dejan fuera por ahora Transporte escolar (espera P15), Ambulancia, Chofer particular y Maquinaria? Eso ajusta la decisión 'Tipos de vehículo: todos'. ¿Se confirma el nombre 'Camión pesado'?",
    "entidades": [
     "negocios",
     "tamanos_vehiculo"
@@ -5139,15 +5151,6 @@
    ]
   },
   {
-   "id": "MD41",
-   "pregunta": "Años del Paso 3: ¿son años trabajando (con pago) o manejando en general? ¿Y el SUV va en Auto o en Camioneta?",
-   "opciones": "a) Años trabajando y SUV en Auto, con Camioneta solo para pick-up (propuesta). b) Años manejando en general. c) SUV en Camioneta.",
-   "entidades": [
-    "experiencia_conductor",
-    "tamanos_vehiculo"
-   ]
-  },
-  {
    "id": "MD42",
    "pregunta": "Con el umbral de 66 % y 3 variables, si solo falla M4 (años) queda 2 de 3 (66,7 %) y el match se da igual: los años solos nunca excluyen. ¿Está bien así?",
    "opciones": "a) Sí, los años son negociables (como se decidió en P3/P4). b) Subir el umbral o darle más peso a M4. c) Convertir los años en filtro solo en algunos negocios.",
@@ -5158,6 +5161,18 @@
   }
  ],
  "cambios": [
+  {
+   "n": 24,
+   "fecha": "2026-10-30",
+   "cambio": "Catálogos aprobados. Tamaños: se suman Minibús y Tracto con rampla (10 en total), cada uno con un texto de ayuda (ej. \"SUV va en Auto\"). Negocios: se suman Taxi colectivo, Reparto en furgón y Grúa de autos (11 en total); \"Radiotaxi ejecutivo\" pasa a \"Taxi ejecutivo\"; los ejemplos en gris quedan sin marcas. Los años del Paso 3 son años manejando en general (no solo con pago).",
+   "porque": "La dueña respondió la propuesta de catálogos: sí a los 4 ítems nuevos, sí a la grúa como negocio (conoce dueños que buscan conductor), se queda Camión de carga urbano, años manejando, SUV en Auto (vehículo liviano), ejemplos genéricos y Taxi ejecutivo.",
+   "origen": "Decisión",
+   "entidades": [
+    "tamanos_vehiculo",
+    "experiencia_conductor",
+    "negocios"
+   ]
+  },
   {
    "n": 23,
    "fecha": "2026-10-29",
