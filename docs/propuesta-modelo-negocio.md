@@ -115,6 +115,36 @@ Un taxi sin conductor deja de recibir **$16.000 a $20.000 al día** de entrega (
 
 ---
 
+## Lo que se descuenta de cada pago (solo costos del cobro)
+
+> Pedido de la dueña: separar los costos que trae **cada pago** de los **gastos de la empresa**. Aquí van solo el IVA y la comisión de quien cobra. WhatsApp, SMS, base de datos, revisión de documentos y atención a clientes son **gastos de la empresa** (ver los desgloses más abajo). Comisiones [verificar con Flow, Mercado Pago, Webpay, Apple y Google].
+
+### Pago web (tarjeta de crédito, ~2,95 % + IVA ≈ 3,5 % del precio)
+
+| Plan | Paga | IVA (19 %) | Comisión del pago | **Le llega a la empresa** |
+|---|---|---|---|---|
+| Conductor | $1.000 | −$160 | −$35 | **$805** |
+| Titular: Pase 30 días | $14.990 | −$2.393 | −$525 | **$12.072** |
+| Titular: Básico | $9.990 | −$1.595 | −$350 | **$8.045** |
+| Titular: Flota chica | $29.990 | −$4.788 | −$1.050 | **$24.152** |
+| Titular: Flota | $79.990 | −$12.772 | −$2.800 | **$64.418** |
+| Titular: Destacar búsqueda | $4.990 | −$797 | −$175 | **$4.018** |
+
+Con tarjeta de débito (~1,3 %) la comisión es menor: al conductor, por ejemplo, le llegan unos $827.
+
+### Pago por la tienda (Apple / Google, ~15 % del precio sin IVA)
+
+| Plan | Paga | IVA (19 %) | Comisión de la tienda | **Le llega a la empresa** |
+|---|---|---|---|---|
+| Conductor | $1.000 | −$160 | −$126 | **$714** |
+| Titular: Pase 30 días | $14.990 | −$2.393 | −$1.890 | **$10.707** |
+| Titular: Básico | $9.990 | −$1.595 | −$1.259 | **$7.136** |
+| Titular: Flota chica | $29.990 | −$4.788 | −$3.780 | **$21.422** |
+| Titular: Flota | $79.990 | −$12.772 | −$10.083 | **$57.135** |
+| Titular: Destacar búsqueda | $4.990 | −$797 | −$629 | **$3.564** |
+
+---
+
 ## Desglose de costos: conductor que paga $1.000 al mes
 
 > Estimación para un conductor promedio. **Supuestos (todos [verificar]):** dólar a $950; precio con IVA incluido; pago web con tarjeta; inicia sesión 2 veces al mes; recibe 2 avisos por WhatsApp al mes; renueva documentos cada 6 meses; 30 % de los casos los revisa una persona.
