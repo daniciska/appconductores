@@ -3147,10 +3147,68 @@
    ]
   },
   {
+   "id": "industrias",
+   "nombre": "Industria",
+   "grupo": "configuracion",
+   "descripcion": "Las 2 grandes industrias que agrupan los negocios: Transporte de pasajeros y Transporte de carga.",
+   "para_que": "Ordena los negocios en el Paso 4 y en 'Nueva búsqueda' para que el conductor y el titular encuentren rápido el suyo (pedido de la dueña, 2-nov).",
+   "estado": "decidido",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "ID",
+     "tipo": "id",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Número interno.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "nombre",
+     "nombre": "Nombre",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Transporte de pasajeros; Transporte de carga. Es el título de cada grupo en el Paso 4.",
+     "quien_ve": "Todos",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "orden",
+     "nombre": "Orden",
+     "tipo": "numero",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Orden de los grupos en la app.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "activo",
+     "nombre": "Activa",
+     "tipo": "si_no",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Propuesta: si una industria se desactiva, se ocultan todos sus negocios de una vez (por ejemplo, lanzar solo con pasajeros).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    }
+   ]
+  },
+  {
    "id": "negocios",
    "nombre": "Negocio",
    "grupo": "configuracion",
-   "descripcion": "El catálogo de negocios en que el conductor quiere trabajar (Paso 4) y que elige cada búsqueda: Taxi, Taxi colectivo, Taxi ejecutivo, Transporte por aplicación, Van o bus de turismo, Bus interurbano, Camión de carga interurbano, Camión de carga urbano, Reparto en furgón, Grúa de autos y Moto delivery.",
+   "descripcion": "El catálogo de negocios en que el conductor quiere trabajar (Paso 4) y que elige cada búsqueda: Taxi, Taxi colectivo, Taxi ejecutivo, Transporte por aplicación, Van o bus de turismo, Bus interurbano, Camión de carga interurbano, Camión de carga urbano, Reparto en furgón, Grúa de autos y Moto delivery. Se agrupan en 2 industrias: Transporte de pasajeros y Transporte de carga.",
    "para_que": "Match y ley: reemplaza a 'tipos de vehículo' en los filtros de negocio (F1) y de licencia (F2); la licencia exigida de cada búsqueda sale de aquí.",
    "estado": "decidido",
    "campos": [
@@ -3165,6 +3223,18 @@
      "codigo": "",
      "estado": "propuesta",
      "configurable": false
+    },
+    {
+     "id": "industria_id",
+     "nombre": "Industria",
+     "tipo": "referencia",
+     "referencia": "industrias",
+     "obligatorio": true,
+     "descripcion": "A qué industria pertenece. Pasajeros: Taxi, Taxi colectivo, Taxi ejecutivo, Transporte por aplicación, Van o bus de turismo, Bus interurbano. Carga: Camión de carga interurbano, Camión de carga urbano, Reparto en furgón, Grúa de autos, Moto delivery.",
+     "quien_ve": "Todos",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": true
     },
     {
      "id": "nombre",
@@ -4343,6 +4413,12 @@
    "a": "ajustes",
    "cardinalidad": "1-N",
    "descripcion": "Quién del equipo hizo el último cambio a un ajuste."
+  },
+  {
+   "de": "negocios",
+   "a": "industrias",
+   "cardinalidad": "1-N",
+   "descripcion": "Cada negocio pertenece a una industria; una industria agrupa varios negocios."
   }
  ],
  "reglas": [
@@ -5178,6 +5254,17 @@
   }
  ],
  "cambios": [
+  {
+   "n": 28,
+   "fecha": "2026-11-02",
+   "cambio": "Nueva tabla Industria (Transporte de pasajeros y Transporte de carga), y cada negocio apunta a una. Pasajeros: Taxi, Taxi colectivo, Taxi ejecutivo, Transporte por aplicación, Van o bus de turismo, Bus interurbano. Carga: Camión de carga interurbano, Camión de carga urbano, Reparto en furgón, Grúa de autos, Moto delivery. Propuesta: activar o desactivar una industria completa desde el panel.",
+   "porque": "La dueña pidió separar los negocios en 2 grandes industrias.",
+   "origen": "Mensaje",
+   "entidades": [
+    "industrias",
+    "negocios"
+   ]
+  },
   {
    "n": 27,
    "fecha": "2026-11-02",
