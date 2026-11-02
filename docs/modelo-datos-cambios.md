@@ -8,6 +8,7 @@ Origen: **Comentario** = comentario de la dueña en la maqueta · **Decisión** 
 
 | # | Cambio en los datos | Por qué | Origen |
 |---|---|---|---|
+| 27 | El campo **"Activo"** del catálogo de negocios pasa a ser una decisión: lo activa o desactiva un administrador desde el panel. Solo los negocios activos aparecen en el Paso 4 y en "Nueva búsqueda", y solo ellos entran al match. Desactivar no borra lo que ya marcaron conductores y titulares. Nueva pregunta MD44: qué negocios se activan en el lanzamiento. | La dueña quiere lanzar con solo algunos de los negocios posibles y poder activar los demás después. | Comentario |
 | 26 | "Tengo estacionamiento seguro" (variable M6) se pide en el **Paso 2 (Dónde vives)**, no en el Paso 4. No cambian las tablas: solo en qué paso se guarda. | La dueña pidió dejarlo en el paso de la dirección. | Comentario |
 | 25 | El catálogo de experiencia pasa de 10 tamaños a **7 categorías** que cubren todos los vehículos: Moto, Vehículo liviano, Van o minibús, Bus, Camión, Camión articulado y Maquinaria. Cada una tiene un texto "qué incluye" (ej. "auto, SUV, camioneta"). Se ajusta qué categorías cuentan para los años de cada negocio. Nueva pregunta MD43 sobre Maquinaria. | La dueña pidió clasificaciones más acotadas que contengan todos los tipos de vehículo. Calzan casi una a una con las clases de licencia (C, B, A2, A3, A4, A5, D). | Comentario |
 

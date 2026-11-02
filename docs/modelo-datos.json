@@ -3252,14 +3252,14 @@
     },
     {
      "id": "activo",
-     "nombre": "Visible en la app",
+     "nombre": "Activo",
      "tipo": "si_no",
      "referencia": "",
      "obligatorio": true,
-     "descripcion": "Se oculta en vez de borrarse, para no romper perfiles o búsquedas que ya lo usan. El Paso 4 muestra todos los activos.",
+     "descripcion": "Lo activa o desactiva un administrador desde el panel (decidido el 2-nov). En el lanzamiento solo estarán activos algunos negocios. Solo los activos aparecen en el Paso 4 '¿Qué trabajo buscas?' y en 'Nueva búsqueda' del titular, y solo ellos entran al match. Desactivar no borra nada: lo que conductores y titulares ya marcaron se conserva y vuelve a contar si se reactiva.",
      "quien_ve": "Solo el equipo",
      "codigo": "",
-     "estado": "propuesta",
+     "estado": "decidido",
      "configurable": true
     }
    ]
@@ -5167,9 +5167,27 @@
     "tamanos_vehiculo",
     "negocios"
    ]
+  },
+  {
+   "id": "MD44",
+   "pregunta": "¿Qué negocios quedan activos en el lanzamiento?",
+   "opciones": "Elegir entre los 11 del catálogo: Taxi, Taxi colectivo, Taxi ejecutivo, Transporte por aplicación, Van o bus de turismo, Bus interurbano, Camión de carga interurbano, Camión de carga urbano, Reparto en furgón, Grúa de autos y Moto delivery. Los demás quedan cargados pero desactivados.",
+   "entidades": [
+    "negocios"
+   ]
   }
  ],
  "cambios": [
+  {
+   "n": 27,
+   "fecha": "2026-11-02",
+   "cambio": "El campo \"Activo\" del catálogo de negocios pasa a ser una decisión: lo activa o desactiva un administrador desde el panel. Solo los negocios activos aparecen en el Paso 4 y en \"Nueva búsqueda\", y solo ellos entran al match. Desactivar no borra lo que ya marcaron conductores y titulares. Nueva pregunta MD44: qué negocios se activan en el lanzamiento.",
+   "porque": "La dueña quiere lanzar con solo algunos de los negocios posibles y poder activar los demás después.",
+   "origen": "Comentario",
+   "entidades": [
+    "negocios"
+   ]
+  },
   {
    "n": 26,
    "fecha": "2026-11-02",

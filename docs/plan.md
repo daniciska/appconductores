@@ -1,6 +1,6 @@
 # Plan de trabajo — Dale Contacto (nombre provisorio)
 
-Actualizado: 29-oct-2026. Se actualiza a medida que avanzamos.
+Actualizado: 2-nov-2026. Se actualiza a medida que avanzamos.
 
 ## Ya hecho
 
@@ -15,7 +15,7 @@ Actualizado: 29-oct-2026. Se actualiza a medida que avanzamos.
 2. [ ] **Modelo de datos interactivo**: tablas, campos y relaciones; la dueña marca cada campo "queda / cambiar / sacar". *(publicado, en revisión: https://claude.ai/artifact/1ACYaM3MWdn1yiMpe7pwkK)*
    - Se actualiza cada vez que cambia una pantalla de la maqueta; el porqué de cada cambio queda en `docs/modelo-datos-cambios.md`.
 3. [ ] Prototipo del titular, con el mismo detalle (registro, verificación, búsquedas, resultados, planes y pago, mensajes, compartir contacto).
-4. [ ] Maquetas del panel de administración (revisión de documentos, configuración de campos, catálogos, reglas de match y zonas, reportes, usuarios).
+4. [ ] Maquetas del panel de administración (revisión de documentos, configuración de campos, catálogos —con activar o desactivar cada negocio—, reglas de match y zonas, reportes, usuarios).
 5. [ ] Retomar lo que está en pausa: documentos, mensajes y zonas.
 
 ## Fase 2 — Construcción
