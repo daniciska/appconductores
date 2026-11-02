@@ -158,6 +158,55 @@ Precios de la lista de Anthropic de oct-2026 [verificar al contratar].
 
 ---
 
+## Desglose de costos: planes del titular
+
+> Usa los precios propuestos en la idea 4 (con IVA incluido) y los mismos supuestos del desglose del conductor (dólar a $950, WhatsApp US$0,02 por mensaje, pago web con tarjeta ~3,5 % con IVA). **Supuestos nuevos [verificar]:** avisos de matches nuevos por WhatsApp (5, 10 o 20 al mes según el plan, agrupados en un resumen diario); atención a clientes a $5.000 la hora (5, 15 o 30 minutos al mes según el plan); boletas y facturas con el sistema gratis del SII.
+
+### Costos de cada mes por plan
+
+| Concepto | Pase 30 días | Básico | Flota chica | Flota |
+|---|---|---|---|---|
+| **Precio** | **$14.990** | **$9.990** | **$29.990** | **$79.990** |
+| IVA (19 %) | −$2.393 | −$1.595 | −$4.788 | −$12.772 |
+| **Ingreso neto** | **$12.597** | **$8.395** | **$25.202** | **$67.218** |
+| Comisión del medio de pago (~3,5 %) | −$525 | −$350 | −$1.050 | −$2.800 |
+| Códigos de entrada WhatsApp + SMS de respaldo | −$51 | −$51 | −$51 | −$51 |
+| Avisos de matches por WhatsApp | −$95 (5) | −$95 (5) | −$190 (10) | −$380 (20) |
+| Base de datos (parte de Supabase) | −$24 | −$24 | −$24 | −$50 |
+| Atención a clientes | −$420 (5 min) | −$420 (5 min) | −$1.250 (15 min) | −$2.500 (30 min) |
+| **Total de costos** | **−$1.115** | **−$940** | **−$2.565** | **−$5.781** |
+| **Margen** | **$11.482 (77 %)** | **$7.455 (75 %)** | **$22.637 (75 %)** | **$61.437 (77 %)** |
+| Precio por búsqueda | $14.990 | $9.990 | $5.998 | $4.000 |
+
+### Extra "Destacar búsqueda" ($4.990)
+Ingreso neto $4.193 − comisión $175 − aviso por WhatsApp a 20 conductores $380 = **margen ≈ $3.640 (73 %)**.
+Ojo: si se avisa a 100 conductores por WhatsApp, el aviso cuesta ~$1.900. Conviene avisar dentro de la app o por correo, y por WhatsApp solo a los conductores con mejor match.
+
+### Si el cobro pasa por las tiendas (Apple / Google)
+La tienda cobra ~15 % sobre el precio sin IVA [verificar], en vez del ~3,5 % del pago web. Ejemplo con el Básico: $1.259 en vez de $350, y el margen baja a ≈ $6.550. Con Flota: $10.083 en vez de $2.800, y el margen baja a ≈ $54.150. Una suscripción que desbloquea contenido dentro de la app probablemente tiene que usar la compra integrada (ver P14) [verificar]. Por eso conviene empujar el pago web.
+
+### Garantía "si no encuentras, no pagas" (si se aprueba)
+Si se devuelve el dinero al 10 % de los Pases, el costo promedio es ≈ $1.260 por Pase vendido, más la comisión del pago, que normalmente no se recupera [verificar]. El margen del Pase baja de $11.482 a ≈ $10.200. Se puede limitar: la garantía aplica solo si la búsqueda tiene 0 matches (no si hay matches que el titular no contactó).
+
+### Comparación con el conductor
+- **Un titular Básico deja el mismo margen que ~11 conductores pagando** ($7.455 contra ~$670).
+- **Un titular Flota deja el mismo margen que ~90 conductores.**
+- El ingreso principal está en los titulares. El conductor sirve sobre todo para tener una base grande y verificada.
+
+### Escenario de ejemplo (un mes)
+100 Básico + 30 Flota chica + 5 Flota + 50 Pases de 30 días:
+- 100 × $7.455 = $745.500
+- 30 × $22.637 = $679.110
+- 5 × $61.437 = $307.185
+- 50 × $11.482 = $574.100
+- **Margen total ≈ $2.305.900 al mes**, antes de los costos fijos (desarrollo, sueldos, abogado, contador, publicidad, cuentas de tiendas) y del impuesto a la renta.
+
+### Cuidados
+- **Lo que más pesa en los planes grandes es la atención a clientes.** Si una flota pide mucha ayuda, el margen baja. Conviene un plan Empresa a medida para los clientes grandes.
+- **Verificar al titular** (consulta de la patente en el registro del MTT, ~3 minutos a mano) costaría ≈ $250 por vehículo, una vez. No está decidido; no está incluido en la tabla.
+
+---
+
 ## Preguntas para la dueña
 
 - **N1.** ¿El conductor paga para entrar al match, o entra gratis y paga solo el plan Pro con beneficios?
