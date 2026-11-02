@@ -1,6 +1,6 @@
 # Consulta al abogado — Dale Contacto
 
-Preparado el 2-nov-2026 con las notas del proyecto. Las fuentes son archivos de `docs/` y `docs/investigacion/`, más `CLAUDE.md` (decisiones vigentes). Lo marcado **[verificar]** no está confirmado.
+Preparado el 2-nov-2026 con las notas del proyecto (62 preguntas). Versión para compartir: https://claude.ai/artifact/4Zk9iRsYXrAr3nypuKhuMg. Las fuentes son archivos de `docs/` y `docs/investigacion/`, más `CLAUDE.md` (decisiones vigentes). Lo marcado **[verificar]** no está confirmado.
 
 ## Contexto para el abogado
 
@@ -210,6 +210,8 @@ Cada pregunta tiene un número para que el abogado pueda responder, por ejemplo,
   *Por qué importa:* si lo es, necesita una autorización aparte. *Fuente:* propuesta-campos.md P1 e); modelo-datos.json (pendiente MD26); contexto-chile.md §4.
 - **A61.** ¿Se puede sumar "Sueldo" como modo de contrato, u ofrecer plantillas de contrato, sin que la app parezca empleadora? [verificar con abogado]
   *Por qué importa:* el modelo de contrato quedó como crecimiento futuro. *Fuente:* propuesta-catalogos.md pregunta 10; propuesta-campos.md §5.
+- **A62.** Bolsa de trabajo (en diseño; si sale en el lanzamiento se decide después): al tocar "Me interesa", el conductor envía su ficha a un titular con el que quizás no hay match. ¿Basta con que lo haga él mismo, con un aviso en la pantalla y el registro en "Quién recibió mis datos"? ¿Cambia algo si el titular muestra la oferta a "todos los conductores"?
+  *Por qué importa:* es una entrega de datos nueva, fuera del match automático. *Fuente:* propuesta-bolsa-trabajo.md ("Impacto legal"); `CLAUDE.md` (Bolsa de trabajo, 2-nov).
 
 ## Qué llevar a la reunión
 
