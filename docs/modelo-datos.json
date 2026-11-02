@@ -3220,7 +3220,7 @@
      "tipo": "lista_multiple",
      "referencia": "tamanos_vehiculo",
      "obligatorio": false,
-     "descripcion": "Qué tamaños cuentan como experiencia para este negocio en la variable años (M4). Propuesta (docs/propuesta-catalogos.md): Taxi, Taxi ejecutivo y Transporte por aplicación → Auto; Taxi colectivo → Auto, Van; Van o bus de turismo → Van, Minibús, Bus; Bus interurbano → Bus; camiones → Camión 3/4, Camión pesado, Tracto; Reparto en furgón → Van, Camioneta; Grúa de autos → Grúa de autos; Moto delivery → Moto. Pendiente de la dueña (MD1).",
+     "descripcion": "Qué categorías de experiencia cuentan para este negocio en la variable años (M4). Propuesta: Taxi, Taxi ejecutivo y Transporte por aplicación → Vehículo liviano; Taxi colectivo → Vehículo liviano, Van o minibús; Van o bus de turismo → Van o minibús, Bus; Bus interurbano → Bus; Camión de carga interurbano → Camión, Camión articulado; Camión de carga urbano → Camión; Reparto en furgón → Van o minibús, Vehículo liviano; Grúa de autos → Camión; Moto delivery → Moto. Pendiente de la dueña (MD1).",
      "quien_ve": "Solo el equipo",
      "codigo": "M4",
      "estado": "pendiente",
@@ -3266,9 +3266,9 @@
   },
   {
    "id": "tamanos_vehiculo",
-   "nombre": "Tamaño de vehículo",
+   "nombre": "Tipo de vehículo (experiencia)",
    "grupo": "configuracion",
-   "descripcion": "El catálogo de tamaños de vehículo con que se mide la experiencia del conductor (Paso 3): Auto (incluye SUV, vehículo liviano), Camioneta (pick-up), Van (hasta 17 pasajeros), Minibús (18 a 32 asientos), Camión 3/4, Grúa de autos, Moto, Bus (más de 32), Camión pesado y Tracto con rampla.",
+   "descripcion": "Las 7 categorías con que se mide la experiencia del conductor (Paso 3), que cubren todos los tipos de vehículo: Moto (moto, scooter); Vehículo liviano (auto, SUV, camioneta); Van o minibús (van, furgón, minibús); Bus (bus o micro); Camión (3/4, camión simple, grúa de autos); Camión articulado (tracto con rampla); Maquinaria (grúa horquilla, retroexcavadora). Calzan casi una a una con las clases de licencia: C, B, A2, A3, A4, A5 y D.",
    "para_que": "Venta y match: es la base del Paso 3 ('¿Qué vehículos has manejado?').",
    "estado": "decidido",
    "campos": [
@@ -3290,7 +3290,7 @@
      "tipo": "texto",
      "referencia": "",
      "obligatorio": true,
-     "descripcion": "Ej.: Auto; Van; Minibús; Grúa de autos; Camión pesado (nombre por confirmar); Tracto con rampla. El catálogo puede crecer desde el panel.",
+     "descripcion": "Ej.: Moto; Vehículo liviano; Van o minibús; Bus; Camión; Camión articulado; Maquinaria. El catálogo se puede cambiar desde el panel.",
      "quien_ve": "Todos",
      "codigo": "C9",
      "estado": "decidido",
@@ -3298,11 +3298,11 @@
     },
     {
      "id": "ayuda",
-     "nombre": "Ayuda",
+     "nombre": "Qué incluye",
      "tipo": "texto",
      "referencia": "",
      "obligatorio": false,
-     "descripcion": "Texto corto que aclara el tamaño y se muestra bajo la tabla del Paso 3, ej. 'SUV va en Auto', 'Van: hasta 17 pasajeros', 'Minibús: 18 a 32 asientos', 'Bus: más de 32'.",
+     "descripcion": "Texto en gris dentro de cada opción del Paso 3, ej. 'auto, SUV, camioneta' o '3/4, camión simple, grúa de autos'.",
      "quien_ve": "Todos",
      "codigo": "",
      "estado": "propuesta",
@@ -4784,7 +4784,7 @@
   {
    "id": "MD4",
    "pregunta": "Catálogos: lo que queda por decidir",
-   "opciones": "Aprobado el 30-oct (cambio 24): Tracto con rampla y Minibús, Taxi colectivo, Reparto en furgón y Grúa de autos; se queda Camión de carga urbano; ejemplos sin marcas; Taxi ejecutivo. Queda: ¿se dejan fuera por ahora Transporte escolar (espera P15), Ambulancia, Chofer particular y Maquinaria? Eso ajusta la decisión 'Tipos de vehículo: todos'. ¿Se confirma el nombre 'Camión pesado'?",
+   "opciones": "Aprobado el 30-oct (cambio 24): Tracto con rampla y Minibús, Taxi colectivo, Reparto en furgón y Grúa de autos; se queda Camión de carga urbano; ejemplos sin marcas; Taxi ejecutivo. Queda: ¿se dejan fuera por ahora Transporte escolar (espera P15), Ambulancia, Chofer particular y Maquinaria? Eso ajusta la decisión 'Tipos de vehículo: todos'.",
    "entidades": [
     "negocios",
     "tamanos_vehiculo"
@@ -5158,9 +5158,30 @@
     "reglas_match",
     "ajustes"
    ]
+  },
+  {
+   "id": "MD43",
+   "pregunta": "Maquinaria aparece en la experiencia (Paso 3) pero no tiene negocio en el Paso 4. ¿Se deja solo como experiencia o se saca?",
+   "opciones": "a) Dejarla solo como experiencia (sus años no cuentan en ningún match por ahora). b) Sacarla hasta que haya un negocio de maquinaria. c) Agregar un negocio de maquinaria (clase D).",
+   "entidades": [
+    "tamanos_vehiculo",
+    "negocios"
+   ]
   }
  ],
  "cambios": [
+  {
+   "n": 25,
+   "fecha": "2026-11-02",
+   "cambio": "El catálogo de experiencia pasa de 10 tamaños a 7 categorías que cubren todos los vehículos: Moto, Vehículo liviano, Van o minibús, Bus, Camión, Camión articulado y Maquinaria. Cada una tiene un texto \"qué incluye\" (ej. \"auto, SUV, camioneta\"). Se ajusta qué categorías cuentan para los años de cada negocio. Nueva pregunta MD43 sobre Maquinaria.",
+   "porque": "La dueña pidió clasificaciones más acotadas que contengan todos los tipos de vehículo. Calzan casi una a una con las clases de licencia (C, B, A2, A3, A4, A5, D).",
+   "origen": "Comentario",
+   "entidades": [
+    "tamanos_vehiculo",
+    "negocios",
+    "experiencia_conductor"
+   ]
+  },
   {
    "n": 24,
    "fecha": "2026-10-30",
@@ -5176,7 +5197,7 @@
   {
    "n": 23,
    "fecha": "2026-10-29",
-   "cambio": "Según la propuesta de catálogos (`docs/propuesta-catalogos.md`): clases de licencia suma \"también habilita la clase B\" (una sola vez, no en cada negocio); negocios suma una fecha de término por clase (para la transición de la Ley 21.553); se actualiza la tabla negocio → licencias propuesta y se agregan las preguntas MD40 a MD42. Los catálogos no cambian hasta que la dueña apruebe.",
+   "cambio": "Según la propuesta de catálogos (docs/propuesta-catalogos.md): clases de licencia suma \"también habilita la clase B\" (una sola vez, no en cada negocio); negocios suma una fecha de término por clase (para la transición de la Ley 21.553); se actualiza la tabla negocio → licencias propuesta y se agregan las preguntas MD40 a MD42. Los catálogos no cambian hasta que la dueña apruebe.",
    "porque": "La investigación y su revisión encontraron que la licencia depende del vehículo en turismo, reparto y carga, que las clases antiguas también habilitan la B y que la ley de apps tendrá un plazo de transición.",
    "origen": "Propuesta",
    "entidades": [

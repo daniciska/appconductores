@@ -4,6 +4,12 @@ Cada vez que cambia una pantalla de la maqueta o una decisión, se anota aquí *
 
 Origen: **Comentario** = comentario de la dueña en la maqueta · **Decisión** = decisión registrada en `CLAUDE.md`.
 
+## 2026-11-02
+
+| # | Cambio en los datos | Por qué | Origen |
+|---|---|---|---|
+| 25 | El catálogo de experiencia pasa de 10 tamaños a **7 categorías** que cubren todos los vehículos: Moto, Vehículo liviano, Van o minibús, Bus, Camión, Camión articulado y Maquinaria. Cada una tiene un texto "qué incluye" (ej. "auto, SUV, camioneta"). Se ajusta qué categorías cuentan para los años de cada negocio. Nueva pregunta MD43 sobre Maquinaria. | La dueña pidió clasificaciones más acotadas que contengan todos los tipos de vehículo. Calzan casi una a una con las clases de licencia (C, B, A2, A3, A4, A5, D). | Comentario |
+
 ## 2026-10-30
 
 | # | Cambio en los datos | Por qué | Origen |
