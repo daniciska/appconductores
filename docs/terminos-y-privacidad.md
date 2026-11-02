@@ -7,7 +7,7 @@ Lista de trabajo para redactar los textos legales con el abogado. Se agrega un p
 - [ ] **Celular:** sirve para entrar a la app. El código llega por WhatsApp, con SMS de respaldo.
 - [ ] **Correo electrónico (obligatorio):** se usa para recuperar la cuenta, cambiar de número y recibir los comprobantes de pago. No se usa para entrar.
 - [ ] **Dirección del conductor:** se pide para obtener su comuna verificada (con sugerencias de Google Maps). Para el match solo se usa la comuna. La dirección es privada y solo se entrega a un titular si hay match y el conductor lo autoriza.
-- [ ] **Nombres y apellidos, clases de licencia, experiencia, modos de contrato, turnos y estacionamiento:** se usan para el match y se muestran al titular después del match.
+- [ ] **Nombres y apellidos, clases de licencia, experiencia, negocios en los que quiere trabajar, turnos, días y estacionamiento:** se usan para el match y se muestran al titular después del match. (El modo de contrato y la garantía quedaron como crecimiento futuro el 2-nov: no se piden.)
 - [ ] **RUN:** se obtiene de la cédula al verificarla. Solo lo ve el equipo de verificación.
 
 ## Con quién se comparten
