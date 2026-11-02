@@ -15,6 +15,7 @@ Lista de trabajo para redactar los textos legales con el abogado. Se agrega un p
 - [ ] Tras un match, el titular ve la ficha del conductor y su contacto (**teléfono y correo**).
 - [ ] El titular decide si comparte su propio contacto con un conductor en particular.
 - [ ] Registro de quién recibió los datos de cada conductor (el conductor lo puede ver en la app).
+- [ ] **Bolsa de trabajo** (si se lanza): al tocar "Me interesa", el conductor envía su ficha al titular de esa oferta aunque no haya match. Queda en "Quién recibió mis datos". Los titulares solo ven las ofertas según la visibilidad que eligieron; la bolsa no es pública para personas sin cuenta.
 
 ## Documentos y verificación
 

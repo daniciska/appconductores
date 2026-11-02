@@ -17,6 +17,7 @@ Actualizado: 2-nov-2026. Se actualiza a medida que avanzamos.
 3. [ ] Prototipo del titular, con el mismo detalle (registro, verificación, búsquedas, resultados, planes y pago, mensajes, compartir contacto).
 4. [ ] Maquetas del panel de administración (revisión de documentos, configuración de campos, catálogos —con activar o desactivar cada negocio—, reglas de match y zonas, reportes, usuarios).
 5. [ ] Retomar lo que está en pausa: documentos, mensajes y zonas.
+6. [ ] **Bolsa de trabajo** (pedida el 2-nov): maqueta del conductor y del titular, y modelo de datos. Después, decidir si sale en el lanzamiento y qué incluye cada plan (`docs/propuesta-bolsa-trabajo.md`).
 
 ## Para empezar a construir (revisado el 2-nov)
 

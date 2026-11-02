@@ -1245,6 +1245,66 @@
      "configurable": false
     },
     {
+     "id": "en_bolsa",
+     "nombre": "Publicada en la bolsa",
+     "tipo": "si_no",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Sí si el titular prendió 'Publicar en la bolsa de trabajo'. Una oferta de la bolsa es la misma búsqueda, no una ficha aparte (propuesta). Bolsa de trabajo: se diseña ahora y si sale en el lanzamiento se decide después (2-nov).",
+     "quien_ve": "El titular y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "visibilidad_bolsa",
+     "nombre": "Quién la ve en la bolsa",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Opciones fijas: Solo quienes hacen match; Perfiles que elige el titular; Todos los conductores (decidido el 2-nov; no es pública para personas sin cuenta). Solo se pueden elegir las que permite el plan (planes.visibilidades_bolsa). La licencia habilitante y la región se exigen siempre (propuesta).",
+     "quien_ve": "El titular y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "filtros_bolsa",
+     "nombre": "Perfiles que elige",
+     "tipo": "json",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Solo con 'Perfiles que elige el titular': las condiciones que marcó, que funcionan como filtros (propuesta: zonas, años mínimos, turno, días y estacionamiento). Qué condiciones se ofrecen está pendiente (MD46).",
+     "quien_ve": "El titular y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "publicada_en_bolsa_en",
+     "nombre": "Publicada en la bolsa el",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "La pone el servidor al prender la publicación. Ordena la bolsa después de las destacadas.",
+     "quien_ve": "El titular, el equipo y los conductores que la ven",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "destacada_hasta",
+     "nombre": "Destacada hasta",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Mientras no pase esta fecha, la oferta aparece primero en la bolsa con la marca 'Destacada'. Depende del plan (planes.destacadas_mes); cuánto dura está pendiente (MD47).",
+     "quien_ve": "El titular y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
      "id": "datos_extra",
      "nombre": "Campos agregados desde el panel",
      "tipo": "json",
@@ -1327,6 +1387,18 @@
      "configurable": false
     },
     {
+     "id": "origen",
+     "nombre": "Cómo se originó",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: Automático (el cálculo de siempre); Postulación (el titular respondió a un conductor que postuló desde la bolsa). Así la conversación, los favoritos y 'Quién recibió mis datos' funcionan igual en los dos casos. Un match por postulación sigue vigente aunque no llegue al umbral (propuesta).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
      "id": "vigente",
      "nombre": "Match vigente",
      "tipo": "si_no",
@@ -1356,7 +1428,7 @@
      "tipo": "numero",
      "referencia": "",
      "obligatorio": true,
-     "descripcion": "La 'M' de 'Coincide N de M' (hoy 3: zona, años, estacionamiento).",
+     "descripcion": "La 'M' de 'Coincide N de M' (hoy 4: zona, años, estacionamiento y días).",
      "quien_ve": "El conductor, el titular con plan y el equipo",
      "codigo": "",
      "estado": "decidido",
@@ -1432,6 +1504,124 @@
      "quien_ve": "El conductor, el titular y el equipo",
      "codigo": "",
      "estado": "decidido",
+     "configurable": false
+    }
+   ]
+  },
+  {
+   "id": "postulaciones",
+   "nombre": "Postulación",
+   "grupo": "match",
+   "descripcion": "Cada vez que un conductor toca 'Me interesa' en una oferta de la bolsa de trabajo. El titular la ve en 'Postulantes' y el conductor la sigue en 'Mis postulaciones'.",
+   "para_que": "Venta: con la bolsa, el titular recibe conductores interesados aunque no haya match automático. Bolsa de trabajo: se diseña ahora y si sale en el lanzamiento se decide después (2-nov).",
+   "estado": "propuesta",
+   "campos": [
+    {
+     "id": "id",
+     "nombre": "ID",
+     "tipo": "id",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Número interno. Un conductor postula una sola vez a cada búsqueda.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "busqueda_id",
+     "nombre": "Oferta",
+     "tipo": "referencia",
+     "referencia": "busquedas",
+     "obligatorio": true,
+     "descripcion": "La búsqueda publicada en la bolsa a la que postula.",
+     "quien_ve": "El conductor, el titular y el equipo",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "conductor_id",
+     "nombre": "Conductor",
+     "tipo": "referencia",
+     "referencia": "conductores",
+     "obligatorio": true,
+     "descripcion": "Quién postula. Siempre la persona con la sesión abierta. Propuesta: solo puede postular si está verificado y 'Disponible para trabajar' (MD45).",
+     "quien_ve": "El conductor, el titular y el equipo",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "estado",
+     "nombre": "Estado",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: Enviada; Vista (el titular abrió la ficha); Te escribió (el titular respondió y se abrió la conversación); Descartada (el conductor ve 'Cerrada', sin el motivo); Retirada (el conductor la retiró); Cerrada (la búsqueda se cubrió o se sacó de la bolsa).",
+     "quien_ve": "El conductor, el titular y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "mensaje",
+     "nombre": "Mensaje al postular",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Opcional, corto. Solo si se decide que el conductor puede escribir algo al postular (MD48).",
+     "quien_ve": "El conductor, el titular con plan y el equipo",
+     "codigo": "",
+     "estado": "pendiente",
+     "configurable": false
+    },
+    {
+     "id": "match_id",
+     "nombre": "Conversación",
+     "tipo": "referencia",
+     "referencia": "matches",
+     "obligatorio": false,
+     "descripcion": "Se llena cuando el titular le escribe: se crea (o se usa) el match con origen 'Postulación'.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "creado_en",
+     "nombre": "Postuló el",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "La pone el servidor.",
+     "quien_ve": "El conductor, el titular y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "vista_en",
+     "nombre": "Vista el",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Cuándo el titular abrió la ficha. Al abrirla se anota en 'Quién recibió mis datos' (entregas_datos, origen 'Postulación desde la bolsa').",
+     "quien_ve": "El conductor, el titular y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "actualizado_en",
+     "nombre": "Último cambio",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Cuándo cambió el estado por última vez.",
+     "quien_ve": "El conductor, el titular y el equipo",
+     "codigo": "",
+     "estado": "propuesta",
      "configurable": false
     }
    ]
@@ -1592,7 +1782,7 @@
      "tipo": "lista",
      "referencia": "",
      "obligatorio": true,
-     "descripcion": "Opciones fijas: Apertura de la ficha; Compartir en la conversación; Lista de resultados (solo si se decide registrarla, MD33).",
+     "descripcion": "Opciones fijas: Apertura de la ficha; Compartir en la conversación; Lista de resultados (solo si se decide registrarla, MD33); Postulación desde la bolsa (el conductor envió su ficha al postular; propuesta, 2-nov).",
      "quien_ve": "Solo el equipo",
      "codigo": "",
      "estado": "propuesta",
@@ -2706,6 +2896,54 @@
      "quien_ve": "Todos",
      "codigo": "P13",
      "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "ofertas_bolsa_max",
+     "nombre": "Ofertas en la bolsa",
+     "tipo": "numero",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Cuántas búsquedas puede tener publicadas a la vez en la bolsa. Depende del plan (decidido el 2-nov); los números están por definir (MD47).",
+     "quien_ve": "Todos",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "visibilidades_bolsa",
+     "nombre": "Visibilidades que permite",
+     "tipo": "lista_multiple",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Qué niveles de visibilidad puede elegir el titular con este plan. Depende del plan (decidido el 2-nov). Propuesta: Básico solo match; Flota chica también perfiles que elige; Flota también todos (MD47).",
+     "quien_ve": "Todos",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "destacadas_mes",
+     "nombre": "Ofertas destacadas al mes",
+     "tipo": "numero",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Cuántas veces al mes puede destacar una oferta. 0 = no puede. Depende del plan (decidido el 2-nov); propuesta: solo Flota (MD47).",
+     "quien_ve": "Todos",
+     "codigo": "",
+     "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "ve_postulantes",
+     "nombre": "Ve las fichas de quienes postularon",
+     "tipo": "si_no",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Sí = ve las fichas de quienes postularon. Sin plan, el titular solo ve cuántos postularon, igual que el adelanto anónimo (decidido el 2-nov).",
+     "quien_ve": "Todos",
+     "codigo": "",
+     "estado": "propuesta",
      "configurable": true
     },
     {
@@ -4020,7 +4258,7 @@
      "tipo": "id",
      "referencia": "",
      "obligatorio": true,
-     "descripcion": "Ej.: umbral_match (66, decidido); forma_umbral ('igual o mayor', propuesta, MD28); dias_reconfirmar_disponibilidad (30, propuesta); dias_aviso_vencimiento (7, propuesta); recordatorio_perfil_cada_dias, recordatorio_perfil_maximo y recordatorio_perfil_primer_canal (pendientes, MD6); horas_plazo_revision (pendiente, MD21); dias_borrar_archivos_no_enviados (pendiente, abogado); busquedas_sin_plan (pendiente, MD10); meses_conservar_mensajes (MD13), meses_conservar_matches_no_vigentes, dias_conservar_conversacion_reportada, meses_conservar_reportes, meses_conservar_avisos y meses_borrar_cuenta_incompleta (pendientes, abogado, MD38); dias_responder_solicitudes [verificar con abogado]; max_conductores_nuevos_por_titular_mes y max_cambios_por_busqueda (pendientes, MD34); conductor_ve_lista_matches (sí, propuesta).",
+     "descripcion": "Ej.: umbral_match (66, decidido); forma_umbral ('igual o mayor', propuesta, MD28); dias_reconfirmar_disponibilidad (30, propuesta); dias_aviso_vencimiento (7, propuesta); recordatorio_perfil_cada_dias, recordatorio_perfil_maximo y recordatorio_perfil_primer_canal (pendientes, MD6); horas_plazo_revision (pendiente, MD21); dias_borrar_archivos_no_enviados (pendiente, abogado); busquedas_sin_plan (pendiente, MD10); meses_conservar_mensajes (MD13), meses_conservar_matches_no_vigentes, dias_conservar_conversacion_reportada, meses_conservar_reportes, meses_conservar_avisos y meses_borrar_cuenta_incompleta (pendientes, abogado, MD38); dias_responder_solicitudes [verificar con abogado]; max_conductores_nuevos_por_titular_mes y max_cambios_por_busqueda (pendientes, MD34); conductor_ve_lista_matches (sí, propuesta); bolsa_activa (no, hasta que se decida si sale en el lanzamiento); max_postulaciones_por_dia (pendiente, MD49).",
      "quien_ve": "Solo el equipo",
      "codigo": "P5, P16",
      "estado": "propuesta",
@@ -4443,6 +4681,24 @@
    "a": "industrias",
    "cardinalidad": "1-N",
    "descripcion": "Cada negocio pertenece a una industria; una industria agrupa varios negocios."
+  },
+  {
+   "de": "busquedas",
+   "a": "postulaciones",
+   "cardinalidad": "1-N",
+   "descripcion": "Una búsqueda publicada en la bolsa recibe muchas postulaciones."
+  },
+  {
+   "de": "conductores",
+   "a": "postulaciones",
+   "cardinalidad": "1-N",
+   "descripcion": "Un conductor postula a muchas ofertas, una vez a cada una."
+  },
+  {
+   "de": "matches",
+   "a": "postulaciones",
+   "cardinalidad": "1-1",
+   "descripcion": "Cuando el titular le escribe a quien postuló, la postulación queda unida a su conversación (match con origen 'Postulación')."
   }
  ],
  "reglas": [
@@ -4847,6 +5103,31 @@
     "titulares",
     "planes"
    ]
+  },
+  {
+   "id": "R29",
+   "nombre": "Quién ve cada oferta de la bolsa (propuesta)",
+   "descripcion": "Una búsqueda con en_bolsa = sí y estado Activa aparece en la bolsa de un conductor cuando: la bolsa está activa (ajuste bolsa_activa) y el negocio y su industria están activos; alguna clase de licencia del conductor habilita el negocio y vive en la misma región; y además, según visibilidad_bolsa, hay match vigente (Solo quienes hacen match), cumple todos los filtros_bolsa (Perfiles que elige el titular) o nada más (Todos los conductores). El titular solo puede elegir las visibilidades de su plan y tener hasta ofertas_bolsa_max publicadas. Las destacadas vigentes van primero; después, las más nuevas.",
+   "entidades": [
+    "busquedas",
+    "planes",
+    "ajustes",
+    "postulaciones",
+    "matches"
+   ]
+  },
+  {
+   "id": "R30",
+   "nombre": "Postular y responder (propuesta)",
+   "descripcion": "Solo el propio conductor crea su postulación, una por búsqueda, y solo a una oferta que puede ver (R29). Propuesta: debe estar verificado y disponible (MD45). El titular con plan (ve_postulantes) ve la ficha; al abrirla se registra la entrega de datos. Sin plan solo ve cuántas postulaciones tiene. Si el titular le escribe, se crea el match con origen 'Postulación' y la conversación sigue las mismas reglas de mensajes, reportes y bloqueos. Un conductor bloqueado por un titular no ve sus ofertas en la bolsa.",
+   "entidades": [
+    "postulaciones",
+    "busquedas",
+    "matches",
+    "entregas_datos",
+    "planes",
+    "bloqueos"
+   ]
   }
  ],
  "pendientes": [
@@ -5204,9 +5485,76 @@
     "tamanos_vehiculo",
     "negocios"
    ]
+  },
+  {
+   "id": "MD45",
+   "pregunta": "Bolsa: ¿quién puede postular?",
+   "opciones": "a) Solo verificado y 'Disponible para trabajar' (propuesta, igual que para los matches). b) También con documentos en revisión. c) Cualquiera registrado.",
+   "entidades": [
+    "postulaciones",
+    "conductores"
+   ]
+  },
+  {
+   "id": "MD46",
+   "pregunta": "Bolsa: en 'Perfiles que elige el titular', ¿qué condiciones puede marcar?",
+   "opciones": "Propuesta: zonas, años mínimos, turno, días y estacionamiento (las mismas variables del match, pero como filtros). La licencia y la región se exigen siempre.",
+   "entidades": [
+    "busquedas"
+   ]
+  },
+  {
+   "id": "MD47",
+   "pregunta": "Bolsa y planes: ¿qué incluye cada plan?",
+   "opciones": "Cuántas ofertas en la bolsa, qué visibilidades, cuántas destacadas al mes y por cuántos días. Propuesta: Básico solo match; Flota chica + perfiles que elige; Flota + todos y destacar. Números por definir.",
+   "entidades": [
+    "planes",
+    "busquedas"
+   ]
+  },
+  {
+   "id": "MD48",
+   "pregunta": "Bolsa: al postular, ¿el conductor puede escribir un mensaje corto?",
+   "opciones": "a) Solo 'Me interesa' (más simple; propuesta). b) 'Me interesa' con un mensaje opcional de hasta [N] caracteres.",
+   "entidades": [
+    "postulaciones"
+   ]
+  },
+  {
+   "id": "MD49",
+   "pregunta": "Bolsa: ¿límite de postulaciones por día?",
+   "opciones": "a) Sin límite. b) Hasta [N] por día (evita el spam a los titulares).",
+   "entidades": [
+    "postulaciones",
+    "ajustes"
+   ]
+  },
+  {
+   "id": "MD50",
+   "pregunta": "Bolsa: ¿un titular sin plan puede publicar en la bolsa?",
+   "opciones": "a) Sí, solo visible para quienes hacen match, y ve cuántos postularon (propuesta). b) No: publicar en la bolsa requiere plan.",
+   "entidades": [
+    "busquedas",
+    "planes"
+   ]
   }
  ],
  "cambios": [
+  {
+   "n": 37,
+   "fecha": "2026-11-02",
+   "cambio": "Bolsa de trabajo (propuesta): la búsqueda suma *publicada en la bolsa*, *quién la ve* (solo match, perfiles que elige el titular o todos), *perfiles que elige*, *publicada el* y *destacada hasta*. Nueva tabla postulaciones (el conductor toca \"Me interesa\"; estados Enviada, Vista, Te escribió, Descartada, Retirada y Cerrada). Los matches suman *origen* (Automático o Postulación), para que la conversación funcione igual. Los planes suman *ofertas en la bolsa*, *visibilidades*, *destacadas al mes* y *ve postulantes*. Ajuste bolsa_activa (apagada mientras no se decida). Reglas R29–R30 y preguntas MD45–MD50. Además se corrige el total del match a 4 variables.",
+   "porque": "La dueña pidió que los titulares puedan abrir sus ofertas a una bolsa de trabajo, con la visibilidad según el plan. Se diseña ahora y si sale en el lanzamiento se decide después. Detalle en docs/propuesta-bolsa-trabajo.md.",
+   "origen": "Decisión",
+   "entidades": [
+    "busquedas",
+    "postulaciones",
+    "matches",
+    "planes",
+    "entregas_datos",
+    "ajustes"
+   ]
+  },
   {
    "n": 36,
    "fecha": "2026-11-02",

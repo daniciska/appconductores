@@ -96,6 +96,7 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - **Documentos obligatorios del conductor:** cédula, licencia, **Hoja de Vida del Conductor** y **Certificado de Antecedentes para fines especiales** (la dueña lo pide según la ley vigente y la que viene). Revisión: **agente de IA + persona** (ver P8). Riesgo legal por datos de infracciones penales (Ley 21.719 art. 25): ver `docs/investigacion/documentos-y-mensajes.md` [verificar con abogado].
 - **Revisión de documentos (P8):** sistema mixto. Un **agente de IA pre-revisa** (lee el documento y compara con lo declarado); los casos claros se aprueban automáticamente y las dudas y rechazos los decide una **persona** en el panel [verificar con abogado: decisiones automatizadas y transferencia internacional de datos].
 - **Qué ve el conductor tras un match:** con los mensajes y favoritos, el conductor necesita ver **la lista de sus matches** (negocio, comuna de retiro, turno, días, nombre del titular/empresa) **sin el contacto** del titular; en el detalle, el **% de coincidencia** y las condiciones (sin modo de contrato ni garantía, que son crecimiento futuro; 2-nov). *Propuesta en maquetas, por confirmar.* Debe ser configurable desde el panel. Mapa de todo lo que ve y hace después de registrarse: página "Después del registro" de la maqueta.
+- **Bolsa de trabajo (2-nov):** se **diseña ahora** (maqueta y modelo), y **si sale en el lanzamiento se decide después**. Mientras tanto queda apagada desde el panel. El titular puede abrir sus ofertas a una bolsa. El conductor **postula** ("Me interesa"); el titular recibe su ficha y decide si le escribe o le muestra su contacto. **Visibilidad** a elección del titular: solo quienes hacen match, los perfiles que él elige o todos los conductores; **no** es pública para personas sin cuenta. **Depende del plan:** nivel de visibilidad, cuántas ofertas en la bolsa, destacar ofertas y ver quién postuló (sin plan, solo cuántos postularon). Detalle y preguntas abiertas: `docs/propuesta-bolsa-trabajo.md`.
 - **Contacto (P10):** por ahora **solo el titular ve el contacto del conductor**. El conductor no ve el contacto del titular.
 - **Monetización MVP:** suscripción mensual que paga el titular/empresa. **El conductor usa la app gratis** (por ahora).
 - **Planes (P13):** distintas suscripciones según volumen de búsquedas activas. Propuesta inicial aceptada (configurable): **Básico** 1 búsqueda, **Flota chica** 5, **Flota** 20. Precios por definir.
@@ -120,13 +121,15 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 ## Documentos de referencia
 
 - `docs/plan.md` — plan de trabajo por fases y lo que depende de la dueña. **Mantener actualizado.**
-- `docs/modelo-datos.json` — modelo de datos (35 tablas). Página interactiva para revisarlo: https://claude.ai/artifact/1ACYaM3MWdn1yiMpe7pwkK. **Se actualiza con cada cambio de la maqueta.**
+- `docs/modelo-datos.json` — modelo de datos (36 tablas). Página interactiva para revisarlo: https://claude.ai/artifact/1ACYaM3MWdn1yiMpe7pwkK. **Se actualiza con cada cambio de la maqueta.**
 - `docs/modelo-datos-cambios.md` — registro de qué cambió en el modelo y por qué.
 - `docs/terminos-y-privacidad.md` — lista de lo que deben cubrir los Términos y la Política de privacidad. **Agregar un punto cada vez que una decisión lo requiera.**
 - `docs/propuesta-campos.md` — propuesta de campos (C# conductor, T# titular, F# filtros, M# variables de match, D# documentos, P# preguntas). **Es una propuesta, no una decisión.**
 - `docs/propuesta-nombres.md` — nombres candidatos con conflictos encontrados. **Propuesta.**
 - `docs/investigacion/contexto-chile.md` — licencias, documentos verificables, Ley 21.719 / 19.628, Ley 21.553, modalidades de contrato.
 - `docs/propuesta-catalogos.md` — propuesta de tamaños de vehículo y negocios con sus licencias. **Propuesta.**
+- `docs/propuesta-bolsa-trabajo.md` — bolsa de trabajo: respuestas de la dueña, cómo funcionaría, planes y preguntas abiertas. **Propuesta; si sale en el lanzamiento se decide después.**
+- `docs/consulta-abogado.md` — pauta única de preguntas para la reunión con el abogado.
 - `docs/propuesta-zonas.md` y `docs/propuesta-zonas.csv` — propuesta de zonas (81 zonas, 346 comunas). **Propuesta.**
 - `docs/investigacion/documentos-y-mensajes.md` — Hoja de Vida y antecedentes (ley vigente y próxima, riesgo Ley 21.719 art. 25, revisión con IA, criterios de rechazo, renovación) y reglas de tiendas para mensajería.
 - `docs/investigacion/mercado-avisos.md` — cómo se publicitan conductores/titulares hoy, competidores (Uber Match, Portal Conductores, etc.).
