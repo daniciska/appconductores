@@ -3,8 +3,9 @@
 --
 -- Imita lo mínimo de Supabase que necesitan las migraciones:
 --   * los roles anon, authenticated y service_role (este último salta RLS);
---   * el rol supabase_auth_admin, dueño de auth.users (es quien inserta
---     los usuarios cuando alguien confirma su celular);
+--   * el rol supabase_auth_admin, dueño de auth.users (inserta el usuario
+--     cuando alguien PIDE el código, con phone_confirmed_at vacío, y anota
+--     phone_confirmed_at cuando lo confirma);
 --   * el esquema auth con auth.users y auth.uid();
 --   * los permisos por defecto de Supabase en public (dan TODO a anon y
 --     authenticated), para comprobar que las migraciones los recortan.

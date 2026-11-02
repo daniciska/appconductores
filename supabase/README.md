@@ -45,7 +45,21 @@ posteriores se hacen desde el panel o con una migración nueva.
 
 - **Quién escribe qué.** La persona solo cambia lo suyo. Estados, fechas de
   verificación, clases revisadas y roles los escriben el sistema (`postgres`,
-  `service_role`) o el equipo. Los triggers lo hacen cumplir aunque la app se equivoque.
+  `service_role`) o el equipo. El equipo, en la cuenta o el perfil de **otra**
+  persona, solo cambia estados (no correo, celular, avisos, datos ni id) y solo
+  anota clases **revisadas**; en lo **propio** tiene las mismas reglas que
+  cualquiera (nadie se revisa a sí mismo). Los triggers lo hacen cumplir aunque
+  la app se equivoque.
+- **La cuenta nace al confirmar el código.** Supabase Auth crea el usuario en
+  `auth.users` cuando se pide el código; la fila de `cuentas` aparece recién
+  cuando se confirma (`phone_confirmed_at`).
+- **La app no elige ids.** En `consentimientos` y `experiencia_conductor` el
+  INSERT se da por columnas, sin `id`. Si se agrega una columna que la app deba
+  escribir, hay que sumarla a ese `grant`.
+- **Quitar una clase declarada quita los negocios que ya no habilita.** Para
+  cambiar las clases, la app agrega las nuevas antes de quitar las viejas (o
+  quita solo las que se desmarcan); si borra todas y las vuelve a poner, se
+  pierden los negocios elegidos.
 - **El primer administrador** se crea a mano en el editor SQL de Supabase, después
   de que esa persona entre una vez con su celular:
 
@@ -58,4 +72,11 @@ posteriores se hacen desde el panel o con una migración nueva.
   al borrar una cuenta lo decide el abogado (R19 / MD23).
 - **Vistas futuras:** siempre con `security_invoker = true`; si no, se saltan la RLS.
 - **Funciones futuras:** en el esquema `privado`, con `set search_path = ''`. En `public`
-  quedan expuestas por la API.
+  quedan expuestas por la API. Postgres le da EXECUTE a PUBLIC a cada función nueva y
+  eso no se puede quitar por esquema (`alter default privileges in schema ... revoke`
+  no tiene efecto): cada migración que cree una hace
+  `revoke all on function ... from public, anon, authenticated, service_role;` y
+  después los `grant` que necesite. La prueba E9 lo revisa.
+- **Versiones de las migraciones:** si se aplican con `apply_migration` del conector,
+  Supabase probablemente les pone su propio número de versión [verificar]. Si después
+  se usa la CLI de Supabase, se alinean con `supabase migration repair`.

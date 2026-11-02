@@ -67,8 +67,8 @@
      "nombre": "Celular",
      "tipo": "texto",
      "referencia": "",
-     "obligatorio": true,
-     "descripcion": "Número +56 confirmado con un código por WhatsApp, o por SMS si no llega. Con él se entra a la app y es el teléfono de contacto. Cambiarlo exige confirmar el número nuevo (el correo sirve de respaldo).",
+     "obligatorio": false,
+     "descripcion": "Número +56 confirmado con un código por WhatsApp, o por SMS si no llega. Con él se entra a la app y es el teléfono de contacto. Cambiarlo exige confirmar el número nuevo (el correo sirve de respaldo). La cuenta se crea recién cuando se confirma el código (no al pedirlo). Si el número se desvincula en el inicio de sesión, el celular y su fecha quedan vacíos juntos y el número queda libre para otra cuenta (base de datos, 2-nov).",
      "quien_ve": "La persona y el equipo. El del conductor: el titular con plan, tras el match (condiciones en R7). El del titular: solo el conductor con quien el titular lo compartió",
      "codigo": "C3, T6",
      "estado": "decidido",
@@ -79,8 +79,8 @@
      "nombre": "Celular verificado el",
      "tipo": "fecha_hora",
      "referencia": "",
-     "obligatorio": true,
-     "descripcion": "Cuándo se confirmó el código. Lo escribe solo el sistema.",
+     "obligatorio": false,
+     "descripcion": "Cuándo se confirmó el código. Lo escribe solo el sistema. Queda vacía junto con el celular si el número se desvincula.",
      "quien_ve": "Solo el equipo",
      "codigo": "",
      "estado": "propuesta",
@@ -152,7 +152,7 @@
      "tipo": "lista",
      "referencia": "",
      "obligatorio": true,
-     "descripcion": "Opciones fijas: Activa; Suspendida; Eliminación en curso. Una cuenta suspendida (por ejemplo, tras un reporte) o en eliminación no entra al match ni puede escribir. Solo lo cambian el equipo o el sistema.",
+     "descripcion": "Opciones fijas: Activa; Suspendida; Eliminación en curso. Una cuenta suspendida (por ejemplo, tras un reporte) o en eliminación no entra al match ni puede escribir. Solo lo cambian el equipo o el sistema. Falta definir qué bloquea exactamente una suspensión y quién puede suspender a un miembro del equipo (MD52).",
      "quien_ve": "La persona y el equipo",
      "codigo": "",
      "estado": "propuesta",
@@ -704,7 +704,7 @@
      "tipo": "fecha",
      "referencia": "",
      "obligatorio": true,
-     "descripcion": "Paso 1 (obligatoria para registrarse), después de los apellidos, en formato dd/mm/aaaa (decidido el 2-nov). El titular NO ve la fecha: ve solo la EDAD en la ficha ('[N] años'). No es filtro ni variable del match. Propuesta: rechazar menores de 18 años y fechas futuras. Mostrar la edad tiene riesgo de discriminación por edad: se consulta con el abogado (consulta-abogado A16).",
+     "descripcion": "Paso 1 (obligatoria para registrarse), después de los apellidos, en formato dd/mm/aaaa (decidido el 2-nov). El titular NO ve la fecha: ve solo la EDAD en la ficha ('[N] años'). No es filtro ni variable del match. Propuesta (ya en la base de datos): la base rechaza menores de 18 años y fechas futuras, con la fecha de hoy en Chile. Mostrar la edad tiene riesgo de discriminación por edad: se consulta con el abogado (consulta-abogado A16).",
      "quien_ve": "El conductor y el equipo; el titular con plan ve solo la edad, tras el match",
      "codigo": "",
      "estado": "decidido",
@@ -5152,6 +5152,18 @@
     "planes",
     "bloqueos"
    ]
+  },
+  {
+   "id": "R31",
+   "nombre": "El equipo solo cambia estados en filas de otras personas (base de datos)",
+   "descripcion": "En la cuenta de otra persona, el equipo solo cambia el estado; en el perfil de conductor de otra persona, solo los estados (perfil y verificación) y las clases de licencia revisadas. Nunca cambia el correo, el celular, los avisos ni las clases declaradas de otros, y en sus propias filas tiene las mismas reglas que cualquiera. La app no elige los números internos (ids) de las filas. Así lo dejó la revisión de seguridad de la base de datos; permitir que el equipo corrija otros datos lo decide la dueña.",
+   "entidades": [
+    "cuentas",
+    "conductores",
+    "miembros_equipo",
+    "consentimientos",
+    "experiencia_conductor"
+   ]
   }
  ],
  "pendientes": [
@@ -5570,9 +5582,30 @@
     "opciones",
     "conductores"
    ]
+  },
+  {
+   "id": "MD52",
+   "pregunta": "Cuenta suspendida: ¿qué bloquea y quién puede suspender?",
+   "opciones": "Hoy la base de datos guarda el estado 'Suspendida' pero todavía no bloquea nada, y un revisor podría suspender a un administrador. Propuesta: suspendida = no entra al match, no puede escribir ni postular, y solo un administrador suspende a alguien del equipo.",
+   "entidades": [
+    "cuentas",
+    "miembros_equipo"
+   ]
   }
  ],
  "cambios": [
+  {
+   "n": 39,
+   "fecha": "2026-11-02",
+   "cambio": "Ajustes de la base de datos (Etapa 1): la cuenta se crea recién al confirmar el código; el celular puede quedar vacío (junto con su fecha) si se desvincula el número, para liberarlo. La base valida la fecha de nacimiento (mayor de 18 y sin fechas futuras; propuesta). Nueva regla R31: en filas de otras personas el equipo solo cambia estados y clases revisadas, y la app no elige los ids. Pregunta MD52 sobre qué bloquea una cuenta suspendida y quién puede suspender.",
+   "porque": "Lo encontraron las pruebas y dos revisiones independientes de seguridad antes de aplicar la base en Supabase (261 pruebas locales).",
+   "origen": "Construcción",
+   "entidades": [
+    "cuentas",
+    "conductores",
+    "miembros_equipo"
+   ]
+  },
   {
    "n": 38,
    "fecha": "2026-11-02",

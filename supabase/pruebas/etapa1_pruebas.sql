@@ -30,7 +30,9 @@ insert into pruebas.usuarios values
   ('revisor', 'dddddddd-0000-4000-8000-00000000000d'),
   ('admin',   'eeeeeeee-0000-4000-8000-00000000000e'),
   ('sin_cel', 'ffffffff-0000-4000-8000-00000000000f'),  -- usuario sin celular
-  ('dup',     '99999999-0000-4000-8000-000000000099');  -- celular repetido
+  ('dup',     '99999999-0000-4000-8000-000000000099'),  -- celular repetido
+  ('pendiente', '77777777-0000-4000-8000-000000000077'),  -- pidió el código y no lo confirmó
+  ('nuevo',   '88888888-0000-4000-8000-000000000088');  -- se registra con un número liberado
 
 create function pruebas.id(p_alias text) returns uuid
 language sql stable as $$ select id from pruebas.usuarios where alias = p_alias $$;
@@ -184,6 +186,25 @@ begin
                  and not has_table_privilege('authenticated', 'public.conductores', 'DELETE')
                  and not has_table_privilege('authenticated', 'public.consentimientos', 'DELETE'),
     '[E7] sin UPDATE en tablas de pares ni INSERT/DELETE donde la app no los usa');
+
+  perform pruebas.ok(not has_column_privilege('authenticated', 'public.consentimientos', 'id', 'INSERT')
+                 and not has_column_privilege('authenticated', 'public.experiencia_conductor', 'id', 'INSERT')
+                 and has_column_privilege('authenticated', 'public.consentimientos', 'texto_autorizacion_id', 'INSERT')
+                 and has_column_privilege('authenticated', 'public.experiencia_conductor', 'anos', 'INSERT'),
+    '[E8] la app no elige el id de autorizaciones ni de experiencia (sí el resto)');
+
+  perform pruebas.ok(not exists (
+    select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+     cross join lateral aclexplode(coalesce(p.proacl, acldefault('f', p.proowner))) as a
+     where n.nspname = 'privado' and a.grantee = 0 and a.privilege_type = 'EXECUTE'),
+    '[E9] ninguna función de privado la puede ejecutar PUBLIC');
+  perform pruebas.ok((
+    select array_agg(p.proname::text order by p.proname)
+      from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+     where n.nspname = 'privado' and has_function_privilege('authenticated', p.oid, 'EXECUTE'))
+    = array['columnas_cambiadas', 'columnas_cambiadas_salvo', 'es_admin', 'es_equipo', 'es_sistema',
+            'licencia_habilita_negocio'],
+    '[E9] authenticated solo ejecuta las funciones auxiliares que usan políticas y triggers');
 end $$;
 
 
@@ -279,8 +300,19 @@ begin
     '[D6] Taxi: A1, A2, A3, A1 antigua; Moto delivery: C');
   perform pruebas.ok((select count(*) from public.negocio_tamanos) = 15, '[D6] 15 pares negocio-categoría');
 
-  perform pruebas.ok((select array_agg(clave order by clave) from public.listas) = array['dia_semana','modo_contrato','turno'],
-    '[D7] 3 listas');
+  perform pruebas.ok((select array_agg(clave order by clave) from public.listas) = array['dia_semana','idioma','modo_contrato','turno'],
+    '[D7] 4 listas');
+  perform pruebas.ok((select count(*) from public.opciones) = 17
+                 and (select array_agg(l.clave || '=' || n order by l.clave)
+                        from public.listas l
+                        cross join lateral (select count(*) as n from public.opciones o where o.lista_id = l.id) as x)
+                     = array['dia_semana=7', 'idioma=5', 'modo_contrato=3', 'turno=2'],
+    '[D7] 17 opciones: 7 días, 5 idiomas, 3 modos de contrato, 2 turnos');
+  perform pruebas.ok((select array_agg(o.clave || ' ' || o.nombre order by o.orden) from public.opciones o
+                        join public.listas l on l.id = o.lista_id
+                       where l.clave = 'idioma' and o.activa)
+                     = array['es Español', 'en Inglés', 'pt Portugués', 'fr Francés', 'ht Criollo haitiano'],
+    '[D7] 5 idiomas, todos activos y en orden');
   perform pruebas.ok((select array_agg(o.nombre order by o.orden) from public.opciones o join public.listas l on l.id = o.lista_id
                        where l.clave = 'turno') = array['Día', 'Noche'], '[D7] turnos Día y Noche');
   perform pruebas.ok((select array_agg(o.nombre_corto order by o.orden) from public.opciones o join public.listas l on l.id = o.lista_id
@@ -306,14 +338,16 @@ end $$;
 do $$
 begin
   -- Usuarios creados como lo hace Supabase Auth (rol supabase_auth_admin).
+  -- 'pendiente' pidió el código y todavía no lo confirma.
   perform pruebas.como('supabase_auth_admin');
   insert into auth.users (id, phone, phone_confirmed_at) values
-    (pruebas.id('a'),       '56911111111',  '2026-10-01 10:00-03'),
-    (pruebas.id('b'),       '56922222222',  '2026-10-02 10:00-03'),
-    (pruebas.id('c'),       '56955555555',  null),
-    (pruebas.id('revisor'), '56933333333',  '2026-10-03 10:00-03'),
-    (pruebas.id('admin'),   '+56944444444', '2026-10-04 10:00-03'),
-    (pruebas.id('sin_cel'), null,           null);
+    (pruebas.id('a'),         '56911111111',  '2026-10-01 10:00-03'),
+    (pruebas.id('b'),         '56922222222',  '2026-10-02 10:00-03'),
+    (pruebas.id('c'),         '56955555555',  '2026-10-01 11:00-03'),
+    (pruebas.id('revisor'),   '56933333333',  '2026-10-03 10:00-03'),
+    (pruebas.id('admin'),     '+56944444444', '2026-10-04 10:00-03'),
+    (pruebas.id('sin_cel'),   null,           null),
+    (pruebas.id('pendiente'), '56988888888',  null);
   perform pruebas.como('postgres');
 
   -- Equipo: el primer administrador se crea a mano con SQL de servicio.
@@ -325,9 +359,9 @@ begin
    where id = pruebas.id('a');
 
   -- Perfiles de A y B con fechas viejas, para ver que el servidor las cambia.
-  insert into public.conductores (id, creado_en, actualizado_en) values
-    (pruebas.id('a'), '2020-01-01', '2020-01-01'),
-    (pruebas.id('b'), '2020-01-01', '2020-01-01');
+  insert into public.conductores (id, fecha_nacimiento, creado_en, actualizado_en) values
+    (pruebas.id('a'), '1990-05-10', '2020-01-01', '2020-01-01'),
+    (pruebas.id('b'), '1985-11-20', '2020-01-01', '2020-01-01');
   insert into public.conductor_licencias values (pruebas.id('b'), pruebas.clase('A1'), 'declarada');
   insert into public.conductor_negocios values (pruebas.id('b'), pruebas.negocio('Taxi'));
   insert into public.conductor_opciones values (pruebas.id('b'), pruebas.opcion('turno', 'noche'));
@@ -355,23 +389,33 @@ begin
     '[A1] la cuenta nace sola con +56… y la fecha de confirmación');
   perform pruebas.ok((select celular from public.cuentas where id = pruebas.id('admin')) = '+56944444444',
     '[A2] un número que ya trae + no queda con ++');
-  perform pruebas.ok((select celular_verificado_en from public.cuentas where id = pruebas.id('c')) = now(),
-    '[A3] sin fecha de confirmación se usa la hora del servidor');
+  perform pruebas.ok(not exists (select 1 from public.cuentas where id = pruebas.id('pendiente')),
+    '[A3] pedir el código (sin confirmarlo) no crea cuenta');
   perform pruebas.ok(not exists (select 1 from public.cuentas where id = pruebas.id('sin_cel')),
     '[A4] un usuario sin celular no crea cuenta');
 
   perform pruebas.como('supabase_auth_admin');
   update auth.users set phone = '56966666666' where id = pruebas.id('sin_cel');
+  perform pruebas.como('postgres');
+  perform pruebas.ok(not exists (select 1 from public.cuentas where id = pruebas.id('sin_cel')),
+    '[A5] agregar el celular sin confirmarlo todavía no crea cuenta');
+  perform pruebas.como('supabase_auth_admin');
+  update auth.users set phone_confirmed_at = '2026-10-22 09:00-03' where id = pruebas.id('sin_cel');
   update auth.users set phone = '56977777777', phone_confirmed_at = '2026-10-20 09:00-03' where id = pruebas.id('b');
   update auth.users set phone_confirmed_at = '2026-10-21 09:00-03' where id = pruebas.id('c');
+  update auth.users set phone_confirmed_at = '2026-10-23 09:00-03' where id = pruebas.id('pendiente');
   perform pruebas.como('postgres');
-  perform pruebas.ok((select celular from public.cuentas where id = pruebas.id('sin_cel')) = '+56966666666',
-    '[A5] al agregar el celular después, se crea la cuenta');
+  perform pruebas.ok((select celular from public.cuentas where id = pruebas.id('sin_cel')) = '+56966666666'
+                 and (select celular_verificado_en from public.cuentas where id = pruebas.id('sin_cel')) = '2026-10-22 09:00-03',
+    '[A5] al confirmar el celular agregado después, se crea la cuenta');
   perform pruebas.ok((select celular from public.cuentas where id = pruebas.id('b')) = '+56977777777'
                  and (select celular_verificado_en from public.cuentas where id = pruebas.id('b')) = '2026-10-20 09:00-03',
     '[A6] el cambio de número se copia a la cuenta');
   perform pruebas.ok((select celular_verificado_en from public.cuentas where id = pruebas.id('c')) = '2026-10-21 09:00-03',
-    '[A7] al confirmar el código se anota la fecha de confirmación');
+    '[A7] si cambia la fecha de confirmación, se copia');
+  perform pruebas.ok((select celular from public.cuentas where id = pruebas.id('pendiente')) = '+56988888888'
+                 and (select celular_verificado_en from public.cuentas where id = pruebas.id('pendiente')) = '2026-10-23 09:00-03',
+    '[A7b] la cuenta nace al confirmar el código, con esa fecha');
 end $$;
 rollback to savepoint t;
 
@@ -381,11 +425,31 @@ begin
   -- Supabase guarda el número sin "+": "+56911111111" es otro valor para auth,
   -- pero para cuentas es el mismo celular. El registro no debe romperse.
   perform pruebas.como('supabase_auth_admin');
-  insert into auth.users (id, phone) values (pruebas.id('dup'), '+56911111111');
+  insert into auth.users (id, phone, phone_confirmed_at) values (pruebas.id('dup'), '+56911111111', now());
   perform pruebas.como('postgres');
   perform pruebas.ok(exists (select 1 from auth.users where id = pruebas.id('dup'))
                  and not exists (select 1 from public.cuentas where id = pruebas.id('dup')),
     '[A8] si la cuenta no se puede crear, el registro en auth.users sigue (solo queda un aviso)');
+end $$;
+rollback to savepoint t;
+
+savepoint t;
+do $$
+begin
+  -- Supabase Auth le quita el celular a B (por ejemplo, al desvincular el teléfono).
+  perform pruebas.como('supabase_auth_admin');
+  update auth.users set phone = '', phone_confirmed_at = null where id = pruebas.id('b');
+  perform pruebas.como('postgres');
+  perform pruebas.ok(exists (select 1 from public.cuentas where id = pruebas.id('b')
+                                and celular is null and celular_verificado_en is null),
+    '[A12] si Auth le quita el celular, la cuenta lo libera (y sigue existiendo)');
+  perform pruebas.como('supabase_auth_admin');
+  insert into auth.users (id, phone, phone_confirmed_at) values (pruebas.id('nuevo'), '56922222222', '2026-10-25 10:00-03');
+  perform pruebas.como('postgres');
+  perform pruebas.ok((select celular from public.cuentas where id = pruebas.id('nuevo')) = '+56922222222',
+    '[A12] quien se registra después con ese número sí recibe su cuenta');
+  perform pruebas.falla(format($q$update public.cuentas set celular_verificado_en = null where id = %L$q$, pruebas.id('a')),
+    'cuentas_celular_con_fecha', '[A12] un celular no queda sin su fecha de verificación');
 end $$;
 rollback to savepoint t;
 
@@ -431,7 +495,7 @@ begin
   perform pruebas.ok((select count(*) from public.regiones) = 16
                  and (select count(*) from public.comunas) = 346
                  and (select count(*) from public.negocios) = 11
-                 and (select count(*) from public.opciones) = 12
+                 and (select count(*) from public.opciones) = 17
                  and (select count(*) from public.negocio_clases_licencia) = 36,
     '[N1] anon lee los catálogos');
   perform pruebas.falla('select * from public.cuentas', 'permission denied', '[N2] anon no lee cuentas');
@@ -513,6 +577,40 @@ begin
 end $$;
 rollback to savepoint t;
 
+savepoint t;
+do $$
+begin
+  -- En la cuenta de otra persona (aquí, la del administrador) el revisor solo cambia el estado.
+  perform pruebas.como('revisor');
+  perform pruebas.falla(format($q$update public.cuentas set email = 'revisor@atacante.cl', email_confirmado_en = now()
+      where id = %L$q$, pruebas.id('admin')), 'No puedes cambiar: email, email_confirmado_en',
+    '[C8] el equipo no cambia ni confirma el correo de recuperación de otro');
+  perform pruebas.falla(format($q$update public.cuentas set tokens_avisos = '{"web": "del-revisor"}' where id = %L$q$,
+      pruebas.id('admin')), 'No puedes cambiar: tokens_avisos', '[C8] el equipo no se queda con los avisos de otro');
+  perform pruebas.falla(format($q$update public.cuentas set celular = '+56900000099', celular_verificado_en = '2000-01-01'
+      where id = %L$q$, pruebas.id('admin')), 'No puedes cambiar: celular, celular_verificado_en',
+    '[C8] el equipo no cambia el celular de otro');
+  perform pruebas.falla(format($q$update public.cuentas set id = %L where id = %L$q$, pruebas.id('sin_cel'), pruebas.id('c')),
+    'No puedes cambiar: id', '[C8] el equipo no pasa una cuenta a otro usuario');
+  perform pruebas.falla(format($q$update public.cuentas set nombres = 'Otro' where id = %L$q$, pruebas.id('a')),
+    'No puedes cambiar: nombres', '[C8] el equipo no cambia los datos personales de otro');
+
+  -- En su propia cuenta, alguien del equipo tiene las reglas de cualquiera.
+  perform pruebas.falla(format($q$update public.cuentas set estado = 'suspendida' where id = %L$q$, pruebas.id('revisor')),
+    'No puedes cambiar: estado', '[C9] el equipo no cambia el estado de su propia cuenta');
+  perform pruebas.falla(format($q$update public.cuentas set email_confirmado_en = now() where id = %L$q$, pruebas.id('revisor')),
+    'No puedes cambiar: email_confirmado_en', '[C9] el equipo no confirma su propio correo');
+  perform pruebas.ok(pruebas.filas(format($q$update public.cuentas set nombres = 'Rita' where id = %L$q$,
+      pruebas.id('revisor'))) = 1, '[C9] el equipo sí cambia sus propios datos');
+
+  perform pruebas.como('postgres');
+  perform pruebas.ok((select email from public.cuentas where id = pruebas.id('admin')) is null
+                 and (select celular from public.cuentas where id = pruebas.id('admin')) = '+56944444444'
+                 and (select nombres from public.cuentas where id = pruebas.id('a')) = 'Ana',
+    '[C8] las cuentas siguen igual');
+end $$;
+rollback to savepoint t;
+
 
 -- =====================================================================
 -- K. Perfil del conductor
@@ -523,17 +621,51 @@ declare
   r public.conductores;
 begin
   perform pruebas.como('c');
-  insert into public.conductores (id, estado_perfil, perfil_completo_en, estado_verificacion,
+  insert into public.conductores (id, fecha_nacimiento, estado_perfil, perfil_completo_en, estado_verificacion,
                                   creado_en, actualizado_en, disponibilidad_confirmada_en)
-  values (pruebas.id('c'), 'completo', '2026-01-01', 'verificado', '2000-01-01', '2000-01-01', '2099-01-01');
+  values (pruebas.id('c'), '1995-03-15', 'completo', '2026-01-01', 'verificado', '2000-01-01', '2000-01-01', '2099-01-01');
   select * into r from public.conductores where id = pruebas.id('c');
   perform pruebas.ok(r.estado_perfil = 'incompleto' and r.perfil_completo_en is null
                  and r.estado_verificacion = 'sin_documentos'
                  and r.creado_en = now() and r.actualizado_en = now()
-                 and r.disponibilidad_confirmada_en = now() and r.disponible,
-    '[K1] al registrarse, estados y fechas los pone el servidor');
-  perform pruebas.falla(format($q$insert into public.conductores (id) values (%L)$q$, pruebas.id('sin_cel')),
-    'row-level security', '[K2] no crea el perfil de otra cuenta');
+                 and r.disponibilidad_confirmada_en = now() and r.disponible
+                 and r.fecha_nacimiento = '1995-03-15',
+    '[K1] al registrarse, estados y fechas los pone el servidor (la de nacimiento, la persona)');
+  perform pruebas.falla(format($q$insert into public.conductores (id, fecha_nacimiento) values (%L, '1990-01-01')$q$,
+      pruebas.id('sin_cel')), 'row-level security', '[K2] no crea el perfil de otra cuenta');
+end $$;
+rollback to savepoint t;
+
+-- Fecha de nacimiento (Paso 1). 18 años o más y no futura: propuesta de Claude.
+savepoint t;
+do $$
+declare
+  v_hoy date := (now() at time zone 'America/Santiago')::date;
+begin
+  perform pruebas.como('c');
+  perform pruebas.falla(format($q$insert into public.conductores (id) values (%L)$q$, pruebas.id('c')),
+    'null value in column "fecha_nacimiento"', '[K11] la fecha de nacimiento es obligatoria al crear el perfil');
+  perform pruebas.falla(format($q$insert into public.conductores (id, fecha_nacimiento) values (%L, %L)$q$,
+      pruebas.id('c'), (v_hoy - interval '17 years')::date), '18 años o más', '[K12] un menor de 18 años es rechazado');
+  perform pruebas.falla(format($q$insert into public.conductores (id, fecha_nacimiento) values (%L, %L)$q$,
+      pruebas.id('c'), (v_hoy - interval '18 years')::date + 1), '18 años o más',
+    '[K12] tampoco si cumple 18 mañana');
+  perform pruebas.falla(format($q$insert into public.conductores (id, fecha_nacimiento) values (%L, %L)$q$,
+      pruebas.id('c'), v_hoy + 1), 'no puede ser futura', '[K13] no se acepta una fecha futura');
+  insert into public.conductores (id, fecha_nacimiento) values (pruebas.id('c'), (v_hoy - interval '18 years')::date);
+  perform pruebas.ok(true, '[K14] quien cumple 18 hoy sí se registra');
+
+  perform pruebas.como('a');
+  perform pruebas.ok(pruebas.filas(format($q$update public.conductores set fecha_nacimiento = '1991-06-01' where id = %L$q$,
+      pruebas.id('a'))) = 1, '[K15] el conductor corrige su fecha de nacimiento');
+  perform pruebas.falla(format($q$update public.conductores set fecha_nacimiento = %L where id = %L$q$,
+      v_hoy - 30, pruebas.id('a')), '18 años o más', '[K15] pero no a una de menor de edad');
+  perform pruebas.falla(format($q$update public.conductores set fecha_nacimiento = null where id = %L$q$, pruebas.id('a')),
+    'null value', '[K15] ni la deja vacía');
+
+  perform pruebas.como('service_role');
+  perform pruebas.falla(format($q$update public.conductores set fecha_nacimiento = %L where id = %L$q$,
+      v_hoy + 1, pruebas.id('b')), 'no puede ser futura', '[K15] la regla vale también para el sistema');
 end $$;
 rollback to savepoint t;
 
@@ -597,20 +729,48 @@ rollback to savepoint t;
 
 savepoint t;
 do $$
+declare
+  r public.conductores;
+begin
+  -- En el perfil de otra persona el equipo solo cambia estados.
+  perform pruebas.como('revisor');
+  perform pruebas.falla(format($q$update public.conductores set id = %L where id = %L$q$, pruebas.id('admin'), pruebas.id('a')),
+    'No puedes cambiar: id', '[K16] el equipo no mueve un perfil a otra cuenta');
+  perform pruebas.falla(format($q$update public.conductores set creado_en = '2000-01-01' where id = %L$q$, pruebas.id('a')),
+    'No puedes cambiar: creado_en', '[K16] el equipo no cambia la fecha de creación');
+  perform pruebas.falla(format($q$update public.conductores set direccion = 'Otra', fecha_nacimiento = '1970-01-01'
+      where id = %L$q$, pruebas.id('a')), 'No puedes cambiar: direccion, fecha_nacimiento',
+    '[K16] el equipo no cambia los datos del perfil de otro');
+
+  -- Su propio perfil: nace igual que el de cualquiera.
+  insert into public.conductores (id, fecha_nacimiento, estado_perfil, perfil_completo_en, estado_verificacion)
+  values (pruebas.id('revisor'), '1988-08-08', 'completo', now(), 'verificado');
+  select * into r from public.conductores where id = pruebas.id('revisor');
+  perform pruebas.ok(r.estado_perfil = 'incompleto' and r.perfil_completo_en is null
+                 and r.estado_verificacion = 'sin_documentos',
+    '[K17] el equipo no crea su propio perfil ya verificado ni completo');
+  perform pruebas.falla(format($q$update public.conductores set estado_verificacion = 'verificado' where id = %L$q$,
+      pruebas.id('revisor')), 'No puedes cambiar: estado_verificacion', '[K17] ni se verifica a sí mismo después');
+end $$;
+rollback to savepoint t;
+
+savepoint t;
+do $$
 begin
   -- Saltarse los triggers con "insert ... on conflict do update" (upsert).
   update public.conductores set estado_verificacion = 'con_observaciones' where id = pruebas.id('a');
   perform pruebas.como('a');
   perform pruebas.falla(format(
-      $q$insert into public.conductores (id, estado_verificacion) values (%L, 'verificado')
+      $q$insert into public.conductores (id, fecha_nacimiento, estado_verificacion) values (%L, '1990-05-10', 'verificado')
          on conflict (id) do update set estado_verificacion = 'verificado'$q$, pruebas.id('a')),
     'No puedes cambiar: estado_verificacion', '[K10] un upsert no cambia el estado de verificación');
   perform pruebas.falla(format(
-      $q$insert into public.conductores (id) values (%L)
+      $q$insert into public.conductores (id, fecha_nacimiento) values (%L, '1990-05-10')
          on conflict (id) do update set estado_verificacion = excluded.estado_verificacion$q$, pruebas.id('a')),
     'No puedes cambiar: estado_verificacion', '[K10] un upsert no "reinicia" el estado con los valores por defecto');
   perform pruebas.falla(format(
-      $q$insert into public.conductores (id) values (%L) on conflict (id) do update set direccion = 'hackeada'$q$,
+      $q$insert into public.conductores (id, fecha_nacimiento) values (%L, '1990-05-10')
+         on conflict (id) do update set direccion = 'hackeada'$q$,
       pruebas.id('b')), 'row-level security', '[K10] un upsert no edita el perfil de otro');
   perform pruebas.como('postgres');
   perform pruebas.ok((select direccion from public.conductores where id = pruebas.id('b')) is null
@@ -659,6 +819,53 @@ begin
                  and (select count(*) from public.conductor_negocios where conductor_id = pruebas.id('b')) = 1
                  and (select count(*) from public.conductor_opciones where conductor_id = pruebas.id('b')) = 1,
     '[L8] lo de B sigue ahí');
+end $$;
+rollback to savepoint t;
+
+savepoint t;
+do $$
+begin
+  -- Nadie se revisa a sí mismo; el equipo no toca las clases declaradas de otros.
+  perform pruebas.como('revisor');
+  insert into public.conductores (id, fecha_nacimiento) values (pruebas.id('revisor'), '1988-08-08');
+  perform pruebas.falla(format($q$insert into public.conductor_licencias values (%L, %s, 'revisada')$q$,
+      pruebas.id('revisor'), pruebas.clase('A5')), 'row-level security',
+    '[L9] el equipo no se anota una clase revisada a sí mismo');
+  insert into public.conductor_licencias values (pruebas.id('revisor'), pruebas.clase('B'), 'declarada');
+  perform pruebas.ok(true, '[L9] pero sí declara sus propias clases, como cualquiera');
+  perform pruebas.falla(format($q$insert into public.conductor_licencias values (%L, %s, 'declarada')$q$,
+      pruebas.id('a'), pruebas.clase('A2')), 'row-level security', '[L10] el equipo no declara clases a nombre de otro');
+  perform pruebas.ok(pruebas.filas(format($q$delete from public.conductor_licencias where conductor_id = %L$q$,
+      pruebas.id('b'))) = 0, '[L10] el equipo no quita las clases declaradas de otro');
+  perform pruebas.como('postgres');
+  perform pruebas.ok((select count(*) from public.conductor_licencias where conductor_id = pruebas.id('b')) = 1,
+    '[L10] las clases de B siguen ahí');
+end $$;
+rollback to savepoint t;
+
+savepoint t;
+do $$
+begin
+  -- Al quitar una clase declarada se van los negocios que ya ninguna otra habilita.
+  perform pruebas.como('a');
+  insert into public.conductor_licencias values (pruebas.id('a'), pruebas.clase('A1'), 'declarada'),
+                                                (pruebas.id('a'), pruebas.clase('A3'), 'declarada');
+  insert into public.conductor_negocios values (pruebas.id('a'), pruebas.negocio('Taxi')),
+                                              (pruebas.id('a'), pruebas.negocio('Taxi ejecutivo'));
+  delete from public.conductor_licencias where conductor_id = pruebas.id('a') and clase_licencia_id = pruebas.clase('A1');
+  perform pruebas.ok((select count(*) from public.conductor_negocios where conductor_id = pruebas.id('a')) = 2,
+    '[L11] si otra clase declarada los sigue habilitando, los negocios se quedan');
+  perform pruebas.como('revisor');
+  insert into public.conductor_licencias values (pruebas.id('a'), pruebas.clase('A3'), 'revisada');
+  perform pruebas.como('a');
+  delete from public.conductor_licencias where conductor_id = pruebas.id('a') and origen = 'declarada';
+  perform pruebas.ok((select count(*) from public.conductor_negocios where conductor_id = pruebas.id('a')) = 0,
+    '[L11] al quitar la última clase declarada que los habilita, se quitan (la revisada no cuenta)');
+  perform pruebas.como('service_role');
+  delete from public.conductor_licencias where conductor_id = pruebas.id('b');
+  perform pruebas.como('postgres');
+  perform pruebas.ok((select count(*) from public.conductor_negocios where conductor_id = pruebas.id('b')) = 0,
+    '[L11] también cuando la quita el sistema');
 end $$;
 rollback to savepoint t;
 
@@ -761,6 +968,22 @@ begin
 end $$;
 rollback to savepoint t;
 
+savepoint t;
+do $$
+begin
+  -- Alguien del equipo que también es conductor sigue las mismas reglas.
+  perform pruebas.como('revisor');
+  insert into public.conductores (id, fecha_nacimiento) values (pruebas.id('revisor'), '1988-08-08');
+  insert into public.conductor_licencias values (pruebas.id('revisor'), pruebas.clase('B'), 'declarada');
+  perform pruebas.falla(format($q$insert into public.conductor_negocios values (%L, %s)$q$,
+      pruebas.id('revisor'), pruebas.negocio('Moto delivery')), 'no está disponible',
+    '[G10] el equipo, como conductor, no marca un negocio apagado');
+  perform pruebas.falla(format($q$insert into public.conductor_negocios values (%L, %s)$q$,
+      pruebas.id('revisor'), pruebas.negocio('Taxi')), 'no habilita',
+    '[G10] ni uno que su licencia no habilita');
+end $$;
+rollback to savepoint t;
+
 
 -- =====================================================================
 -- O. Turnos y días del conductor
@@ -792,6 +1015,39 @@ begin
     '[O2] tampoco si alguien activa la opción (la lista está en espera)');
   perform pruebas.falla(format($q$insert into public.conductor_opciones values (%L, %s)$q$,
       pruebas.id('a'), pruebas.opcion('dia_semana', 'do')), 'no se puede elegir', '[O5] no marca opciones inactivas');
+end $$;
+rollback to savepoint t;
+
+-- Idiomas que habla (Paso 3, opcional).
+savepoint t;
+do $$
+begin
+  perform pruebas.como('a');
+  insert into public.conductor_opciones values (pruebas.id('a'), pruebas.opcion('idioma', 'es')),
+                                              (pruebas.id('a'), pruebas.opcion('idioma', 'ht'));
+  perform pruebas.ok((select array_agg(o.clave order by o.orden) from public.conductor_opciones co
+                        join public.opciones o on o.id = co.opcion_id
+                        join public.listas l on l.id = o.lista_id
+                       where co.conductor_id = pruebas.id('a') and l.clave = 'idioma') = array['es', 'ht'],
+    '[O6] el conductor marca varios idiomas activos');
+  perform pruebas.ok(pruebas.filas(format($q$delete from public.conductor_opciones where conductor_id = %L and opcion_id = %s$q$,
+      pruebas.id('a'), pruebas.opcion('idioma', 'ht'))) = 1, '[O6] y quita uno');
+
+  perform pruebas.como('admin');
+  update public.opciones set activa = false where id = pruebas.opcion('idioma', 'fr');
+  perform pruebas.como('a');
+  perform pruebas.falla(format($q$insert into public.conductor_opciones values (%L, %s)$q$,
+      pruebas.id('a'), pruebas.opcion('idioma', 'fr')), 'no se puede elegir', '[O7] no marca un idioma inactivo');
+
+  -- Alguien del equipo que también es conductor sigue las mismas reglas.
+  perform pruebas.como('revisor');
+  insert into public.conductores (id, fecha_nacimiento) values (pruebas.id('revisor'), '1988-08-08');
+  perform pruebas.falla(format($q$insert into public.conductor_opciones values (%L, %s)$q$,
+      pruebas.id('revisor'), pruebas.opcion('modo_contrato', 'arriendo_fijo')), 'no se puede elegir',
+    '[O8] el equipo, como conductor, no marca modos de contrato');
+  perform pruebas.falla(format($q$insert into public.conductor_opciones values (%L, %s)$q$,
+      pruebas.id('revisor'), pruebas.opcion('idioma', 'fr')), 'no se puede elegir',
+    '[O8] ni idiomas inactivos');
 end $$;
 rollback to savepoint t;
 
@@ -833,6 +1089,29 @@ begin
 
   perform pruebas.como('revisor');
   perform pruebas.ok((select count(*) from public.experiencia_conductor) = 3, '[X6] el equipo ve toda la experiencia');
+end $$;
+rollback to savepoint t;
+
+savepoint t;
+do $$
+begin
+  perform pruebas.como('a');
+  perform pruebas.falla(format($q$insert into public.experiencia_conductor (id, conductor_id, tamano_vehiculo_id, anos)
+      overriding system value values (5000, %L, %s, 3)$q$, pruebas.id('a'), pruebas.tamano('Bus')),
+    'permission denied', '[X7] la app no elige el id de la experiencia');
+  insert into public.experiencia_conductor (conductor_id, tamano_vehiculo_id, anos)
+    values (pruebas.id('a'), pruebas.tamano('Moto'), 6)
+    on conflict (conductor_id, tamano_vehiculo_id) do update set anos = excluded.anos;
+  perform pruebas.ok((select anos from public.experiencia_conductor
+                       where conductor_id = pruebas.id('a') and tamano_vehiculo_id = pruebas.tamano('Moto')) = 6,
+    '[X7] guardar con upsert (sin id) sigue funcionando');
+
+  perform pruebas.como('revisor');
+  insert into public.conductores (id, fecha_nacimiento) values (pruebas.id('revisor'), '1988-08-08');
+  insert into public.experiencia_conductor (conductor_id, tamano_vehiculo_id, anos, actualizado_en)
+    values (pruebas.id('revisor'), pruebas.tamano('Bus'), 3, '2000-01-01');
+  perform pruebas.ok((select actualizado_en from public.experiencia_conductor where conductor_id = pruebas.id('revisor')) = now(),
+    '[X8] en su propia experiencia, al equipo también le pone la fecha el servidor');
 end $$;
 rollback to savepoint t;
 
@@ -1036,6 +1315,33 @@ begin
   perform pruebas.ok((select count(*) from public.consentimientos) = 3, '[S10] el equipo ve todas las autorizaciones');
   perform pruebas.ok(pruebas.filas(format($q$update public.consentimientos set revocado_en = now() where cuenta_id = %L$q$,
       pruebas.id('b'))) = 0, '[S10] el equipo no retira autorizaciones de otros');
+end $$;
+rollback to savepoint t;
+
+savepoint t;
+do $$
+declare
+  v_v1 bigint := (select id from public.textos_autorizacion where version = 'v1');
+  v_v2 bigint := (select id from public.textos_autorizacion where version = 'v2');
+  c public.consentimientos;
+begin
+  -- La app no elige el id (si pudiera, ocuparía los siguientes y bloquearía a los demás).
+  perform pruebas.como('a');
+  perform pruebas.falla(format($q$insert into public.consentimientos (id, cuenta_id, texto_autorizacion_id)
+      overriding system value values (999999, %L, %s)$q$, pruebas.id('a'), v_v2),
+    'permission denied', '[S12] la app no elige el id de una autorización');
+
+  -- En sus propias autorizaciones, alguien del equipo tiene las reglas de cualquiera.
+  perform pruebas.como('revisor');
+  insert into public.consentimientos (cuenta_id, texto_autorizacion_id, aceptado_en)
+    values (pruebas.id('revisor'), v_v2, '2001-01-01')
+    returning * into c;
+  perform pruebas.ok(c.aceptado_en = now(), '[S13] al equipo también le pone la fecha de aceptación el servidor');
+  perform pruebas.falla(format($q$update public.consentimientos set aceptado_en = '1999-01-01', texto_autorizacion_id = %s
+      where id = %s$q$, v_v1, c.id), 'no se modifica', '[S13] el equipo no reescribe una autorización propia');
+  update public.consentimientos set revocado_en = now() where id = c.id;
+  perform pruebas.falla(format($q$update public.consentimientos set revocado_en = null where id = %s$q$, c.id),
+    'ya fue retirada', '[S13] ni deshace su retiro');
 end $$;
 rollback to savepoint t;
 

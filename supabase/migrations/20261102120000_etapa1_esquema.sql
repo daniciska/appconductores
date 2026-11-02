@@ -12,8 +12,9 @@
 -- que la API de Supabase no expone.
 --
 -- "Sistema" = cualquier rol que no sea anon ni authenticated (postgres,
--- service_role, funciones SECURITY DEFINER). El sistema y el equipo pueden
--- escribir columnas que la persona no puede tocar.
+-- service_role, funciones SECURITY DEFINER). El sistema escribe todo. El
+-- equipo, en filas de OTRAS personas, solo escribe estados y clases
+-- revisadas; en sus propias filas tiene las mismas reglas que cualquiera.
 -- =====================================================================
 
 
@@ -132,7 +133,7 @@ create table public.listas (
   clave  text not null unique,
   nombre text not null
 );
-comment on table public.listas is 'Listas simples de opciones (turno, día de la semana, modo de contrato...).';
+comment on table public.listas is 'Listas simples de opciones (turno, día de la semana, idioma, modo de contrato...).';
 
 create table public.opciones (
   id           bigint generated always as identity primary key,
@@ -154,8 +155,8 @@ comment on table public.opciones is 'Opciones de las listas simples. Se ocultan 
 -- ---------------------------------------------------------------------
 create table public.cuentas (
   id                    uuid primary key references auth.users (id) on delete cascade,
-  celular               text not null unique,
-  celular_verificado_en timestamptz not null,
+  celular               text unique,
+  celular_verificado_en timestamptz,
   email                 text,
   email_confirmado_en   timestamptz,
   nombres               text,
@@ -164,9 +165,11 @@ create table public.cuentas (
   estado                text not null default 'activa'
                         check (estado in ('activa', 'suspendida', 'eliminacion_en_curso')),
   tokens_avisos         jsonb,
-  creado_en             timestamptz not null default now()
+  creado_en             timestamptz not null default now(),
+  constraint cuentas_celular_con_fecha check ((celular is null) = (celular_verificado_en is null))
 );
-comment on table public.cuentas is 'Una fila por persona que entra con su celular. Se crea sola desde auth.users.';
+comment on table public.cuentas is 'Una fila por persona que entra con su celular. Se crea sola desde auth.users al confirmar el código.';
+comment on column public.cuentas.celular is 'Nace siempre con valor. Queda vacío solo si Supabase Auth le quita el celular al usuario: así el número queda libre para otra cuenta.';
 
 create table public.miembros_equipo (
   id         uuid primary key references public.cuentas (id),
@@ -224,7 +227,9 @@ create unique index consentimientos_una_activa
 -- ---------------------------------------------------------------------
 create table public.conductores (
   id                           uuid primary key references public.cuentas (id) on delete cascade,
-  estado_perfil                text not null default 'incompleto'
+  -- Obligatoria en el Paso 1, que es cuando se crea esta fila.
+  fecha_nacimiento             date not null,
+  estado_perfil               text not null default 'incompleto'
                                check (estado_perfil in ('incompleto', 'completo')),
   perfil_completo_en           timestamptz,
   direccion                    text,
@@ -244,6 +249,7 @@ create table public.conductores (
 );
 comment on table public.conductores is 'Perfil de trabajo del conductor. Nombre y contacto están en cuentas.';
 comment on column public.conductores.tramo_garantia_id is 'EN ESPERA: solo acepta opciones de la lista tramo_garantia, que no se carga todavía.';
+comment on column public.conductores.fecha_nacimiento is 'Paso 1, obligatoria. El titular verá solo la edad, nunca la fecha. No es filtro ni variable del match. 18 años o más y no futura: PROPUESTA de Claude (trigger validar_fecha_nacimiento).';
 
 create table public.conductor_licencias (
   conductor_id      uuid not null references public.conductores (id) on delete cascade,
@@ -265,7 +271,7 @@ create table public.conductor_opciones (
   opcion_id    bigint not null references public.opciones (id),
   primary key (conductor_id, opcion_id)
 );
-comment on table public.conductor_opciones is 'Turnos y días de trabajo del conductor (a futuro, modos de contrato).';
+comment on table public.conductor_opciones is 'Turnos, días de trabajo e idiomas del conductor (a futuro, modos de contrato).';
 
 create table public.experiencia_conductor (
   id                 bigint generated always as identity primary key,
@@ -343,15 +349,6 @@ as $$
   )
 $$;
 
-create or replace function privado.es_equipo_o_sistema()
-returns boolean
-language sql
-stable
-set search_path = ''
-as $$
-  select privado.es_sistema() or privado.es_equipo()
-$$;
-
 -- Devuelve cuáles de las columnas indicadas cambiaron entre old y new.
 create or replace function privado.columnas_cambiadas(p_nuevo jsonb, p_viejo jsonb, p_columnas text[])
 returns text[]
@@ -364,13 +361,75 @@ as $$
    where p_nuevo -> c is distinct from p_viejo -> c
 $$;
 
+-- Al revés: cuáles cambiaron, salvo las permitidas. Así una columna que se
+-- agregue después queda protegida sin tener que acordarse de anotarla.
+create or replace function privado.columnas_cambiadas_salvo(p_nuevo jsonb, p_viejo jsonb, p_permitidas text[])
+returns text[]
+language sql
+immutable
+set search_path = ''
+as $$
+  select coalesce(array_agg(c order by c), '{}'::text[])
+    from jsonb_object_keys(p_nuevo) as c
+   where p_nuevo -> c is distinct from p_viejo -> c
+     and c <> all (p_permitidas)
+$$;
+
+-- Celular como lo guarda cuentas: con "+" adelante. Vacío = null.
+create or replace function privado.formato_celular(p_celular text)
+returns text
+language sql
+immutable
+set search_path = ''
+as $$
+  select case
+           when p_celular is null or btrim(p_celular) = '' then null
+           when left(btrim(p_celular), 1) = '+' then btrim(p_celular)
+           else '+' || btrim(p_celular)
+         end
+$$;
+
+-- ¿Alguna clase DECLARADA del conductor habilita el negocio? Mira las clases
+-- del negocio y las de las respuestas de su pregunta del vehículo. No mira si
+-- el negocio está activo. Corre con los permisos (y la RLS) de quien llama.
+create or replace function privado.licencia_habilita_negocio(p_conductor uuid, p_negocio bigint)
+returns boolean
+language sql
+stable
+set search_path = ''
+as $$
+  with codigos as (
+    select cl.codigo
+      from public.negocio_clases_licencia ncl
+      join public.clases_licencia cl on cl.id = ncl.clase_licencia_id
+     where ncl.negocio_id = p_negocio
+    union
+    select r #>> '{}'
+      from public.negocios n
+     cross join lateral jsonb_path_query(n.pregunta_vehiculo, 'lax $.respuestas[*].clases[*]') as r
+     where n.id = p_negocio
+  )
+  select exists (
+    select 1
+      from public.conductor_licencias dl
+      join public.clases_licencia c on c.id = dl.clase_licencia_id
+     where dl.conductor_id = p_conductor
+       and dl.origen = 'declarada'
+       and (c.codigo in (select codigo from codigos)
+            or (c.habilita_clase_b and 'B' in (select codigo from codigos)))
+  )
+$$;
+
 
 -- ---------------------------------------------------------------------
 -- 6. Funciones de triggers
 -- ---------------------------------------------------------------------
 
--- 6.1 auth.users -> cuentas. Crea la cuenta al registrarse y sigue los
--- cambios de número. Nunca rompe el registro: si algo falla, deja un aviso.
+-- 6.1 auth.users -> cuentas. Supabase Auth crea el usuario cuando se PIDE
+-- el código (phone_confirmed_at vacío) y anota phone_confirmed_at cuando se
+-- confirma: la cuenta nace recién ahí. Sigue los cambios de número y, si
+-- Auth le quita el celular al usuario, lo libera en la cuenta. Nunca rompe
+-- el registro: si algo falla, deja un aviso.
 create or replace function privado.sincronizar_cuenta_desde_auth()
 returns trigger
 language plpgsql
@@ -378,17 +437,28 @@ security definer
 set search_path = ''
 as $$
 declare
-  v_celular     text;
+  v_celular     text := privado.formato_celular(new.phone);
   v_verificado  timestamptz;
 begin
-  if new.phone is null or btrim(new.phone) = '' then
+  -- Se quitó el celular: el número queda libre para otra cuenta.
+  if tg_op = 'UPDATE' and v_celular is null and privado.formato_celular(old.phone) is not null then
+    begin
+      update public.cuentas set celular = null, celular_verificado_en = null where id = new.id;
+    exception when others then
+      raise warning 'Dale Contacto: no se pudo liberar el celular del usuario % (%: %)',
+        new.id, sqlstate, sqlerrm;
+    end;
+    return new;
+  end if;
+
+  -- Sin celular o sin código confirmado todavía: no hay cuenta.
+  if v_celular is null or new.phone_confirmed_at is null then
     return new;
   end if;
 
   if tg_op = 'UPDATE' and new.phone is not distinct from old.phone then
-    -- Mismo número: solo interesa cuando se confirma el código.
-    if new.phone_confirmed_at is null
-       or new.phone_confirmed_at is not distinct from old.phone_confirmed_at then
+    -- Mismo número: solo interesa cuando cambia la fecha de confirmación.
+    if new.phone_confirmed_at is not distinct from old.phone_confirmed_at then
       return new;
     end if;
     v_verificado := new.phone_confirmed_at;
@@ -396,12 +466,7 @@ begin
     -- Número nuevo sin fecha de confirmación nueva: se confirmó ahora.
     v_verificado := now();
   else
-    v_verificado := coalesce(new.phone_confirmed_at, now());
-  end if;
-
-  v_celular := btrim(new.phone);
-  if left(v_celular, 1) <> '+' then
-    v_celular := '+' || v_celular;
+    v_verificado := new.phone_confirmed_at;
   end if;
 
   begin
@@ -433,7 +498,10 @@ begin
 end;
 $$;
 
--- 6.3 cuentas: la persona no cambia lo que escribe el sistema.
+-- 6.3 cuentas: la persona no cambia lo que escribe el sistema. En la cuenta
+-- de OTRA persona, el equipo solo cambia el estado (no el correo de
+-- recuperación, los avisos, el celular ni el id). En la propia, alguien del
+-- equipo tiene las mismas reglas que cualquiera.
 create or replace function privado.cuentas_proteger()
 returns trigger
 language plpgsql
@@ -442,20 +510,24 @@ as $$
 declare
   v_cambios text[];
 begin
-  if not privado.es_equipo_o_sistema() then
+  if privado.es_sistema() then
+    return new;
+  end if;
+
+  if old.id is distinct from (select auth.uid()) and privado.es_equipo() then
+    v_cambios := privado.columnas_cambiadas_salvo(to_jsonb(new), to_jsonb(old), array['estado']);
+  else
     v_cambios := privado.columnas_cambiadas(
       to_jsonb(new), to_jsonb(old),
       array['id', 'celular', 'celular_verificado_en', 'email_confirmado_en', 'estado', 'creado_en']);
-    if cardinality(v_cambios) > 0 then
-      raise exception 'No puedes cambiar: %', array_to_string(v_cambios, ', ')
-        using errcode = '42501';
-    end if;
+  end if;
+  if cardinality(v_cambios) > 0 then
+    raise exception 'No puedes cambiar: %', array_to_string(v_cambios, ', ')
+      using errcode = '42501';
   end if;
 
-  -- Un correo nuevo queda sin confirmar (salvo que el sistema lo confirme a la vez).
-  if not privado.es_sistema()
-     and new.email is distinct from old.email
-     and new.email_confirmado_en is not distinct from old.email_confirmado_en then
+  -- Un correo nuevo queda sin confirmar (solo el sistema lo confirma).
+  if new.email is distinct from old.email then
     new.email_confirmado_en := null;
   end if;
 
@@ -545,6 +617,7 @@ end;
 $$;
 
 -- 6.7 consentimientos: fechas del servidor; solo se puede retirar una vez.
+-- Vale también para el equipo (las políticas solo dejan escribir las propias).
 create or replace function privado.consentimientos_proteger()
 returns trigger
 language plpgsql
@@ -553,7 +626,7 @@ as $$
 declare
   v_cambios text[];
 begin
-  if privado.es_equipo_o_sistema() then
+  if privado.es_sistema() then
     return new;
   end if;
 
@@ -581,7 +654,9 @@ begin
 end;
 $$;
 
--- 6.8 conductores: estados y fechas los escribe el sistema.
+-- 6.8 conductores: estados y fechas los escribe el sistema. En el perfil de
+-- OTRA persona, el equipo solo cambia los estados (no mueve el perfil ni
+-- toca sus datos). En el propio, mismas reglas que cualquiera.
 create or replace function privado.conductores_proteger()
 returns trigger
 language plpgsql
@@ -590,7 +665,19 @@ as $$
 declare
   v_cambios text[];
 begin
-  if privado.es_equipo_o_sistema() then
+  if privado.es_sistema() then
+    return new;
+  end if;
+
+  if tg_op = 'UPDATE' and old.id is distinct from (select auth.uid()) and privado.es_equipo() then
+    -- actualizado_en lo pone el trigger actualizado_en, que corre antes.
+    v_cambios := privado.columnas_cambiadas_salvo(
+      to_jsonb(new), to_jsonb(old),
+      array['estado_perfil', 'perfil_completo_en', 'estado_verificacion', 'actualizado_en']);
+    if cardinality(v_cambios) > 0 then
+      raise exception 'No puedes cambiar: %', array_to_string(v_cambios, ', ')
+        using errcode = '42501';
+    end if;
     return new;
   end if;
 
@@ -622,6 +709,28 @@ begin
 end;
 $$;
 
+-- 6.8b conductores.fecha_nacimiento: no puede ser futura y la persona tiene
+-- que tener 18 años o más. PROPUESTA de Claude, por confirmar con la dueña.
+-- Cuenta la fecha de hoy en Chile. Vale también para el sistema. Un CHECK
+-- no sirve: no puede depender de la fecha de hoy.
+create or replace function privado.conductores_validar_fecha_nacimiento()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+declare
+  v_hoy date := (now() at time zone 'America/Santiago')::date;
+begin
+  if new.fecha_nacimiento > v_hoy then
+    raise exception 'La fecha de nacimiento no puede ser futura.' using errcode = '23514';
+  end if;
+  if new.fecha_nacimiento > (v_hoy - interval '18 years')::date then
+    raise exception 'Tienes que tener 18 años o más.' using errcode = '23514';
+  end if;
+  return new;
+end;
+$$;
+
 -- 6.9 conductores.tramo_garantia_id: solo opciones de la lista tramo_garantia
 -- (que no se carga: queda bloqueado mientras la garantía esté en espera).
 create or replace function privado.conductores_validar_garantia()
@@ -645,53 +754,30 @@ $$;
 
 -- 6.10 conductor_negocios: negocio activo (con industria activa) y que alguna
 -- clase declarada del conductor lo habilite. Lo ya guardado se conserva si
--- después se apaga el negocio.
+-- después se apaga el negocio (pero no si se quita la clase: ver 6.13).
+-- Vale también para el equipo (las políticas solo dejan escribir las propias).
 create or replace function privado.conductor_negocios_validar()
 returns trigger
 language plpgsql
 set search_path = ''
 as $$
-declare
-  v_disponible boolean;
-  v_pregunta   jsonb;
-  v_codigos    text[];
 begin
-  if privado.es_equipo_o_sistema() then
+  if privado.es_sistema() then
     return new;
   end if;
 
-  select n.activo and i.activo, n.pregunta_vehiculo
-    into v_disponible, v_pregunta
-    from public.negocios n
-    join public.industrias i on i.id = n.industria_id
-   where n.id = new.negocio_id;
-
-  if not coalesce(v_disponible, false) then
+  if not exists (
+    select 1
+      from public.negocios n
+      join public.industrias i on i.id = n.industria_id
+     where n.id = new.negocio_id
+       and n.activo
+       and i.activo
+  ) then
     raise exception 'Ese negocio no está disponible.' using errcode = '23514';
   end if;
 
-  -- Clases que aceptan el negocio o alguna respuesta de su pregunta.
-  select coalesce(array_agg(distinct s.codigo), '{}'::text[])
-    into v_codigos
-    from (
-      select cl.codigo
-        from public.negocio_clases_licencia ncl
-        join public.clases_licencia cl on cl.id = ncl.clase_licencia_id
-       where ncl.negocio_id = new.negocio_id
-      union
-      select r #>> '{}'
-        from jsonb_path_query(v_pregunta, 'lax $.respuestas[*].clases[*]') as r
-    ) as s;
-
-  if not exists (
-    select 1
-      from public.conductor_licencias dl
-      join public.clases_licencia c on c.id = dl.clase_licencia_id
-     where dl.conductor_id = new.conductor_id
-       and dl.origen = 'declarada'
-       and (c.codigo = any (v_codigos)
-            or (c.habilita_clase_b and 'B' = any (v_codigos)))
-  ) then
+  if not privado.licencia_habilita_negocio(new.conductor_id, new.negocio_id) then
     raise exception 'Tu licencia no habilita para ese negocio.' using errcode = '23514';
   end if;
 
@@ -699,15 +785,15 @@ begin
 end;
 $$;
 
--- 6.11 conductor_opciones: solo turnos y días (el modo de contrato está en
--- espera) y solo opciones activas.
+-- 6.11 conductor_opciones: solo turnos, días e idiomas (el modo de contrato
+-- está en espera) y solo opciones activas. Vale también para el equipo.
 create or replace function privado.conductor_opciones_validar()
 returns trigger
 language plpgsql
 set search_path = ''
 as $$
 begin
-  if privado.es_equipo_o_sistema() then
+  if privado.es_sistema() then
     return new;
   end if;
 
@@ -717,7 +803,7 @@ begin
       join public.listas l on l.id = o.lista_id
      where o.id = new.opcion_id
        and o.activa
-       and l.clave in ('turno', 'dia_semana')
+       and l.clave in ('turno', 'dia_semana', 'idioma')
   ) then
     raise exception 'Esa opción no se puede elegir.' using errcode = '23514';
   end if;
@@ -725,17 +811,36 @@ begin
 end;
 $$;
 
--- 6.12 experiencia_conductor: la fecha la pone el servidor.
+-- 6.12 experiencia_conductor: la fecha la pone el servidor (también para el equipo).
 create or replace function privado.experiencia_conductor_al_insertar()
 returns trigger
 language plpgsql
 set search_path = ''
 as $$
 begin
-  if not privado.es_equipo_o_sistema() then
+  if not privado.es_sistema() then
     new.actualizado_en := now();
   end if;
   return new;
+end;
+$$;
+
+-- 6.13 conductor_licencias: al quitar una clase declarada, se quitan los
+-- negocios que ninguna otra clase declarada habilita. Sin SECURITY DEFINER:
+-- solo el propio conductor (o el sistema) quita clases declaradas, y la RLS
+-- le deja borrar sus propios negocios.
+create or replace function privado.conductor_licencias_al_quitar()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  if old.origen = 'declarada' then
+    delete from public.conductor_negocios cn
+     where cn.conductor_id = old.conductor_id
+       and not privado.licencia_habilita_negocio(cn.conductor_id, cn.negocio_id);
+  end if;
+  return null;
 end;
 $$;
 
@@ -746,6 +851,17 @@ $$;
 create or replace trigger dale_contacto_sincronizar_cuenta
   after insert or update of phone, phone_confirmed_at on auth.users
   for each row execute function privado.sincronizar_cuenta_desde_auth();
+
+-- Si ya había usuarios en auth.users con el código confirmado (por ejemplo,
+-- pruebas de inicio de sesión), reciben su cuenta. Si dos traen el mismo
+-- número, se salta el segundo.
+insert into public.cuentas (id, celular, celular_verificado_en)
+select u.id, privado.formato_celular(u.phone), u.phone_confirmed_at
+  from auth.users u
+ where privado.formato_celular(u.phone) is not null
+   and u.phone_confirmed_at is not null
+ order by u.phone_confirmed_at, u.id
+on conflict do nothing;
 
 create trigger proteger before update on public.cuentas
   for each row execute function privado.cuentas_proteger();
@@ -764,6 +880,8 @@ create trigger proteger before insert or update on public.consentimientos
 
 create trigger proteger before insert or update on public.conductores
   for each row execute function privado.conductores_proteger();
+create trigger validar_fecha_nacimiento before insert or update of fecha_nacimiento on public.conductores
+  for each row execute function privado.conductores_validar_fecha_nacimiento();
 create trigger validar_garantia before insert or update of tramo_garantia_id on public.conductores
   for each row execute function privado.conductores_validar_garantia();
 create trigger actualizado_en before update on public.conductores
@@ -776,6 +894,9 @@ create trigger validar before insert or update on public.conductor_negocios
 create trigger validar before insert or update on public.conductor_opciones
   for each row execute function privado.conductor_opciones_validar();
 
+create trigger quitar_negocios_sin_licencia after delete on public.conductor_licencias
+  for each row execute function privado.conductor_licencias_al_quitar();
+
 create trigger al_insertar before insert on public.experiencia_conductor
   for each row execute function privado.experiencia_conductor_al_insertar();
 create trigger actualizado_en before update on public.experiencia_conductor
@@ -785,15 +906,22 @@ create trigger actualizado_en before update on public.experiencia_conductor
 -- ---------------------------------------------------------------------
 -- 8. Permisos de funciones
 -- ---------------------------------------------------------------------
+-- Postgres da EXECUTE a PUBLIC en cada función nueva, y eso no se puede
+-- quitar por esquema ("alter default privileges in schema ... revoke" no
+-- tiene efecto). Por eso: este revoke va DESPUÉS de crear las funciones, y
+-- cada migración futura que cree una función en privado hace su propio
+-- revoke (la prueba E9 lo revisa).
 revoke all on all functions in schema privado from public, anon, authenticated, service_role;
 -- Las usan las políticas y los triggers que corren con el rol de quien escribe.
 grant execute on function
   privado.es_sistema(),
   privado.es_equipo(),
   privado.es_admin(),
-  privado.es_equipo_o_sistema(),
-  privado.columnas_cambiadas(jsonb, jsonb, text[])
+  privado.columnas_cambiadas(jsonb, jsonb, text[]),
+  privado.columnas_cambiadas_salvo(jsonb, jsonb, text[])
   to anon, authenticated, service_role;
+-- La usan los triggers de conductor_negocios y conductor_licencias.
+grant execute on function privado.licencia_habilita_negocio(uuid, bigint) to authenticated, service_role;
 
 
 -- ---------------------------------------------------------------------
@@ -888,7 +1016,12 @@ create policy borrar_admin on public.miembros_equipo for delete to authenticated
 
 -- consentimientos: los propios o el equipo; se agregan solo para uno mismo y
 -- sobre un texto vigente; se retiran (trigger); no se borran.
-grant select, insert, update on table public.consentimientos to authenticated;
+-- INSERT por columnas, sin id: la app no elige el id (con OVERRIDING SYSTEM
+-- VALUE podría ocupar los siguientes y bloquear a los demás). Si se agrega
+-- una columna que la app deba escribir, se suma aquí.
+grant select, update on table public.consentimientos to authenticated;
+grant insert (cuenta_id, texto_autorizacion_id, aceptado_en, revocado_en)
+  on table public.consentimientos to authenticated;
 create policy leer on public.consentimientos for select to authenticated
   using (cuenta_id = (select auth.uid()) or (select privado.es_equipo()));
 create policy agregar_propio on public.consentimientos for insert to authenticated
@@ -914,14 +1047,19 @@ create policy cambiar on public.conductores for update to authenticated
   with check (id = (select auth.uid()) or (select privado.es_equipo()));
 
 -- conductor_licencias: el conductor agrega y quita solo las declaradas propias;
--- las revisadas solo el equipo. Sin UPDATE (no se puede pasar de declarada a revisada).
+-- el equipo, solo las revisadas y solo de OTRAS personas (nadie se revisa a sí
+-- mismo). Sin UPDATE (no se puede pasar de declarada a revisada).
 grant select, insert, delete on table public.conductor_licencias to authenticated;
 create policy leer on public.conductor_licencias for select to authenticated
   using (conductor_id = (select auth.uid()) or (select privado.es_equipo()));
 create policy agregar on public.conductor_licencias for insert to authenticated
-  with check ((conductor_id = (select auth.uid()) and origen = 'declarada') or (select privado.es_equipo()));
+  with check ((conductor_id = (select auth.uid()) and origen = 'declarada')
+              or ((select privado.es_equipo()) and origen = 'revisada'
+                  and conductor_id <> (select auth.uid())));
 create policy quitar on public.conductor_licencias for delete to authenticated
-  using ((conductor_id = (select auth.uid()) and origen = 'declarada') or (select privado.es_equipo()));
+  using ((conductor_id = (select auth.uid()) and origen = 'declarada')
+         or ((select privado.es_equipo()) and origen = 'revisada'
+             and conductor_id <> (select auth.uid())));
 
 -- conductor_negocios y conductor_opciones: el conductor agrega y quita las suyas;
 -- el equipo ve todo. Sin UPDATE (son solo pares; se quita y se agrega).
@@ -942,7 +1080,10 @@ create policy quitar_propio on public.conductor_opciones for delete to authentic
   using (conductor_id = (select auth.uid()));
 
 -- experiencia_conductor: el conductor maneja la suya; el equipo ve todo.
-grant select, insert, update, delete on table public.experiencia_conductor to authenticated;
+-- INSERT por columnas, sin id (igual que en consentimientos).
+grant select, update, delete on table public.experiencia_conductor to authenticated;
+grant insert (conductor_id, tamano_vehiculo_id, anos, actualizado_en)
+  on table public.experiencia_conductor to authenticated;
 create policy leer on public.experiencia_conductor for select to authenticated
   using (conductor_id = (select auth.uid()) or (select privado.es_equipo()));
 create policy agregar_propio on public.experiencia_conductor for insert to authenticated

@@ -583,10 +583,13 @@ on conflict do nothing;
 -- ---------------------------------------------------------------------
 -- 8. Listas de opciones
 -- modo_contrato queda cargado pero inactivo: es crecimiento futuro (2-nov).
+-- idioma: idiomas que habla el conductor (Paso 3, opcional, no cuenta en el
+-- match). Las opciones son una PROPUESTA de Claude (2-nov); se cambian desde el panel.
 -- ---------------------------------------------------------------------
 insert into public.listas (clave, nombre) values
   ('turno',         'Turnos'),
   ('dia_semana',    'Días de la semana'),
+  ('idioma',        'Idiomas'),
   ('modo_contrato', 'Modos de contrato')
 on conflict (clave) do nothing;
 
@@ -603,7 +606,12 @@ select (select l.id from public.listas l where l.clave = v.lista),
     ('dia_semana',    'vi',                    'Viernes',            'Vi', 5, true),
     ('dia_semana',    'sa',                    'Sábado',             'Sá', 6, true),
     ('dia_semana',    'do',                    'Domingo',            'Do', 7, true),
-    ('modo_contrato', 'arriendo_fijo',         'Arriendo fijo',      null, 1, false),
+    ('idioma',        'es',                    'Español',            null, 1, true),
+    ('idioma',        'en',                    'Inglés',             null, 2, true),
+    ('idioma',        'pt',                    'Portugués',          null, 3, true),
+    ('idioma',        'fr',                    'Francés',            null, 4, true),
+    ('idioma',        'ht',                    'Criollo haitiano',   null, 5, true),
+    ('modo_contrato','arriendo_fijo',         'Arriendo fijo',      null, 1, false),
     ('modo_contrato', 'porcentaje_ganancia',   '% de ganancia',      null, 2, false),
     ('modo_contrato', 'porcentaje_produccion', '% sobre producción', null, 3, false)
   ) as v (lista, clave, nombre, nombre_corto, orden, activa)
