@@ -699,6 +699,18 @@
      "configurable": false
     },
     {
+     "id": "fecha_nacimiento",
+     "nombre": "Fecha de nacimiento",
+     "tipo": "fecha",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Paso 1 (obligatoria para registrarse), después de los apellidos, en formato dd/mm/aaaa (decidido el 2-nov). El titular NO ve la fecha: ve solo la EDAD en la ficha ('[N] años'). No es filtro ni variable del match. Propuesta: rechazar menores de 18 años y fechas futuras. Mostrar la edad tiene riesgo de discriminación por edad: se consulta con el abogado (consulta-abogado A16).",
+     "quien_ve": "El conductor y el equipo; el titular con plan ve solo la edad, tras el match",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
      "id": "clases_licencia_declaradas",
      "nombre": "Clases de licencia que declara",
      "tipo": "lista_multiple",
@@ -769,6 +781,18 @@
      "codigo": "C5",
      "estado": "decidido",
      "configurable": true
+    },
+    {
+     "id": "idiomas",
+     "nombre": "Idiomas que habla",
+     "tipo": "lista_multiple",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Paso 3 (Tu experiencia), opcional, selección múltiple: 'Idiomas que hablas'. Lista 'idioma' (propuesta: Español, que viene marcado; Inglés; Portugués; Francés; Criollo haitiano; se cambia desde el panel, MD51). El titular lo ve en la ficha. No cuenta en el match (decidido el 2-nov).",
+     "quien_ve": "El conductor, el equipo y el titular con plan, tras el match",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
     },
     {
      "id": "negocios",
@@ -860,7 +884,7 @@
      "tipo": "fecha_hora",
      "referencia": "",
      "obligatorio": false,
-     "descripcion": "La app pregunta '¿Sigues buscando vehículo?' cada N días (ajuste del panel; propuesta 30). Si no responde, un proceso diario lo pausa.",
+     "descripcion": "La app pregunta '¿Sigues buscando trabajo?' cada N días (ajuste del panel; propuesta 30). Si no responde, un proceso diario lo pausa.",
      "quien_ve": "El conductor y el equipo",
      "codigo": "C15, P16",
      "estado": "decidido",
@@ -3176,7 +3200,7 @@
      "tipo": "texto",
      "referencia": "",
      "obligatorio": true,
-     "descripcion": "Nombre fijo que usa el sistema: modo_contrato, turno, dia_semana, tramo_garantia, motivo_rechazo, motivo_reporte. Las listas de campos nuevos creados en el panel tienen su propio nombre interno.",
+     "descripcion": "Nombre fijo que usa el sistema: modo_contrato, turno, dia_semana, idioma, tramo_garantia, motivo_rechazo, motivo_reporte. Las listas de campos nuevos creados en el panel tienen su propio nombre interno.",
      "quien_ve": "Solo el equipo",
      "codigo": "",
      "estado": "propuesta",
@@ -5537,9 +5561,30 @@
     "busquedas",
     "planes"
    ]
+  },
+  {
+   "id": "MD51",
+   "pregunta": "Idiomas: ¿qué opciones trae la lista al partir?",
+   "opciones": "Propuesta: Español (marcado por defecto), Inglés, Portugués, Francés y Criollo haitiano. ¿Se agrega 'Otro' con texto libre o se suman idiomas desde el panel cuando haga falta?",
+   "entidades": [
+    "opciones",
+    "conductores"
+   ]
   }
  ],
  "cambios": [
+  {
+   "n": 38,
+   "fecha": "2026-11-02",
+   "cambio": "El conductor suma fecha de nacimiento (Paso 1, obligatoria; el titular ve solo la edad en la ficha; propuesta: mayor de 18 y sin fechas futuras) e idiomas que habla (Paso 3, opcional, selección múltiple con la nueva lista *idioma*; el titular lo ve en la ficha). Ninguno de los dos cuenta en el match. Pregunta MD51 sobre las opciones de idioma. Además, el texto de reconfirmar la disponibilidad pasa a \"¿Sigues buscando trabajo?\".",
+   "porque": "La dueña pidió agregar la fecha de nacimiento y el idioma a los datos que se piden; respondió que es solo para el conductor, que el titular ve la edad y en qué paso va cada uno. Mostrar la edad se consulta con el abogado (A16).",
+   "origen": "Decisión",
+   "entidades": [
+    "conductores",
+    "listas",
+    "opciones"
+   ]
+  },
   {
    "n": 37,
    "fecha": "2026-11-02",

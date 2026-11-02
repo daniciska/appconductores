@@ -8,6 +8,8 @@ Lista de trabajo para redactar los textos legales con el abogado. Se agrega un p
 - [ ] **Correo electrónico (obligatorio):** se usa para recuperar la cuenta, cambiar de número y recibir los comprobantes de pago. No se usa para entrar.
 - [ ] **Dirección del conductor:** se pide para obtener su comuna verificada (con sugerencias de Google Maps). Para el match solo se usa la comuna. La dirección es privada y solo se entrega a un titular si hay match y el conductor lo autoriza.
 - [ ] **Nombres y apellidos, clases de licencia, experiencia, negocios en los que quiere trabajar, turnos, días y estacionamiento:** se usan para el match y se muestran al titular después del match. (El modo de contrato y la garantía quedaron como crecimiento futuro el 2-nov: no se piden.)
+- [ ] **Fecha de nacimiento (conductor):** obligatoria. El titular solo ve la edad, no la fecha. [verificar con abogado: discriminación por edad]
+- [ ] **Idiomas que habla (conductor, opcional):** se muestran al titular en la ficha.
 - [ ] **RUN:** se obtiene de la cédula al verificarla. Solo lo ve el equipo de verificación.
 
 ## Con quién se comparten
