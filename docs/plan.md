@@ -18,6 +18,18 @@ Actualizado: 2-nov-2026. Se actualiza a medida que avanzamos.
 4. [ ] Maquetas del panel de administración (revisión de documentos, configuración de campos, catálogos —con activar o desactivar cada negocio—, reglas de match y zonas, reportes, usuarios).
 5. [ ] Retomar lo que está en pausa: documentos, mensajes y zonas.
 
+## Para empezar a construir (revisado el 2-nov)
+
+Se puede partir por la **base de datos y la app del conductor** mientras se termina el prototipo del titular. Para eso falta:
+
+- [ ] Visto bueno al prototipo del conductor (o la última lista de ajustes).
+- [ ] Revisar el modelo de datos, al menos las tablas del conductor y los catálogos.
+- [ ] Decisiones que cambian la base de datos y el match: años por categoría (MD1), días de trabajo (MD30), negocio que la licencia no permite (MD31), match sin modo de contrato mientras esté en espera (MD39), pregunta de peso o pasajeros en la búsqueda (MD40) y negocios activos en el lanzamiento (MD44).
+- [ ] Aprobar la propuesta de zonas (se cargan como datos iniciales).
+- [ ] Acceso al proyecto de Supabase de la dueña, sin compartir claves por chat.
+
+Antes de construir la parte del titular: su prototipo, las reglas de mensajes (en pausa) y las maquetas del panel.
+
 ## Fase 2 — Construcción
 
 6. [ ] Base de datos en Supabase (tablas y seguridad: quién ve qué).
