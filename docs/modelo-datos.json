@@ -3196,10 +3196,10 @@
      "tipo": "si_no",
      "referencia": "",
      "obligatorio": true,
-     "descripcion": "Propuesta: si una industria se desactiva, se ocultan todos sus negocios de una vez (por ejemplo, lanzar solo con pasajeros).",
+     "descripcion": "Lo activa o desactiva un administrador desde el panel (decidido el 2-nov). Si una industria se apaga, se ocultan de una vez todos sus negocios en la app y salen del match (por ejemplo, lanzar solo con pasajeros). Un negocio se muestra solo si él y su industria están activos. Apagar no borra nada de lo que ya marcaron conductores y titulares.",
      "quien_ve": "Solo el equipo",
      "codigo": "",
-     "estado": "propuesta",
+     "estado": "decidido",
      "configurable": true
     }
    ]
@@ -3326,7 +3326,7 @@
      "tipo": "si_no",
      "referencia": "",
      "obligatorio": true,
-     "descripcion": "Lo activa o desactiva un administrador desde el panel (decidido el 2-nov). En el lanzamiento solo estarán activos algunos negocios. Solo los activos aparecen en el Paso 4 '¿Qué trabajo buscas?' y en 'Nueva búsqueda' del titular, y solo ellos entran al match. Desactivar no borra nada: lo que conductores y titulares ya marcaron se conserva y vuelve a contar si se reactiva.",
+     "descripcion": "Lo activa o desactiva un administrador desde el panel (decidido el 2-nov). En el lanzamiento solo estarán activos algunos negocios. Solo los activos (y con su industria activa) aparecen en el Paso 4 '¿Qué trabajo buscas?' y en 'Nueva búsqueda' del titular, y solo ellos entran al match. Desactivar no borra nada: lo que conductores y titulares ya marcaron se conserva y vuelve a contar si se reactiva.",
      "quien_ve": "Solo el equipo",
      "codigo": "",
      "estado": "decidido",
@@ -5254,6 +5254,17 @@
   }
  ],
  "cambios": [
+  {
+   "n": 29,
+   "fecha": "2026-11-02",
+   "cambio": "\"Activa\" de la tabla Industria pasa de propuesta a decisión: un administrador puede apagar una industria completa desde el panel. Un negocio se muestra y entra al match solo si él y su industria están activos. Apagar no borra nada.",
+   "porque": "La dueña aprobó poder apagar una industria completa (por ejemplo, lanzar solo con pasajeros).",
+   "origen": "Mensaje",
+   "entidades": [
+    "industrias",
+    "negocios"
+   ]
+  },
   {
    "n": 28,
    "fecha": "2026-11-02",
