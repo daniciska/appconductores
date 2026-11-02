@@ -36,13 +36,15 @@ Antes de construir la parte del titular: su prototipo, las reglas de mensajes (e
 7. [ ] App del conductor.
 8. [ ] App del titular y cobro.
 9. [ ] Panel de administración.
-10. [ ] Prueba cerrada (Google exige 12 personas durante 14 días a cuentas personales) y publicación en App Store y Google Play.
+10. [ ] **Lanzamiento como app web** (decidido el 2-nov): dominio propio, alojamiento y pago web.
+11. [ ] Después: prueba cerrada (Google exige 12 personas durante 14 días a cuentas personales) y publicación en App Store y Google Play, con el mismo código.
 
 ## Lo que depende de la dueña (en paralelo, cuanto antes)
 
 - [ ] Abogado: antecedentes, Hoja de Vida, datos personales, términos y privacidad. **Bloquea el lanzamiento.**
-- [ ] Cuentas de Apple Developer y Google Play.
+- [ ] Cuentas de Apple Developer y Google Play (para la etapa de tiendas; ya no bloquean el lanzamiento web).
+- [ ] Dominio propio para la app web (depende del nombre definitivo).
 - [ ] Precios de los planes.
 - [ ] Nombre definitivo (INAPI, dominios, tiendas).
-- [ ] Juntar a las 12 personas de prueba.
+- [ ] Juntar a las 12 personas de prueba (para la etapa de tiendas).
 - [ ] Twilio para los SMS (puede esperar a la construcción).

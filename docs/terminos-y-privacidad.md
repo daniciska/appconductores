@@ -27,6 +27,10 @@ Lista de trabajo para redactar los textos legales con el abogado. Se agrega un p
 - [ ] Recordatorios por WhatsApp o correo para completar el perfil.
 - [ ] Mensajes dentro de la app: normas de trato, reportar y bloquear, cuánto tiempo se guardan.
 
+## App web
+
+- [ ] La app se lanza primero en la web: informar el uso de cookies o del almacenamiento del navegador (por ejemplo, para mantener la sesión abierta).
+
 ## Cuenta
 
 - [ ] Cómo eliminar la cuenta y qué se borra.

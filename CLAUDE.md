@@ -13,7 +13,7 @@ Este archivo guía a Claude (y a cualquier colaborador) al trabajar en este repo
 
 ## Visión del producto
 
-App móvil para publicar en **App Store** y **Google Play** que funciona como **punto de encuentro (match)** entre:
+App que funciona como **punto de encuentro (match)** entre conductores y titulares. Se lanza **primero como app web** pensada para el celular, y después se publica en **App Store** y **Google Play** con el mismo código. Conecta a:
 
 - **Conductores**, y
 - **Titulares**: dueños de vehículos o empresas que buscan conductores para sus vehículos.
@@ -61,7 +61,8 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 ### Técnico
 - [ ] Cuenta de Google Cloud para Google Maps Places (sugerencias de dirección): costo por uso y condiciones de qué datos se pueden guardar [verificar].
 - [ ] Proveedor para enviar el código por **WhatsApp y SMS** (ej. Twilio; confirmar que Supabase lo soporta [verificar]) — *se deja para después*; mientras tanto, números de prueba de Supabase.
-- [ ] Crear cuentas Apple Developer y Google Play (a nombre de la dueña).
+- [ ] Crear cuentas Apple Developer y Google Play (a nombre de la dueña). Ya no bloquea el lanzamiento: se necesitan para la etapa de tiendas.
+- [ ] Dónde se publica la app web (alojamiento) y su dominio propio (depende del nombre definitivo).
 - [ ] Identidad visual (colores, tipografía, logo) — depende del nombre/marca.
 
 ### Legal
@@ -103,11 +104,12 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - **Monetización MVP:** suscripción mensual que paga el titular/empresa. **El conductor usa la app gratis** (por ahora).
 - **Planes (P13):** distintas suscripciones según volumen de búsquedas activas. Propuesta inicial aceptada (configurable): **Básico** 1 búsqueda, **Flota chica** 5, **Flota** 20. Precios por definir.
 - **Titular sin suscripción (P11):** no ve perfiles ni contactos; sí ve un **adelanto anónimo** (ej. "hay 8 conductores verificados para tu búsqueda").
-- **Cobro (P14):** **dentro y fuera de la app** (compra integrada de Apple/Google + pago web). Ver restricciones de tiendas en `docs/propuesta-campos.md` P14 [verificar].
+- **Cobro (P14):** **dentro y fuera de la app** (compra integrada de Apple/Google + pago web). Con el lanzamiento web, al inicio el cobro es solo **pago web**; la compra integrada llega con las tiendas. Ver restricciones de tiendas en `docs/propuesta-campos.md` P14 [verificar].
 - **Verificación de documentos:** sí, incluida en el MVP.
 - **Configurable =** mediante un **panel de administración**.
 - **Cuentas de desarrollador:** aún no existen. Se crearán **a nombre de la dueña (persona natural)**, con la idea de pasarlas a una empresa más adelante.
 - **App:** una sola app **multiplataforma** (iPhone y Android) con **React Native + Expo**, en TypeScript (mismo lenguaje para app, panel y funciones de servidor).
+- **Lanzamiento: primero app web** (decidido el 2-nov). Se construye con el mismo código de Expo y se publica como **app web pensada para el celular**, que se puede agregar a la pantalla de inicio. Las tiendas (App Store y Google Play) vienen después, con el mismo código. Así no hacen falta las cuentas de tiendas ni la prueba cerrada de Google para salir. Los avisos importantes van por **WhatsApp y correo**, porque en iPhone los avisos web solo llegan si la app está agregada a la pantalla de inicio [verificar]. Desde el inicio se eligen herramientas que funcionen en web y en celular.
 - **Calidad visual:** la dueña exige una app que se vea y funcione **profesional, de calidad, no ordinaria**. Diseño cuidado (sistema de diseño consistente, tipografía, espaciado, animaciones sutiles, estados de carga/vacío/error). Las pantallas se aprueban con maquetas antes de programarlas.
 - **Cuenta Supabase:** ya existe (de la dueña).
 - **Rama principal:** `main`.
