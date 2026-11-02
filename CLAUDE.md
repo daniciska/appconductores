@@ -56,14 +56,14 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - [ ] Mensajes: ¿el titular también puede escribir primero? ¿Un titular **sin plan** puede leer/responder mensajes? ¿Reportar/bloquear (exigido por las tiendas)? ¿Cuánto tiempo se guardan los mensajes?
 - [ ] Zonas: revisar la propuesta de `docs/propuesta-zonas.md`.
 - [ ] Precio de cada plan de suscripción.
-- [ ] Nombre definitivo de la app / marca (hoy provisorio: **Dale Contacto**; falta revisar INAPI, dominios y tiendas).
+- [ ] Registrar la marca **Dale Contacto** en INAPI (recomendado) y revisar que el nombre esté libre en las tiendas.
 
 ### Técnico
 - [ ] Cuenta de Google Cloud para Google Maps Places (sugerencias de dirección): costo por uso y condiciones de qué datos se pueden guardar [verificar].
 - [ ] Proveedor para enviar el código por **WhatsApp y SMS** (ej. Twilio; confirmar que Supabase lo soporta [verificar]) — *se deja para después*; mientras tanto, números de prueba de Supabase.
 - [ ] Crear cuentas Apple Developer y Google Play (a nombre de la dueña). Ya no bloquea el lanzamiento: se necesitan para la etapa de tiendas.
-- [ ] Dónde se publica la app web (alojamiento) y su dominio propio (depende del nombre definitivo).
-- [ ] Identidad visual (colores, tipografía, logo) — depende del nombre/marca.
+- [ ] Hosting de la dueña: confirmar el proveedor y que entregue HTTPS (la app web son archivos estáticos; la base de datos queda en Supabase).
+- [ ] Identidad visual (colores, tipografía, logo) de Dale Contacto.
 
 ### Legal
 - [ ] Términos y condiciones, política de privacidad y tratamiento de datos personales según la normativa chilena. Lo que deben cubrir: `docs/terminos-y-privacidad.md`.
@@ -114,7 +114,7 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - **Cuenta Supabase:** ya existe (de la dueña).
 - **Rama principal:** `main`.
 - **Lenguaje de la app:** hablar de **vehículos** en general, no de taxis (la app cubre todos los tipos de vehículo).
-- **Nombre provisorio:** **Dale Contacto** (para maquetas y desarrollo; fácil de cambiar).
+- **Nombre:** **Dale Contacto** (definitivo, 2-nov). Dominio **dalecontacto.cl**, comprado en NIC Chile. La dueña tiene un hosting propio.
 - **Referencias visuales:** Fintual, Uber, apps minimalistas. Casi negro sobre blanco, grises neutros, mucho espacio y **un solo acento** (amarillo). Maquetas: https://claude.ai/artifact/N5JbJkK1ub26v14FpzhcAg (en revisión). Página **"Experiencia del conductor"**: prototipo navegable de 25 pantallas (A ingreso, B perfil en 5 pasos, C documentos y estados, D matches y mensajes, E perfil y cuenta), en revisión por la dueña.
 - **Backend:** **Supabase** (base de datos, autenticación y archivos), por ahora.
 - **Panel de administración:** **web**.

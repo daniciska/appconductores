@@ -26,7 +26,7 @@ Se puede partir por la **base de datos y la app del conductor** mientras se term
 - [ ] Revisar el modelo de datos, al menos las tablas del conductor y los catálogos.
 - [ ] Decisiones que cambian la base de datos y el match: años por categoría (MD1), días de trabajo (MD30), negocio que la licencia no permite (MD31), match sin modo de contrato mientras esté en espera (MD39), pregunta de peso o pasajeros en la búsqueda (MD40) y negocios activos en el lanzamiento (MD44).
 - [ ] Aprobar la propuesta de zonas (se cargan como datos iniciales).
-- [ ] Acceso al proyecto de Supabase de la dueña, sin compartir claves por chat.
+- [ ] Acceso al proyecto de Supabase de la dueña, sin compartir claves por chat: conectar el conector de Supabase en claude.ai (recomendado) o guardar un token en la configuración del entorno.
 
 Antes de construir la parte del titular: su prototipo, las reglas de mensajes (en pausa) y las maquetas del panel.
 
@@ -43,8 +43,8 @@ Antes de construir la parte del titular: su prototipo, las reglas de mensajes (e
 
 - [ ] Abogado: antecedentes, Hoja de Vida, datos personales, términos y privacidad. **Bloquea el lanzamiento.**
 - [ ] Cuentas de Apple Developer y Google Play (para la etapa de tiendas; ya no bloquean el lanzamiento web).
-- [ ] Dominio propio para la app web (depende del nombre definitivo).
+- [x] Dominio propio: dalecontacto.cl (NIC Chile). Hosting propio (confirmar proveedor y HTTPS).
 - [ ] Precios de los planes.
-- [ ] Nombre definitivo (INAPI, dominios, tiendas).
+- [x] Nombre: Dale Contacto. Falta registrar la marca en INAPI (recomendado).
 - [ ] Juntar a las 12 personas de prueba (para la etapa de tiendas).
 - [ ] Twilio para los SMS (puede esperar a la construcción).
