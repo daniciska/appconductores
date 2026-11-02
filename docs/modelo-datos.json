@@ -812,7 +812,7 @@
      "tipo": "si_no",
      "referencia": "",
      "obligatorio": true,
-     "descripcion": "Paso 4: 'Tengo estacionamiento seguro para el vehículo'. Declarado: no se verifica. Variable M6.",
+     "descripcion": "Paso 2 (Dónde vives), debajo de la comuna: 'Tengo estacionamiento seguro para el vehículo'. Declarado: no se verifica. Variable M6.",
      "quien_ve": "El conductor, el equipo y el titular con plan, tras el match (marcado 'declarado')",
      "codigo": "C14, M6",
      "estado": "decidido",
@@ -3678,7 +3678,7 @@
      "tipo": "texto",
      "referencia": "",
      "obligatorio": true,
-     "descripcion": "Conductor: Paso 1 Tus datos; Paso 2 Dónde vives; Paso 3 Tu experiencia; Paso 4 ¿Cómo quieres trabajar? (negocios, turno, días, estacionamiento). Modelo de contrato: en espera. Los documentos del Paso 5 salen de 'Tipo de documento'.",
+     "descripcion": "Conductor: Paso 1 Tus datos; Paso 2 Dónde vives; Paso 3 Tu experiencia; Paso 4 ¿Cómo quieres trabajar? (negocios, turno, días). Modelo de contrato: en espera. Los documentos del Paso 5 salen de 'Tipo de documento'.",
      "quien_ve": "Solo el equipo",
      "codigo": "",
      "estado": "decidido",
@@ -5170,6 +5170,17 @@
   }
  ],
  "cambios": [
+  {
+   "n": 26,
+   "fecha": "2026-11-02",
+   "cambio": "\"Tengo estacionamiento seguro\" (variable M6) se pide en el Paso 2 (Dónde vives), no en el Paso 4. No cambian las tablas: solo en qué paso se guarda.",
+   "porque": "La dueña pidió dejarlo en el paso de la dirección.",
+   "origen": "Comentario",
+   "entidades": [
+    "conductores",
+    "campos_perfil"
+   ]
+  },
   {
    "n": 25,
    "fecha": "2026-11-02",
