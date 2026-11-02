@@ -110,7 +110,7 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - **Cuenta Supabase:** ya existe (de la dueña) y está conectada a Claude con el conector de Supabase (2-nov). Dale Contacto va en una **organización propia de Supabase**, separada de otros negocios de la dueña (así se puede pasar a una empresa después), con el proyecto en la región **São Paulo** (sa-east-1), la más cercana a Chile. Proyecto creado el 2-nov: **dale-contacto** (id `zflalaqimacsnlvurzeb`, São Paulo, plan Free), todavía sin tablas. El proyecto "panel-creadores" es de otro negocio y no se toca.
 - **Rama principal:** `main`.
 - **Lenguaje de la app:** hablar de **vehículos** en general, no de taxis (la app cubre todos los tipos de vehículo).
-- **Nombre:** **Dale Contacto** (definitivo, 2-nov). Dominio **dalecontacto.cl**, comprado en NIC Chile. La dueña tiene un hosting propio.
+- **Nombre:** **Dale Contacto** (definitivo, 2-nov). Dominio **dalecontacto.cl**, comprado en NIC Chile (2-nov), a nombre de Mario, **socio de la dueña** (intencional). Falta configurarle los DNS del hosting. La dueña tiene un hosting propio.
 - **Referencias visuales:** Fintual, Uber, apps minimalistas. Casi negro sobre blanco, grises neutros, mucho espacio y **un solo acento** (amarillo). Maquetas: https://claude.ai/artifact/N5JbJkK1ub26v14FpzhcAg (en revisión). Página **"Experiencia del conductor"**: prototipo navegable de 25 pantallas (A ingreso, B perfil en 5 pasos, C documentos y estados, D matches y mensajes, E perfil y cuenta), en revisión por la dueña.
 - **Backend:** **Supabase** (base de datos, autenticación y archivos), por ahora.
 - **Panel de administración:** **web**.
