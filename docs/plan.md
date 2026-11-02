@@ -26,7 +26,8 @@ Se puede partir por la **base de datos y la app del conductor** mientras se term
 - [ ] Revisar el modelo de datos, al menos las tablas del conductor y los catálogos.
 - [ ] Decisiones que cambian la base de datos y el match: años por categoría (MD1), días de trabajo (MD30), negocio que la licencia no permite (MD31), match sin modo de contrato mientras esté en espera (MD39), pregunta de peso o pasajeros en la búsqueda (MD40) y negocios activos en el lanzamiento (MD44).
 - [ ] Aprobar la propuesta de zonas (se cargan como datos iniciales).
-- [ ] Acceso al proyecto de Supabase de la dueña, sin compartir claves por chat: conectar el conector de Supabase en claude.ai (recomendado) o guardar un token en la configuración del entorno.
+- [x] Acceso a Supabase: conector conectado (2-nov).
+- [ ] La dueña crea en Supabase la organización "Dale Contacto"; después Claude crea el proyecto en São Paulo.
 
 Antes de construir la parte del titular: su prototipo, las reglas de mensajes (en pausa) y las maquetas del panel.
 
