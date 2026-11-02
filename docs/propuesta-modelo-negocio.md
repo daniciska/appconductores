@@ -115,6 +115,49 @@ Un taxi sin conductor deja de recibir **$16.000 a $20.000 al día** de entrega (
 
 ---
 
+## Desglose de costos: conductor que paga $1.000 al mes
+
+> Estimación para un conductor promedio. **Supuestos (todos [verificar]):** dólar a $950; precio con IVA incluido; pago web con tarjeta; inicia sesión 2 veces al mes; recibe 2 avisos por WhatsApp al mes; renueva documentos cada 6 meses; 30 % de los casos los revisa una persona.
+
+### Costos de cada mes
+
+| Concepto | Cálculo | $ al mes |
+|---|---|---|
+| **Precio que paga el conductor** | | **$1.000** |
+| IVA (19 %) | $1.000 − $1.000 / 1,19 | −$160 |
+| **Ingreso neto** | | **$840** |
+| Comisión del medio de pago | Crédito ~2,95 % + IVA ≈ 3,5 % (débito ~1,3 %) [verificar Flow, Mercado Pago, Webpay] | −$35 |
+| Códigos de entrada por WhatsApp | 2 × US$0,02 [verificar tarifa de Meta para Chile] | −$38 |
+| SMS de respaldo | 10 % de los códigos × ~US$0,07 [verificar Twilio] | −$13 |
+| Avisos por WhatsApp (matches, recordatorios) | 2 × US$0,02 | −$38 |
+| Revisión de documentos con IA | ~$40 cada 6 meses (ver abajo) | −$7 |
+| Revisión por una persona | 30 % de los casos × 3 min, a $5.000 la hora ≈ $75 cada 6 meses | −$13 |
+| Google Maps (sugerencia de dirección) | ~US$0,02 una vez, repartido en 12 meses [verificar] | −$1 |
+| Supabase Pro (base de datos y archivos) | US$25/mes ÷ 1.000 conductores (con 10.000 baja a $2) | −$24 |
+| Correos (comprobantes, recuperar cuenta) | Plan gratis del proveedor hasta cierto volumen [verificar] | $0 |
+| **Total de costos** | | **−$169** |
+| **Margen por conductor** | | **≈ $670 al mes** (67 % del precio) |
+
+### Si el cobro pasa por las tiendas (Apple / Google)
+La tienda cobra ~15 % sobre el precio sin IVA (programas para empresas pequeñas [verificar]), unos $126, en vez de los $35 del pago web. **Margen: ≈ $580 al mes.** Por eso conviene que el conductor pague en la web.
+
+### Costo de la revisión con IA (detalle)
+Cédula y licencia por ambos lados, Hoja de Vida y antecedentes ≈ 6 imágenes ≈ 12.000 unidades de texto de entrada y ~1.000 de salida.
+- **Modelo mediano (Claude Sonnet 5.5, US$2 / US$10 por millón):** ≈ US$0,04 ≈ **$40** por revisión.
+- **Modelo chico (Claude Haiku 5.5, US$0,10 / US$0,50 por millón):** ≈ **$2** por revisión. Hay que probar si lee bien los documentos chilenos.
+Precios de la lista de Anthropic de oct-2026 [verificar al contratar].
+
+### Lo que cuestan las promociones
+- **Fundador (6 meses gratis):** revisión inicial ~$130 + ~$110 al mes de avisos y servidor = **≈ $800 por fundador**. Los 1.000 fundadores cuestan **≈ $800.000** en 6 meses.
+- **Referido pagado con $1.000 en plata:** se lleva más que el margen de un mes. Se recupera en el segundo mes del referido.
+- **Referido pagado con 1 mes gratis:** cuesta solo los ~$135 de costos de ese mes (más el ingreso que no entra).
+
+### Escala: 1.000 conductores pagando
+- Ingreso neto: **$840.000 al mes**. Costos variables: ~$170.000. Margen: **≈ $670.000 al mes**.
+- **No incluye costos fijos:** desarrollo y mantención de la app, sueldos, abogado, contador, publicidad, cuenta de Apple (US$99 al año) y de Google (US$25, una vez), ni el impuesto a la renta sobre las utilidades.
+
+---
+
 ## Preguntas para la dueña
 
 - **N1.** ¿El conductor paga para entrar al match, o entra gratis y paga solo el plan Pro con beneficios?
