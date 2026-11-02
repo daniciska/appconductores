@@ -51,6 +51,7 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - [ ] Criterios de rechazo de Hoja de Vida y antecedentes, y cada cuánto se renuevan.
 - [ ] Mensajes: ¿el titular también puede escribir primero? ¿Un titular **sin plan** puede leer/responder mensajes? ¿Reportar/bloquear (exigido por las tiendas)? ¿Cuánto tiempo se guardan los mensajes?
 - [ ] Precio de cada plan de suscripción.
+- [ ] Modelo de negocio (N1–N9 de `docs/propuesta-modelo-negocio.md`): ¿suscripción del conductor de $1.000 (cambiaría "el conductor usa la app gratis")?, fundadores por invitación, referidos, beneficios colectivos, buscador para empresas y planes del titular (Pase 30 días).
 - [ ] Registrar la marca **Dale Contacto** en INAPI (recomendado) y revisar que el nombre esté libre en las tiendas.
 
 ### Técnico
@@ -124,6 +125,7 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - `docs/modelo-datos-cambios.md` — registro de qué cambió en el modelo y por qué.
 - `docs/terminos-y-privacidad.md` — lista de lo que deben cubrir los Términos y la Política de privacidad. **Agregar un punto cada vez que una decisión lo requiera.**
 - `docs/propuesta-campos.md` — propuesta de campos (C# conductor, T# titular, F# filtros, M# variables de match, D# documentos, P# preguntas). **Es una propuesta, no una decisión.**
+- `docs/propuesta-modelo-negocio.md` — propuesta de cobro a conductores y titulares, fundadores, referidos y beneficios colectivos. **Propuesta.**
 - `docs/propuesta-nombres.md` — nombres candidatos con conflictos encontrados. **Propuesta.**
 - `docs/investigacion/contexto-chile.md` — licencias, documentos verificables, Ley 21.719 / 19.628, Ley 21.553, modalidades de contrato.
 - `docs/propuesta-catalogos.md` — propuesta de tamaños de vehículo y negocios con sus licencias. **Propuesta.**

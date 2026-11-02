@@ -31,6 +31,14 @@ Lista de trabajo para redactar los textos legales con el abogado. Se agrega un p
 
 - [ ] La app se lanza primero en la web: informar el uso de cookies o del almacenamiento del navegador (por ejemplo, para mantener la sesión abierta).
 
+## Cobros, promociones y beneficios (si se aprueba `docs/propuesta-modelo-negocio.md`)
+
+- [ ] Suscripción del conductor: precio, renovación automática, cómo darse de baja y qué pasa al terminar el período gratis de los fundadores.
+- [ ] Bases del programa de referidos: premio, tope, cuándo se paga, fecha de término y causas para anularlo (cuentas falsas). [verificar Ley 19.496]
+- [ ] Buscador para empresas: el conductor elige si aparece y puede dejar de aparecer cuando quiera. Nunca se vende ni se entrega la base de datos. [verificar con abogado: Ley 21.719]
+- [ ] Beneficios con terceros (comercios, seguros): qué datos se comparten con ellos (ninguno sin permiso) y que los seguros los ofrece un corredor inscrito en la CMF. [verificar con abogado]
+- [ ] Garantía "si no encuentras, no pagas" para titulares, si se aprueba: condiciones exactas.
+
 ## Cuenta
 
 - [ ] Cómo eliminar la cuenta y qué se borra.
