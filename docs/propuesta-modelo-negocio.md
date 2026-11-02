@@ -145,6 +145,71 @@ Con tarjeta de débito (~1,3 %) la comisión es menor: al conductor, por ejemplo
 
 ---
 
+## Gastos de la empresa
+
+> Lo que paga Dale Contacto para funcionar, aparte de lo que se descuenta de cada pago. **Todo es estimación [verificar]:** dólar a $950; los sueldos, honorarios y publicidad son supuestos para conversar, no cotizaciones. **No incluye** el sueldo de la dueña ni el de su socio.
+
+### 1. Gastos de una sola vez
+
+| Concepto | Monto aprox. | Nota |
+|---|---|---|
+| Abogado: Términos, Política de privacidad y consulta P1 | $1.000.000 | Rango de mercado amplio [verificar cotización] |
+| Registro de la marca en INAPI (2 clases) | ~$410.000 | ~3 UTM por clase entre solicitud y registro [verificar] |
+| Cuenta de Google Play | $23.750 | US$25, una vez (solo en la etapa de tiendas) |
+| Dominio dalecontacto.cl | Ya pagado | Se renueva cada año (~$10.000 [verificar]) |
+| Revisión inicial con IA de los 1.000 fundadores | ~$40.000 | ~$40 por conductor (modelo mediano); ~$2 con el modelo chico |
+| **Total** | **≈ $1.475.000** | |
+
+### 2. Gastos fijos de cada mes (no dependen de cuántos usuarios haya)
+
+| Concepto | Lanzamiento | Crecimiento | Nota |
+|---|---|---|---|
+| Supabase (base de datos, entrada, archivos) | $23.750 | $57.000 | Plan Pro US$25; con más uso, US$60 aprox. |
+| Hosting de la app web | $0 | $0 | Usa el hosting que ya tiene la dueña [verificar] |
+| Correos automáticos (comprobantes, avisos) | $0 | $19.000 | Plan gratis hasta ~3.000 al mes; después ~US$20 [verificar] |
+| Herramienta de IA para construir la app (Claude) | $95.000 | $95.000 | ~US$100 al mes [verificar el plan que usa la dueña] |
+| Cuenta de Apple Developer | — | $7.840 | US$99 al año, solo en la etapa de tiendas |
+| Persona para revisar documentos y atender clientes | $400.000 | $800.000 | Medio tiempo al lanzar, jornada completa después [supuesto] |
+| Contador | $80.000 | $80.000 | [supuesto] |
+| Publicidad y captación | $300.000 | $600.000 | Lo decide la dueña |
+| **Total fijo** | **≈ $899.600** | **≈ $1.658.800** | |
+
+### 3. Gastos que suben con cada usuario (de cada mes)
+
+| Por cada… | Concepto | $ al mes |
+|---|---|---|
+| Conductor | Códigos de entrada por WhatsApp (2) | $38 |
+| | SMS de respaldo | $13 |
+| | Avisos por WhatsApp (2) | $38 |
+| | Revisión con IA (renovación cada 6 meses) | $7 |
+| | **Total por conductor** | **≈ $96** |
+| Titular | Códigos de entrada + SMS | $51 |
+| | Avisos de matches (Básico/Pase 5, Flota chica 10, Flota 20) | $95 a $380 |
+| | **Total por titular** | **≈ $146 a $431** |
+
+Google Maps: con pocos usuarios entra en el uso gratis [verificar]. La revisión por una persona ya está en el sueldo de la persona (punto 2).
+
+### 4. Total de cada mes: dos escenarios
+
+| | Lanzamiento | Crecimiento |
+|---|---|---|
+| Usuarios | 1.000 conductores fundadores (gratis) + 50 titulares | 5.000 conductores pagando + 300 titulares |
+| Fijos | $899.600 | $1.658.800 |
+| Por usuario: conductores | $96.000 | $480.000 |
+| Por usuario: titulares | ~$7.300 | ~$60.000 |
+| **Total del mes** | **≈ $1.003.000** | **≈ $2.199.000** |
+
+### 5. Punto de equilibrio (cuándo se cubren los gastos)
+- **Lanzamiento:** los fundadores no pagan, así que todo lo cubren los titulares. Cada titular Básico deja ~$7.900 después de su comisión y sus avisos. Se necesitan **≈ 127 titulares Básico** (o, por ejemplo, 40 Básico + 15 Flota chica + 5 Flota + 30 Pases) para cubrir ~$1.000.000 al mes.
+- **Crecimiento:** 5.000 conductores dejan ~$4.025.000 al mes (después del IVA y la comisión), más que todos los gastos de ese escenario. **Los titulares quedarían como ganancia.**
+
+### Lo que más pesa
+1. **La persona que revisa y atiende** (40 % de los gastos al lanzar). Usar más la IA para la revisión baja este gasto.
+2. **La publicidad** (30 %). Los referidos son más baratos que los avisos pagados.
+3. **WhatsApp:** con 5.000 conductores son ~$450.000 al mes. Se puede bajar dejando la sesión abierta más tiempo (menos códigos) y mandando los avisos por correo o dentro de la app.
+
+---
+
 ## Desglose de costos: conductor que paga $1.000 al mes
 
 > Estimación para un conductor promedio. **Supuestos (todos [verificar]):** dólar a $950; precio con IVA incluido; pago web con tarjeta; inicia sesión 2 veces al mes; recibe 2 avisos por WhatsApp al mes; renueva documentos cada 6 meses; 30 % de los casos los revisa una persona.
