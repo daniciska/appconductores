@@ -776,7 +776,7 @@
      "tipo": "lista_multiple",
      "referencia": "negocios",
      "obligatorio": true,
-     "descripcion": "Paso 4 (obligatorio para completar el perfil): '¿En qué te gustaría trabajar?'. El negocio en que quiere participar, ej. Taxi, Transporte por aplicación, Moto delivery. Marca varios. Se muestran todos los negocios activos del catálogo (decidido); la licencia se revisa en el filtro F2 con las clases revisadas (R21, MD31). Filtro F1. Reemplaza a 'tipos de vehículo que quiere manejar'.",
+     "descripcion": "Paso 4 (obligatorio para completar el perfil): '¿En qué te gustaría trabajar?'. El negocio en que quiere participar, ej. Taxi, Transporte por aplicación, Moto delivery. Marca varios. Se muestran todos los negocios activos del catálogo (decidido); la licencia se revisa en el filtro F2 con las clases revisadas (R21). Filtro F1. Reemplaza a 'tipos de vehículo que quiere manejar'. Los negocios que sus clases de licencia no permiten aparecen en gris con 'Pide licencia X' y no se pueden marcar (decidido el 2-nov). En los negocios donde la licencia depende del vehículo, se pueden marcar si alguna variante es posible con su licencia.",
      "quien_ve": "El conductor, el equipo y el titular con plan, tras el match",
      "codigo": "C8",
      "estado": "decidido",
@@ -800,7 +800,7 @@
      "tipo": "lista_multiple",
      "referencia": "opciones",
      "obligatorio": true,
-     "descripcion": "Paso 4: 'Días que puedes trabajar'. Lista 'día de la semana': lunes a domingo; marca todos los que pueda. Si se agrega 'Festivos' y cómo se compara con la búsqueda está pendiente (MD30).",
+     "descripcion": "Paso 4: 'Días que puedes trabajar'. Lista 'día de la semana': lunes a domingo; marca todos los que pueda. En el match, mientras más días coincidan con los de la búsqueda, mejor (variable M7 del %, decidido el 2-nov). Si se agrega 'Festivos' está pendiente.",
      "quien_ve": "El conductor, el equipo y el titular con plan, tras el match",
      "codigo": "C12",
      "estado": "decidido",
@@ -824,7 +824,7 @@
      "tipo": "lista_multiple",
      "referencia": "opciones",
      "obligatorio": false,
-     "descripcion": "EN ESPERA desde el 29-oct, hasta nuevo aviso: no se pide en el registro (puede que sea algo posterior). Antes era el Paso 5 · Modelo de contrato: 'Modos de contrato que aceptas' (puede marcar más de uno). Lista 'modo de contrato': Arriendo fijo; % de ganancia; % sobre producción. Filtro obligatorio (M1).",
+     "descripcion": "FUTURO (crecimiento), decidido el 2-nov: el modo de contrato se desliga del MVP. No se pide en el registro ni en la búsqueda y no se usa en el match. Antes era el Paso 5 · Modelo de contrato: 'Modos de contrato que aceptas' (puede marcar más de uno). Lista 'modo de contrato': Arriendo fijo; % de ganancia; % sobre producción. Filtro obligatorio (M1).",
      "quien_ve": "El conductor, el equipo y el titular con plan, tras el match",
      "codigo": "C11, M1",
      "estado": "en_espera",
@@ -836,7 +836,7 @@
      "tipo": "referencia",
      "referencia": "opciones",
      "obligatorio": false,
-     "descripcion": "EN ESPERA desde el 29-oct, junto con el modelo de contrato. Antes era el Paso 5 · Modelo de contrato, opcional. Lista 'tramo de garantía'. No es filtro y hoy no entra al %. Podría contar como dato de situación económica [verificar con abogado, P1].",
+     "descripcion": "FUTURO (crecimiento), junto con el modelo de contrato (2-nov). Antes era el Paso 5 · Modelo de contrato, opcional. Lista 'tramo de garantía'. No es filtro y hoy no entra al %. Podría contar como dato de situación económica [verificar con abogado, P1].",
      "quien_ve": "El conductor y el equipo (qué ve el titular: MD26)",
      "codigo": "C13",
      "estado": "en_espera",
@@ -921,7 +921,7 @@
    "nombre": "Experiencia por tamaño de vehículo",
    "grupo": "conductor",
    "descripcion": "Una fila por cada tamaño de vehículo que el conductor marcó en el Paso 3, con sus años de experiencia (ej. Auto, 5 años; Van, 2 años).",
-   "para_que": "Venta y match: muestra la experticia del conductor según el tamaño del vehículo y sirve para la variable años (M4), cuya forma de comparar está pendiente (MD1).",
+   "para_que": "Venta y match: muestra la experticia del conductor según el tamaño del vehículo y sirve para la variable años (M4), que usa la categoría relacionada con el negocio que tenga más años (decidido el 2-nov).",
    "estado": "decidido",
    "campos": [
     {
@@ -1106,11 +1106,23 @@
      "tipo": "referencia",
      "referencia": "negocios",
      "obligatorio": true,
-     "descripcion": "Uno por búsqueda (antes 'tipo de vehículo', T8). La licencia exigida (T9) no se guarda: sale sola del negocio. Filtros F1 y F2. La maqueta 'Nueva búsqueda' todavía dice 'Tipo de vehículo' (MD2).",
+     "descripcion": "Uno por búsqueda (antes 'tipo de vehículo', T8). La licencia exigida (T9) no se guarda: sale del negocio y, si corresponde, de la respuesta sobre el vehículo. Filtros F1 y F2. La maqueta 'Nueva búsqueda' todavía dice 'Tipo de vehículo'.",
      "quien_ve": "El titular, el equipo y los conductores con match",
      "codigo": "T8, T9",
      "estado": "propuesta",
      "configurable": true
+    },
+    {
+     "id": "respuesta_vehiculo",
+     "nombre": "Respuesta sobre el vehículo",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "La respuesta del titular a la pregunta del negocio, ej. 'Más de 3.500 kg' o '10 a 17 pasajeros'. Con ella se calcula la licencia exigida (F2). Solo se pide en los negocios que tienen pregunta.",
+     "quien_ve": "El titular, el equipo y los conductores con match",
+     "codigo": "F2, T9",
+     "estado": "decidido",
+     "configurable": false
     },
     {
      "id": "comuna_retiro_id",
@@ -1129,11 +1141,11 @@
      "nombre": "Modos de contrato que ofrece",
      "tipo": "lista_multiple",
      "referencia": "opciones",
-     "obligatorio": true,
-     "descripcion": "Lista 'modo de contrato'. Filtro obligatorio (M1): debe haber al menos uno en común con el conductor. Mientras el modelo de contrato del conductor esté en espera, este filtro no se aplica (propuesta, MD39).",
+     "obligatorio": false,
+     "descripcion": "FUTURO (crecimiento), decidido el 2-nov: el modo de contrato se desliga del MVP. No se pide en el registro ni en la búsqueda y no se usa en el match. Lista 'modo de contrato'. Filtro obligatorio (M1): debe haber al menos uno en común con el conductor.",
      "quien_ve": "El titular, el equipo y los conductores con match",
      "codigo": "T13, M1",
-     "estado": "decidido",
+     "estado": "en_espera",
      "configurable": true
     },
     {
@@ -1142,7 +1154,7 @@
      "tipo": "lista_multiple",
      "referencia": "opciones",
      "obligatorio": true,
-     "descripcion": "Lista 'turno' (las mismas opciones del conductor: Día; Noche). Filtro obligatorio (M3). La maqueta 'Nueva búsqueda' todavía muestra las 4 opciones antiguas (MD30).",
+     "descripcion": "Lista 'turno' (las mismas opciones del conductor: Día; Noche). Filtro obligatorio (M3). La maqueta 'Nueva búsqueda' todavía muestra las 4 opciones antiguas.",
      "quien_ve": "El titular, el equipo y los conductores con match",
      "codigo": "T14, M3",
      "estado": "decidido",
@@ -1154,10 +1166,10 @@
      "tipo": "lista_multiple",
      "referencia": "opciones",
      "obligatorio": true,
-     "descripcion": "Días en que se debe manejar el vehículo. Lista 'día de la semana' (lunes a domingo). Cómo se compara con los días del conductor está pendiente (MD30). Falta agregarlo a la maqueta 'Nueva búsqueda'.",
+     "descripcion": "Días en que se debe manejar el vehículo. Lista 'día de la semana' (lunes a domingo). En el match cuenta como variable del % (M7): suma en proporción a los días en común (días en común ÷ días que pide la búsqueda), decidido el 2-nov. Falta agregarlo a la maqueta 'Nueva búsqueda'.",
      "quien_ve": "El titular, el equipo y los conductores con match",
      "codigo": "T14",
-     "estado": "propuesta",
+     "estado": "decidido",
      "configurable": true
     },
     {
@@ -1166,7 +1178,7 @@
      "tipo": "numero",
      "referencia": "",
      "obligatorio": true,
-     "descripcion": "0 = sin mínimo (valor inicial). Variable M4; cómo se compara con la experiencia por tamaño está pendiente (MD1).",
+     "descripcion": "0 = sin mínimo (valor inicial). Variable M4 (decidido el 2-nov): se miran las categorías de experiencia que sirven para el negocio de la búsqueda y se usa la que tenga más años; coincide si alcanza el mínimo.",
      "quien_ve": "El titular, el equipo y los conductores con match",
      "codigo": "T10, M4",
      "estado": "decidido",
@@ -1650,7 +1662,7 @@
      "tipo": "lista",
      "referencia": "",
      "obligatorio": true,
-     "descripcion": "Opciones fijas: Filtro obligatorio; Variable del %; Apagado. Hoy: filtros F1, F2, F3, M1 y M3; variables M2, M4 y M6; garantía (M5) apagada. Días de trabajo (M7): cómo cuenta está pendiente (MD30); mientras tanto, apagada (propuesta).",
+     "descripcion": "Opciones fijas: Filtro obligatorio; Variable del %; Apagado. Hoy: filtros F1, F2, F3 y M3 (turno); variables M2 (zona), M4 (años), M6 (estacionamiento) y M7 (días, proporcional); M1 (modo de contrato) y M5 (garantía) apagadas.",
      "quien_ve": "Solo el equipo",
      "codigo": "P3, P4",
      "estado": "decidido",
@@ -1698,7 +1710,7 @@
      "tipo": "lista",
      "referencia": "",
      "obligatorio": true,
-     "descripcion": "Opciones ya programadas: El negocio de la búsqueda está entre los del conductor (F1); Alguna clase de licencia revisada habilita el negocio (F2); Misma región (F3); Al menos uno en común (M1, M3); Misma zona (M2); Años iguales o mayores al mínimo (M4, forma pendiente); Si se exige, debe tenerlo (M6); Días: todos los de la búsqueda, o al menos uno en común (M7, pendiente). F1, F2, F3, M2 y M4 usan datos fijos (clases revisadas, región y zona de la comuna, experiencia por tamaño). Una forma nueva requiere programar.",
+     "descripcion": "Opciones ya programadas: El negocio de la búsqueda está entre los del conductor (F1); Alguna clase de licencia revisada habilita el negocio (F2); Misma región (F3); Al menos uno en común (M1, M3); Misma zona (M2); Años iguales o mayores al mínimo (M4, forma pendiente); Si se exige, debe tenerlo (M6); Días: todos los de la búsqueda, o al menos uno en común (M7, pendiente). F1, F2, F3, M2 y M4 usan datos fijos (clases revisadas, región y zona de la comuna, experiencia por tamaño). Una forma nueva requiere programar. Nueva: Proporcional (cuenta la fracción de valores en común, ej. días en común ÷ días pedidos), para M7.",
      "quien_ve": "Solo el equipo",
      "codigo": "",
      "estado": "propuesta",
@@ -3196,7 +3208,7 @@
      "tipo": "si_no",
      "referencia": "",
      "obligatorio": true,
-     "descripcion": "Lo activa o desactiva un administrador desde el panel (decidido el 2-nov). Si una industria se apaga, se ocultan de una vez todos sus negocios en la app y salen del match (por ejemplo, lanzar solo con pasajeros). Un negocio se muestra solo si él y su industria están activos. Apagar no borra nada de lo que ya marcaron conductores y titulares.",
+     "descripcion": "Lo activa o desactiva un administrador desde el panel (decidido el 2-nov). Si una industria se apaga, se ocultan de una vez todos sus negocios en la app y salen del match (por ejemplo, lanzar solo con pasajeros). Un negocio se muestra solo si él y su industria están activos. Apagar no borra nada de lo que ya marcaron conductores y titulares. En el lanzamiento: Transporte de pasajeros activa (solo con Taxi y Taxi ejecutivo) y Transporte de carga apagada.",
      "quien_ve": "Solo el equipo",
      "codigo": "",
      "estado": "decidido",
@@ -3266,10 +3278,22 @@
      "tipo": "lista_multiple",
      "referencia": "clases_licencia",
      "obligatorio": true,
-     "descripcion": "Clases que habilitan el negocio (filtro F2). Propuesta en docs/propuesta-catalogos.md: Taxi, Radiotaxi y Taxi colectivo: A1, A2, A3 y A1 antigua; Transporte por aplicación: grupo B hoy; Bus interurbano: A3; Moto delivery: C. En turismo, reparto y carga depende del peso o de los pasajeros del vehículo (MD40). La A2 no cuenta para buses porque no se puede comprobar su antigüedad ni el número de asientos. Por confirmar (MD3); se corrige en el panel. Nuevos: Taxi colectivo como Taxi; Reparto en furgón: grupo B (A4 si pesa más de 3.500 kg); Grúa de autos: según su peso, como los camiones.",
+     "descripcion": "Clases que habilitan el negocio (filtro F2). Propuesta en docs/propuesta-catalogos.md: Taxi, Radiotaxi y Taxi colectivo: A1, A2, A3 y A1 antigua; Transporte por aplicación: grupo B hoy; Bus interurbano: A3; Moto delivery: C. En turismo, reparto y carga depende del peso o de los pasajeros del vehículo (ver \"Pregunta sobre el vehículo\"). La A2 no cuenta para buses porque no se puede comprobar su antigüedad ni el número de asientos. Por confirmar (MD3); se corrige en el panel. Nuevos: Taxi colectivo como Taxi; Reparto en furgón: grupo B (A4 si pesa más de 3.500 kg); Grúa de autos: según su peso, como los camiones.",
      "quien_ve": "Todos (como 'Licencia exigida')",
      "codigo": "T9, F2",
      "estado": "propuesta",
+     "configurable": true
+    },
+    {
+     "id": "pregunta_vehiculo",
+     "nombre": "Pregunta sobre el vehículo",
+     "tipo": "json",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Solo en los negocios donde la licencia depende del vehículo (decidido el 2-nov). Carga: '¿Pesa más de 3.500 kg?' y '¿Es tracto con rampla?'. Pasajeros: '¿Cuántos pasajeros?' (hasta 9, 10 a 17, 18 a 32, más de 32). Guarda la pregunta, sus respuestas y la licencia que corresponde a cada una. Vacío = el negocio no la necesita (ej. Taxi).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "F2",
+     "estado": "decidido",
      "configurable": true
     },
     {
@@ -3290,10 +3314,10 @@
      "tipo": "lista_multiple",
      "referencia": "tamanos_vehiculo",
      "obligatorio": false,
-     "descripcion": "Qué categorías de experiencia cuentan para este negocio en la variable años (M4). Propuesta: Taxi, Taxi ejecutivo y Transporte por aplicación → Vehículo liviano; Taxi colectivo → Vehículo liviano, Van o minibús; Van o bus de turismo → Van o minibús, Bus; Bus interurbano → Bus; Camión de carga interurbano → Camión, Camión articulado; Camión de carga urbano → Camión; Reparto en furgón → Van o minibús, Vehículo liviano; Grúa de autos → Camión; Moto delivery → Moto. Pendiente de la dueña (MD1).",
+     "descripcion": "Qué categorías de experiencia cuentan para este negocio en la variable años (M4). Propuesta: Taxi, Taxi ejecutivo y Transporte por aplicación → Vehículo liviano; Taxi colectivo → Vehículo liviano, Van o minibús; Van o bus de turismo → Van o minibús, Bus; Bus interurbano → Bus; Camión de carga interurbano → Camión, Camión articulado; Camión de carga urbano → Camión; Reparto en furgón → Van o minibús, Vehículo liviano; Grúa de autos → Camión; Moto delivery → Moto. Para M4 se usa la categoría relacionada con más años (decidido el 2-nov).",
      "quien_ve": "Solo el equipo",
      "codigo": "M4",
-     "estado": "pendiente",
+     "estado": "decidido",
      "configurable": true
     },
     {
@@ -3326,7 +3350,7 @@
      "tipo": "si_no",
      "referencia": "",
      "obligatorio": true,
-     "descripcion": "Lo activa o desactiva un administrador desde el panel (decidido el 2-nov). En el lanzamiento solo estarán activos algunos negocios. Solo los activos (y con su industria activa) aparecen en el Paso 4 '¿Qué trabajo buscas?' y en 'Nueva búsqueda' del titular, y solo ellos entran al match. Desactivar no borra nada: lo que conductores y titulares ya marcaron se conserva y vuelve a contar si se reactiva.",
+     "descripcion": "Lo activa o desactiva un administrador desde el panel (decidido el 2-nov). En el lanzamiento solo estarán activos algunos negocios. Solo los activos (y con su industria activa) aparecen en el Paso 4 '¿Qué trabajo buscas?' y en 'Nueva búsqueda' del titular, y solo ellos entran al match. Desactivar no borra nada: lo que conductores y titulares ya marcaron se conserva y vuelve a contar si se reactiva. En el lanzamiento solo están activos Taxi y Taxi ejecutivo (decidido el 2-nov).",
      "quien_ve": "Solo el equipo",
      "codigo": "",
      "estado": "decidido",
@@ -3454,7 +3478,7 @@
    "id": "zonas",
    "nombre": "Zona",
    "grupo": "configuracion",
-   "descripcion": "Grupos de comunas cercanas dentro de una región (ej. en la RM: Oriente, Poniente, Sur, Norte). Carga inicial: las 81 zonas de la propuesta (en revisión).",
+   "descripcion": "Grupos de comunas cercanas dentro de una región (ej. en la RM: Oriente, Poniente, Sur, Norte). Carga inicial: las 81 zonas de la propuesta (en revisión). Datos iniciales: la propuesta de docs/propuesta-zonas.md (81 zonas, 346 comunas), aprobada el 2-nov. Se edita desde el panel.",
    "para_que": "Match: la variable zona (M2) compara zonas, no comunas exactas (decidido).",
    "estado": "decidido",
    "campos": [
@@ -3491,7 +3515,7 @@
      "descripcion": "Ej.: Zona Oriente, Gran Concepción. Se muestra junto a la comuna ('[Comuna] · Zona [Zona]').",
      "quien_ve": "Todos",
      "codigo": "M2, P6",
-     "estado": "propuesta",
+     "estado": "decidido",
      "configurable": true
     },
     {
@@ -4466,7 +4490,7 @@
   {
    "id": "R4",
    "nombre": "Filtros obligatorios (fuera del %)",
-   "descripcion": "Cada regla con uso 'Filtro obligatorio' debe cumplirse sí o sí. Hoy: F1 el negocio de la búsqueda está entre los que marcó el conductor; F2 alguna clase de licencia REVISADA del conductor está entre las que habilitan ese negocio; F3 la comuna del conductor y la de retiro están en la misma región; M1 al menos un modo de contrato en común; M3 al menos un turno en común (Día o Noche). Días de trabajo (M7): cómo se comparan y si es filtro o variable está pendiente (MD30). Que F1 y F2 se apliquen por negocio es propuesta (MD2). La garantía no es filtro. Mientras el modelo de contrato esté en espera, M1 queda desactivado (propuesta, MD39).",
+   "descripcion": "Cada regla con uso 'Filtro obligatorio' debe cumplirse sí o sí. Hoy: F1 el negocio de la búsqueda está entre los que marcó el conductor; F2 alguna clase de licencia REVISADA del conductor habilita ese negocio (en los negocios donde la licencia depende del vehículo, según la respuesta de la búsqueda sobre peso o pasajeros); F3 la comuna del conductor y la de retiro están en la misma región; M3 al menos un turno en común (Día o Noche). El modo de contrato (M1) no se usa: quedó como crecimiento futuro (2-nov). La garantía no es filtro.",
    "entidades": [
     "reglas_match",
     "conductores",
@@ -4480,7 +4504,7 @@
   {
    "id": "R5",
    "nombre": "Porcentaje y umbral",
-   "descripcion": "Con las reglas 'Variable del %' (hoy M2 zona, M4 años y M6 estacionamiento, peso 1): hay match si (peso de lo que coincide) × 100 ≥ umbral × (peso total), comparando fracciones exactas; con umbral 66 y 3 variables se acepta que falle 1 (2 de 3). Zona: la comuna de retiro está en la misma zona que la comuna del conductor. Años: forma pendiente (MD1); propuesta: los años del conductor en los tamaños relacionados con el negocio de la búsqueda alcanzan el mínimo. Estacionamiento: si se exige, debe tenerlo. Lo que el titular no exige cuenta como coincidencia. Se guarda 'N de M' y en qué no coinciden. '≥' o '>' está pendiente (MD28).",
+   "descripcion": "Con las reglas 'Variable del %' (hoy M2 zona, M4 años, M6 estacionamiento y M7 días, peso 1): hay match si (peso de lo que coincide) × 100 ≥ umbral × (peso total), comparando fracciones exactas. M7 suma en proporción a los días en común (ej. 3 de 5 días pedidos = 0,6). Zona: la comuna de retiro está en la misma zona que la del conductor. Años: la categoría relacionada con el negocio que tenga más años alcanza el mínimo. Estacionamiento: si se exige, debe tenerlo. Lo que el titular no exige cuenta como coincidencia. Se guarda 'N de M' y en qué no coinciden. Con 4 variables, revisar si el umbral 66 sigue sirviendo. '≥' o '>' está pendiente (MD28).",
    "entidades": [
     "reglas_match",
     "ajustes",
@@ -4700,7 +4724,7 @@
   {
    "id": "R21",
    "nombre": "Licencia y negocio en el match",
-   "descripcion": "El Paso 4 muestra todos los negocios activos del catálogo (decidido). La tabla negocio → clases se usa en el filtro F2 con las clases revisadas: un negocio marcado que ninguna clase revisada habilita no pasa el filtro. Si cambia esa tabla, se recalcula. Qué ve el conductor si marca un negocio que sus clases declaradas no habilitan: MD31.",
+   "descripcion": "El Paso 4 muestra todos los negocios activos del catálogo (decidido). La tabla negocio → clases se usa en el filtro F2 con las clases revisadas: un negocio marcado que ninguna clase revisada habilita no pasa el filtro. Si cambia esa tabla, se recalcula. En el Paso 4, los negocios que sus clases declaradas no habilitan aparecen en gris con \"Pide licencia X\" (decidido el 2-nov).",
    "entidades": [
     "negocios",
     "clases_licencia",
@@ -4826,28 +4850,6 @@
   }
  ],
  "pendientes": [
-  {
-   "id": "MD1",
-   "pregunta": "M4 (años): con la experiencia por tamaño, ¿cómo se compara con el mínimo de la búsqueda? ¿Y qué años ve el titular en la ficha (hoy la maqueta 'Ficha' muestra un solo número, '[N] años')?",
-   "opciones": "a) Propuesta: el panel define qué tamaños se relacionan con cada negocio y se toman los años del conductor en el tamaño relacionado con más años. b) Se suman los años de todos los tamaños relacionados. c) El titular elige el tamaño en la búsqueda. d) M4 sale del % hasta definirlo. Ficha: mostrar la lista 'tamaño · años' o solo los años del tamaño relacionado.",
-   "entidades": [
-    "experiencia_conductor",
-    "negocios",
-    "tamanos_vehiculo",
-    "busquedas",
-    "reglas_match"
-   ]
-  },
-  {
-   "id": "MD2",
-   "pregunta": "¿Cada búsqueda elige un negocio (en vez de 'tipo de vehículo')?",
-   "opciones": "a) Sí: F1 = el negocio de la búsqueda está entre los del conductor y F2 = el conductor tiene una licencia revisada que habilita ese negocio (propuesta). b) La búsqueda elige negocio y además tamaño de vehículo. Las maquetas del titular ('Nueva búsqueda', 'Resultados', 'Ficha', 'Inicio titular') y el 'Detalle del match' del conductor todavía dicen 'Tipo de vehículo' y muestran los turnos antiguos.",
-   "entidades": [
-    "busquedas",
-    "negocios",
-    "reglas_match"
-   ]
-  },
   {
    "id": "MD3",
    "pregunta": "¿Qué clases de licencia habilitan cada negocio?",
@@ -5111,27 +5113,6 @@
    ]
   },
   {
-   "id": "MD30",
-   "pregunta": "Días de trabajo y turnos: ¿cómo se comparan entre conductor y búsqueda?",
-   "opciones": "Días: a) todos los días de la búsqueda deben estar entre los del conductor; b) basta al menos uno en común. ¿Es filtro obligatorio como el turno, o entra al %? ¿Se agrega 'Festivos' a la lista? La maqueta 'Nueva búsqueda' tiene opciones antiguas ('Vehículo a cargo 24 h', 'Fines de semana'): ¿'Vehículo a cargo' pasa a ser un dato aparte o se elimina? Mientras tanto, la regla 'Días de trabajo' (M7) queda apagada (propuesta).",
-   "entidades": [
-    "conductores",
-    "busquedas",
-    "opciones",
-    "reglas_match"
-   ]
-  },
-  {
-   "id": "MD31",
-   "pregunta": "Paso 4: si el conductor marca un negocio que sus clases declaradas no habilitan, ¿qué pasa?",
-   "opciones": "a) Se deja marcar sin aviso (no hará match por el filtro de licencia). b) Aparece en gris y no se puede marcar. c) Se deja marcar con un aviso 'tu licencia no habilita este negocio' (propuesta).",
-   "entidades": [
-    "conductores",
-    "negocios",
-    "clases_licencia"
-   ]
-  },
-  {
    "id": "MD32",
    "pregunta": "Autorizaciones nuevas (dueña y abogado)",
    "opciones": "a) Agregar (propuesta): 'Recibir recordatorios por WhatsApp' y 'por correo', opcionales y con baja [verificar política de WhatsApp Business]; compromiso del titular de usar los datos de conductores solo para contratar; normas de mensajes ampliadas (filtro automático y lectura de conversaciones reportadas), que acepten conductor y titular; y una pantalla 'Mis autorizaciones' en Seguridad y privacidad para verlas y retirarlas. b) Solo las que el abogado considere obligatorias.",
@@ -5207,26 +5188,6 @@
    ]
   },
   {
-   "id": "MD39",
-   "pregunta": "Modelo de contrato en espera: ¿se pide más adelante (por ejemplo, al hacer match) o no se pide? Mientras tanto, ¿el match deja de filtrar por modo de contrato (M1)?",
-   "opciones": "a) El match no filtra por M1 mientras esté en espera (propuesta). b) Se sigue filtrando con lo que pida el titular y el conductor acepta todos los modos por defecto.",
-   "entidades": [
-    "conductores",
-    "busquedas",
-    "reglas_match"
-   ]
-  },
-  {
-   "id": "MD40",
-   "pregunta": "En turismo, reparto y carga, la licencia depende del vehículo. ¿La búsqueda del titular hace una pregunta más solo en esos negocios?",
-   "opciones": "a) Sí (propuesta): en carga, '¿Pesa más de 3.500 kg?' y '¿Es tracto con rampla?'; en pasajeros, '¿Cuántos pasajeros?' (hasta 9, 10 a 17, 18 a 32, más de 32). La licencia exigida sale del negocio más esa respuesta. b) No: solo el negocio, con la licencia del vehículo más grande (deja fuera a algunos conductores).",
-   "entidades": [
-    "busquedas",
-    "negocios",
-    "reglas_match"
-   ]
-  },
-  {
    "id": "MD42",
    "pregunta": "Con el umbral de 66 % y 3 variables, si solo falla M4 (años) queda 2 de 3 (66,7 %) y el match se da igual: los años solos nunca excluyen. ¿Está bien así?",
    "opciones": "a) Sí, los años son negociables (como se decidió en P3/P4). b) Subir el umbral o darle más peso a M4. c) Convertir los años en filtro solo en algunos negocios.",
@@ -5243,17 +5204,89 @@
     "tamanos_vehiculo",
     "negocios"
    ]
-  },
-  {
-   "id": "MD44",
-   "pregunta": "¿Qué negocios quedan activos en el lanzamiento?",
-   "opciones": "Elegir entre los 11 del catálogo: Taxi, Taxi colectivo, Taxi ejecutivo, Transporte por aplicación, Van o bus de turismo, Bus interurbano, Camión de carga interurbano, Camión de carga urbano, Reparto en furgón, Grúa de autos y Moto delivery. Los demás quedan cargados pero desactivados.",
-   "entidades": [
-    "negocios"
-   ]
   }
  ],
  "cambios": [
+  {
+   "n": 36,
+   "fecha": "2026-11-02",
+   "cambio": "Las zonas quedan aprobadas: se cargan como datos iniciales las 81 zonas y 346 comunas de docs/propuesta-zonas.md. Se editan desde el panel.",
+   "porque": "La dueña aprobó la propuesta de zonas tal cual.",
+   "origen": "Decisión",
+   "entidades": [
+    "zonas",
+    "comunas"
+   ]
+  },
+  {
+   "n": 35,
+   "fecha": "2026-11-02",
+   "cambio": "En el lanzamiento solo quedan activos Taxi y Taxi ejecutivo. La industria Transporte de carga parte apagada. Los demás negocios quedan cargados y se activan desde el panel.",
+   "porque": "La dueña eligió lanzar solo con esos dos negocios de pasajeros.",
+   "origen": "Decisión",
+   "entidades": [
+    "negocios",
+    "industrias"
+   ]
+  },
+  {
+   "n": 34,
+   "fecha": "2026-11-02",
+   "cambio": "Los negocios suman una pregunta sobre el vehículo (peso o pasajeros) y la búsqueda guarda su respuesta; con ella se calcula la licencia exigida (F2). Solo en los negocios donde la licencia depende del vehículo.",
+   "porque": "La dueña aprobó que la búsqueda haga una pregunta más solo donde cambia la licencia.",
+   "origen": "Decisión",
+   "entidades": [
+    "negocios",
+    "busquedas"
+   ]
+  },
+  {
+   "n": 33,
+   "fecha": "2026-11-02",
+   "cambio": "El modo de contrato se desliga del MVP: queda como crecimiento futuro. No se pide al conductor ni en la búsqueda, y el filtro M1 se apaga. Las columnas se conservan marcadas \"en espera\".",
+   "porque": "La dueña pidió desligar el modo de contrato y dejarlo como posible crecimiento, sin aplicarlo.",
+   "origen": "Decisión",
+   "entidades": [
+    "conductores",
+    "busquedas",
+    "reglas_match"
+   ]
+  },
+  {
+   "n": 32,
+   "fecha": "2026-11-02",
+   "cambio": "En el Paso 4, los negocios que las clases de licencia del conductor no permiten se muestran en gris con \"Pide licencia X\" y no se pueden marcar. No cambian las tablas: sale de la tabla negocio → licencias.",
+   "porque": "Decisión de la dueña sobre qué pasa si el conductor marca un negocio que su licencia no permite.",
+   "origen": "Decisión",
+   "entidades": [
+    "conductores",
+    "negocios"
+   ]
+  },
+  {
+   "n": 31,
+   "fecha": "2026-11-02",
+   "cambio": "Los días de trabajo pasan a ser una variable del % proporcional (M7): mientras más días coincidan, mejor match (días en común ÷ días que pide la búsqueda). Las reglas del match suman la forma de comparar \"proporcional\". El turno (Día o Noche) sigue como filtro.",
+   "porque": "La dueña pidió que \"mientras más días coincidan, mejor match\".",
+   "origen": "Decisión",
+   "entidades": [
+    "conductores",
+    "busquedas",
+    "reglas_match"
+   ]
+  },
+  {
+   "n": 30,
+   "fecha": "2026-11-02",
+   "cambio": "Años (M4): se miran las categorías de experiencia que sirven para el negocio de la búsqueda y se usa la que tenga más años. Coincide si alcanza el mínimo del titular.",
+   "porque": "Decisión de la dueña (opción recomendada).",
+   "origen": "Decisión",
+   "entidades": [
+    "busquedas",
+    "negocios",
+    "experiencia_conductor"
+   ]
+  },
   {
    "n": 29,
    "fecha": "2026-11-02",

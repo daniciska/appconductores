@@ -1,5 +1,7 @@
 # Propuesta de zonas (grupos de comunas) para el match
 
+**Aprobada por la dueña el 2-nov-2026:** se carga tal cual como datos iniciales y se ajusta desde el panel.
+
 > **Estado: PROPUESTA para revisión de la dueña.** Carga inicial; todo será editable desde el panel de administración.
 
 **Qué es una zona.** Un grupo de comunas cercanas dentro de una misma región. En el match (variable M2), la zona del conductor (su comuna y sus comunas extra) se compara con la zona donde se retira el vehículo. La región ya es un filtro aparte (F3), así que las zonas nunca cruzan regiones.
