@@ -3678,7 +3678,7 @@
      "tipo": "texto",
      "referencia": "",
      "obligatorio": true,
-     "descripcion": "Conductor: Paso 1 Tus datos; Paso 2 Dónde vives; Paso 3 Tu experiencia; Paso 4 ¿Cómo quieres trabajar? (negocios, turno, días). Modelo de contrato: en espera. Los documentos del Paso 5 salen de 'Tipo de documento'.",
+     "descripcion": "Conductor: Paso 1 Tus datos; Paso 2 Dónde vives; Paso 3 Tu experiencia; Paso 4 ¿Qué trabajo buscas? (negocios, turno, días). Modelo de contrato: en espera. Los documentos del Paso 5 salen de 'Tipo de documento'.",
      "quien_ve": "Solo el equipo",
      "codigo": "",
      "estado": "decidido",
@@ -4349,7 +4349,7 @@
   {
    "id": "R1",
    "nombre": "Registro mínimo y perfil completo",
-   "descripcion": "La cuenta nace al confirmar el código del celular; luego la persona acepta las autorizaciones ('Antes de empezar'). Con el Paso 1 (correo, nombres y apellidos, clases de licencia y 'Disponible para trabajar'; el celular ya está verificado) el conductor queda registrado y elige 'Guardar y continuar' o 'Guardar y terminar después'. Su perfil queda 'Incompleto' hasta tener listas las 5 secciones: tus datos y licencia (incluye 'Disponible para trabajar'), dónde vives, tu experiencia, cómo quieres trabajar y documentos (el modelo de contrato quedó en espera). El avance se muestra como 'N de 6 pasos listos · %'. Mientras tanto no entra al match. Qué exige cada sección está pendiente (MD36); qué campos se piden para registrarse o para completar el perfil se define en 'Campo de formulario' y lo valida la app (asterisco, alerta y campo en rojo).",
+   "descripcion": "La cuenta nace al confirmar el código del celular; luego la persona acepta las autorizaciones ('Antes de empezar'). Con el Paso 1 (correo, nombres y apellidos, clases de licencia y 'Disponible para trabajar'; el celular ya está verificado) el conductor queda registrado y elige 'Guardar y continuar' o 'Guardar y terminar después'. Su perfil queda 'Incompleto' hasta tener listas las 5 secciones: tus datos y licencia (incluye 'Disponible para trabajar'), dónde vives, tu experiencia, qué trabajo buscas y documentos (el modelo de contrato quedó en espera). El avance se muestra como 'N de 6 pasos listos · %'. Mientras tanto no entra al match. Qué exige cada sección está pendiente (MD36); qué campos se piden para registrarse o para completar el perfil se define en 'Campo de formulario' y lo valida la app (asterisco, alerta y campo en rojo).",
    "entidades": [
     "cuentas",
     "consentimientos",
