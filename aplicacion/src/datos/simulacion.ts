@@ -160,9 +160,38 @@ export function procesarPendientes(ahora = Date.now()): number {
 
 let reloj: ReturnType<typeof setInterval> | null = null;
 
+// Con la demo abierta en varias pestañas, solo una ejecuta las tareas (la que las tome primero y
+// esté a la vista); las demás reciben el resultado por el evento "storage" (ver tienda.ts).
+const CLAVE_LIDER = 'dale-demo-lider';
+const ID_PESTANA = Math.random().toString(36).slice(2);
+
+function soyLaPestanaQueSimula(ahora: number): boolean {
+  if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') return true;
+  try {
+    const crudo = window.localStorage.getItem(CLAVE_LIDER);
+    const lider = crudo ? (JSON.parse(crudo) as { id: string; hasta: number }) : null;
+    const mia = lider?.id === ID_PESTANA;
+    const vigente = !!lider && lider.hasta >= ahora;
+    if (vigente && !mia) return false;
+    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+      // Una pestaña oculta termina su turno sin renovarlo y espera un poco antes de tomar otro,
+      // para que lo tome una pestaña a la vista si la hay.
+      if (mia && vigente) return true;
+      if (lider && ahora - lider.hasta < 1500) return false;
+    }
+    window.localStorage.setItem(CLAVE_LIDER, JSON.stringify({ id: ID_PESTANA, hasta: ahora + 2500 }));
+    return true;
+  } catch {
+    return true;
+  }
+}
+
 /** Enciende el reloj de la simulación (idempotente). Devuelve una función para apagarlo. */
 export function iniciarSimulacion(intervaloMs = 500): () => void {
-  if (!reloj) reloj = setInterval(() => procesarPendientes(), intervaloMs);
+  if (!reloj)
+    reloj = setInterval(() => {
+      if (soyLaPestanaQueSimula(Date.now())) procesarPendientes();
+    }, intervaloMs);
   return () => {
     if (reloj) clearInterval(reloj);
     reloj = null;

@@ -136,11 +136,13 @@ export function celularCompleto(celular: string): string {
 /** Iniciales para avatares: "Transportes Los Aromos SpA" → "TL"; "Daniel" → "D". */
 export function iniciales(nombre: string): string {
   const partes = nombre
+    .replace(/\([^)]*\)/g, '') // "Tú (demo)" → "Tú"
     .replace(/\b(SpA|Ltda\.?|S\.A\.)\b/gi, '')
     .trim()
     .split(/\s+/)
-    .filter(Boolean);
+    .filter((p) => /^\p{L}/u.test(p));
   if (partes.length === 0) return '?';
+  if (partes.length === 1 && partes[0].toLowerCase() === 'tú') return 'TÚ';
   if (partes.length === 1) return partes[0].charAt(0).toUpperCase();
   return (partes[0].charAt(0) + partes[1].charAt(0)).toUpperCase();
 }

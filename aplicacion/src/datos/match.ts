@@ -119,6 +119,8 @@ export interface ResultadoMatch {
   noCoinciden: CodigoRegla[];
   /** Textos para mostrar: "otra zona", "sin estacionamiento"… */
   textosNoCoinciden: string[];
+  /** Textos de los filtros obligatorios que no se cumplen: "otra región", "otro turno"… */
+  textosFiltrosFallidos: string[];
   detalle: DetalleRegla[];
 }
 
@@ -245,6 +247,7 @@ export function evaluarReglas(e: EntradaMatch): Omit<ResultadoMatch, 'precondici
   const filtrosFallidos: CodigoRegla[] = [];
   const noCoinciden: CodigoRegla[] = [];
   const textosNoCoinciden: string[] = [];
+  const textosFiltrosFallidos: string[] = [];
   let puntaje = 0;
   let pesoTotal = 0;
   let coinciden = 0;
@@ -255,7 +258,10 @@ export function evaluarReglas(e: EntradaMatch): Omit<ResultadoMatch, 'precondici
     let cumple = true;
     if (r.uso === 'filtro') {
       cumple = valor > 0;
-      if (!cumple) filtrosFallidos.push(r.codigo);
+      if (!cumple) {
+        filtrosFallidos.push(r.codigo);
+        textosFiltrosFallidos.push(r.textoNoCoincide);
+      }
     } else if (r.uso === 'variable') {
       const peso = Math.max(0, r.peso);
       puntaje += peso * valor;
@@ -291,6 +297,7 @@ export function evaluarReglas(e: EntradaMatch): Omit<ResultadoMatch, 'precondici
     evaluadas,
     noCoinciden,
     textosNoCoinciden,
+    textosFiltrosFallidos,
     detalle,
     pasaFiltrosYUmbral: filtrosFallidos.length === 0 && llegaAlUmbral,
   };

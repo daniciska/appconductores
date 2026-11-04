@@ -12,6 +12,7 @@ import type {
   ReglaMatch,
   TamanoVehiculo,
   TipoDocumento,
+  TipoDocumentoId,
 } from '../tipos.ts';
 
 // Que las clases A y las antiguas habiliten lo de la B: según ChileAtiende y CONASET [verificar].
@@ -272,27 +273,45 @@ export const TIPOS_DOCUMENTO: TipoDocumento[] = [
   },
 ];
 
+const TODOS_LOS_DOCUMENTOS: TipoDocumentoId[] = ['cedula', 'licencia', 'hoja_vida', 'antecedentes'];
+
 export const MOTIVOS_RECHAZO: MotivoRechazo[] = [
-  { id: 'ilegible', nombre: 'Ilegible', queHacer: 'Sube una foto nueva, con buena luz y sin reflejos.' },
+  {
+    id: 'ilegible',
+    nombre: 'Ilegible',
+    aplicaA: TODOS_LOS_DOCUMENTOS,
+    queHacer: 'Sube una foto nueva, con buena luz y sin reflejos.',
+    queHacerPdf: 'Descárgalo de nuevo desde el Registro Civil y súbelo tal como lo descargaste.',
+  },
   {
     id: 'no_coincide',
     nombre: 'El nombre o el RUN no coinciden',
+    aplicaA: TODOS_LOS_DOCUMENTOS,
     queHacer: 'Revisa que el documento sea tuyo y que tus nombres estén escritos como en tu cédula.',
   },
   {
     id: 'vencido',
     nombre: 'Vencido o emitido fuera de plazo',
-    queHacer: 'Sube un documento vigente o un PDF sacado hace 30 días o menos.',
+    aplicaA: TODOS_LOS_DOCUMENTOS,
+    queHacer: 'Sube una foto de tu documento vigente.',
+    queHacerPdf: 'Sube un PDF sacado hace {dias} días o menos.',
   },
-  { id: 'otro_documento', nombre: 'No es el documento pedido', queHacer: 'Sube el documento que se pide en este paso.' },
+  {
+    id: 'otro_documento',
+    nombre: 'No es el documento pedido',
+    aplicaA: TODOS_LOS_DOCUMENTOS,
+    queHacer: 'Sube el documento que se pide en este paso.',
+  },
   {
     id: 'folio',
     nombre: 'Folio no verificable',
+    aplicaA: ['hoja_vida', 'antecedentes'],
     queHacer: 'Descarga el PDF de nuevo desde el Registro Civil y súbelo tal como lo descargaste.',
   },
   {
     id: 'run_duplicado',
     nombre: 'RUN ya registrado en otra cuenta',
+    aplicaA: TODOS_LOS_DOCUMENTOS,
     queHacer: 'Escríbenos desde el Centro de ayuda para revisar tu caso.',
   },
 ];

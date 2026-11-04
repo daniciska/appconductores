@@ -103,9 +103,11 @@ export default function SelectorDemo() {
     : `${nombreCompleto(cuenta) || 'Tu conductor'} · ${
         conductor.estadoVerificacion === 'verificado'
           ? 'verificado'
-          : conductor.estadoPerfil === 'incompleto'
-            ? 'perfil incompleto'
-            : 'documentos en revisión'
+          : conductor.estadoVerificacion === 'con_observaciones'
+            ? 'documento no aprobado'
+            : conductor.estadoPerfil === 'incompleto'
+              ? 'perfil incompleto'
+              : 'documentos en revisión'
       }`;
 
   return (

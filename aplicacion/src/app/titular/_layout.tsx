@@ -11,7 +11,7 @@ export default function LayoutTitular() {
     elegirRol('titular');
   }, [elegirRol]);
   return (
-    <MarcoCelular>
+    <MarcoCelular bandaDemo>
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: color.fondo } }} />
       <BotonDemo />
     </MarcoCelular>

@@ -116,8 +116,12 @@ export type MotivoRechazoId = 'ilegible' | 'no_coincide' | 'vencido' | 'otro_doc
 export interface MotivoRechazo {
   id: MotivoRechazoId;
   nombre: string;
-  /** Lo que ve la persona en "Qué puedes hacer". */
+  /** A qué documentos aplica (ej. el folio, solo a los PDF del Registro Civil). */
+  aplicaA: TipoDocumentoId[];
+  /** Lo que ve la persona en "Qué puedes hacer" (documento en foto). */
   queHacer: string;
+  /** Lo mismo cuando el documento es un PDF ({dias} = antigüedad máxima). Si falta, se usa queHacer. */
+  queHacerPdf?: string;
 }
 
 export interface DocumentoUsuario {

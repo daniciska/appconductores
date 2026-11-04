@@ -32,7 +32,7 @@ export default function LayoutPanel() {
     { clave: 'conductores', etiqueta: 'Conductores', icono: UserRound, href: '/admin/conductores' },
     { clave: 'reportes', etiqueta: 'Reportes', icono: Flag, href: '/admin/reportes', contador: reportes },
     { clave: 'match', etiqueta: 'Reglas del match', icono: SlidersHorizontal, href: '/admin/match' },
-    { clave: 'catalogos', etiqueta: 'Negocios', icono: ListChecks, href: '/admin/catalogos' },
+    { clave: 'catalogos', etiqueta: 'Catálogos', icono: ListChecks, href: '/admin/catalogos' },
     { clave: 'zonas', etiqueta: 'Zonas y comunas', icono: IconoMapa, href: '/admin/zonas' },
     { clave: 'ajustes', etiqueta: 'Ajustes', icono: Settings, href: '/admin/ajustes' },
     { clave: 'equipo', etiqueta: 'Equipo', icono: Users, href: '/admin/equipo' },

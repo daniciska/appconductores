@@ -12,6 +12,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { avisar } from './avisos';
+import { borrarTodosLosBorradores } from './borradores';
 import {
   CLAVE_ALMACENAMIENTO,
   VERSION_ESTADO,
@@ -152,7 +153,12 @@ export interface AccionesDemo {
   postular: (busquedaId: string) => Resultado;
 
   // --- Bolsa: titular de la demo (BT1–BT5) ---
-  cambiarPlanTitular: (plan: PlanTitular) => void;
+  /**
+   * Cambia el plan del titular de la demo y aplica sus límites: con un plan menor quita las destacadas
+   * (solo Flota), baja la visibilidad a la más alta que permite, saca de la bolsa las ofertas que
+   * sobran y pausa las búsquedas que pasan del límite (primero las más antiguas). Devuelve qué cambió.
+   */
+  cambiarPlanTitular: (plan: PlanTitular) => string[];
   publicarEnBolsa: (busquedaId: string, d: { visibilidad: VisibilidadBolsa; perfiles?: PerfilesBolsa | null }) => Resultado;
   quitarDeBolsa: (busquedaId: string) => void;
   destacarOferta: (busquedaId: string) => Resultado;
@@ -339,9 +345,13 @@ export const useDemo = create<EstadoDemo>()(
         // ------------------------------------------------------------------ General
         elegirRol: (rol) => set({ rol }),
 
-        reiniciarDemo: () => set({ ...crearEstadoInicial() }),
+        reiniciarDemo: () => {
+          borrarTodosLosBorradores();
+          set({ ...crearEstadoInicial() });
+        },
 
         prepararConductorVerificado: () => {
+          borrarTodosLosBorradores();
           const s = get();
           const ahora = Date.now();
           const hace = (min: number) => new Date(ahora - min * 60 * 1000).toISOString();
@@ -361,6 +371,9 @@ export const useDemo = create<EstadoDemo>()(
               revisadoEn: hace(60 * 24),
             };
           }
+          // Como en las maquetas E1 y E2: la Hoja de Vida vence en 20 días (dentro del aviso de 30),
+          // para ver "Vence pronto", "Renuévala antes del…" y "Subir nueva".
+          documentos.hoja_vida = { ...documentos.hoja_vida, venceEn: new Date(ahora + 20 * 24 * 60 * 60 * 1000).toISOString() };
           const base = conductorInicial();
           const conductor = {
             ...base,
@@ -609,7 +622,8 @@ export const useDemo = create<EstadoDemo>()(
         confirmarDisponibilidad: () =>
           set((s) => ({ conductor: { ...s.conductor, disponible: true, disponibilidadConfirmadaEn: ahoraISO() } })),
 
-        eliminarCuenta: () =>
+        eliminarCuenta: () => {
+          borrarTodosLosBorradores();
           set((s) => ({
             rol: null,
             cuenta: cuentaInicial(),
@@ -626,7 +640,8 @@ export const useDemo = create<EstadoDemo>()(
             fichasAbiertas: [],
             postulaciones: s.postulaciones.filter((p) => p.conductorId !== ID_USUARIO),
             pendientes: [],
-          })),
+          }));
+        },
 
         // ------------------------------------------------------------------ Matches y mensajes
         alternarFavorito: (busquedaId) =>
@@ -746,7 +761,70 @@ export const useDemo = create<EstadoDemo>()(
         },
 
         // ------------------------------------------------------------------ Bolsa: titular
-        cambiarPlanTitular: (plan) => set((s) => ({ titularDemo: { ...s.titularDemo, plan } })),
+        cambiarPlanTitular: (plan) => {
+          const s = get();
+          const titularId = s.titularDemo.titularId;
+          const nuevo = plan === 'sin_plan' ? null : (s.catalogos.planes.find((p) => p.id === plan) ?? null);
+          const cambios: string[] = [];
+          let busquedas = s.busquedas;
+          const delTitular = () => busquedas.filter((b) => b.titularId === titularId);
+          const cambiar = (ids: Set<string>, cambio: Partial<(typeof busquedas)[number]>) => {
+            busquedas = busquedas.map((b) => (ids.has(b.id) ? { ...b, ...cambio } : b));
+          };
+          const ahora = Date.now();
+
+          // 1. Destacar ofertas: solo en planes con destacadas (Flota).
+          if (!nuevo || nuevo.destacadasMes <= 0) {
+            const destacadas = new Set(
+              delTitular()
+                .filter((b) => b.destacadaHasta && new Date(b.destacadaHasta).getTime() > ahora)
+                .map((b) => b.id),
+            );
+            if (destacadas.size > 0) {
+              cambiar(destacadas, { destacadaHasta: null });
+              cambios.push(destacadas.size === 1 ? 'la oferta dejó de estar destacada' : `${destacadas.size} ofertas dejaron de estar destacadas`);
+            }
+          }
+
+          if (nuevo) {
+            // 2. Búsquedas activas: se pausan las más antiguas que pasan del límite.
+            const activas = delTitular()
+              .filter((b) => b.estado === 'activa')
+              .sort((a, b) => a.publicadaEl.localeCompare(b.publicadaEl));
+            const sobranActivas = activas.length - nuevo.busquedasActivas;
+            if (sobranActivas > 0) {
+              cambiar(new Set(activas.slice(0, sobranActivas).map((b) => b.id)), { estado: 'pausada' });
+              cambios.push(`${sobranActivas === 1 ? '1 búsqueda quedó' : `${sobranActivas} búsquedas quedaron`} en pausa`);
+            }
+
+            // 3. Ofertas en la bolsa: sobran primero las pausadas y después las más antiguas.
+            const enBolsa = delTitular()
+              .filter((b) => b.enBolsa)
+              .sort(
+                (a, b) =>
+                  Number(a.estado === 'activa') - Number(b.estado === 'activa') ||
+                  (a.publicadaBolsaEl ?? a.publicadaEl).localeCompare(b.publicadaBolsaEl ?? b.publicadaEl),
+              );
+            const sobranBolsa = enBolsa.length - nuevo.ofertasBolsa;
+            if (sobranBolsa > 0) {
+              cambiar(new Set(enBolsa.slice(0, sobranBolsa).map((b) => b.id)), { enBolsa: false, publicadaBolsaEl: null, destacadaHasta: null });
+              cambios.push(`${sobranBolsa === 1 ? '1 oferta salió' : `${sobranBolsa} ofertas salieron`} de la bolsa`);
+            }
+
+            // 4. Visibilidad de las que quedan en la bolsa: la más alta que permite el plan.
+            const ORDEN: VisibilidadBolsa[] = ['match', 'perfiles', 'todos'];
+            const maxima = [...ORDEN].reverse().find((v) => nuevo.visibilidades.includes(v)) ?? 'match';
+            const bajan = new Set(delTitular().filter((b) => b.enBolsa && !nuevo.visibilidades.includes(b.visibilidadBolsa)).map((b) => b.id));
+            if (bajan.size > 0) {
+              cambiar(bajan, { visibilidadBolsa: maxima });
+              const texto = maxima === 'match' ? 'solo match' : maxima === 'perfiles' ? 'conductores que elijas' : 'todos';
+              cambios.push(`${bajan.size === 1 ? '1 oferta' : `${bajan.size} ofertas`} ahora se ve${bajan.size === 1 ? '' : 'n'} con «${texto}»`);
+            }
+          }
+
+          set({ titularDemo: { ...s.titularDemo, plan }, busquedas });
+          return cambios;
+        },
 
         publicarEnBolsa: (busquedaId, { visibilidad, perfiles }) => {
           const s = get();
@@ -993,7 +1071,15 @@ export const useDemo = create<EstadoDemo>()(
 
         cambiarAjuste: (clave, valor) => {
           set((s) => ({ ajustes: { ...s.ajustes, [clave]: valor } }));
-          get().registrarAccionEquipo(`Cambió el ajuste ${String(clave)} a ${String(valor)}`);
+          const NOMBRE_AJUSTE: Record<keyof Ajustes, string> = {
+            bolsaActiva: 'Bolsa de trabajo',
+            validarObligatorios: 'Validar campos obligatorios',
+            diasReconfirmar: 'Días para reconfirmar disponibilidad',
+            diasAntiguedadPdf: 'Antigüedad máxima de los PDF',
+            segundosPrerevision: 'Segundos de la pre-revisión',
+          };
+          const texto = typeof valor === 'boolean' ? (valor ? 'encendido' : 'apagado') : String(valor);
+          get().registrarAccionEquipo(`Cambió «${NOMBRE_AJUSTE[clave] ?? String(clave)}» a ${texto}`);
         },
 
         restablecerAjustes: () => set({ ajustes: ajustesIniciales() }),
@@ -1077,4 +1163,12 @@ export function demoHidratada(): boolean {
 // (ej. window.__daleDemo.getState().prepararConductorVerificado()).
 if (typeof window !== 'undefined') {
   (window as unknown as { __daleDemo: typeof useDemo }).__daleDemo = useDemo;
+  // Varias pestañas con la demo (ej. el panel en una y la app en otra): cuando otra pestaña guarda,
+  // esta vuelve a leer lo guardado. Así todas muestran lo mismo y ninguna pisa los cambios de otra.
+  // (En la web, AsyncStorage usa localStorage, que avisa a las demás pestañas con el evento "storage".)
+  if (typeof window.addEventListener === 'function') {
+    window.addEventListener('storage', (e: StorageEvent) => {
+      if (e.key === CLAVE_ALMACENAMIENTO || e.key === null) void useDemo.persist.rehydrate();
+    });
+  }
 }

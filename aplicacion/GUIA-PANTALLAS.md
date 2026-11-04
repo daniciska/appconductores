@@ -67,6 +67,8 @@ Antes de empezar, lee en `/home/user/appconductores/CLAUDE.md` las **Decisiones 
 
 Otras rutas (ya hechas, no se tocan): `/conductor` (redirige a Inicio si ya se registró; si no, a A1), `/componentes` (muestrario del sistema de diseño), `+not-found`.
 
+**Editar desde Perfil:** E1 abre los pasos 1–4 con `?editar=1` (`useModoEdicion()` en `src/pantallas/ingreso/acciones.ts`). En ese modo no se muestra "Paso n de 5", el botón dice "Guardar cambios" y, al guardar, vuelve a Perfil. Desde Inicio, Matches o la Bolsa (completar el perfil) los pasos siguen en orden.
+
 **Layouts (ya hechos):**
 
 - `src/app/conductor/_layout.tsx`: columna de celular (`MarcoCelular`), pila de pantallas y botón "Demo" arriba a la derecha.

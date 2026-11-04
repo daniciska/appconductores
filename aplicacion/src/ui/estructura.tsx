@@ -1,5 +1,5 @@
 // Estructura de pantalla: columna de celular, Pantalla, Encabezado, BarraPasos, Tarjeta y listas.
-import { Children, Fragment, isValidElement, useEffect, useRef, type ComponentRef, type ReactNode, type Ref } from 'react';
+import { Children, Fragment, createContext, isValidElement, useContext, useEffect, useRef, type ComponentRef, type ReactNode, type Ref } from 'react';
 import {
   Animated,
   ScrollView,
@@ -22,7 +22,12 @@ import { ANCHO_CELULAR, alto, color, duracion, espacio, fuente, radio, sombra, t
 // MarcoCelular: en escritorio centra una columna de ~430 px (ya lo usan los layouts de conductor y titular)
 // ---------------------------------------------------------------------------
 
-export function MarcoCelular({ children }: { children: ReactNode }) {
+/** Alto de la franja de arriba donde va el botón "Demo" (el contenido con scroll pasa por debajo de ella, no bajo el botón). */
+export const ALTO_BANDA_DEMO = 44;
+/** Lo da MarcoCelular cuando la sección tiene el botón "Demo": Pantalla deja esa franja fija arriba. */
+export const ContextoBandaDemo = createContext(0);
+
+export function MarcoCelular({ children, bandaDemo = false }: { children: ReactNode; bandaDemo?: boolean }) {
   const { width } = useWindowDimensions();
   const ancho = width > ANCHO_CELULAR + 16;
   return (
@@ -32,7 +37,7 @@ export function MarcoCelular({ children }: { children: ReactNode }) {
           { flex: 1, width: '100%', maxWidth: ANCHO_CELULAR, backgroundColor: color.fondo, overflow: 'hidden' },
           ancho && sombra.columna,
         ]}>
-        {children}
+        <ContextoBandaDemo.Provider value={bandaDemo ? ALTO_BANDA_DEMO : 0}>{children}</ContextoBandaDemo.Provider>
       </View>
     </View>
   );
@@ -82,6 +87,7 @@ export function Pantalla({
   style,
 }: PropsPantalla) {
   const insets = useSafeAreaInsets();
+  const banda = useContext(ContextoBandaDemo);
   const entrada = useRef(new Animated.Value(animar ? 0 : 1)).current;
   useEffect(() => {
     if (animar) Animated.timing(entrada, { toValue: 1, duration: duracion.normal, useNativeDriver: false }).start();
@@ -91,7 +97,10 @@ export function Pantalla({
     opacity: entrada,
     transform: [{ translateY: entrada.interpolate({ inputRange: [0, 1], outputRange: [8, 0] }) }],
   };
-  const arriba = cabecera ? 0 : superior + insets.top;
+  // Franja fija arriba (con el fondo de la pantalla) para el botón "Demo": el contenido no pasa bajo él.
+  // En reposo todo queda donde mismo: la franja descuenta su alto del espacio superior.
+  const franja = scroll && !cabecera ? Math.min(banda, superior) : 0;
+  const arriba = cabecera ? 0 : superior + insets.top - (franja > 0 ? franja + insets.top : 0);
   const contenido = (
     <Animated.View style={[{ flexGrow: 1, gap: separacion }, animado]}>{children}</Animated.View>
   );
@@ -99,6 +108,7 @@ export function Pantalla({
   return (
     <View style={[{ flex: 1, width: '100%', maxWidth: ANCHO_CELULAR, alignSelf: 'center', backgroundColor: fondo }, style]}>
       {cabecera ? <View style={{ paddingTop: superior + insets.top, paddingHorizontal: lateral }}>{cabecera}</View> : null}
+      {franja > 0 ? <View aria-hidden style={{ height: franja + insets.top, backgroundColor: fondo }} /> : null}
       {scroll ? (
         <ScrollView
           ref={scrollRef}

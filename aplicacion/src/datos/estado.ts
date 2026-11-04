@@ -44,7 +44,7 @@ import type {
 } from './tipos';
 
 /** Sube este número si cambia la forma del estado: los navegadores con datos viejos parten de cero. */
-export const VERSION_ESTADO = 1;
+export const VERSION_ESTADO = 2;
 /** Clave en el almacenamiento del navegador (localStorage). */
 export const CLAVE_ALMACENAMIENTO = 'dale-demo-v1';
 

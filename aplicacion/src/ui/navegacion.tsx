@@ -83,8 +83,10 @@ export function BarraInferior({ pestanas, activa, onElegir }: PropsBarraInferior
  * Botón discreto "Demo" (arriba a la derecha) que vuelve al selector de la demo.
  * Va en los layouts de /conductor, /titular y /admin: saca esa sección de la pila raíz y vuelve a "/"
  * (si "/" no estaba en la pila, por ejemplo al abrir un enlace directo, lo agrega).
+ * Zona táctil de 44 px; en conductor y titular va sobre la franja fija de Pantalla (MarcoCelular bandaDemo).
+ * Con `enLinea` no flota (barra lateral del panel en escritorio).
  */
-export function BotonDemo({ style }: { style?: StyleProp<ViewStyle> }) {
+export function BotonDemo({ style, enLinea = false }: { style?: StyleProp<ViewStyle>; enLinea?: boolean }) {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const irAlMenu = () => {
@@ -94,26 +96,35 @@ export function BotonDemo({ style }: { style?: StyleProp<ViewStyle> }) {
       router.replace('/');
     }
   };
-  return (
-    <View pointerEvents="box-none" style={[{ position: 'absolute', top: insets.top + 12, right: 12, zIndex: 50 }, style]}>
-      <Presionable
-        role="button"
-        aria-label="Menú de la demo"
-        onPress={irAlMenu}
+  const boton = (
+    <Presionable
+      role="button"
+      aria-label="Menú de la demo"
+      onPress={irAlMenu}
+      style={{ minHeight: 44, minWidth: 44, paddingHorizontal: enLinea ? 0 : 6, justifyContent: 'center', alignItems: enLinea ? 'flex-start' : 'center' }}>
+      <View
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          gap: 4,
-          height: 26,
-          paddingHorizontal: 10,
-          borderRadius: 13,
-          backgroundColor: 'rgba(255,255,255,0.88)',
+          gap: enLinea ? 6 : 4,
+          height: enLinea ? 32 : 26,
+          paddingHorizontal: enLinea ? 12 : 10,
+          borderRadius: enLinea ? 16 : 13,
+          backgroundColor: enLinea ? color.superficie : 'rgba(255,255,255,0.88)',
           borderWidth: 1,
           borderColor: color.borde,
         }}>
-        <RotateCcw size={11} color={color.textoSecundario} strokeWidth={2.4} />
-        <Text style={[fuente(700), { fontSize: 11, color: color.textoSecundario, letterSpacing: 0.2 }]}>Demo</Text>
-      </Presionable>
+        <RotateCcw size={enLinea ? 13 : 11} color={color.textoSecundario} strokeWidth={2.4} />
+        <Text style={[fuente(700), { fontSize: enLinea ? 12 : 11, color: color.textoSecundario, letterSpacing: 0.2 }]}>
+          {enLinea ? 'Menú de la demo' : 'Demo'}
+        </Text>
+      </View>
+    </Presionable>
+  );
+  if (enLinea) return <View style={style}>{boton}</View>;
+  return (
+    <View pointerEvents="box-none" style={[{ position: 'absolute', top: insets.top, right: 6, zIndex: 50 }, style]}>
+      {boton}
     </View>
   );
 }

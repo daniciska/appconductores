@@ -10,4 +10,4 @@ export * from './panel';
 export { HostAvisos, mostrarToast } from './Toast';
 export * as Iconos from './iconos';
 export type { LucideIcon, LucideProps } from './iconos';
-export { AutoFrente, Llave, Volante } from './iconosPropios';
+export { AutoFrente, CerrarSesion, Hoja, Llave, Volante } from './iconosPropios';

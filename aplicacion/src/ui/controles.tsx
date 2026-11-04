@@ -645,13 +645,48 @@ export interface PropsInterruptor {
   onCambiar: (valor: boolean) => void;
   etiquetaAccesible: string;
   deshabilitado?: boolean;
+  /** Solo el dibujo (sin zona táctil propia): lo usa ZonaInterruptor, donde toda la fila se toca. */
+  soloVisual?: boolean;
 }
 
-export function Interruptor({ valor, onCambiar, etiquetaAccesible, deshabilitado }: PropsInterruptor) {
+function DibujoInterruptor({ valor, deshabilitado }: { valor: boolean; deshabilitado?: boolean }) {
   const pos = useRef(new Animated.Value(valor ? 1 : 0)).current;
   useEffect(() => {
     Animated.timing(pos, { toValue: valor ? 1 : 0, duration: duracion.rapida, useNativeDriver: false }).start();
   }, [valor, pos]);
+  return (
+    <Animated.View
+      style={{
+        width: 52,
+        height: 32,
+        borderRadius: 16,
+        opacity: deshabilitado ? 0.5 : 1,
+        backgroundColor: pos.interpolate({ inputRange: [0, 1], outputRange: [color.interruptorApagado, color.exito] }),
+      }}>
+      <Animated.View
+        style={{
+          position: 'absolute',
+          top: 3,
+          left: pos.interpolate({ inputRange: [0, 1], outputRange: [3, 23] }),
+          width: 26,
+          height: 26,
+          borderRadius: 13,
+          backgroundColor: color.blanco,
+        }}
+      />
+    </Animated.View>
+  );
+}
+
+/** Interruptor de 52 × 32 con zona táctil de 52 × 44 (sin cambiar el espacio que ocupa). */
+export function Interruptor({ valor, onCambiar, etiquetaAccesible, deshabilitado, soloVisual }: PropsInterruptor) {
+  if (soloVisual) {
+    return (
+      <View aria-hidden>
+        <DibujoInterruptor valor={valor} deshabilitado={deshabilitado} />
+      </View>
+    );
+  }
   return (
     <Pressable
       role="switch"
@@ -660,32 +695,48 @@ export function Interruptor({ valor, onCambiar, etiquetaAccesible, deshabilitado
       aria-disabled={deshabilitado}
       disabled={deshabilitado}
       onPress={() => onCambiar(!valor)}
-      hitSlop={6}>
-      <Animated.View
-        style={{
-          width: 52,
-          height: 32,
-          borderRadius: 16,
-          opacity: deshabilitado ? 0.5 : 1,
-          backgroundColor: pos.interpolate({ inputRange: [0, 1], outputRange: [color.interruptorApagado, color.exito] }),
-        }}>
-        <Animated.View
-          style={{
-            position: 'absolute',
-            top: 3,
-            left: pos.interpolate({ inputRange: [0, 1], outputRange: [3, 23] }),
-            width: 26,
-            height: 26,
-            borderRadius: 13,
-            backgroundColor: color.blanco,
-          }}
-        />
-      </Animated.View>
+      style={{ paddingVertical: 6, marginVertical: -6 }}>
+      <DibujoInterruptor valor={valor} deshabilitado={deshabilitado} />
     </Pressable>
   );
 }
 
-/** Tarjeta con título, ayuda e interruptor (ej. "Disponible para trabajar"). */
+/**
+ * Fila entera que prende y apaga: el texto también se puede tocar. El interruptor va al final.
+ * Ej.: <ZonaInterruptor valor={v} onCambiar={set} etiquetaAccesible="Disponible para trabajar" style={...}>{textos}</ZonaInterruptor>
+ */
+export function ZonaInterruptor({
+  valor,
+  onCambiar,
+  etiquetaAccesible,
+  deshabilitado,
+  style,
+  children,
+}: {
+  valor: boolean;
+  onCambiar: (v: boolean) => void;
+  etiquetaAccesible: string;
+  deshabilitado?: boolean;
+  style?: StyleProp<ViewStyle>;
+  children: ReactNode;
+}) {
+  return (
+    <Presionable
+      role="switch"
+      aria-checked={valor}
+      aria-label={etiquetaAccesible}
+      aria-disabled={deshabilitado}
+      disabled={deshabilitado}
+      efecto="ninguno"
+      onPress={() => onCambiar(!valor)}
+      style={[{ flexDirection: 'row', alignItems: 'center', minHeight: 44 }, style]}>
+      {children}
+      <Interruptor soloVisual valor={valor} onCambiar={onCambiar} etiquetaAccesible={etiquetaAccesible} deshabilitado={deshabilitado} />
+    </Presionable>
+  );
+}
+
+/** Tarjeta con título, ayuda e interruptor (ej. "Disponible para trabajar"). Toda la tarjeta se puede tocar. */
 export function FilaInterruptor({
   titulo,
   ayuda,
@@ -702,7 +753,11 @@ export function FilaInterruptor({
   style?: StyleProp<ViewStyle>;
 }) {
   return (
-    <View
+    <ZonaInterruptor
+      valor={valor}
+      onCambiar={onCambiar}
+      etiquetaAccesible={titulo}
+      deshabilitado={deshabilitado}
       style={[
         {
           backgroundColor: color.superficie,
@@ -712,8 +767,6 @@ export function FilaInterruptor({
           minHeight: 64,
           paddingHorizontal: 16,
           paddingVertical: 12,
-          flexDirection: 'row',
-          alignItems: 'center',
           gap: 12,
         },
         style,
@@ -722,8 +775,7 @@ export function FilaInterruptor({
         <Text style={[tipo.fuerte, { color: color.texto }]}>{titulo}</Text>
         {ayuda ? <Texto variante="ayuda">{ayuda}</Texto> : null}
       </View>
-      <Interruptor valor={valor} onCambiar={onCambiar} etiquetaAccesible={titulo} deshabilitado={deshabilitado} />
-    </View>
+    </ZonaInterruptor>
   );
 }
 
@@ -758,8 +810,9 @@ export function Stepper({ valor, onCambiar, min = 0, max = 50, deshabilitado, et
           height: 44,
           borderRadius: radio.boton44,
           borderWidth: 1,
-          borderColor: bloqueado ? color.borde : color.bordeCampo,
-          backgroundColor: bloqueado ? color.fondo : color.superficie,
+          // Como en las maquetas B3 y BT2: activo gris claro con borde #DDDDDD; bloqueado aún más claro.
+          borderColor: bloqueado ? color.separador : color.bordeCampo,
+          backgroundColor: bloqueado ? '#FAFAFA' : color.fondo,
           alignItems: 'center',
           justifyContent: 'center',
         }}>

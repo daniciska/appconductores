@@ -105,12 +105,10 @@ export function MarcoPanel({ elementos, activa, children }: PropsMarcoPanel) {
               Demo con datos de ejemplo
             </Texto>
             <Texto variante="pequeno">Los cambios quedan solo en este navegador.</Texto>
+            <BotonDemo enLinea style={{ marginTop: 4 }} />
           </View>
         </View>
-        <View style={{ flex: 1 }}>
-          {children}
-          <BotonDemo />
-        </View>
+        <View style={{ flex: 1 }}>{children}</View>
       </View>
     );
   }
@@ -134,10 +132,10 @@ export function MarcoPanel({ elementos, activa, children }: PropsMarcoPanel) {
           <Text style={[fuente(700), { fontSize: 15, color: color.texto }]}>{actual?.etiqueta ?? 'Panel'}</Text>
           <Text style={[fuente(500), { fontSize: 12, color: color.textoSecundario }]}>Panel de administración</Text>
         </View>
-        <View style={{ width: 70 }} />
+        <View style={{ width: 76 }} />
       </View>
       <View style={{ flex: 1 }}>{children}</View>
-      <BotonDemo style={{ top: insets.top + 19 }} />
+      <BotonDemo style={{ top: insets.top + 10 }} />
       <HojaInferior visible={menu} onCerrar={() => setMenu(false)} titulo="Panel de administración">
         <View style={{ gap: 4 }}>
           {elementos.map((e) => (
@@ -167,7 +165,7 @@ export function PaginaPanel({ titulo, descripcion, acciones, children, anchoMaxi
   return (
     <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: escritorio ? 32 : 16, paddingBottom: 48 }}>
       <View style={[{ width: '100%', maxWidth: anchoMaximo, alignSelf: 'center', gap: 20 }, style]}>
-        <View style={{ flexDirection: escritorio ? 'row' : 'column', alignItems: escritorio ? 'flex-end' : 'stretch', gap: 12, paddingRight: escritorio ? 80 : 0 }}>
+        <View style={{ flexDirection: escritorio ? 'row' : 'column', alignItems: escritorio ? 'flex-end' : 'stretch', gap: 12 }}>
           <View style={{ flex: escritorio ? 1 : undefined, gap: 6 }}>
             <Titulo>{titulo}</Titulo>
             {descripcion ? (

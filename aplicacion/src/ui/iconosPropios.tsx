@@ -59,3 +59,30 @@ export const AutoFrente = forwardRef<Svg, LucideProps>(function AutoFrente(
     </Svg>
   );
 }) as unknown as LucideIcon;
+
+/** Hoja con la esquina doblada, sin líneas (documentos en las maquetas B5, E1 y E2). */
+export const Hoja = forwardRef<Svg, LucideProps>(function Hoja(
+  { size = 24, color = '#111111', strokeWidth = 2, ...resto },
+  ref,
+) {
+  return (
+    <Svg ref={ref} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" {...resto}>
+      <Path d="M14 3H6v18h12V7z" />
+      <Path d="M14 3v4h4" />
+    </Svg>
+  );
+}) as unknown as LucideIcon;
+
+/** "Cerrar sesión" (maqueta E1): marco a la derecha y flecha hacia la izquierda. */
+export const CerrarSesion = forwardRef<Svg, LucideProps>(function CerrarSesion(
+  { size = 24, color = '#111111', strokeWidth = 2, ...resto },
+  ref,
+) {
+  return (
+    <Svg ref={ref} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" {...resto}>
+      <Path d="M15 4h4v16h-4" />
+      <Path d="M10 8l-4 4 4 4" />
+      <Path d="M6 12h10" />
+    </Svg>
+  );
+}) as unknown as LucideIcon;
