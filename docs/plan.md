@@ -17,7 +17,11 @@ Actualizado: 2-nov-2026. Se actualiza a medida que avanzamos.
 3. [ ] Prototipo del titular, con el mismo detalle (registro, verificación, búsquedas, resultados, planes y pago, mensajes, compartir contacto).
 4. [ ] Maquetas del panel de administración (revisión de documentos, configuración de campos, catálogos —con activar o desactivar cada negocio—, reglas de match y zonas, reportes, usuarios).
 5. [ ] Retomar lo que está en pausa: documentos, mensajes y zonas.
-7. [ ] **Mockup funcional** en mockup.dalecontacto.cl (4-nov): conductor completo, bolsa de trabajo y panel de administración, con datos de ejemplo, en Expo (`aplicacion/`), publicado en Netlify.
+7. [x] **Mockup funcional** (4-nov): conductor completo, bolsa de trabajo y panel de administración, con datos de ejemplo, en Expo (`aplicacion/`). **Publicado** en https://dale-contacto-mockup.netlify.app (proyecto Netlify `dale-contacto-mockup`).
+   - [ ] La dueña: registro DNS `mockup` (CNAME a `dale-contacto-mockup.netlify.app.`) en su hosting y agregar `mockup.dalecontacto.cl` en Netlify (Domain management).
+   - [ ] Decidir quién puede verlo: solo su cuenta de Netlify (como está hoy), con contraseña o abierto.
+   - [ ] Revisar las reglas que el mockup tuvo que inventar: qué pasa al bajar de plan, textos de rechazo de los PDF, si el equipo ve la dirección del conductor y el pie "Sugerencias de Google Maps".
+   - Para actualizarlo: `npx expo export -p web` en `aplicacion/` y subir `dist/` a ese proyecto.
 6. [ ] **Bolsa de trabajo** (pedida el 2-nov): maqueta del conductor y del titular, y modelo de datos. Después, decidir si sale en el lanzamiento y qué incluye cada plan (`docs/propuesta-bolsa-trabajo.md`).
 
 ## Para empezar a construir (revisado el 2-nov)
