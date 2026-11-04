@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Resultados de la búsqueda</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#111111}a:hover{color:#333333}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F6F6F6; color: #111111; font-family: 'Plus Jakarta Sans', sans-serif; display: flex; flex-direction: column; padding: 56px 20px 0 20px; gap: 14px">
+<div style="display: flex; align-items: center; gap: 12px">
+<a href="InicioTitular.dc.html" aria-label="Volver" style="width: 44px; height: 44px; border-radius: 12px; background: #FFFFFF; border: 1px solid #ECECEC; display: flex; align-items: center; justify-content: center; flex-shrink: 0">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"></path></svg>
+</a>
+<div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+<div style="font-family: 'Sora', sans-serif; font-size: 19px; font-weight: 700; letter-spacing: -0.2px">[Tipo de vehículo]</div>
+<div style="font-size: 13px; color: #6B6B6B">Retiro en [comuna] · Arriendo fijo · Día</div>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; background: #EAEAEA; border-radius: 14px; padding: 4px">
+<button type="button" style="font: inherit; font-size: 14px; font-weight: 700; min-height: 40px; border: 0; border-radius: 10px; background: #FFFFFF; color: #111111">Todos · [N]</button>
+<button type="button" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 40px; border: 0; border-radius: 10px; background: transparent; color: #6B6B6B">Favoritos · 2</button>
+</div>
+<div style="font-size: 13px; color: #6B6B6B; padding: 0 4px">Ordenados por coincidencia. Todos tienen sus documentos revisados.</div>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<sc-for list="{{ conductores }}" as="c" hint-placeholder-count="4">
+<div style="background: #FFFFFF; border: 1px solid #ECECEC; border-radius: 18px; padding: 14px 14px 14px 16px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: center; gap: 12px">
+<div style="width: 44px; height: 44px; border-radius: 22px; background: #111111; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; flex-shrink: 0">{{ c.ini }}</div>
+<div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+<div style="font-size: 16px; font-weight: 700">{{ c.nombre }}</div>
+<div style="font-size: 13px; color: #6B6B6B">{{ c.sub }}</div>
+</div>
+<sc-if value="{{ c.fav }}" hint-placeholder-val="{{ false }}">
+<button type="button" aria-label="Quitar de favoritos" style="width: 44px; height: 44px; border: 0; border-radius: 12px; background: #FFF6D6; display: flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="#F5B400" stroke="#B88500" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"></path></svg></button>
+</sc-if>
+<sc-if value="{{ c.noFav }}" hint-placeholder-val="{{ true }}">
+<button type="button" aria-label="Marcar como favorito" style="width: 44px; height: 44px; border: 0; border-radius: 12px; background: #F6F6F6; display: flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"></path></svg></button>
+</sc-if>
+</div>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+<div style="font-size: 13px; font-weight: 700; color: {{ c.coinColor }}; background: {{ c.coinBg }}; border-radius: 8px; padding: 5px 9px">{{ c.coin }}</div>
+<a href="Ficha.dc.html" style="font-size: 14px; font-weight: 700; color: #111111; text-decoration: none; min-height: 44px; display: flex; align-items: center; gap: 4px">Ver ficha<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"></path></svg></a>
+</div>
+</div>
+</sc-for>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+const ok = { coinColor: '#145F3B', coinBg: '#E3F4EA' };
+const part = { coinColor: '#5C3A00', coinBg: '#FFF4DB' };
+const conductores = [
+{ ini: '[A]', nombre: '[Nombre]', sub: 'Vive en [comuna] · [N] años', coin: 'Coincide 3 de 3', fav: true, ...ok },
+{ ini: '[B]', nombre: '[Nombre]', sub: 'Vive en [comuna] · [N] años', coin: 'Coincide 3 de 3', fav: false, ...ok },
+{ ini: '[C]', nombre: '[Nombre]', sub: 'Vive en [comuna] · [N] años', coin: '2 de 3 · sin estacionamiento', fav: true, ...part },
+{ ini: '[D]', nombre: '[Nombre]', sub: 'Vive en otra zona · [N] años', coin: '2 de 3 · otra zona', fav: false, ...part },
+].map((c) => ({ ...c, noFav: !c.fav }));
+return { conductores };
+}
+}
+</script>
+</body>
+</html>

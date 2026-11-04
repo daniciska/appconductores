@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Mis matches (conductor)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#111111}a:hover{color:#333333}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F6F6F6; color: #111111; font-family: 'Plus Jakarta Sans', sans-serif; display: flex; flex-direction: column; padding: 56px 20px 0 20px; gap: 14px">
+<div style="font-family: 'Sora', sans-serif; font-size: 24px; font-weight: 700; letter-spacing: -0.3px; padding: 0 4px">Mis matches</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; background: #EAEAEA; border-radius: 14px; padding: 4px">
+<button type="button" style="font: inherit; font-size: 14px; font-weight: 700; min-height: 40px; border: 0; border-radius: 10px; background: #FFFFFF; color: #111111">Todos · 3</button>
+<button type="button" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 40px; border: 0; border-radius: 10px; background: transparent; color: #6B6B6B">Favoritos · 1</button>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<sc-for list="{{ matches }}" as="m" hint-placeholder-count="3">
+<div style="background: #FFFFFF; border: 1px solid #ECECEC; border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; align-items: flex-start; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+<div style="font-size: 16px; font-weight: 700">{{ m.vehiculo }}</div>
+<div style="font-size: 14px; color: #3D3D3D">{{ m.titular }}</div>
+<div style="font-size: 13px; color: #6B6B6B">{{ m.cond }}</div>
+</div>
+<sc-if value="{{ m.fav }}" hint-placeholder-val="{{ false }}">
+<button type="button" aria-label="Quitar de favoritos" style="width: 44px; height: 44px; border: 0; border-radius: 12px; background: #FFF6D6; display: flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="#F5B400" stroke="#B88500" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"></path></svg></button>
+</sc-if>
+<sc-if value="{{ m.noFav }}" hint-placeholder-val="{{ true }}">
+<button type="button" aria-label="Marcar como favorito" style="width: 44px; height: 44px; border: 0; border-radius: 12px; background: #F6F6F6; display: flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"></path></svg></button>
+</sc-if>
+</div>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 10px">
+<div style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: {{ m.contactColor }}">
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0"></path></svg>{{ m.contacto }}</div>
+<a href="Conversacion.dc.html" style="text-decoration: none; min-height: 44px; padding: 0 16px; border-radius: 12px; background: #111111; color: #FFFFFF; font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 6px; flex-shrink: 0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"></path></svg>{{ m.cta }}</a>
+</div>
+</div>
+</sc-for>
+</div>
+<div style="margin-top: auto; margin-left: -20px; margin-right: -20px; background: #FFFFFF; border-top: 1px solid #ECECEC; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 8px 0 28px 0">
+<a href="InicioConductor.dc.html" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 44px; font-size: 12px; font-weight: 500; color: #6B6B6B">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 4l9 7"></path><path d="M5 10v10h14V10"></path></svg>Inicio</a>
+<a href="#" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 44px; font-size: 12px; font-weight: 700; color: #111111">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 12l3 3 7-7"></path><circle cx="12" cy="12" r="9"></circle></svg>Matches</a>
+<a href="Conversacion.dc.html" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 44px; font-size: 12px; font-weight: 500; color: #6B6B6B">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"></path></svg>Mensajes</a>
+<a href="#" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 44px; font-size: 12px; font-weight: 500; color: #6B6B6B">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"></path></svg>Perfil</a>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+const oculto = { contacto: 'Contacto oculto', contactColor: '#6B6B6B' };
+const visible = { contacto: 'Te compartió su contacto', contactColor: '#145F3B' };
+const matches = [
+{ vehiculo: '[Tipo de vehículo]', titular: '[Nombre del titular o empresa]', cond: 'Retiro en [comuna] · Día, lun a sáb · Arriendo fijo', fav: true, cta: 'Mensajes', ...visible },
+{ vehiculo: '[Tipo de vehículo]', titular: '[Nombre del titular o empresa]', cond: 'Retiro en [comuna] · Noche · % de ganancia', fav: false, cta: 'Escribir', ...oculto },
+{ vehiculo: '[Tipo de vehículo]', titular: '[Nombre del titular o empresa]', cond: 'Retiro en [comuna] · A cargo 24 h · % sobre producción', fav: false, cta: 'Escribir', ...oculto },
+].map((m) => ({ ...m, noFav: !m.fav }));
+return { matches };
+}
+}
+</script>
+</body>
+</html>

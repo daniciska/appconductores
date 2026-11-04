@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Ingresa el código</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#111111}a:hover{color:#333333}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F6F6F6; color: #111111; font-family: 'Plus Jakarta Sans', sans-serif; display: flex; flex-direction: column; padding: 56px 20px 32px 20px; gap: 16px">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<a href="CondCelular.dc.html" aria-label="Volver" style="width: 44px; height: 44px; border-radius: 12px; background: #FFFFFF; border: 1px solid #ECECEC; display: flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"></path></svg></a>
+</div>
+<div style="margin-top: 8px; display: flex; flex-direction: column; gap: 6px">
+<h1 style="margin: 0; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 26px; line-height: 1.2; letter-spacing: -0.4px">Ingresa el código</h1>
+<p style="margin: 0; font-size: 15px; line-height: 1.5; color: #6B6B6B">Lo enviamos por WhatsApp al <span style="font-weight: 600; color: #111111">+56 9 [número]</span>.</p>
+</div>
+<div style="margin-top: 8px; display: flex; flex-direction: column; gap: 8px">
+<label id="codigo-etiqueta" for="dig1" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap">Código de 6 dígitos</label>
+<div role="group" aria-labelledby="codigo-etiqueta" style="display: flex; justify-content: space-between; gap: 8px">
+<input id="dig1" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="1" value="4" style="width: 48px; height: 56px; box-sizing: border-box; padding: 0; text-align: center; font: inherit; font-size: 22px; font-weight: 700; border-radius: 14px; border: 1px solid #DDDDDD; background: #FFFFFF; color: #111111">
+<input id="dig2" type="text" inputmode="numeric" maxlength="1" value="8" aria-label="Dígito 2" style="width: 48px; height: 56px; box-sizing: border-box; padding: 0; text-align: center; font: inherit; font-size: 22px; font-weight: 700; border-radius: 14px; border: 1px solid #DDDDDD; background: #FFFFFF; color: #111111">
+<input id="dig3" type="text" inputmode="numeric" maxlength="1" value="2" aria-label="Dígito 3" style="width: 48px; height: 56px; box-sizing: border-box; padding: 0; text-align: center; font: inherit; font-size: 22px; font-weight: 700; border-radius: 14px; border: 1px solid #DDDDDD; background: #FFFFFF; color: #111111">
+<input id="dig4" type="text" inputmode="numeric" maxlength="1" aria-label="Dígito 4" style="width: 48px; height: 56px; box-sizing: border-box; padding: 0; text-align: center; font: inherit; font-size: 22px; font-weight: 700; border-radius: 14px; border: 2px solid #111111; background: #FFFFFF; color: #111111">
+<input id="dig5" type="text" inputmode="numeric" maxlength="1" aria-label="Dígito 5" style="width: 48px; height: 56px; box-sizing: border-box; padding: 0; text-align: center; font: inherit; font-size: 22px; font-weight: 700; border-radius: 14px; border: 1px solid #DDDDDD; background: #FFFFFF; color: #111111">
+<input id="dig6" type="text" inputmode="numeric" maxlength="1" aria-label="Dígito 6" style="width: 48px; height: 56px; box-sizing: border-box; padding: 0; text-align: center; font: inherit; font-size: 22px; font-weight: 700; border-radius: 14px; border: 1px solid #DDDDDD; background: #FFFFFF; color: #111111">
+</div>
+</div>
+<div style="display: flex; align-items: center; gap: 4px; font-size: 14px; color: #6B6B6B">
+<span>¿No te llegó?</span>
+<button type="button" disabled="" aria-disabled="true" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 4px; border: 0; background: transparent; color: #6B6B6B; display: flex; align-items: center; gap: 6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>Reenviar por WhatsApp en 0:[ss]</button>
+</div>
+<button type="button" style="font: inherit; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 4px; border: 0; background: transparent; color: #111111; text-decoration: underline; align-self: flex-start; display: flex; align-items: center; gap: 6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"></path></svg>Recibir el código por SMS</button>
+<a href="CondConsentimientos.dc.html" style="margin-top: auto; text-decoration: none; min-height: 56px; border-radius: 16px; background: #111111; color: #FFFFFF; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px">Verificar</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

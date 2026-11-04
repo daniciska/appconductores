@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Postulantes</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#111111}a:hover{color:#333333}
+</style>
+</helmet>
+<div style="width: 390px; height: 980px; box-sizing: border-box; background: #F6F6F6; color: #111111; font-family: 'Plus Jakarta Sans', sans-serif; display: flex; flex-direction: column; padding: 56px 20px 32px 20px; gap: 16px">
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+    <a href="Resultados.dc.html" aria-label="Volver" style="width: 44px; height: 44px; border-radius: 12px; background: #FFFFFF; border: 1px solid #ECECEC; display: flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"></path></svg></a>
+    <a href="BolsaPublicar.dc.html" style="min-height: 44px; padding: 0 4px; display: flex; align-items: center; gap: 6px; text-decoration: none; font-size: 14px; font-weight: 700; color: #111111"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path><path d="m13.5 6.5 4 4"></path></svg>Editar oferta</a>
+  </div>
+
+  <h1 style="margin: 0; padding: 0 4px; font-family: 'Sora', sans-serif; font-size: 26px; font-weight: 700; letter-spacing: -0.4px; line-height: 1.2">Postulantes</h1>
+
+  <div style="background: #FFFFFF; border: 1px solid #ECECEC; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 10px">
+    <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px">
+      <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+        <div style="font-size: 17px; font-weight: 700">Taxi</div>
+        <div style="font-size: 13px; line-height: 1.4; color: #6B6B6B">Retiro en [comuna] · Día · Lu a Sá</div>
+      </div>
+      <span style="display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0; font-size: 12px; font-weight: 700; border-radius: 8px; padding: 5px 9px; background: #E3F4EA; color: #145F3B"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 3px; background: #17784A"></span>En la bolsa</span>
+    </div>
+    <div style="height: 1px; background: #F0F0F0"></div>
+    <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #3D3D3D"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3D3D3D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>La ven: conductores que tú elijas</div>
+  </div>
+
+  <div role="tablist" aria-label="Filtrar postulantes" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; background: #EAEAEA; border-radius: 14px; padding: 4px">
+    <button type="button" role="tab" aria-selected="{{ tabNuevos.aria }}" onClick="{{ verNuevos }}" style="font: inherit; font-size: 14px; font-weight: {{ tabNuevos.peso }}; min-height: 44px; border: 0; border-radius: 10px; background: {{ tabNuevos.fondo }}; color: {{ tabNuevos.texto }}">Nuevos · {{ nNuevos }}</button>
+    <button type="button" role="tab" aria-selected="{{ tabVistos.aria }}" onClick="{{ verVistos }}" style="font: inherit; font-size: 14px; font-weight: {{ tabVistos.peso }}; min-height: 44px; border: 0; border-radius: 10px; background: {{ tabVistos.fondo }}; color: {{ tabVistos.texto }}">Vistos · {{ nVistos }}</button>
+  </div>
+
+  <sc-if value="{{ hayDeshacer }}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #111111; color: #FFFFFF; border-radius: 14px; padding: 4px 6px 4px 16px; font-size: 14px; font-weight: 600">Postulación descartada<button type="button" onClick="{{ deshacer }}" style="font: inherit; font-size: 14px; font-weight: 700; min-height: 44px; padding: 0 12px; border: 0; border-radius: 10px; background: transparent; color: #F5B400">Deshacer</button></div>
+  </sc-if>
+
+  <div style="display: flex; flex-direction: column; gap: 10px">
+    <sc-for list="{{ postulantes }}" as="p" hint-placeholder-count="3">
+      <div style="background: #FFFFFF; border: 1px solid #ECECEC; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; align-items: flex-start; gap: 12px">
+          <div aria-hidden="true" style="width: 44px; height: 44px; border-radius: 22px; background: #111111; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; flex-shrink: 0">{{ p.ini }}</div>
+          <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+            <div style="display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 8px"><span style="font-size: 16px; font-weight: 700">{{ p.nombre }}</span><span style="font-size: 12px; color: #6B6B6B">{{ p.cuando }}</span></div>
+            <div style="font-size: 13px; line-height: 1.4; color: #6B6B6B">{{ p.sub }}</div>
+          </div>
+          <button type="button" aria-label="Descartar a {{ p.nombre }}" onClick="{{ p.descartar }}" style="width: 44px; height: 44px; margin: -8px -8px 0 0; padding: 0; border: 0; border-radius: 12px; background: transparent; display: flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6 6 18"></path></svg></button>
+        </div>
+        <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 6px">
+          <span style="display: inline-flex; align-items: center; gap: 3px; font-size: 12px; font-weight: 700; border-radius: 8px; padding: 5px 9px; background: #E3F4EA; color: #145F3B"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#17784A" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"></path></svg>Revisado</span>
+          <sc-if value="{{ p.match }}" hint-placeholder-val="{{ false }}">
+            <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; border-radius: 8px; padding: 5px 9px; background: #F0F0F0; color: #111111"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 12l3 3 7-7"></path><circle cx="12" cy="12" r="9"></circle></svg>También hace match · [N] %</span>
+          </sc-if>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+          <a href="Ficha.dc.html" style="text-decoration: none; min-height: 44px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #111111; box-sizing: border-box; color: #111111; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"></path></svg>Ver ficha</a>
+          <a href="Conversacion.dc.html" style="text-decoration: none; min-height: 44px; border-radius: 12px; background: #111111; color: #FFFFFF; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"></path></svg>Escribir</a>
+        </div>
+      </div>
+    </sc-for>
+    <sc-if value="{{ vacio }}" hint-placeholder-val="{{ false }}">
+      <div style="background: #FFFFFF; border: 1px solid #ECECEC; border-radius: 20px; padding: 28px 20px; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center">
+        <div style="font-size: 15px; font-weight: 700">{{ vacioTitulo }}</div>
+        <div style="font-size: 13px; color: #6B6B6B">{{ vacioTexto }}</div>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":980}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { tab: 'nuevos', descartados: {}, ultimo: null };
+}
+renderVals() {
+const st = this.state;
+const sub = 'Vive en [comuna] · [N] años en vehículo liviano';
+const todos = [
+{ id: 'a', tab: 'nuevos', ini: '[A]', nombre: '[Nombre]', sub, match: true, cuando: 'Hace [N] min' },
+{ id: 'b', tab: 'nuevos', ini: '[B]', nombre: '[Nombre]', sub, match: false, cuando: 'Hace [N] h' },
+{ id: 'c', tab: 'nuevos', ini: '[C]', nombre: '[Nombre]', sub, match: false, cuando: 'Hace [N] h' },
+{ id: 'd', tab: 'vistos', ini: '[D]', nombre: '[Nombre]', sub, match: true, cuando: 'Ayer' },
+{ id: 'e', tab: 'vistos', ini: '[E]', nombre: '[Nombre]', sub, match: false, cuando: 'Hace [N] días' },
+].filter((p) => !st.descartados[p.id]);
+const tab = (id) => {
+const sel = st.tab === id;
+return {
+aria: sel ? 'true' : 'false',
+peso: sel ? '700' : '600',
+fondo: sel ? '#FFFFFF' : 'transparent',
+texto: sel ? '#111111' : '#6B6B6B'
+};
+};
+const postulantes = todos.filter((p) => p.tab === st.tab).map((p) => ({
+...p,
+descartar: () => this.setState({ descartados: { ...st.descartados, [p.id]: true }, ultimo: p.id })
+}));
+return {
+tabNuevos: tab('nuevos'),
+tabVistos: tab('vistos'),
+verNuevos: () => this.setState({ tab: 'nuevos' }),
+verVistos: () => this.setState({ tab: 'vistos' }),
+nNuevos: todos.filter((p) => p.tab === 'nuevos').length,
+nVistos: todos.filter((p) => p.tab === 'vistos').length,
+postulantes,
+vacio: postulantes.length === 0,
+vacioTitulo: st.tab === 'nuevos' ? 'No hay postulantes nuevos' : 'No hay postulantes vistos',
+vacioTexto: st.tab === 'nuevos' ? 'Te avisamos cuando alguien postule.' : 'Aquí quedan los que ya revisaste.',
+hayDeshacer: !!st.ultimo,
+deshacer: () => {
+const d = { ...st.descartados };
+delete d[st.ultimo];
+this.setState({ descartados: d, ultimo: null });
+}
+};
+}
+}
+</script>
+</body>
+</html>

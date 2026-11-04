@@ -1,0 +1,582 @@
+{
+ "v": 3,
+ "attachments": {},
+ "boards": {
+  "CondBienvenida.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "conductor",
+   "title": "A1 · Bienvenida",
+   "w": 390,
+   "x": 0,
+   "y": 0
+  },
+  "CondCelular.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "conductor",
+   "title": "A2 · Celular",
+   "w": 390,
+   "x": 470,
+   "y": 0
+  },
+  "CondCodigo.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "conductor",
+   "title": "A3 · Código (WhatsApp o SMS)",
+   "w": 390,
+   "x": 940,
+   "y": 0
+  },
+  "CondConsentimientos.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "conductor",
+   "title": "A4 · Autorizaciones",
+   "w": 390,
+   "x": 1410,
+   "y": 0
+  },
+  "CondConversacion.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "conductor",
+   "title": "D4 · Conversación",
+   "w": 390,
+   "x": 1410,
+   "y": 4028
+  },
+  "CondDetalleMatch.dc.html": {
+   "h": 1000,
+   "is_interactive": true,
+   "page": "conductor",
+   "title": "D2 · Detalle del match",
+   "w": 390,
+   "x": 470,
+   "y": 4028
+  },
+  "CondDisponibilidad.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "conductor",
+   "title": "E4 · Confirmar disponibilidad",
+   "w": 390,
+   "x": 1410,
+   "y": 5428
+  },
+  "CondDocRechazado.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "conductor",
+   "title": "C4 · Documento no aprobado",
+   "w": 390,
+   "x": 1410,
+   "y": 2784
+  },
+  "CondEliminarCuenta.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "conductor",
+   "title": "E5 · Eliminar cuenta",
+   "w": 390,
+   "x": 1880,
+   "y": 5428
+  },
+  "CondEnviado.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "conductor",
+   "title": "C2 · Enviado a revisión",
+   "w": 390,
+   "x": 470,
+   "y": 2784
+  },
+  "CondInicioActivo.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "conductor",
+   "title": "C5 · Inicio: verificado",
+   "w": 390,
+   "x": 1880,
+   "y": 2784
+  },
+  "CondInicioIncompleto.dc.html": {
+   "h": 900,
+   "is_interactive": true,
+   "page": "conductor",
+   "title": "B6 · Registro guardado: perfil incompleto",
+   "w": 390,
+   "x": 2350,
+   "y": 1244
+  },
+  "CondInicioRevision.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "conductor",
+   "title": "C3 · Inicio: en revisión",
+   "w": 390,
+   "x": 940,
+   "y": 2784
+  },
+  "CondMatches.dc.html": {
+   "h": 900,
+   "is_interactive": true,
+   "page": "conductor",
+   "title": "D1 · Mis matches",
+   "w": 390,
+   "x": 0,
+   "y": 4028
+  },
+  "CondMensajes.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "conductor",
+   "title": "D3 · Mensajes",
+   "w": 390,
+   "x": 940,
+   "y": 4028
+  },
+  "CondMisDocumentos.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "conductor",
+   "title": "E2 · Mis documentos",
+   "w": 390,
+   "x": 470,
+   "y": 5428
+  },
+  "CondPaso1.dc.html": {
+   "h": 1300,
+   "is_interactive": true,
+   "page": "conductor",
+   "title": "B1 · Paso 1: tus datos",
+   "w": 390,
+   "x": 0,
+   "y": 1244
+  },
+  "CondPaso2.dc.html": {
+   "h": 1100,
+   "is_interactive": true,
+   "page": "conductor",
+   "title": "B2 · Paso 2: dónde vives",
+   "w": 390,
+   "x": 470,
+   "y": 1244
+  },
+  "CondPaso3.dc.html": {
+   "h": 1080,
+   "is_interactive": true,
+   "page": "conductor",
+   "title": "B3 · Paso 3: experiencia",
+   "w": 390,
+   "x": 940,
+   "y": 1244
+  },
+  "CondPaso4.dc.html": {
+   "h": 1540,
+   "is_interactive": true,
+   "page": "conductor",
+   "title": "B4 · Paso 4: qué trabajo buscas",
+   "w": 390,
+   "x": 1410,
+   "y": 1244
+  },
+  "CondPaso5.dc.html": {
+   "h": 1080,
+   "is_interactive": true,
+   "page": "conductor",
+   "title": "B5 · Paso 5: documentos",
+   "w": 390,
+   "x": 1880,
+   "y": 1244
+  },
+  "CondPerfil.dc.html": {
+   "h": 1140,
+   "is_interactive": true,
+   "page": "conductor",
+   "title": "E1 · Perfil",
+   "w": 390,
+   "x": 0,
+   "y": 5428
+  },
+  "CondQuienVio.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "conductor",
+   "title": "E3 · Quién recibió mis datos",
+   "w": 390,
+   "x": 940,
+   "y": 5428
+  },
+  "CondReportar.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "conductor",
+   "title": "D5 · Reportar o bloquear",
+   "w": 390,
+   "x": 1880,
+   "y": 4028
+  },
+  "CondSinMatches.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "conductor",
+   "title": "C6 · Inicio: sin matches",
+   "w": 390,
+   "x": 2350,
+   "y": 2784
+  },
+  "CondSubirDoc.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "conductor",
+   "title": "C1 · Subir documento",
+   "w": 390,
+   "x": 0,
+   "y": 2784
+  },
+  "Conversacion.dc.html": {
+   "h": 844,
+   "page": "general",
+   "title": "10 · Mensajes: conversación (vista del titular)",
+   "w": 390,
+   "x": 1410,
+   "y": 1244
+  },
+  "Ficha.dc.html": {
+   "h": 844,
+   "page": "general",
+   "title": "5 · Ficha del conductor tras el match",
+   "w": 390,
+   "x": 1880,
+   "y": 0
+  },
+  "InicioConductor.dc.html": {
+   "h": 844,
+   "page": "general",
+   "title": "3 · Inicio conductor",
+   "w": 390,
+   "x": 940,
+   "y": 0
+  },
+  "InicioTitular.dc.html": {
+   "h": 844,
+   "page": "general",
+   "title": "4 · Inicio titular (sin plan)",
+   "w": 390,
+   "x": 1410,
+   "y": 0
+  },
+  "Main.dc.html": {
+   "h": 844,
+   "page": "general",
+   "title": "1 · Bienvenida",
+   "w": 390,
+   "x": 0,
+   "y": 0
+  },
+  "MatchesConductor.dc.html": {
+   "h": 844,
+   "page": "general",
+   "title": "9 · Conductor: mis matches y favoritos",
+   "w": 390,
+   "x": 940,
+   "y": 1244
+  },
+  "NuevaBusqueda.dc.html": {
+   "h": 1120,
+   "page": "general",
+   "title": "7 · Titular: nueva búsqueda (pantalla con scroll)",
+   "w": 390,
+   "x": 0,
+   "y": 1244
+  },
+  "Planes.dc.html": {
+   "h": 844,
+   "page": "general",
+   "title": "6 · Planes",
+   "w": 390,
+   "x": 2350,
+   "y": 0
+  },
+  "Registro.dc.html": {
+   "h": 844,
+   "page": "general",
+   "title": "2 · Registro conductor (paso 3 de 5)",
+   "w": 390,
+   "x": 470,
+   "y": 0
+  },
+  "Resultados.dc.html": {
+   "h": 844,
+   "page": "general",
+   "title": "8 · Titular: resultados de la búsqueda",
+   "w": 390,
+   "x": 470,
+   "y": 1244
+  },
+  "CondContrato.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "espera",
+   "title": "Modelo de contrato (en espera, fuera del registro)",
+   "w": 390,
+   "x": 0,
+   "y": 0
+  },
+  "CondMapa.dc.html": {
+   "h": 1144,
+   "is_interactive": true,
+   "page": "despues",
+   "title": "Mapa · el conductor después de registrarse",
+   "w": 1640,
+   "x": 0,
+   "y": 0
+  },
+  "BolsaLista.dc.html": {
+   "h": 1386,
+   "is_interactive": true,
+   "page": "bolsa",
+   "title": "BC1 · Bolsa de trabajo",
+   "w": 390,
+   "x": 0,
+   "y": 0
+  },
+  "BolsaDetalle.dc.html": {
+   "h": 1010,
+   "is_interactive": true,
+   "page": "bolsa",
+   "title": "BC2 · Detalle de la oferta y \"Me interesa\"",
+   "w": 390,
+   "x": 470,
+   "y": 0
+  },
+  "BolsaPostulaciones.dc.html": {
+   "h": 1152,
+   "is_interactive": true,
+   "page": "bolsa",
+   "title": "BC3 · Mis postulaciones",
+   "w": 390,
+   "x": 940,
+   "y": 0
+  },
+  "BolsaPublicar.dc.html": {
+   "h": 1210,
+   "is_interactive": true,
+   "page": "bolsa",
+   "title": "BT1 · Publicar en la bolsa",
+   "w": 390,
+   "x": 0,
+   "y": 1786
+  },
+  "BolsaPerfiles.dc.html": {
+   "h": 1000,
+   "is_interactive": true,
+   "page": "bolsa",
+   "title": "BT2 · Conductores que tú elijas",
+   "w": 390,
+   "x": 470,
+   "y": 1786
+  },
+  "BolsaPostulantes.dc.html": {
+   "h": 980,
+   "is_interactive": true,
+   "page": "bolsa",
+   "title": "BT3 · Postulantes (con plan)",
+   "w": 390,
+   "x": 940,
+   "y": 1786
+  },
+  "BolsaPostulantesSinPlan.dc.html": {
+   "h": 890,
+   "is_interactive": true,
+   "page": "bolsa",
+   "title": "BT4 · Postulantes (sin plan)",
+   "w": 390,
+   "x": 1410,
+   "y": 1786
+  },
+  "BolsaPlanes.dc.html": {
+   "h": 1380,
+   "is_interactive": true,
+   "page": "bolsa",
+   "title": "BT5 · Planes con la bolsa (propuesta)",
+   "w": 390,
+   "x": 1880,
+   "y": 1786
+  }
+ },
+ "createdOnFiles": {
+  "at": "2026-10-02T12:00:00Z",
+  "v": 1
+ },
+ "designSystems": [],
+ "launch": {
+  "page": "bolsa",
+  "view": "canvas"
+ },
+ "notes": {
+  "filaA": {
+   "kind": "title1",
+   "maxW": 1800,
+   "page": "conductor",
+   "text": "A · Ingreso: celular, código y autorizaciones",
+   "w": 240,
+   "x": 0,
+   "y": -260
+  },
+  "filaB": {
+   "kind": "title1",
+   "maxW": 3210,
+   "page": "conductor",
+   "text": "B · Registro y perfil en 5 pasos",
+   "w": 240,
+   "x": 0,
+   "y": 984
+  },
+  "filaC": {
+   "kind": "title1",
+   "maxW": 2740,
+   "page": "conductor",
+   "text": "C · Documentos y estados del inicio",
+   "w": 240,
+   "x": 0,
+   "y": 2524
+  },
+  "filaD": {
+   "kind": "title1",
+   "maxW": 2270,
+   "page": "conductor",
+   "text": "D · Matches, mensajes y reportes",
+   "w": 240,
+   "x": 0,
+   "y": 3768
+  },
+  "filaE": {
+   "kind": "title1",
+   "maxW": 2270,
+   "page": "conductor",
+   "text": "E · Perfil y cuenta",
+   "w": 240,
+   "x": 0,
+   "y": 5168
+  },
+  "titulo": {
+   "kind": "title1",
+   "maxW": 2740,
+   "page": "general",
+   "text": "Dale Contacto · pantallas clave del MVP (maqueta)",
+   "w": 240,
+   "x": 0,
+   "y": -260
+  },
+  "titulo2": {
+   "kind": "title1",
+   "maxW": 1800,
+   "page": "general",
+   "text": "Búsquedas, resultados, mensajes y favoritos",
+   "w": 240,
+   "x": 0,
+   "y": 984
+  },
+  "espera": {
+   "kind": "title1",
+   "maxW": 1200,
+   "page": "espera",
+   "text": "En espera hasta nuevo aviso",
+   "w": 240,
+   "x": 0,
+   "y": -260
+  },
+  "bolsaC": {
+   "kind": "title1",
+   "maxW": 1330,
+   "page": "bolsa",
+   "text": "Conductor · ve las ofertas y postula (\"Me interesa\")",
+   "w": 240,
+   "x": 0,
+   "y": -260
+  },
+  "bolsaT": {
+   "kind": "title1",
+   "maxW": 2270,
+   "page": "bolsa",
+   "text": "Titular · publica en la bolsa, elige quién la ve y revisa postulantes",
+   "w": 240,
+   "x": 0,
+   "y": 1526
+  }
+ },
+ "order": [
+  "Main.dc.html",
+  "Registro.dc.html",
+  "InicioConductor.dc.html",
+  "InicioTitular.dc.html",
+  "Ficha.dc.html",
+  "Planes.dc.html",
+  "NuevaBusqueda.dc.html",
+  "Resultados.dc.html",
+  "MatchesConductor.dc.html",
+  "Conversacion.dc.html",
+  "CondBienvenida.dc.html",
+  "CondCelular.dc.html",
+  "CondCodigo.dc.html",
+  "CondConsentimientos.dc.html",
+  "CondPaso1.dc.html",
+  "CondPaso2.dc.html",
+  "CondPaso3.dc.html",
+  "CondPaso4.dc.html",
+  "CondPaso5.dc.html",
+  "CondInicioIncompleto.dc.html",
+  "CondContrato.dc.html",
+  "CondSubirDoc.dc.html",
+  "CondEnviado.dc.html",
+  "CondInicioRevision.dc.html",
+  "CondDocRechazado.dc.html",
+  "CondInicioActivo.dc.html",
+  "CondSinMatches.dc.html",
+  "CondMatches.dc.html",
+  "CondDetalleMatch.dc.html",
+  "CondMensajes.dc.html",
+  "CondConversacion.dc.html",
+  "CondReportar.dc.html",
+  "CondPerfil.dc.html",
+  "CondMisDocumentos.dc.html",
+  "CondQuienVio.dc.html",
+  "CondDisponibilidad.dc.html",
+  "CondEliminarCuenta.dc.html",
+  "CondMapa.dc.html",
+  "BolsaLista.dc.html",
+  "BolsaDetalle.dc.html",
+  "BolsaPostulaciones.dc.html",
+  "BolsaPublicar.dc.html",
+  "BolsaPerfiles.dc.html",
+  "BolsaPostulantes.dc.html",
+  "BolsaPostulantesSinPlan.dc.html",
+  "BolsaPlanes.dc.html"
+ ],
+ "pages": [
+  {
+   "id": "general",
+   "name": "Maquetas generales"
+  },
+  {
+   "id": "conductor",
+   "name": "Experiencia del conductor"
+  },
+  {
+   "id": "despues",
+   "name": "Después del registro"
+  },
+  {
+   "id": "bolsa",
+   "name": "Bolsa de trabajo (por decidir)"
+  },
+  {
+   "id": "espera",
+   "name": "En espera"
+  }
+ ],
+ "title": "Dale Contacto — maquetas"
+}
