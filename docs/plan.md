@@ -35,6 +35,9 @@ Antes de construir la parte del titular: su prototipo, las reglas de mensajes (e
 ## Fase 2 — Construcción
 
 6. [ ] Base de datos en Supabase (tablas y seguridad: quién ve qué).
+   - [x] **Etapa 1** (2-nov): catálogos, cuentas, equipo, autorizaciones y perfil del conductor. Aplicada en dale-contacto, idéntica a lo probado en local (261 pruebas). Asesor de seguridad sin avisos.
+   - [ ] Etapa 2: titulares, búsquedas y match. Etapa 3: documentos, mensajes, reportes y bloqueos. Etapa 4: planes y cobro. (Bolsa de trabajo: cuando se decida.)
+   - [ ] Crear el primer administrador (a mano, después de que la dueña entre una vez con su celular; ver `supabase/README.md`).
 7. [ ] App del conductor.
 8. [ ] App del titular y cobro.
 9. [ ] Panel de administración.
