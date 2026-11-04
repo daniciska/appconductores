@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "Dale Contacto",
+    "slug": "dale-contacto",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "dalecontacto",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#F6F6F6",
+    "ios": {
+      "supportsTablet": false
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#111111",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "output": "single",
+      "bundler": "metro",
+      "lang": "es",
+      "name": "Dale Contacto",
+      "shortName": "Dale Contacto",
+      "description": "Demo de Dale Contacto con datos de ejemplo.",
+      "themeColor": "#111111",
+      "backgroundColor": "#F6F6F6",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#111111",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 76
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}

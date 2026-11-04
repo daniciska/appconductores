@@ -1,0 +1,9 @@
+# Dependencias y salidas de compilación
+node_modules/
+dist/
+web-build/
+.expo/
+aplicacion/expo-env.d.ts
+*.tsbuildinfo
+.DS_Store
+.env*.local
