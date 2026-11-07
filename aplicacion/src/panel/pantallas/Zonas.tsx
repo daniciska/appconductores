@@ -1,5 +1,5 @@
 // Panel · Zonas
-// Ruta: /admin/zonas
+// Era la ruta (ya no existe en el mockup): /admin/zonas
 // Sin maqueta (panel web). Región → zonas → comunas. Renombrar zonas, crear zonas y mover comunas.
 // La zona se usa en el % del match (M2): mover una comuna cambia los matches en vivo.
 import { useMemo, useState } from 'react';
@@ -9,7 +9,8 @@ import { useCatalogos, useDerivado } from '@/datos/hooks';
 import { useDemo } from '@/datos/tienda';
 import type { Comuna, Zona } from '@/datos/tipos';
 import { plural } from '@/datos/formato';
-import { Boton, BotonIcono, Campo, EstadoVacio, FilaRadio, Insignia, PaginaPanel, Presionable, Texto, color, fuente, mostrarToast, radio } from '@/ui';
+import { Boton, BotonIcono, Campo, EstadoVacio, FilaRadio, Insignia, Presionable, Texto, color, fuente, mostrarToast, radio } from '@/ui';
+import { PaginaPanel } from '@/panel/marco';
 import { Check, ChevronDown, Map as IconoMapa, MapPin, Pencil, Plus, X } from '@/ui/iconos';
 
 import { usoZonas } from './datosPanel';

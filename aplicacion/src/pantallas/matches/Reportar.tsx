@@ -1,8 +1,9 @@
 // D5 · Reportar o bloquear
 // Ruta: /conductor/mensajes/[id]/reportar
 // Maqueta: docs/maqueta/CondReportar.dc.html
-// Hoja sobre la conversación (de fondo, atenuada). El reporte queda abierto en el panel
-// (/admin/reportes) con la copia de la conversación; bloquear saca ese match y cierra el chat.
+// Hoja sobre la conversación (de fondo, atenuada). El reporte queda abierto, con la copia de la
+// conversación, para que lo revise el equipo (en el mockup no hay panel: queda abierto); bloquear
+// saca ese match y cierra el chat.
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, ScrollView, Text, View, useWindowDimensions } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';

@@ -1,5 +1,5 @@
 // Panel · Reportes
-// Ruta: /admin/reportes
+// Era la ruta (ya no existe en el mockup): /admin/reportes
 // Sin maqueta (panel web). Reportes de conversaciones: leer la conversación (queda registrado) y resolver.
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
@@ -18,7 +18,6 @@ import {
   EstadoVacio,
   FilaRadio,
   Insignia,
-  PaginaPanel,
   Texto,
   Titulo,
   color,
@@ -26,6 +25,7 @@ import {
   radio,
   type TonoInsignia,
 } from '@/ui';
+import { PaginaPanel } from '@/panel/marco';
 import { CircleCheck, Eye, Flag, Lock } from '@/ui/iconos';
 
 import { OPCIONES_RESOLUCION, cambiarSuspension, registrarLectura, resolverReporteCon, type QueSeHizo } from './acciones';

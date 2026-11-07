@@ -43,10 +43,24 @@ import type {
   Titular,
 } from './tipos';
 
-/** Sube este número si cambia la forma del estado: los navegadores con datos viejos parten de cero. */
-export const VERSION_ESTADO = 2;
-/** Clave en el almacenamiento del navegador (localStorage). */
-export const CLAVE_ALMACENAMIENTO = 'dale-demo-v1';
+/**
+ * Sube este número si cambia la forma del estado: los navegadores con datos viejos parten de cero
+ * (o pasan por migrarEstado, si se sabe cómo llevarlos a la versión nueva). Una pestaña abierta con el
+ * código anterior deja de guardar en cuanto ve datos de la versión nueva (ver almacenamiento.ts).
+ * 3 (7-nov): el panel de administración salió del mockup.
+ */
+export const VERSION_ESTADO = 3;
+/**
+ * Clave en el almacenamiento del navegador (localStorage). Desde la versión 3 del estado (7-nov).
+ * No cambiarla al subir VERSION_ESTADO: almacenamiento.ts ya evita que las pestañas viejas la pisen.
+ */
+export const CLAVE_ALMACENAMIENTO = 'dale-demo-datos';
+/**
+ * Clave de las versiones 1 y 2 (la publicada el 4-nov, con panel). Se lee una sola vez, para no perder
+ * lo que la persona ya hizo, y después se borra. No se escribe nunca: así una pestaña con la versión
+ * anterior que siga abierta no se pelea con la nueva por los mismos datos.
+ */
+export const CLAVE_ALMACENAMIENTO_ANTERIOR = 'dale-demo-v1';
 
 export interface TitularDemo {
   /** El titular que maneja quien entra con "Ver como titular". */
@@ -97,7 +111,7 @@ export interface DatosDemo {
   postulaciones: Postulacion[];
   reportes: Reporte[];
 
-  // --- Configuración (panel) ---
+  // --- Configuración (la cambiaba el panel; sin panel en el mockup queda con sus valores iniciales) ---
   catalogos: Catalogos;
   reglas: ReglasMatch;
   ajustes: Ajustes;
@@ -172,5 +186,30 @@ export function crearEstadoInicial(ahora = Date.now()): DatosDemo {
     equipo: f.equipo,
     accionesEquipo: f.accionesEquipo,
     pendientes: [],
+  };
+}
+
+/**
+ * Lleva lo guardado en el navegador a la versión actual del estado.
+ * - Desde la versión 2 (la demo tenía panel de administración): se conserva lo que hizo la persona,
+ *   pero los catálogos (negocios, industrias, zonas), las reglas del match y los ajustes (bolsa,
+ *   validación, plazos) vuelven a sus valores iniciales, y las cuentas suspendidas se reactivan.
+ *   Lo que se haya cambiado en el panel ya no se podría deshacer, porque el panel no está.
+ * - Desde otra versión: se parte de cero.
+ */
+export function migrarEstado(guardado: unknown, version: number): DatosDemo {
+  const inicial = crearEstadoInicial();
+  if (version !== 2 || !guardado || typeof guardado !== 'object') return inicial;
+  const viejo = guardado as Partial<DatosDemo>;
+  return {
+    ...inicial,
+    ...viejo,
+    version: VERSION_ESTADO,
+    rol: viejo.rol === 'admin' ? null : (viejo.rol ?? null),
+    catalogos: inicial.catalogos,
+    reglas: inicial.reglas,
+    ajustes: inicial.ajustes,
+    titulares: (viejo.titulares ?? inicial.titulares).map((t) => ({ ...t, suspendido: false })),
+    conductores: (viejo.conductores ?? inicial.conductores).map((c) => ({ ...c, suspendido: false })),
   };
 }

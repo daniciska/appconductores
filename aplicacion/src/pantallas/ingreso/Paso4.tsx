@@ -1,7 +1,7 @@
 // B4 · Paso 4: qué trabajo buscas
 // Ruta: /conductor/registro/4
 // Maqueta: docs/maqueta/CondPaso4.dc.html
-// Negocios ACTIVOS (negocio e industria activos en el panel), agrupados por industria. Los que la
+// Negocios ACTIVOS (negocio e industria activos en el catálogo), agrupados por industria. Los que la
 // licencia declarada no permite aparecen en gris con "Pide licencia X". Turno y días: filtro M3 y
 // variable M7 del match.
 import { useRef, useState, type ComponentRef } from 'react';
@@ -63,7 +63,7 @@ export default function Paso4() {
       irAlPrimerError(scrollRef);
       return;
     }
-    // Se guardan los marcados que la licencia permite (los negocios apagados en el panel no se tocan).
+    // Se guardan los marcados que la licencia permite (los negocios apagados en el catálogo no se tocan).
     guardarPaso4({ negocios: negocios.filter((id) => permitidos.includes(id)), turnos, dias });
     borrador.olvidar();
     if (editar) terminarEdicion();

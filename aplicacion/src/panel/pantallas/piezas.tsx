@@ -1,4 +1,4 @@
-// Piezas comunes del panel de administración (solo para src/pantallas/admin).
+// Piezas comunes del panel de administración (solo para src/panel/pantallas).
 import { useCallback, useEffect, useRef, useState, type ComponentRef, type ReactNode } from 'react';
 import {
   Animated,

@@ -1,5 +1,5 @@
 // Panel · Conductores
-// Ruta: /admin/conductores
+// Era la ruta (ya no existe en el mockup): /admin/conductores
 // Sin maqueta (panel web). Lista con filtros por estado y detalle de solo lectura.
 import { useMemo, useState, type ReactNode } from 'react';
 import { View } from 'react-native';
@@ -11,7 +11,9 @@ import * as sel from '@/datos/selectores';
 import type { ConductorVista } from '@/datos/selectores';
 import type { TipoDocumentoId } from '@/datos/tipos';
 import { fechaLarga, haceCuanto, iniciales, plural, textoDias, textoTurnos } from '@/datos/formato';
-import { Aviso, Avatar, Boton, EstadoVacio, Insignia, PaginaPanel, Presionable, Separador, Texto, Titulo, color, radio } from '@/ui';
+import { Aviso, Avatar, Boton, EstadoVacio, Insignia, Presionable, Separador, Texto, Titulo, color, radio } from '@/ui';
+import { rutaPanel } from '@/panel/enlaces';
+import { PaginaPanel } from '@/panel/marco';
 import { Lock, MapPin, UserRound, Users } from '@/ui/iconos';
 
 import { conteoMatches, matchesDeConductor, precondicionDeConductor } from './datosPanel';
@@ -297,7 +299,7 @@ function FichaConductor({ c, ahora, onCerrar }: { c: ConductorVista; ahora: numb
 
       <TarjetaPanel
         titulo="Documentos"
-        derecha={enCola ? <Boton titulo="Ir a la cola" variante="oscuro" tamano="mediano" onPress={() => router.navigate('/admin/documentos')} /> : undefined}
+        derecha={enCola ? <Boton titulo="Ir a la cola" variante="oscuro" tamano="mediano" onPress={() => router.navigate(rutaPanel('documentos'))} /> : undefined}
         separacion={4}>
         {sel.TIPOS_DOC_ORDEN.map((t, i) => {
           const d = c.documentos[t];

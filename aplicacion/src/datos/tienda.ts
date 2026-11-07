@@ -1,5 +1,5 @@
 // Tienda de la demo (zustand + persist): todo lo que pasa en la demo vive aquí y se guarda en el
-// navegador (localStorage, clave "dale-demo-v1"). Nada sale del navegador.
+// navegador (localStorage, clave "dale-demo-datos"; ver almacenamiento.ts). Nada sale del navegador.
 //
 // Uso en pantallas:
 //   const nombres = useDemo((s) => s.cuenta.nombres);          // un valor simple
@@ -9,15 +9,18 @@
 // Cada grupo puede escribir acciones propias con useDemo.setState(...) en su carpeta.
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
+import { persist } from 'zustand/middleware';
 
+import { crearAlmacenDemo } from './almacenamiento';
 import { avisar } from './avisos';
 import { borrarTodosLosBorradores } from './borradores';
 import {
   CLAVE_ALMACENAMIENTO,
+  CLAVE_ALMACENAMIENTO_ANTERIOR,
   VERSION_ESTADO,
   ajustesIniciales,
   crearEstadoInicial,
+  migrarEstado,
   reglasIniciales,
   type DatosDemo,
 } from './estado';
@@ -67,8 +70,11 @@ export interface Resultado {
   error?: string;
 }
 
-/** Quién firma las acciones del panel en la demo. */
+/** Quién firma las acciones del panel (guardado en src/panel, fuera del mockup). */
 export const QUIEN_EN_PANEL = 'Tú (demo)';
+
+/** Cuánto tarda la persona del equipo (simulada) en revisar un documento que no aprobó la IA. */
+export const SEGUNDOS_REVISION_EQUIPO = 12;
 
 export interface DatosPaso1 {
   nombres: string;
@@ -105,6 +111,11 @@ export interface AccionesDemo {
   reiniciarDemo: () => void;
   /** Atajo: deja al usuario como conductor con perfil completo y verificado, con 2 conversaciones. */
   prepararConductorVerificado: () => void;
+  /**
+   * Atajo: perfil completo con la Hoja de Vida no aprobada (PDF vencido) y los otros 3 documentos
+   * aprobados. Sirve para ver "Documento no aprobado" (C4) y todo lo que depende de ese estado.
+   */
+  prepararDocumentoNoAprobado: () => void;
 
   // --- Ingreso (A2–A4) ---
   guardarCelular: (celular: string) => void;
@@ -130,10 +141,12 @@ export interface AccionesDemo {
   enviarDocumentosARevision: (tipos?: TipoDocumentoId[]) => void;
   /** "No estoy de acuerdo: pedir otra revisión". */
   pedirOtraRevision: (tipo: TipoDocumentoId) => void;
-  /** Atajo de la demo: aprueba los documentos del usuario que esperan a una persona. */
+  /** Atajo de la demo ("Aprobar ahora"): el equipo simulado aprueba ya los documentos en revisión. */
   aprobarPendientesDemo: () => void;
   /** La usa la simulación: el agente de IA aprueba un documento claro del usuario. */
   aprobarPorAgenteIA: (tipo: TipoDocumentoId) => void;
+  /** La usa la simulación: una persona del equipo (simulada) aprueba un documento del usuario. */
+  aprobarPorEquipo: (tipo: TipoDocumentoId) => void;
 
   // --- Disponibilidad (E4) y cuenta (E5) ---
   cambiarDisponible: (disponible: boolean) => void;
@@ -169,7 +182,7 @@ export interface AccionesDemo {
   descartarPostulacion: (postulacionId: string) => void;
   alternarFavoritoTitular: (conductorId: string) => void;
 
-  // --- Panel de administración ---
+  // --- Panel de administración (solo las usa el panel guardado en src/panel, fuera del mockup) ---
   /** duenoId: 'yo' (usuario de la demo) o id de conductor ficticio. */
   aprobarDocumento: (duenoId: string, tipo: TipoDocumentoId) => void;
   rechazarDocumento: (duenoId: string, tipo: TipoDocumentoId, motivo: MotivoRechazoId) => void;
@@ -278,6 +291,67 @@ function nuevaEntrega(s: DatosDemo, busquedaId: string, que: QueSeEntrego[], des
   };
 }
 
+/** Tareas de la simulación que dependen de lo que hizo el usuario (se descartan con los atajos). */
+const TAREAS_DEL_USUARIO = new Set<TareaSimulada['tipo']>(['prerevision', 'revision_equipo', 'respuesta_titular', 'abre_ficha']);
+
+/** Quién firma, en el registro del equipo, las revisiones que la demo simula sola. */
+function revisorSimulado(s: DatosDemo): string {
+  return s.equipo.find((m) => m.activo && m.rol === 'revisor')?.nombre ?? 'Equipo de Dale Contacto';
+}
+
+/**
+ * Conductor de ejemplo con el perfil completo y los 4 documentos aprobados hace un día (la cédula y
+ * la licencia por la IA; la Hoja de Vida y los antecedentes por una persona). Base de los atajos.
+ */
+function conductorDeEjemplo(ahora: number): Pick<DatosDemo, 'cuenta' | 'conductor' | 'documentos'> {
+  const hace = (min: number) => new Date(ahora - min * 60 * 1000).toISOString();
+  const documentos = documentosVacios();
+  for (const t of TIPOS_DOC_ORDEN) {
+    documentos[t] = {
+      ...docAprobado(
+        {
+          ...documentoVacio(t),
+          estado: 'en_revision',
+          nombreArchivo: t === 'cedula' || t === 'licencia' ? `${t}.jpg` : `${t.replace('_', '-')}.pdf`,
+          subidoEl: hace(60 * 26),
+          enviadoEl: hace(60 * 26),
+        },
+        t === 'cedula' || t === 'licencia' ? 'ia' : 'persona',
+      ),
+      revisadoEn: hace(60 * 24),
+    };
+  }
+  const base = conductorInicial();
+  const conductor = {
+    ...base,
+    registrado: true,
+    registradoEl: hace(60 * 27),
+    pasosListos: { datos: true, direccion: true, experiencia: true, trabajo: true, documentos: true },
+    pasoActual: 5,
+    fechaNacimiento: EJEMPLO_USUARIO.fechaNacimiento,
+    direccion: EJEMPLO_USUARIO.direccion,
+    depto: EJEMPLO_USUARIO.depto,
+    comunaId: EJEMPLO_USUARIO.comunaId,
+    clasesRevisadas: [...base.clasesDeclaradas],
+    disponibilidadConfirmadaEn: hace(60 * 24),
+    estadoPerfil: 'completo' as const,
+    estadoVerificacion: 'verificado' as const,
+  };
+  const cuenta: CuentaUsuario = {
+    ...cuentaInicial(),
+    celular: EJEMPLO_USUARIO.celular,
+    celularVerificado: true,
+    correo: EJEMPLO_USUARIO.correo,
+    nombres: EJEMPLO_USUARIO.nombres,
+    apellido1: EJEMPLO_USUARIO.apellido1,
+    apellido2: EJEMPLO_USUARIO.apellido2,
+    creadaEl: hace(60 * 27),
+    autorizaciones: { terminos: true, privacidad: true, compartirFicha: true, recordatoriosWhatsapp: true },
+    autorizacionesEl: hace(60 * 27),
+  };
+  return { cuenta, conductor, documentos };
+}
+
 /** Programa que algunos titulares con match "abran la ficha" del conductor recién verificado. */
 function tareasAlVerificar(s: DatosDemo): TareaSimulada[] {
   const ahora = Date.now();
@@ -339,6 +413,13 @@ export const useDemo = create<EstadoDemo>()(
         return c ? nombreCompleto(c) : duenoId;
       };
 
+      const nombreMotivo = (motivo: MotivoRechazoId) =>
+        get().catalogos.motivosRechazo.find((m) => m.id === motivo)?.nombre ?? motivo;
+
+      /** Agrega una línea al registro "Acción del equipo" (lo muestra el panel guardado). */
+      const anotarAccionEquipo = (quien: string, que: string) =>
+        set((s) => ({ accionesEquipo: [{ id: nuevoId('a'), quien, que, fecha: ahoraISO() }, ...s.accionesEquipo].slice(0, 200) }));
+
       return {
         ...crearEstadoInicial(),
 
@@ -355,52 +436,12 @@ export const useDemo = create<EstadoDemo>()(
           const s = get();
           const ahora = Date.now();
           const hace = (min: number) => new Date(ahora - min * 60 * 1000).toISOString();
-          const documentos = documentosVacios();
-          for (const t of TIPOS_DOC_ORDEN) {
-            documentos[t] = {
-              ...docAprobado(
-                {
-                  ...documentoVacio(t),
-                  estado: 'en_revision',
-                  nombreArchivo: t === 'cedula' || t === 'licencia' ? `${t}.jpg` : `${t.replace('_', '-')}.pdf`,
-                  subidoEl: hace(60 * 26),
-                  enviadoEl: hace(60 * 26),
-                },
-                t === 'cedula' || t === 'licencia' ? 'ia' : 'persona',
-              ),
-              revisadoEn: hace(60 * 24),
-            };
-          }
+          const { cuenta, conductor, documentos: aprobados } = conductorDeEjemplo(ahora);
           // Como en las maquetas E1 y E2: la Hoja de Vida vence en 20 días (dentro del aviso de 30),
           // para ver "Vence pronto", "Renuévala antes del…" y "Subir nueva".
-          documentos.hoja_vida = { ...documentos.hoja_vida, venceEn: new Date(ahora + 20 * 24 * 60 * 60 * 1000).toISOString() };
-          const base = conductorInicial();
-          const conductor = {
-            ...base,
-            registrado: true,
-            registradoEl: hace(60 * 27),
-            pasosListos: { datos: true, direccion: true, experiencia: true, trabajo: true, documentos: true },
-            pasoActual: 5,
-            fechaNacimiento: EJEMPLO_USUARIO.fechaNacimiento,
-            direccion: EJEMPLO_USUARIO.direccion,
-            depto: EJEMPLO_USUARIO.depto,
-            comunaId: EJEMPLO_USUARIO.comunaId,
-            clasesRevisadas: [...base.clasesDeclaradas],
-            disponibilidadConfirmadaEn: hace(60 * 24),
-            estadoPerfil: 'completo' as const,
-            estadoVerificacion: 'verificado' as const,
-          };
-          const cuenta: CuentaUsuario = {
-            ...cuentaInicial(),
-            celular: EJEMPLO_USUARIO.celular,
-            celularVerificado: true,
-            correo: EJEMPLO_USUARIO.correo,
-            nombres: EJEMPLO_USUARIO.nombres,
-            apellido1: EJEMPLO_USUARIO.apellido1,
-            apellido2: EJEMPLO_USUARIO.apellido2,
-            creadaEl: hace(60 * 27),
-            autorizaciones: { terminos: true, privacidad: true, compartirFicha: true, recordatoriosWhatsapp: true },
-            autorizacionesEl: hace(60 * 27),
+          const documentos = {
+            ...aprobados,
+            hoja_vida: { ...aprobados.hoja_vida, venceEn: new Date(ahora + 20 * 24 * 60 * 60 * 1000).toISOString() },
           };
           const m = (autor: Mensaje['autor'], texto: string, min: number, leido = true): Mensaje => ({
             id: nuevoId('m'),
@@ -458,8 +499,48 @@ export const useDemo = create<EstadoDemo>()(
             bloqueos: [],
             matchesPorPostulacion: [],
             postulaciones: s.postulaciones.filter((p) => p.conductorId !== ID_USUARIO),
-            pendientes: s.pendientes.filter((t) => t.tipo !== 'prerevision' && t.tipo !== 'respuesta_titular'),
+            pendientes: s.pendientes.filter((t) => t.tipo !== 'prerevision' && t.tipo !== 'revision_equipo' && t.tipo !== 'respuesta_titular'),
           });
+        },
+
+        prepararDocumentoNoAprobado: () => {
+          borrarTodosLosBorradores();
+          const s = get();
+          const base = conductorDeEjemplo(Date.now());
+          // La Hoja de Vida no se aprobó: el PDF se sacó hace más de los días permitidos. Todo rechazo
+          // lo decide una persona del equipo. Los otros 3 documentos quedan aprobados.
+          const documentos = {
+            ...base.documentos,
+            hoja_vida: {
+              ...base.documentos.hoja_vida,
+              estado: 'rechazado' as const,
+              venceEn: null,
+              quienDecidio: 'persona' as const,
+              motivo: 'vencido' as const,
+            },
+          };
+          set({
+            rol: 'conductor',
+            cuenta: base.cuenta,
+            conductor: { ...base.conductor, estadoVerificacion: calcularVerificacion(documentos) },
+            documentos,
+            // Nunca llegó a estar verificado: sin matches, conversaciones ni entregas de datos.
+            mensajes: {},
+            titularEscribiendo: {},
+            favoritos: [],
+            contactoCompartido: {},
+            direccionCompartida: {},
+            entregasDatos: [],
+            fichasAbiertas: [],
+            bloqueos: [],
+            matchesPorPostulacion: [],
+            postulaciones: s.postulaciones.filter((p) => p.conductorId !== ID_USUARIO),
+            pendientes: s.pendientes.filter((t) => !TAREAS_DEL_USUARIO.has(t.tipo)),
+          });
+          anotarAccionEquipo(
+            revisorSimulado(get()),
+            `No aprobó ${NOMBRE_DOC.hoja_vida} de ${nombreDueno(ID_USUARIO)} (${nombreMotivo('vencido')})`,
+          );
         },
 
         // ------------------------------------------------------------------ Ingreso
@@ -597,7 +678,7 @@ export const useDemo = create<EstadoDemo>()(
 
         aprobarPendientesDemo: () => {
           for (const t of TIPOS_DOC_ORDEN) {
-            if (get().documentos[t].estado === 'en_revision') get().aprobarDocumento(ID_USUARIO, t);
+            if (get().documentos[t].estado === 'en_revision') get().aprobarPorEquipo(t);
           }
         },
 
@@ -608,6 +689,16 @@ export const useDemo = create<EstadoDemo>()(
             (d) => docAprobado(d, 'ia'),
             tipo === 'licencia' ? (c) => ({ clasesRevisadas: [...c.clasesDeclaradas] }) : undefined,
           ),
+
+        aprobarPorEquipo: (tipo) => {
+          cambiarDocumentoDe(
+            ID_USUARIO,
+            tipo,
+            (d) => docAprobado(d, 'persona'),
+            tipo === 'licencia' ? (c) => ({ clasesRevisadas: [...c.clasesDeclaradas] }) : undefined,
+          );
+          anotarAccionEquipo(revisorSimulado(get()), `Aprobó ${NOMBRE_DOC[tipo]} de ${nombreDueno(ID_USUARIO)}`);
+        },
 
         // ------------------------------------------------------------------ Disponibilidad y cuenta
         cambiarDisponible: (disponible) =>
@@ -966,8 +1057,7 @@ export const useDemo = create<EstadoDemo>()(
             quienDecidio: 'persona',
             motivo,
           }));
-          const nombreMotivo = get().catalogos.motivosRechazo.find((m) => m.id === motivo)?.nombre ?? motivo;
-          get().registrarAccionEquipo(`No aprobó ${NOMBRE_DOC[tipo]} de ${nombreDueno(duenoId)} (${nombreMotivo})`);
+          get().registrarAccionEquipo(`No aprobó ${NOMBRE_DOC[tipo]} de ${nombreDueno(duenoId)} (${nombreMotivo(motivo)})`);
           if (duenoId === ID_USUARIO) avisar(`No pudimos aprobar ${NOMBRE_DOC[tipo]}.`, 'error');
         },
 
@@ -1126,10 +1216,7 @@ export const useDemo = create<EstadoDemo>()(
           get().registrarAccionEquipo('Cambió el acceso de una persona del equipo');
         },
 
-        registrarAccionEquipo: (que) =>
-          set((s) => ({
-            accionesEquipo: [{ id: nuevoId('a'), quien: QUIEN_EN_PANEL, que, fecha: ahoraISO() }, ...s.accionesEquipo].slice(0, 200),
-          })),
+        registrarAccionEquipo: (que) => anotarAccionEquipo(QUIEN_EN_PANEL, que),
 
         // ------------------------------------------------------------------ Simulación
         programarTarea: (tarea) =>
@@ -1141,15 +1228,21 @@ export const useDemo = create<EstadoDemo>()(
     {
       name: CLAVE_ALMACENAMIENTO,
       version: VERSION_ESTADO,
-      storage: createJSONStorage(() => AsyncStorage),
+      // Lee una sola vez lo guardado por la versión anterior y no pisa lo de una versión más nueva.
+      storage: crearAlmacenDemo<DatosDemo>(AsyncStorage, {
+        claveAnterior: CLAVE_ALMACENAMIENTO_ANTERIOR,
+        version: VERSION_ESTADO,
+        alQuedarVieja: () =>
+          avisar('Hay una versión nueva de la demo. Recarga la página para seguir.', 'info', 12000),
+      }),
       // Solo se guardan los datos (las acciones no se serializan).
       partialize: (s) => {
         const datos: Partial<EstadoDemo> = {};
         for (const [k, v] of Object.entries(s)) if (typeof v !== 'function') (datos as Record<string, unknown>)[k] = v;
         return datos as DatosDemo;
       },
-      // Si cambió la forma del estado, se parte de cero.
-      migrate: () => crearEstadoInicial() as unknown as EstadoDemo,
+      // Si cambió la versión del estado: ver migrarEstado (src/datos/estado.ts).
+      migrate: (guardado, version) => migrarEstado(guardado, version) as unknown as EstadoDemo,
     },
   ),
 );
@@ -1163,7 +1256,7 @@ export function demoHidratada(): boolean {
 // (ej. window.__daleDemo.getState().prepararConductorVerificado()).
 if (typeof window !== 'undefined') {
   (window as unknown as { __daleDemo: typeof useDemo }).__daleDemo = useDemo;
-  // Varias pestañas con la demo (ej. el panel en una y la app en otra): cuando otra pestaña guarda,
+  // Varias pestañas con la demo (ej. el conductor en una y el titular en otra): cuando otra pestaña guarda,
   // esta vuelve a leer lo guardado. Así todas muestran lo mismo y ninguna pisa los cambios de otra.
   // (En la web, AsyncStorage usa localStorage, que avisa a las demás pestañas con el evento "storage".)
   if (typeof window.addEventListener === 'function') {

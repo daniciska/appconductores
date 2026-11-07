@@ -1,7 +1,7 @@
 // B6 · C3 · C5 · C6 · Inicio del conductor
 // Ruta: /conductor/inicio
 // Maqueta: docs/maqueta/CondInicioIncompleto.dc.html, CondInicioRevision.dc.html, CondInicioActivo.dc.html, CondSinMatches.dc.html
-// Refleja el estado en vivo: cuando el panel aprueba o rechaza un documento, o cambia "Disponible", la pantalla cambia.
+// Refleja el estado en vivo: cuando el equipo (simulado en la demo) aprueba un documento, o cambia "Disponible", la pantalla cambia.
 import { Text, View } from 'react-native';
 import { router, useNavigation } from 'expo-router';
 
@@ -247,7 +247,7 @@ function VistaRevision() {
   const tipos = useDemo((s) => s.catalogos.tiposDocumento);
   const resumen = useResumenDocumentos();
   const aprobarPendientesDemo = useDemo((s) => s.aprobarPendientesDemo);
-  const esperanEquipo = TIPOS_DOC_ORDEN.some((t) => documentos[t].estado === 'en_revision');
+  const enRevision = TIPOS_DOC_ORDEN.some((t) => documentos[t].estado === 'en_revision');
 
   // Como en la maqueta C3: el título no cambia aunque haya un documento no aprobado (eso se ve en su fila).
   const titulo = 'Tu perfil está en revisión';
@@ -301,10 +301,10 @@ function VistaRevision() {
         </Text>
       </View>
 
-      {esperanEquipo ? (
+      {enRevision ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 4 }}>
           <Sparkles size={14} color={color.textoSecundario} strokeWidth={2} />
-          <Text style={[tipo.pequeno, { flex: 1, color: color.textoSecundario }]}>Demo: revísalos en Panel → Documentos.</Text>
+          <Text style={[tipo.pequeno, { flex: 1, color: color.textoSecundario }]}>Demo: el equipo los aprueba en unos segundos.</Text>
           <Presionable
             role="button"
             aria-label="Aprobar ahora (atajo de la demo)"

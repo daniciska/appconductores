@@ -1,15 +1,16 @@
-// Panel de administración (ancho completo): barra lateral en escritorio, menú en celular.
+// Marco del panel de administración (ancho completo): barra lateral en escritorio, menú en celular.
+// Antes estaba en src/ui/panel.tsx. Guardado fuera del mockup (ver src/panel/README.md).
 import { useState, type ReactNode } from 'react';
 import { ScrollView, Text, View, useWindowDimensions, type StyleProp, type ViewStyle } from 'react-native';
 import { router, type Href } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { HojaInferior } from './capas';
-import { BotonIcono, Presionable } from './controles';
-import { KeyRound, Menu, type LucideIcon } from './iconos';
-import { BotonDemo } from './navegacion';
-import { Texto, Titulo } from './texto';
-import { ANCHO_ESCRITORIO, color, fuente, radio, tipo } from './tokens';
+import { HojaInferior } from '@/ui/capas';
+import { BotonIcono, Presionable } from '@/ui/controles';
+import { KeyRound, Menu, type LucideIcon } from '@/ui/iconos';
+import { BotonDemo } from '@/ui/navegacion';
+import { Texto, Titulo } from '@/ui/texto';
+import { ANCHO_ESCRITORIO, color, fuente, radio, tipo } from '@/ui/tokens';
 
 export interface ElementoPanel {
   clave: string;

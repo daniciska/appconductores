@@ -1,4 +1,5 @@
-// / · Selector de la demo: elegir con qué rol entrar, atajo y reiniciar.
+// / · Selector de la demo: elegir con qué rol entrar (conductor o titular), atajos y reiniciar.
+// El panel de administración no se muestra en el mockup (pedido de la dueña, 7-nov; ver src/panel).
 // Estilo de la Bienvenida (docs/maqueta/CondBienvenida.dc.html): fondo casi negro y tarjetas grandes.
 import { useState } from 'react';
 import { Text, View } from 'react-native';
@@ -23,7 +24,7 @@ import {
   radio,
   type LucideIcon,
 } from '@/ui';
-import { ChevronRight, LayoutDashboard, RotateCcw, Sparkles } from '@/ui/iconos';
+import { ChevronRight, CircleAlert, RotateCcw, Sparkles } from '@/ui/iconos';
 
 type Variante = 'clara' | 'acento' | 'oscura';
 
@@ -91,9 +92,10 @@ export default function SelectorDemo() {
   const elegirRol = useDemo((s) => s.elegirRol);
   const reiniciarDemo = useDemo((s) => s.reiniciarDemo);
   const prepararConductorVerificado = useDemo((s) => s.prepararConductorVerificado);
+  const prepararDocumentoNoAprobado = useDemo((s) => s.prepararDocumentoNoAprobado);
   const [confirmar, setConfirmar] = useState(false);
 
-  const entrar = (rol: 'conductor' | 'titular' | 'admin', href: Href) => {
+  const entrar = (rol: 'conductor' | 'titular', href: Href) => {
     elegirRol(rol);
     router.push(href);
   };
@@ -123,7 +125,7 @@ export default function SelectorDemo() {
         <View style={{ marginTop: 28, gap: 14 }}>
           <Insignia texto="Demo con datos de ejemplo" tono="acento" icono={Sparkles} />
           <Titulo nivel="hero" tono="blanco">
-            Recorre la app como conductor, titular o equipo.
+            Recorre la app como conductor o titular.
           </Titulo>
           <Text style={[fuente(400), { fontSize: 16, lineHeight: 24, color: '#BDBDBD' }]}>
             Todo es de ejemplo: lo que escribas queda solo en este navegador y no se envía nada.
@@ -145,13 +147,6 @@ export default function SelectorDemo() {
             variante="acento"
             onPress={() => entrar('titular', '/titular')}
           />
-          <TarjetaRol
-            titulo="Panel de administración"
-            texto="Revisa documentos y cambia las reglas del match."
-            icono={LayoutDashboard}
-            variante="oscura"
-            onPress={() => entrar('admin', '/admin')}
-          />
         </View>
 
         <View style={{ gap: 4, paddingTop: 4 }}>
@@ -166,6 +161,17 @@ export default function SelectorDemo() {
                 prepararConductorVerificado();
                 mostrarToast('Listo: conductor verificado con matches.', 'exito');
                 router.push('/conductor/inicio');
+              }}
+            />
+            <BotonSecundario
+              titulo="Atajo: documento no aprobado"
+              icono={CircleAlert}
+              onPress={() => {
+                prepararDocumentoNoAprobado();
+                // Sin aviso: taparía los botones de la pantalla, que ya dice "No aprobada".
+                // Inicio queda debajo: al volver desde "No aprobada" se ve la fila con el motivo.
+                router.push('/conductor/inicio');
+                router.push({ pathname: '/conductor/documentos/[tipo]/no-aprobado', params: { tipo: 'hoja_vida' } });
               }}
             />
             <BotonSecundario titulo="Reiniciar demo" icono={RotateCcw} onPress={() => setConfirmar(true)} />

@@ -1,5 +1,5 @@
 // Panel · Equipo
-// Ruta: /admin/equipo
+// Era la ruta (ya no existe en el mockup): /admin/equipo
 // Sin maqueta (panel web). Personas del equipo con su rol (Revisor o Administrador) y el registro de acciones.
 import { useState } from 'react';
 import { View } from 'react-native';
@@ -16,13 +16,13 @@ import {
   EstadoVacio,
   Insignia,
   Interruptor,
-  PaginaPanel,
   Separador,
   Texto,
   color,
   mostrarToast,
   radio,
 } from '@/ui';
+import { PaginaPanel } from '@/panel/marco';
 import { ClipboardList, Plus, ShieldCheck, UserRound } from '@/ui/iconos';
 
 import { TarjetaPanel, VentanaPanel, useAnchoPanel } from './piezas';

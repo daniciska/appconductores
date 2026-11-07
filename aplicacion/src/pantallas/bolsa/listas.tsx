@@ -107,7 +107,7 @@ export function ListaPostulaciones({ onVerOfertas }: { onVerOfertas?: () => void
   );
 }
 
-/** La bolsa está apagada desde el panel (se puede llegar con un enlace directo). */
+/** La bolsa está apagada (ajuste bolsaActiva; se puede llegar con un enlace directo). En el mockup parte encendida. */
 export function BolsaApagada() {
   return (
     <EstadoVacio

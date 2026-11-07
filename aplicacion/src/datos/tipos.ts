@@ -131,7 +131,10 @@ export interface DocumentoUsuario {
   nombreArchivo: string | null;
   subidoEl: string | null;
   enviadoEl: string | null;
-  /** En revisión: 'ia' = pre-revisión automática; 'equipo' = esperando a una persona en el panel. */
+  /**
+   * En revisión: 'ia' = pre-revisión automática; 'equipo' = esperando a una persona del equipo
+   * (en la demo esa revisión se simula sola: ver src/datos/simulacion.ts).
+   */
   etapa: 'ia' | 'equipo' | null;
   revisadoEn: string | null;
   venceEn: string | null;
@@ -145,6 +148,7 @@ export interface DocumentoUsuario {
 // Personas
 // ---------------------------------------------------------------------------
 
+/** 'admin' lo usaba el panel, que ya no está en el mockup (queda guardado en src/panel). */
 export type Rol = 'conductor' | 'titular' | 'admin';
 export type EstadoPerfil = 'incompleto' | 'completo';
 export type EstadoVerificacion = 'sin_documentos' | 'en_revision' | 'verificado' | 'con_observaciones';
@@ -341,7 +345,8 @@ export interface Reporte {
 }
 
 // ---------------------------------------------------------------------------
-// Configuración (panel de administración)
+// Configuración (la cambia el panel de administración; en el mockup, sin panel, queda con sus
+// valores iniciales)
 // ---------------------------------------------------------------------------
 
 export type CodigoRegla = 'F1' | 'F2' | 'F3' | 'M2' | 'M3' | 'M4' | 'M6' | 'M7';
@@ -439,4 +444,6 @@ export type TareaSimulada =
   | { id: string; tipo: 'respuesta_titular'; venceEn: number; busquedaId: string }
   | { id: string; tipo: 'abre_ficha'; venceEn: number; busquedaId: string }
   | { id: string; tipo: 'postulacion_vista'; venceEn: number; postulacionId: string }
-  | { id: string; tipo: 'postulacion_respuesta'; venceEn: number; postulacionId: string };
+  | { id: string; tipo: 'postulacion_respuesta'; venceEn: number; postulacionId: string }
+  /** Una persona del equipo (simulada) revisa un documento del usuario. `ronda` = envío que revisa. */
+  | { id: string; tipo: 'revision_equipo'; venceEn: number; documento: TipoDocumentoId; ronda: string };

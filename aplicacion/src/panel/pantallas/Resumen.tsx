@@ -1,5 +1,5 @@
 // Panel · Resumen
-// Ruta: /admin
+// Era la ruta (ya no existe en el mockup): /admin
 // Sin maqueta (panel web). Cifras, lo pendiente, la configuración vigente y las últimas acciones del equipo.
 import { View } from 'react-native';
 import { router, type Href } from 'expo-router';
@@ -7,7 +7,9 @@ import { router, type Href } from 'expo-router';
 import { useAhora, useColaDocumentos, useDerivado, useNegociosActivos, useReportesAbiertos, useResumenPanel } from '@/datos/hooks';
 import { useDemo } from '@/datos/tienda';
 import { haceCuanto, iniciales, plural } from '@/datos/formato';
-import { Avatar, Boton, PaginaPanel, Presionable, Separador, Texto, color, radio, type LucideIcon } from '@/ui';
+import { Avatar, Boton, Presionable, Separador, Texto, color, radio, type LucideIcon } from '@/ui';
+import { rutaPanel } from '@/panel/enlaces';
+import { PaginaPanel } from '@/panel/marco';
 import {
   ArrowRight,
   ChevronRight,
@@ -41,21 +43,21 @@ export default function Resumen() {
       icono: FileCheck,
       titulo: cola.length ? `${plural(cola.length, 'documento espera', 'documentos esperan')} revisión` : 'Sin documentos por revisar',
       detalle: cola.length ? `El más antiguo llegó ${haceCuanto(masAntiguo, ahora)}` : 'La cola está al día',
-      href: '/admin/documentos',
+      href: rutaPanel('documentos'),
       urgente: cola.length > 0,
     },
     {
       icono: Flag,
       titulo: reportes.length ? `${plural(reportes.length, 'reporte abierto', 'reportes abiertos')}` : 'Sin reportes abiertos',
       detalle: reportes.length ? `El más antiguo llegó ${haceCuanto(reportes[0]?.reportadoEl, ahora)}` : 'Nada que resolver',
-      href: '/admin/reportes',
+      href: rutaPanel('reportes'),
       urgente: reportes.length > 0,
     },
     {
       icono: UserRoundX,
       titulo: `${plural(conObservaciones, 'conductor', 'conductores')} con observaciones`,
       detalle: 'Deben subir de nuevo un documento',
-      href: '/admin/conductores',
+      href: rutaPanel('conductores'),
       urgente: false,
     },
   ];
@@ -67,10 +69,10 @@ export default function Resumen() {
           etiqueta="Documentos en cola"
           valor={r.documentosEnCola}
           detalle={r.documentosEnCola ? `El más antiguo ${haceCuanto(masAntiguo, ahora)}` : 'Todo al día'}
-          onPress={() => router.navigate('/admin/documentos')}
+          onPress={() => router.navigate(rutaPanel('documentos'))}
         />
-        <Cifra etiqueta="Conductores" valor={r.conductores} detalle={`${plural(r.verificados, 'verificado', 'verificados')} · ${plural(r.incompletos, 'incompleto', 'incompletos')}`} onPress={() => router.navigate('/admin/conductores')} />
-        <Cifra etiqueta="Matches vigentes" valor={r.matches} detalle={`Umbral ${umbral} %`} onPress={() => router.navigate('/admin/match')} />
+        <Cifra etiqueta="Conductores" valor={r.conductores} detalle={`${plural(r.verificados, 'verificado', 'verificados')} · ${plural(r.incompletos, 'incompleto', 'incompletos')}`} onPress={() => router.navigate(rutaPanel('conductores'))} />
+        <Cifra etiqueta="Matches vigentes" valor={r.matches} detalle={`Umbral ${umbral} %`} onPress={() => router.navigate(rutaPanel('match'))} />
         <Cifra etiqueta="Búsquedas activas" valor={r.busquedasActivas} detalle={`${r.ofertasEnBolsa} en la bolsa · ${r.titulares} titulares`} />
       </View>
 
@@ -99,13 +101,13 @@ export default function Resumen() {
           </TarjetaPanel>
 
           <TarjetaPanel titulo="Configuración vigente" descripcion="Lo que hoy usa la app. Cambia en vivo." separacion={4}>
-            <FilaConfig icono={SlidersHorizontal} etiqueta="Umbral del match" valor={`${umbral} %`} href="/admin/match" />
+            <FilaConfig icono={SlidersHorizontal} etiqueta="Umbral del match" valor={`${umbral} %`} href={rutaPanel('match')} />
             <Separador sangria={48} />
-            <FilaConfig icono={ListChecks} etiqueta="Negocios activos" valor={negocios.map((n) => n.nombre).join(', ') || 'Ninguno'} href="/admin/catalogos" />
+            <FilaConfig icono={ListChecks} etiqueta="Negocios activos" valor={negocios.map((n) => n.nombre).join(', ') || 'Ninguno'} href={rutaPanel('catalogos')} />
             <Separador sangria={48} />
-            <FilaConfig icono={Settings} etiqueta="Bolsa de trabajo" valor={ajustes.bolsaActiva ? 'Encendida' : 'Apagada'} href="/admin/ajustes" />
+            <FilaConfig icono={Settings} etiqueta="Bolsa de trabajo" valor={ajustes.bolsaActiva ? 'Encendida' : 'Apagada'} href={rutaPanel('ajustes')} />
             <Separador sangria={48} />
-            <FilaConfig icono={Settings} etiqueta="Validar campos obligatorios" valor={ajustes.validarObligatorios ? 'Encendido' : 'Apagado'} href="/admin/ajustes" />
+            <FilaConfig icono={Settings} etiqueta="Validar campos obligatorios" valor={ajustes.validarObligatorios ? 'Encendido' : 'Apagado'} href={rutaPanel('ajustes')} />
           </TarjetaPanel>
         </View>
 
@@ -135,10 +137,11 @@ export default function Resumen() {
                 </Texto>
               </View>
             ))}
+            {/* Enlace a la app del conductor: solo sirve dentro del mockup; se quita en la app del panel. */}
             <Boton titulo="Abrir la app del conductor" variante="principal" tamano="mediano" iconoDerecha={ArrowRight} onPress={() => router.push('/conductor')} />
           </View>
 
-          <TarjetaPanel titulo="Últimas acciones del equipo" derecha={<Boton titulo="Ver todo" variante="texto" tamano="mediano" onPress={() => router.navigate('/admin/equipo')} />} separacion={4}>
+          <TarjetaPanel titulo="Últimas acciones del equipo" derecha={<Boton titulo="Ver todo" variante="texto" tamano="mediano" onPress={() => router.navigate(rutaPanel('equipo'))} />} separacion={4}>
             {acciones.slice(0, 6).map((a, i) => (
               <View key={a.id}>
                 {i > 0 ? <Separador sangria={44} /> : null}

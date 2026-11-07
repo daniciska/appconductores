@@ -2,7 +2,7 @@
 // Ruta: /conductor/documentos/enviado (opcional ?tipo=licencia cuando se envió uno solo)
 // Maqueta: docs/maqueta/CondEnviado.dc.html
 // Los pasos de "Qué pasa ahora" se marcan en vivo: la pre-revisión automática termina a los ~3 s y
-// la Hoja de Vida y los antecedentes esperan a una persona en el panel.
+// la Hoja de Vida y los antecedentes esperan a una persona del equipo (simulada: ~12 s más).
 import { useEffect, useRef } from 'react';
 import { Animated, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';

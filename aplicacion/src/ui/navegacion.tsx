@@ -81,10 +81,10 @@ export function BarraInferior({ pestanas, activa, onElegir }: PropsBarraInferior
 
 /**
  * Botón discreto "Demo" (arriba a la derecha) que vuelve al selector de la demo.
- * Va en los layouts de /conductor, /titular y /admin: saca esa sección de la pila raíz y vuelve a "/"
+ * Va en los layouts de /conductor y /titular: saca esa sección de la pila raíz y vuelve a "/"
  * (si "/" no estaba en la pila, por ejemplo al abrir un enlace directo, lo agrega).
  * Zona táctil de 44 px; en conductor y titular va sobre la franja fija de Pantalla (MarcoCelular bandaDemo).
- * Con `enLinea` no flota (barra lateral del panel en escritorio).
+ * Con `enLinea` no flota (lo usa la barra lateral del panel guardado en src/panel).
  */
 export function BotonDemo({ style, enLinea = false }: { style?: StyleProp<ViewStyle>; enLinea?: boolean }) {
   const insets = useSafeAreaInsets();

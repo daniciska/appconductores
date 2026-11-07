@@ -1,5 +1,5 @@
 // Panel · Documentos · Revisión de documentos
-// Ruta: /admin/documentos
+// Era la ruta (ya no existe en el mockup): /admin/documentos
 // Sin maqueta (panel web). Cola de lo que el agente de IA no aprobó solo; la decisión cambia en vivo
 // el estado del conductor (y, si es el usuario de la demo, lo que ve en su app).
 import { useEffect, useMemo, useState } from 'react';
@@ -20,20 +20,20 @@ import {
   EstadoVacio,
   FilaRadio,
   Insignia,
-  PaginaPanel,
   Separador,
   Texto,
   Titulo,
   color,
   radio,
 } from '@/ui';
+import { PaginaPanel } from '@/panel/marco';
 import { Bot, Check, CircleCheck, CircleX, Eye, FileText, Hourglass, Image as IconoImagen, Inbox, Lock, X } from '@/ui/iconos';
 
 import { registrarLectura } from './acciones';
 import { NOMBRE_DOC_CON_ARTICULO, clavedoc, decididosRecientes, matchesDeConductor } from './datosPanel';
 import { FilaElegible, ListaDetalle, TarjetaPanel, VentanaPanel, useAnchoPanel, useIrA } from './piezas';
 import { prerevisar, type LecturaIA, type Prerevision } from './prerevision';
-import { motivoSimple, motivosPara, queHacerMotivo } from '../documentos/textos';
+import { motivoSimple, motivosPara, queHacerMotivo } from '@/pantallas/documentos/textos';
 
 type Vista = 'cola' | 'decididos';
 
@@ -208,6 +208,7 @@ export default function Documentos() {
           texto={resultado.texto}
           accion={
             <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
+              {/* Enlace a la app del conductor: solo sirve dentro del mockup; se quita en la app del panel. */}
               {resultado.esUsuario ? (
                 <Boton titulo="Ver como conductor" variante="oscuro" tamano="mediano" onPress={() => router.push('/conductor/inicio')} />
               ) : null}

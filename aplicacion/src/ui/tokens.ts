@@ -124,7 +124,7 @@ export const alto = {
 
 /** Ancho máximo de la columna de celular en escritorio. */
 export const ANCHO_CELULAR = 430;
-/** Desde este ancho, el panel muestra la barra lateral. */
+/** Desde este ancho, el panel (guardado en src/panel, fuera del mockup) muestra la barra lateral. */
 export const ANCHO_ESCRITORIO = 900;
 
 const sombraWeb = (css: string): ViewStyle => ({ boxShadow: css }) as ViewStyle;

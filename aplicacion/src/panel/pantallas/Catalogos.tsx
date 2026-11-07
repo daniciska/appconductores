@@ -1,5 +1,5 @@
 // Panel · Catálogos · Negocios e industrias, tipos de vehículo y clases de licencia
-// Ruta: /admin/catalogos
+// Era la ruta (ya no existe en el mockup): /admin/catalogos
 // Sin maqueta (panel web). Encender o apagar un negocio o una industria cambia en vivo el Paso 4,
 // los matches y la bolsa.
 import { useState } from 'react';
@@ -18,13 +18,13 @@ import {
   Dialogo,
   Insignia,
   Interruptor,
-  PaginaPanel,
   Separador,
   Texto,
   color,
   mostrarToast,
   radio,
 } from '@/ui';
+import { PaginaPanel } from '@/panel/marco';
 import { Check, Pencil, X } from '@/ui/iconos';
 
 import { renombrarTamano } from './acciones';

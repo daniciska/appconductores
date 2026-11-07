@@ -1,12 +1,13 @@
 // Panel · Ajustes
-// Ruta: /admin/ajustes
+// Era la ruta (ya no existe en el mockup): /admin/ajustes
 // Sin maqueta (panel web). Interruptores y números que cambian el comportamiento de la app en vivo.
 import { useState } from 'react';
 import { View } from 'react-native';
 
 import { useAjustes } from '@/datos/hooks';
 import type { Ajustes as TipoAjustes } from '@/datos/tipos';
-import { Boton, Dialogo, Interruptor, PaginaPanel, Separador, Stepper, Texto, mostrarToast } from '@/ui';
+import { Boton, Dialogo, Interruptor, Separador, Stepper, Texto, mostrarToast } from '@/ui';
+import { PaginaPanel } from '@/panel/marco';
 import { RotateCcw } from '@/ui/iconos';
 
 import { fijarAjuste, restablecerAjustesPanel } from './acciones';

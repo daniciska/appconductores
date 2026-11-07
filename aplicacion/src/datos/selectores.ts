@@ -687,7 +687,7 @@ export function busquedasActivasDelTitular(s: DatosDemo): number {
 }
 
 // ---------------------------------------------------------------------------
-// Panel de administración
+// Panel de administración (solo los usa el panel guardado en src/panel, fuera del mockup)
 // ---------------------------------------------------------------------------
 
 export interface DocumentoEnCola {

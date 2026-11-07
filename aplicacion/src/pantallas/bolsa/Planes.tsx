@@ -1,7 +1,7 @@
 // BT5 · Planes con la bolsa (propuesta)
 // Ruta: /titular/planes
 // Maqueta: docs/maqueta/BolsaPlanes.dc.html
-// Los planes salen del catálogo (editable desde el panel). Precios por definir. En la demo, "Elegir"
+// Los planes salen del catálogo (en la app real, editable desde el panel). Precios por definir. En la demo, "Elegir"
 // cambia el plan del titular al instante y no se cobra nada.
 import { Text, View } from 'react-native';
 

@@ -11,7 +11,7 @@ import { CircleAlert, Info, Sparkles } from '@/ui/iconos';
 /** En web, reparte las líneas de un texto corto de forma pareja (como `text-wrap: balance` de las maquetas). */
 export const equilibrado = (Platform.OS === 'web' ? { textWrap: 'balance' } : {}) as TextStyle;
 
-/** ¿Los formularios exigen los campos con *? (ajuste del panel; en la demo parte apagado). */
+/** ¿Los formularios exigen los campos con *? (ajuste validarObligatorios; en el mockup, apagado a pedido de la dueña). */
 export function useValidarObligatorios(): boolean {
   return useDemo((s) => s.ajustes.validarObligatorios);
 }
@@ -267,7 +267,7 @@ export function textoRegion(nombre: string | undefined): string {
   return `Región de ${nombre}`;
 }
 
-/** Texto de ayuda de un documento con los días que dice el panel ("PDF … de 30 días o menos"). */
+/** Texto de ayuda de un documento con los días del ajuste diasAntiguedadPdf ("PDF … de 30 días o menos"). */
 export function ayudaDocumento(ayuda: string, dias: number): string {
   return ayuda.replace(/\d+\s+días/, `${dias} días`);
 }

@@ -1,7 +1,8 @@
 // C4 · Documento no aprobado
 // Ruta: /conductor/documentos/[tipo]/no-aprobado
 // Maqueta: docs/maqueta/CondDocRechazado.dc.html
-// Si mientras se ve el documento cambia de estado (pidió otra revisión o el panel lo aprobó), la pantalla lo muestra.
+// Si mientras se ve el documento cambia de estado (pidió otra revisión o el equipo lo aprobó), la pantalla lo muestra.
+// En la demo se llega con el atajo "Documento no aprobado" del menú; la otra revisión la hace el equipo simulado.
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';

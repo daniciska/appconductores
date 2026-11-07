@@ -271,7 +271,7 @@ export default function InicioTitular() {
       </View>
 
       {!bolsaActiva ? (
-        <Aviso icono="info" texto="La bolsa de trabajo está apagada desde el panel. Los conductores no ven las ofertas." />
+        <Aviso icono="info" texto="La bolsa de trabajo no está activa por ahora. Los conductores no ven las ofertas." />
       ) : null}
 
       <Rotulo>Tus búsquedas</Rotulo>

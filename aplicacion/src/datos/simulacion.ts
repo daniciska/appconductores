@@ -1,7 +1,11 @@
 // Simulación de lo que en la app real hacen otras personas o el servidor:
 // (a) pre-revisión del "agente de IA": a los ~3 s la cédula y la licencia se aprueban solas
 //     (caso claro; la licencia copia las clases declaradas a revisadas) y la Hoja de Vida y los
-//     antecedentes quedan esperando a una persona en el panel (/admin/documentos).
+//     antecedentes quedan "En revisión", esperando a una persona del equipo.
+// (a2) revisión de esa persona del equipo: el mockup no tiene panel de administración, así que
+//     también se simula. A los ~12 s de quedar esperando (SEGUNDOS_REVISION_EQUIPO), el documento se
+//     aprueba, con el mismo aviso de siempre. Pasa igual después de "pedir otra revisión". Para ver
+//     un documento no aprobado está el atajo del menú de la demo (prepararDocumentoNoAprobado).
 // (b) respuestas del titular en el chat: a los 2–4 s responde con frases de ejemplo; después del
 //     segundo mensaje del conductor, el titular comparte su contacto (teléfono ficticio).
 // (c) titulares con plan que abren la ficha del conductor recién verificado ("Quién recibió mis datos").
@@ -11,9 +15,10 @@
 // (iniciarSimulacion, montado en el layout raíz) las ejecuta. Así sobreviven a cambiar de pantalla
 // y a recargar la página.
 import { avisar } from './avisos';
-import { ID_USUARIO, busquedaPorId, nombreTitular, primerNombre, titularPorId } from './selectores';
-import { ahoraISO, nuevoId, useDemo } from './tienda';
-import type { EntregaDatos, Mensaje, TareaSimulada } from './tipos';
+import { CLAVE_ALMACENAMIENTO, VERSION_ESTADO } from './estado';
+import { ID_USUARIO, TIPOS_DOC_ORDEN, busquedaPorId, nombreTitular, primerNombre, titularPorId } from './selectores';
+import { SEGUNDOS_REVISION_EQUIPO, ahoraISO, nuevoId, useDemo } from './tienda';
+import type { DocumentoUsuario, EntregaDatos, Mensaje, TareaSimulada } from './tipos';
 
 const RESPUESTAS_INICIALES = [
   'Hola {nombre}, gracias por escribir. ¿Desde cuándo podrías partir?',
@@ -46,9 +51,17 @@ function procesarTarea(t: TareaSimulada): void {
         demo.aprobarPorAgenteIA(t.documento);
         avisar(t.documento === 'cedula' ? 'Tu cédula fue aprobada.' : 'Tu licencia fue aprobada.', 'exito');
       } else {
-        // Pre-revisado: pasa a la cola de una persona del equipo.
+        // Pre-revisado: pasa a una persona del equipo (la programa asegurarRevisionDelEquipo).
         useDemo.setState({ documentos: { ...demo.documentos, [t.documento]: { ...doc, etapa: 'equipo' } } });
       }
+      return;
+    }
+
+    case 'revision_equipo': {
+      const doc = demo.documentos[t.documento];
+      // Si mientras tanto cambió (lo aprobó "Aprobar ahora", lo subió de nuevo, un atajo…), no se toca.
+      if (doc.estado !== 'en_revision' || doc.etapa !== 'equipo' || rondaDe(doc) !== t.ronda) return;
+      demo.aprobarPorEquipo(t.documento);
       return;
     }
 
@@ -132,8 +145,36 @@ function procesarTarea(t: TareaSimulada): void {
   }
 }
 
+/** Qué envío del documento se está revisando (cambia al subirlo de nuevo o al pedir otra revisión). */
+function rondaDe(doc: DocumentoUsuario): string {
+  return `${doc.enviadoEl ?? ''}|${doc.otraRevisionEl ?? ''}`;
+}
+
+/**
+ * Cada documento del usuario que espera a una persona del equipo tiene programada su revisión
+ * (a los SEGUNDOS_REVISION_EQUIPO). Sirve para los que acaban de salir de la pre-revisión, para
+ * "pedir otra revisión" y para lo guardado de antes, cuando los revisaba el panel.
+ */
+function asegurarRevisionDelEquipo(ahora: number): void {
+  const { documentos, pendientes } = useDemo.getState();
+  const nuevas: TareaSimulada[] = [];
+  for (const tipo of TIPOS_DOC_ORDEN) {
+    const doc = documentos[tipo];
+    if (doc.estado !== 'en_revision' || doc.etapa !== 'equipo') continue;
+    const ronda = rondaDe(doc);
+    const yaProgramada = pendientes.some((t) => t.tipo === 'revision_equipo' && t.documento === tipo && t.ronda === ronda);
+    if (!yaProgramada) {
+      // Si hay dos esperando, la segunda llega un poco después (como en la pre-revisión).
+      const venceEn = ahora + SEGUNDOS_REVISION_EQUIPO * 1000 + nuevas.length * 600;
+      nuevas.push({ id: nuevoId('t'), tipo: 'revision_equipo', venceEn, documento: tipo, ronda });
+    }
+  }
+  if (nuevas.length > 0) useDemo.setState({ pendientes: [...pendientes, ...nuevas] });
+}
+
 /** Ejecuta las tareas vencidas. Devuelve cuántas ejecutó. */
 export function procesarPendientes(ahora = Date.now()): number {
+  asegurarRevisionDelEquipo(ahora);
   const { pendientes } = useDemo.getState();
   const vencidas = pendientes.filter((t) => t.venceEn <= ahora);
   if (vencidas.length === 0) {
@@ -155,6 +196,8 @@ export function procesarPendientes(ahora = Date.now()): number {
       console.warn('Simulación: no se pudo procesar', t, e);
     }
   }
+  // Lo que la pre-revisión acaba de dejar esperando al equipo queda programado ya, no en la vuelta siguiente.
+  asegurarRevisionDelEquipo(ahora);
   return vencidas.length;
 }
 
@@ -162,7 +205,9 @@ let reloj: ReturnType<typeof setInterval> | null = null;
 
 // Con la demo abierta en varias pestañas, solo una ejecuta las tareas (la que las tome primero y
 // esté a la vista); las demás reciben el resultado por el evento "storage" (ver tienda.ts).
-const CLAVE_LIDER = 'dale-demo-lider';
+// El turno es por clave de datos y por versión del estado: una pestaña con otra versión de la demo
+// (por ejemplo, la publicada antes, que usaba 'dale-demo-lider') no le quita el turno a esta.
+const CLAVE_LIDER = `${CLAVE_ALMACENAMIENTO}-lider-v${VERSION_ESTADO}`;
 const ID_PESTANA = Math.random().toString(36).slice(2);
 
 function soyLaPestanaQueSimula(ahora: number): boolean {

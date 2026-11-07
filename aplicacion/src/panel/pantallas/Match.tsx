@@ -1,5 +1,5 @@
 // Panel · Match · Reglas del match
-// Ruta: /admin/match
+// Era la ruta (ya no existe en el mockup): /admin/match
 // Sin maqueta (panel web). Umbral, uso y peso de cada regla. Todo cambia los matches en vivo.
 import { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
@@ -16,7 +16,6 @@ import {
   Campo,
   ControlSegmentado,
   Dialogo,
-  PaginaPanel,
   Separador,
   Stepper,
   Texto,
@@ -25,6 +24,7 @@ import {
   radio,
   tipo,
 } from '@/ui';
+import { PaginaPanel } from '@/panel/marco';
 import { ArrowRight, RotateCcw } from '@/ui/iconos';
 
 import { fijarPeso, fijarUmbral, fijarUsoRegla } from './acciones';
@@ -308,6 +308,7 @@ function VistaPrevia() {
             {registrado ? plural(d.matchesUsuario, 'match vigente', 'matches vigentes') : 'Aún no se registra'}
           </Texto>
         </View>
+        {/* Enlace a la app del conductor: solo sirve dentro del mockup; se quita en la app del panel. */}
         <Boton titulo="Ver en la app" variante="contorno" tamano="mediano" iconoDerecha={ArrowRight} onPress={() => router.push('/conductor')} />
       </View>
     </TarjetaPanel>

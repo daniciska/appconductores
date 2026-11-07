@@ -1,7 +1,7 @@
 // D2 · Detalle del match
 // Ruta: /conductor/matches/[id]
 // Maqueta: docs/maqueta/CondDetalleMatch.dc.html
-// % de coincidencia real (motor de match.ts con las reglas del panel) y qué no coincide, condiciones
+// % de coincidencia real (motor de match.ts con las reglas del estado) y qué no coincide, condiciones
 // de la búsqueda, detalle del titular y aviso de contacto oculto. Sin modo de contrato ni garantía.
 // Abrir este detalle NO entrega datos del conductor (eso pasa del lado del titular).
 import type { ReactNode } from 'react';

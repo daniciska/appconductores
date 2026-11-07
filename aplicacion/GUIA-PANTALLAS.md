@@ -55,17 +55,10 @@ Antes de empezar, lee en `/home/user/appconductores/CLAUDE.md` las **Decisiones 
 | bolsa | `/titular/bolsa/[busqueda]/perfiles` | BT2 | `src/pantallas/bolsa/Perfiles.tsx` | `BolsaPerfiles.dc.html` |
 | bolsa | `/titular/bolsa/[busqueda]/postulantes` | BT3 · BT4 | `src/pantallas/bolsa/Postulantes.tsx` | `BolsaPostulantes.dc.html`, `BolsaPostulantesSinPlan.dc.html` |
 | bolsa | `/titular/planes` | BT5 | `src/pantallas/bolsa/Planes.tsx` | `BolsaPlanes.dc.html` |
-| admin | `/admin` | Panel | `src/pantallas/admin/Resumen.tsx` | sin maqueta (panel web) |
-| admin | `/admin/documentos` | Panel · Documentos | `src/pantallas/admin/Documentos.tsx` | sin maqueta |
-| admin | `/admin/conductores` | Panel · Conductores | `src/pantallas/admin/Conductores.tsx` | sin maqueta |
-| admin | `/admin/catalogos` | Panel · Catálogos | `src/pantallas/admin/Catalogos.tsx` | sin maqueta |
-| admin | `/admin/match` | Panel · Match | `src/pantallas/admin/Match.tsx` | sin maqueta |
-| admin | `/admin/zonas` | Panel · Zonas | `src/pantallas/admin/Zonas.tsx` | sin maqueta |
-| admin | `/admin/ajustes` | Panel · Ajustes | `src/pantallas/admin/Ajustes.tsx` | sin maqueta |
-| admin | `/admin/reportes` | Panel · Reportes | `src/pantallas/admin/Reportes.tsx` | sin maqueta |
-| admin | `/admin/equipo` | Panel · Equipo | `src/pantallas/admin/Equipo.tsx` | sin maqueta |
 
 Otras rutas (ya hechas, no se tocan): `/conductor` (redirige a Inicio si ya se registró; si no, a A1), `/componentes` (muestrario del sistema de diseño), `+not-found`.
+
+**Sin panel de administración:** el mockup no muestra el panel (pedido de la dueña, 7-nov). No hay rutas `/admin`: un enlace viejo a `/admin` muestra "Esta pantalla no existe". El código del panel quedó guardado en `src/panel/` (ver su `README.md`), fuera de `src/app`, así que no entra en el sitio publicado. Ninguna pantalla del mockup debe enlazarlo ni nombrarlo.
 
 **Editar desde Perfil:** E1 abre los pasos 1–4 con `?editar=1` (`useModoEdicion()` en `src/pantallas/ingreso/acciones.ts`). En ese modo no se muestra "Paso n de 5", el botón dice "Guardar cambios" y, al guardar, vuelve a Perfil. Desde Inicio, Matches o la Bolsa (completar el perfil) los pasos siguen en orden.
 
@@ -74,7 +67,6 @@ Otras rutas (ya hechas, no se tocan): `/conductor` (redirige a Inicio si ya se r
 - `src/app/conductor/_layout.tsx`: columna de celular (`MarcoCelular`), pila de pantallas y botón "Demo" arriba a la derecha.
 - `src/app/conductor/(pestanas)/_layout.tsx`: pestañas Inicio, Matches, Bolsa (solo si `ajustes.bolsaActiva`), Mensajes (punto amarillo si hay no leídos) y Perfil. Las pantallas de pestaña **no** dibujan la barra: ya está. Las demás rutas del conductor se abren encima, sin barra (como en las maquetas).
 - `src/app/titular/_layout.tsx`: igual al del conductor, sin pestañas.
-- `src/app/admin/_layout.tsx`: panel de ancho completo con barra lateral (≥ 900 px) o menú (celular), con contadores de documentos en cola y reportes abiertos. Cada página del panel usa `<PaginaPanel>`.
 
 **Navegación:** `import { router } from 'expo-router'`. `router.push('/conductor/matches/b01')` abre encima; `router.replace(...)` cambia sin dejar historial (ej. al terminar el registro o al pasar de un paso a otro si no quieres apilar); `router.dismissTo('/conductor/inicio')` cierra lo que está encima hasta volver a Inicio (dentro de la misma sección). Ojo: en esta versión `router.navigate` **apila** una pantalla nueva aunque ya exista; no lo uses para "volver". Para ir al selector no navegues a `/`: ya está el botón "Demo" (etiqueta accesible "Menú de la demo"), que saca la sección de la pila. Las rutas tienen tipos (typed routes): una ruta mal escrita no compila.
 
@@ -89,7 +81,7 @@ Muestrario en vivo: ruta `/componentes`.
 - `color`: `texto #111111`, `textoSuave #3D3D3D`, `textoSecundario #6B6B6B`, `textoDeshabilitado #9A9A9A`, `fondo #F6F6F6`, `superficie #FFFFFF`, `superficieHundida #EEEEEE`, `segmentado #EAEAEA`, `oscuro #111111`, `borde #ECECEC`, `bordeCampo #DDDDDD`, `separador #F0F0F0`, `acento #F5B400`, `acentoSuave #FFF6D6`, `acentoTrazo #B88500`, `acentoBorde #F0DFA0`, `amarilloFondo #FFF4DB`, `amarilloTexto #8A5300`, `exitoFondo #E3F4EA`, `exitoTexto #145F3B`, `exito #17784A`, `errorFondo #FDECEA`, `error #A3261B`, `interruptorApagado #C4C4C4`, `velo`.
 - `familia` (Sora 600/700 y Plus Jakarta Sans 400/500/600/700) y `fuente(peso)` → `{ fontFamily }`. **En web el peso va en la familia:** nunca uses `fontWeight` solo; usa `Texto`/`Titulo` o `fuente(700)`.
 - `tipo`: estilos de texto listos (`hero`, `h1`, `h2`, `tituloTarjeta`, `fuerte`, `cuerpo`, `parrafo`, `etiqueta`, `secundario`, `ayuda`, `pequeno`, `seccion`, `boton`, `botonChico`).
-- `espacio` (lateral 20, superior 56, bloque 16…), `radio` (insignia 8, icono 10, boton44 12, campo 14, boton 16, tarjeta 20, pastilla 22), `alto` (tactil 44, campo 52, fila 52, boton 56), `sombra` (suave, flotante), `duracion` (rapida 140, normal 220, lenta 320), `ANCHO_CELULAR` 430, `ANCHO_ESCRITORIO` 900.
+- `espacio` (lateral 20, superior 56, bloque 16…), `radio` (insignia 8, icono 10, boton44 12, campo 14, boton 16, tarjeta 20, pastilla 22), `alto` (tactil 44, campo 52, fila 52, boton 56), `sombra` (suave, flotante), `duracion` (rapida 140, normal 220, lenta 320), `ANCHO_CELULAR` 430, `ANCHO_ESCRITORIO` 900 (solo lo usa el panel guardado).
 
 ### Componentes
 
@@ -129,8 +121,9 @@ Muestrario en vivo: ruta `/componentes`.
 | `Dialogo` | `visible`, `titulo`, `texto?`, `children?`, `confirmar {titulo, onPress, peligro?}`, `cancelar? {titulo?, onPress}` | Confirmaciones ("No se puede deshacer"). |
 | `mostrarToast(texto, tipo?)` | `tipo`: `info`/`exito`/`error` | Aviso breve abajo (ya montado en el layout raíz). No uses `alert()`. |
 | `BarraInferior`, `BotonDemo`, `MarcoCelular` | — | Ya los usan los layouts. |
-| `MarcoPanel`, `PaginaPanel`, `Metrica` | `PaginaPanel`: `titulo`, `descripcion?`, `acciones?`, `children`, `anchoMaximo=1100`. `Metrica`: `etiqueta`, `valor`, `detalle?`, `onPress?` | Panel de administración. |
 | `EnConstruccion` | `codigo`, `titulo?` | Marcador (bórralo al construir). |
+
+`MarcoPanel`, `PaginaPanel` y `Metrica` ya no están en `@/ui`: se fueron con el panel a `src/panel/marco.tsx`.
 
 **Íconos:** `import { Star, MessageSquare } from '@/ui/iconos'` (lucide, trazo 2). Propios con el dibujo de las maquetas: `Volante`, `Llave` (logo), `AutoFrente` desde `@/ui`. Si falta un ícono, impórtalo en tu carpeta con `import Nombre from 'lucide-react-native/icons/nombre-en-kebab'`. **Nunca** `from 'lucide-react-native'` a secas (carga 2.000 íconos). Tamaños de las maquetas: 22 en la barra, 20 en botones de 44, 18 en filas, 14 en checks.
 
@@ -141,11 +134,12 @@ Muestrario en vivo: ruta `/componentes`.
 - `tipos.ts`: todos los tipos (`Busqueda`, `Titular`, `ConductorUsuario`, `DocumentoUsuario`, `Mensaje`, `Postulacion`, `ReglaMatch`, `Ajustes`, `Plan`…).
 - `semilla/`: catálogos **idénticos a la base** (`geografia.ts` generado desde `docs/propuesta-zonas.csv` con `npm run semilla`: 16 regiones, 81 zonas, 346 comunas; `catalogos.ts`: clases de licencia, industrias, 7 tamaños, 11 negocios, turnos, días, idiomas, tipos de documento, motivos, planes, reglas del match) y **ficticios** (`ficticios.ts`).
 - `estado.ts`: forma del estado (`DatosDemo`) y `crearEstadoInicial()`.
-- `tienda.ts`: la tienda `useDemo` (zustand + persist en `localStorage`, clave `dale-demo-v1`) con todas las acciones.
+- `tienda.ts`: la tienda `useDemo` (zustand + persist en `localStorage`, clave `dale-demo-datos`) con todas las acciones.
+- `almacenamiento.ts`: cómo se guarda la tienda. Trae una sola vez lo de la clave anterior (`dale-demo-v1`, versiones 1 y 2, con panel) y una pestaña con código más viejo que lo guardado deja de guardar en vez de pisarlo. Al subir `VERSION_ESTADO` no hace falta cambiar la clave. Probado en `tests/almacenamiento.test.ts`.
 - `selectores.ts`: lecturas derivadas (funciones puras sobre el estado).
 - `hooks.ts`: hooks memorizados para pantallas.
 - `match.ts`: motor del match (puro y probado).
-- `simulacion.ts`: lo que harían otras personas (IA, titulares).
+- `simulacion.ts`: lo que harían otras personas (IA, equipo, titulares).
 - `formato.ts`: textos de fechas, días, turnos, iniciales, máscaras.
 - `direcciones.ts`: sugerencias de dirección simuladas (Paso 2).
 - `avisos.ts`: cola de toasts (`avisar`).
@@ -168,7 +162,7 @@ const avance = useDerivado(sel.avancePerfil);           // cualquier selector, m
 
 ### Estado (`DatosDemo`, en `src/datos/estado.ts`)
 
-- `rol`: `'conductor' | 'titular' | 'admin' | null` (lo ponen los layouts).
+- `rol`: `'conductor' | 'titular' | null` (lo ponen los layouts; el tipo conserva `'admin'` solo para el panel guardado).
 - `cuenta`: `celular` (8 dígitos, "5555 0123"), `celularVerificado`, `correo`, `nombres`, `apellido1`, `apellido2`, `creadaEl`, `autorizaciones { terminos, privacidad, compartirFicha, recordatoriosWhatsapp }`.
 - `conductor` (`ConductorUsuario`): `registrado`, `registradoEl`, `pasosListos { datos, direccion, experiencia, trabajo, documentos }`, `pasoActual`, `estadoPerfil` (`incompleto`/`completo`), `estadoVerificacion` (`sin_documentos`/`en_revision`/`verificado`/`con_observaciones`), `disponible`, `disponibilidadConfirmadaEn`, `fechaNacimiento` ('dd/mm/aaaa'), `direccion`, `depto`, `comunaId`, `tieneEstacionamiento`, `clasesDeclaradas`, `clasesRevisadas`, `idiomas`, `experiencia { liviano: 5 }`, `negocios`, `turnos`, `dias`.
   - Al empezar, los textos están vacíos y las selecciones vienen marcadas como en las maquetas (A2 y B; 5 años liviano y 2 van; Español; Taxi y Taxi ejecutivo; Día; lunes a sábado; con estacionamiento; disponible). Los formularios deben **partir con lo que hay en el estado** y guardar lo que la persona cambie. `EJEMPLO_USUARIO` (en `@/datos/semilla`) tiene datos de ejemplo por si quieres ofrecer "Usar datos de ejemplo".
@@ -176,20 +170,20 @@ const avance = useDerivado(sel.avancePerfil);           // cualquier selector, m
 - `favoritos` (ids de búsqueda), `mensajes` (`{ [busquedaId]: Mensaje[] }`, `Mensaje { id, autor: 'conductor'|'titular'|'sistema', texto, hora, leido }`), `titularEscribiendo`, `contactoCompartido` y `direccionCompartida` (`{ [busquedaId]: fecha }`), `matchesPorPostulacion`, `entregasDatos` (Quién recibió mis datos), `bloqueos` (ids de titular).
 - `titularDemo`: `{ titularId: 't01', plan: 'sin_plan'|'basico'|'flota_chica'|'flota' (parte en flota_chica), destacadasUsadas }`, `favoritosTitular`.
 - `titulares` (7), `busquedas` (14), `conductores` (10 ficticios), `postulaciones`, `reportes`.
-- `catalogos` (editables desde el panel: `negocios[].activo/nombre`, `industrias[].activo`, `zonas[].nombre`, `comunas[].zonaId`), `reglas` (`umbral` y `reglas[]` con `uso`: `filtro`/`variable`/`apagado` y `peso`), `ajustes` (`bolsaActiva: true`, `validarObligatorios: false`, `diasReconfirmar: 30`, `diasAntiguedadPdf: 30`, `segundosPrerevision: 3`), `equipo`, `accionesEquipo`.
+- `catalogos` (`negocios[].activo/nombre`, `industrias[].activo`, `zonas[].nombre`, `comunas[].zonaId`), `reglas` (`umbral` y `reglas[]` con `uso`: `filtro`/`variable`/`apagado` y `peso`), `ajustes` (`bolsaActiva: true`, `validarObligatorios: false`, `diasReconfirmar: 30`, `diasAntiguedadPdf: 30`, `segundosPrerevision: 3`), `equipo`, `accionesEquipo`. **En el mockup no cambian:** quedan con sus valores iniciales (solo los cambiaba el panel, que está guardado). Así se ve lo del lanzamiento: solo Taxi y Taxi ejecutivo, transporte de carga apagado, umbral 66 % y la bolsa encendida. Lo guardado en el navegador cuando la demo tenía panel (versión 2 del estado) vuelve a esos valores al abrirla (`migrarEstado` en `estado.ts`).
 - `pendientes`: tareas de la simulación (no tocar).
 
 ### Acciones (`useDemo((s) => s.accion)`; firmas exactas en `AccionesDemo`, `src/datos/tienda.ts`)
 
-- **General:** `elegirRol(rol)`, `reiniciarDemo()`, `prepararConductorVerificado()` (atajo: perfil completo, verificado, 2 conversaciones, 1 favorito y 2 entregas de datos).
+- **General:** `elegirRol(rol)`, `reiniciarDemo()`, `prepararConductorVerificado()` (atajo: perfil completo, verificado, 2 conversaciones, 1 favorito y 2 entregas de datos), `prepararDocumentoNoAprobado()` (atajo: perfil completo, la Hoja de Vida no aprobada por PDF vencido y los otros 3 documentos aprobados; sin matches ni conversaciones).
 - **Ingreso:** `guardarCelular(celular)`, `verificarCelular()`, `aceptarAutorizaciones({ terminos, privacidad, compartirFicha, recordatoriosWhatsapp })`, `actualizarCuenta(parcial)`.
 - **Registro:** `guardarPaso1({ nombres, apellido1, apellido2, fechaNacimiento, correo, clasesDeclaradas, disponible })` (desde aquí queda registrado), `guardarPaso2({ direccion, depto, comunaId, tieneEstacionamiento })`, `guardarPaso3({ experiencia, idiomas })`, `guardarPaso4({ negocios, turnos, dias })`, `irAPaso(n)`, `actualizarConductor(parcial)` (ediciones desde Perfil sin marcar pasos). El perfil queda `completo` solo cuando las 5 secciones están listas; la de documentos se marca sola al enviar los 4.
-- **Documentos:** `subirDocumento(tipo, nombreArchivo?)` (queda "Subido"; en la demo no se sube nada), `quitarDocumento(tipo)`, `enviarDocumentosARevision(tipos?)` (empieza la pre-revisión), `pedirOtraRevision(tipo)`, `aprobarPendientesDemo()` (atajo), `aprobarPorAgenteIA(tipo)` (la usa la simulación).
+- **Documentos:** `subirDocumento(tipo, nombreArchivo?)` (queda "Subido"; en la demo no se sube nada), `quitarDocumento(tipo)`, `enviarDocumentosARevision(tipos?)` (empieza la pre-revisión), `pedirOtraRevision(tipo)`, `aprobarPendientesDemo()` (atajo "Aprobar ahora": el equipo simulado aprueba ya lo que está en revisión), `aprobarPorAgenteIA(tipo)` y `aprobarPorEquipo(tipo)` (las usa la simulación).
 - **Disponibilidad y cuenta:** `cambiarDisponible(bool)`, `confirmarDisponibilidad()`, `eliminarCuenta()` (borra lo del usuario; después navega a `/`).
 - **Matches y mensajes:** `alternarFavorito(busquedaId)`, `enviarMensaje(busquedaId, texto)`, `marcarConversacionLeida(busquedaId)` (llámala al abrir D4), `compartirMiDireccion(busquedaId)`, `reportarConversacion({ busquedaId, motivo, detalle? })`, `bloquearTitular(titularId)`, `desbloquearTitular(titularId)`.
 - **Bolsa (conductor):** `postular(busquedaId) → { ok, error? }`.
 - **Bolsa (titular):** `cambiarPlanTitular(plan)`, `publicarEnBolsa(busquedaId, { visibilidad, perfiles? }) → { ok, error? }` (respeta visibilidades y cupo del plan), `quitarDeBolsa(id)`, `destacarOferta(id) → { ok, error? }` (solo plan Flota), `quitarDestacado(id)`, `cambiarEstadoBusqueda(id, 'activa'|'pausada'|'cubierta') → { ok, error? }`, `verPostulacion(postulacionId)`, `escribirAPostulante(postulacionId, texto)`, `descartarPostulacion(postulacionId)`, `alternarFavoritoTitular(conductorId)`.
-- **Panel:** `aprobarDocumento(duenoId, tipo)` y `rechazarDocumento(duenoId, tipo, motivo)` (`duenoId` = `'yo'` para el usuario de la demo o `'c01'`…), `cambiarNegocioActivo(id, bool)`, `renombrarNegocio(id, nombre)`, `cambiarIndustriaActiva(id, bool)`, `renombrarZona(zonaId, nombre)`, `moverComunaAZona(comunaId, zonaId) → { ok, error? }`, `crearZona(regionId, nombre) → id`, `cambiarUmbral(n)`, `cambiarUsoRegla(codigo, uso)`, `cambiarPesoRegla(codigo, peso)`, `restablecerReglas()`, `cambiarAjuste(clave, valor)`, `restablecerAjustes()`, `resolverReporte(id, queSeHizo)`, `suspenderCuenta(personaId)`, `reactivarCuenta(personaId)`, `agregarMiembro({ nombre, celular, rol })`, `cambiarRolMiembro(id, rol)`, `alternarMiembroActivo(id)`, `registrarAccionEquipo(que)`. Las acciones del panel ya anotan "Acción del equipo".
+- **Panel (solo para el panel guardado en `src/panel`; ninguna pantalla del mockup las usa):** `aprobarDocumento(duenoId, tipo)` y `rechazarDocumento(duenoId, tipo, motivo)` (`duenoId` = `'yo'` para el usuario de la demo o `'c01'`…), `cambiarNegocioActivo(id, bool)`, `renombrarNegocio(id, nombre)`, `cambiarIndustriaActiva(id, bool)`, `renombrarZona(zonaId, nombre)`, `moverComunaAZona(comunaId, zonaId) → { ok, error? }`, `crearZona(regionId, nombre) → id`, `cambiarUmbral(n)`, `cambiarUsoRegla(codigo, uso)`, `cambiarPesoRegla(codigo, peso)`, `restablecerReglas()`, `cambiarAjuste(clave, valor)`, `restablecerAjustes()`, `resolverReporte(id, queSeHizo)`, `suspenderCuenta(personaId)`, `reactivarCuenta(personaId)`, `agregarMiembro({ nombre, celular, rol })`, `cambiarRolMiembro(id, rol)`, `alternarMiembroActivo(id)`, `registrarAccionEquipo(que)`. Las acciones del panel ya anotan "Acción del equipo".
 
 **Acciones propias:** en tu carpeta, `src/pantallas/<grupo>/acciones.ts`:
 
@@ -221,9 +215,9 @@ Si cambias documentos del usuario a mano, recuerda que `estadoVerificacion` se c
 | `useBusquedasDelTitular()` | `BusquedaTitular[]` (`coinciden` = conductores verificados que hacen match: el adelanto anónimo, `postulantes`, `postulantesNuevos`, `destacada`, `condiciones`) |
 | `usePostulantes(busquedaId)` | `{ postulacion, conductor: ConductorVista }[]` |
 | `useConductoresQueCalzan(busquedaId)` | `{ conductor: ConductorVista, resultado }[]` |
-| `useTodosLosConductores()` | `ConductorVista[]` (el usuario primero si se registró, con id `'yo'`) |
-| `useColaDocumentos(incluirEnPrerevision?)` | `DocumentoEnCola[]` que esperan a una persona, los más antiguos primero |
-| `useReportesAbiertos()`, `useResumenPanel()` | Reportes abiertos; cifras del panel |
+| `useTodosLosConductores()` | `ConductorVista[]` (el usuario primero si se registró, con id `'yo'`). Solo lo usa el panel guardado. |
+| `useColaDocumentos(incluirEnPrerevision?)` | `DocumentoEnCola[]` que esperan a una persona, los más antiguos primero. Solo lo usa el panel guardado. |
+| `useReportesAbiertos()`, `useResumenPanel()` | Reportes abiertos; cifras del panel. Solo los usa el panel guardado. |
 | `useCatalogos()`, `useAjustes()`, `useNegociosActivos()`, `useNegociosPorIndustria(soloActivos?)` | Catálogos y ajustes |
 | `useAhora(ms?)` | Fecha actual que se refresca (para "hace 5 min") |
 
@@ -246,7 +240,8 @@ Puro, sin React. Lo usan los selectores con las reglas editables del estado; las
 
 ### Simulación (`simulacion.ts`, ya encendida en el layout raíz)
 
-- **Pre-revisión IA:** `enviarDocumentosARevision()` deja los 4 en revisión; a los ~3 s la cédula y la licencia se aprueban solas (`quienDecidio: 'ia'`; la licencia copia las clases declaradas a revisadas) y la Hoja de Vida y los antecedentes quedan con `etapa: 'equipo'`, esperando en `/admin/documentos`. Con los 4 aprobados → `verificado` (toast de éxito); si uno se rechaza → `con_observaciones`. Al quedar verificado, a los ~7 y ~16 s dos titulares "abren su ficha" (aparecen en Quién recibió mis datos).
+- **Pre-revisión IA:** `enviarDocumentosARevision()` deja los 4 en revisión; a los ~3 s la cédula y la licencia se aprueban solas (`quienDecidio: 'ia'`; la licencia copia las clases declaradas a revisadas) y la Hoja de Vida y los antecedentes quedan con `etapa: 'equipo'` ("En revisión").
+- **Revisión del equipo (simulada, porque el mockup no tiene panel):** cada documento con `etapa: 'equipo'` se aprueba solo a los ~12 s (`SEGUNDOS_REVISION_EQUIPO` en `tienda.ts`; `quienDecidio: 'persona'`). Lo mismo después de "No estoy de acuerdo: pedir otra revisión". "Aprobar ahora" (Inicio, C3) no espera. Con los 4 aprobados → `verificado` (toast "¡Listo! Tus 4 documentos están aprobados."). El equipo simulado no rechaza: para ver `con_observaciones` y C4 está el atajo "Documento no aprobado" del selector. Al quedar verificado, a los ~7 y ~16 s dos titulares "abren su ficha" (aparecen en Quién recibió mis datos).
 - **Chat:** `enviarMensaje()` programa la respuesta del titular a los 2–4 s (`titularEscribiendo[busquedaId]` es `true` durante los últimos ~2,5 s: muestra "escribiendo…"). Después del segundo mensaje del conductor, el titular comparte su contacto (mensaje de sistema y `contactoCompartido[busquedaId]`). El teléfono que se muestra es `titular.telefono` (ficticio).
 - **Bolsa:** al postular a una oferta de otro titular, a los ~6 s queda "Vista" y (una de cada dos) a los ~14 s "Te escribió", con un mensaje nuevo y el match con origen "Postulación". Las postulaciones a ofertas de `t01` (el titular de la demo) cambian cuando alguien entra como titular y responde.
 - Las tareas viven en `state.pendientes`: sobreviven a cambiar de pantalla y a recargar.
@@ -256,8 +251,8 @@ Puro, sin React. Lo usan los selectores con las reglas editables del estado; las
 - **Titular de la demo:** `t01` Transportes Los Aromos SpA (empresa, plan Flota chica). Búsquedas `b01` (Taxi, Providencia, en la bolsa: solo match; 3 postulantes), `b05` (Taxi, Maipú, bolsa: solo match; 1 postulante), `b06` (Taxi, La Florida, bolsa: perfiles Zona Sur; 1 postulante), `b12` (Taxi ejecutivo, Vitacura, pausada).
 - **Otros titulares:** `t02` Ejecutivos Cordillera SpA (b02, b04, b13 destacada en la bolsa para todos, b14 bolsa perfiles Zona Oriente), `t03` Rodrigo Pizarro (b03), `t04` Mónica Sepúlveda (b07), `t05` Taxis Bahía Azul Ltda. (Viña y Valparaíso: b08, b10), `t06` Jorge Alarcón (Concepción: b09), `t07` Claudio Espinoza (Puente Alto: b11).
 - **Conductor de ejemplo** (Ñuñoa, A2 y B, 5 años liviano, Taxi y Taxi ejecutivo, día, lunes a sábado, con estacionamiento): **5 matches** `b01` 100 %, `b02` 100 %, `b14` 100 %, `b07` 88 %, `b03` 71 %. En la bolsa ve `b13` (destacada), `b11`, `b14` y, ya verificado, `b01` (que es "solo quienes hacen match"). Con una dirección en otra comuna de Santiago el número cambia (3–5); en Concepción no tiene matches (C6).
-- **Conductores ficticios** `c01`…`c10`: verificados, uno con la licencia rechazada (`c06`), uno incompleto (`c07`) y tres con documentos en la cola del panel (`c03`, `c08`, `c10`: 7 documentos en total).
-- **Reportes:** `r01` (pide dinero) y `r02` (spam), abiertos, con su conversación.
+- **Conductores ficticios** `c01`…`c10`: verificados, uno con la licencia rechazada (`c06`), uno incompleto (`c07`) y tres con documentos esperando al equipo (`c03`, `c08`, `c10`: 7 documentos en total; en el mockup quedan así, porque los revisaba el panel).
+- **Reportes:** `r01` (pide dinero) y `r02` (spam), abiertos, con su conversación. En el mockup nadie los resuelve: un reporte del conductor queda abierto ("Nuestro equipo la está revisando").
 
 ## 5. Comandos y comprobación
 
@@ -266,7 +261,7 @@ Desde `/home/user/appconductores/aplicacion`. **Cada agente usa su propia carpet
 ```bash
 export TMPDIR=/tmp/claude-0/-home-user-appconductores/a49116f8-7c86-54b9-8624-19dd22438642/scratchpad/mf/tmp-<tu-etiqueta>
 mkdir -p "$TMPDIR"
-npx tsc --noEmit                 # sin errores antes de terminar
+npx tsc --noEmit                 # sin errores antes de terminar (si moviste o borraste rutas, corre antes `npm run web` una vez: regenera .expo/types y así tsc avisa de los enlaces rotos)
 npm run test:match               # pruebas del motor (32)
 CI=1 npx expo export -p web --output-dir /tmp/claude-0/-home-user-appconductores/a49116f8-7c86-54b9-8624-19dd22438642/scratchpad/mf/dist-<tu-etiqueta>
 ```
@@ -277,7 +272,7 @@ Servir y capturar (Playwright ya está instalado; `require('playwright')` funcio
 H=/tmp/claude-0/-home-user-appconductores/a49116f8-7c86-54b9-8624-19dd22438642/scratchpad/mf/herramientas
 node $H/servidor.mjs <dist-tu-etiqueta> <puerto-único> &      # estático con fallback a index.html
 node $H/capturar.mjs http://localhost:<puerto> <carpeta-salida> 390x844 /conductor/matches /conductor/matches/b01
-node $H/capturar.mjs http://localhost:<puerto> <carpeta-salida> 1280x800 /admin/documentos
+node $H/capturar.mjs http://localhost:<puerto> <carpeta-salida> 1280x800 /titular
 node $H/pagina-completa.mjs http://localhost:<puerto>/conductor/registro/4 salida.png 1600 [texto-a-tocar ...]
 ```
 
@@ -297,5 +292,5 @@ Compara cada captura con la de la maqueta (`render.js`) y ajusta espaciados, tam
 - **Animaciones:** sutiles. `Pantalla` ya anima la entrada; para más, `Animated` de React Native con `useNativeDriver: false` (web).
 - **useEffect:** escribe el cuerpo entre llaves (`useEffect(() => { accion(); }, [...])`). Un efecto que devuelve algo que no es una función rompe la pantalla al salir.
 - **Fechas:** guárdalas en ISO (`ahoraISO()` de `tienda.ts`) y muéstralas con `formato.ts`.
-- **Escritorio:** conductor y titular ya se ven como columna de celular (máx. 430 px); el panel usa el ancho completo. No pongas anchos fijos mayores a 390 px en pantallas de celular.
+- **Escritorio:** conductor y titular ya se ven como columna de celular (máx. 430 px). No pongas anchos fijos mayores a 390 px en pantallas de celular.
 - **Modales:** `HojaInferior` y `Dialogo` ya quedan dentro del ancho de la columna.
