@@ -59,7 +59,7 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - [ ] Crear cuentas Apple Developer y Google Play (a nombre de la dueña). Ya no bloquea el lanzamiento: se necesitan para la etapa de tiendas.
 - [ ] Hosting de la dueña: confirmar el proveedor y que entregue HTTPS (la app web son archivos estáticos; la base de datos queda en Supabase).
 - [ ] Identidad visual (colores, tipografía, logo) de Dale Contacto.
-- [ ] **Panel de administración: ¿app distinta de la de conductores y titulares?** (7-nov, la dueña lo plantea y pide decidirlo antes). Propuesta en preparación: `docs/propuesta-panel-administracion.md`.
+- [ ] **Panel de administración: ¿app distinta de la de conductores y titulares?** (7-nov, la dueña lo plantea y pide decidirlo antes). Propuesta: `docs/propuesta-panel-administracion.md` (recomienda app aparte con la misma tecnología, construida junto con el panel real).
 
 ### Legal
 - [ ] Términos y condiciones, política de privacidad y tratamiento de datos personales según la normativa chilena. Lo que deben cubrir: `docs/terminos-y-privacidad.md`.
@@ -131,6 +131,7 @@ Los campos concretos de cada sección **no están definidos todavía** y deben s
 - `docs/propuesta-nombres.md` — nombres candidatos con conflictos encontrados. **Propuesta.**
 - `docs/investigacion/contexto-chile.md` — licencias, documentos verificables, Ley 21.719 / 19.628, Ley 21.553, modalidades de contrato.
 - `docs/propuesta-catalogos.md` — propuesta de tamaños de vehículo y negocios con sus licencias. **Propuesta.**
+- `docs/propuesta-panel-administracion.md` — ¿panel de administración como app aparte? Opciones comparadas, recomendación y decisiones abiertas. **Propuesta.**
 - `docs/propuesta-bolsa-trabajo.md` — bolsa de trabajo: respuestas de la dueña, cómo funcionaría, planes y preguntas abiertas. **Propuesta; si sale en el lanzamiento se decide después.**
 - `docs/consulta-abogado.md` — pauta única de preguntas para la reunión con el abogado.
 - `docs/propuesta-zonas.md` y `docs/propuesta-zonas.csv` — propuesta de zonas (81 zonas, 346 comunas). **Propuesta.**

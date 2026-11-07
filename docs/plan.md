@@ -1,6 +1,6 @@
 # Plan de trabajo — Dale Contacto (nombre provisorio)
 
-Actualizado: 2-nov-2026. Se actualiza a medida que avanzamos.
+Actualizado: 7-nov-2026. Se actualiza a medida que avanzamos.
 
 ## Ya hecho
 
@@ -17,7 +17,9 @@ Actualizado: 2-nov-2026. Se actualiza a medida que avanzamos.
 3. [ ] Prototipo del titular, con el mismo detalle (registro, verificación, búsquedas, resultados, planes y pago, mensajes, compartir contacto).
 4. [ ] Maquetas del panel de administración (revisión de documentos, configuración de campos, catálogos —con activar o desactivar cada negocio—, reglas de match y zonas, reportes, usuarios).
 5. [ ] Retomar lo que está en pausa: documentos, mensajes y zonas.
-7. [x] **Mockup funcional** (4-nov): conductor completo, bolsa de trabajo y panel de administración, con datos de ejemplo, en Expo (`aplicacion/`). **Publicado** en https://dale-contacto-mockup.netlify.app (proyecto Netlify `dale-contacto-mockup`).
+7. [x] **Mockup funcional** (4-nov): conductor completo y bolsa de trabajo, con datos de ejemplo, en Expo (`aplicacion/`). **Publicado** en https://dale-contacto-mockup.netlify.app (proyecto Netlify `dale-contacto-mockup`).
+   - [x] **Sin panel de administración** (pedido de la dueña, 7-nov; publicado el 7-nov). Su código quedó guardado en `aplicacion/src/panel/`. En la demo, la revisión de la persona del equipo se simula sola (~12 s) y hay un atajo para ver un documento no aprobado.
+   - [ ] Decidir si el panel es una app aparte (propuesta: `docs/propuesta-panel-administracion.md`).
    - [ ] La dueña: registro DNS `mockup` (CNAME a `dale-contacto-mockup.netlify.app.`) en su hosting y agregar `mockup.dalecontacto.cl` en Netlify (Domain management).
    - [ ] Decidir quién puede verlo: solo su cuenta de Netlify (como está hoy), con contraseña o abierto.
    - [ ] Revisar las reglas que el mockup tuvo que inventar: qué pasa al bajar de plan, textos de rechazo de los PDF, si el equipo ve la dirección del conductor y el pie "Sugerencias de Google Maps".
@@ -45,7 +47,7 @@ Antes de construir la parte del titular: su prototipo, las reglas de mensajes (e
    - [ ] Crear el primer administrador (a mano, después de que la dueña entre una vez con su celular; ver `supabase/README.md`).
 7. [ ] App del conductor.
 8. [ ] App del titular y cobro.
-9. [ ] Panel de administración.
+9. [ ] Panel de administración (web). Si es app aparte o no: por decidir (`docs/propuesta-panel-administracion.md`).
 10. [ ] **Lanzamiento como app web** (decidido el 2-nov): dominio propio, alojamiento y pago web.
 11. [ ] Después: prueba cerrada (Google exige 12 personas durante 14 días a cuentas personales) y publicación en App Store y Google Play, con el mismo código.
 
