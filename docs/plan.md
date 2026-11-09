@@ -20,10 +20,11 @@ Actualizado: 9-nov-2026. Se actualiza a medida que avanzamos.
 7. [x] **Mockup funcional** (4-nov): conductor completo y bolsa de trabajo, con datos de ejemplo, en Expo (`aplicacion/`). **Publicado** en https://dale-contacto-mockup.netlify.app (proyecto Netlify `dale-contacto-mockup`).
    - [x] **Sin panel de administración** (pedido de la dueña, 7-nov; publicado el 7-nov). Su código quedó guardado en `aplicacion/src/panel/`. En la demo, la revisión de la persona del equipo se simula sola (~12 s) y hay un atajo para ver un documento no aprobado.
    - [x] El panel será una **app aparte** con la misma tecnología, construida junto con el panel real (decidido el 9-nov; `docs/propuesta-panel-administracion.md`). Sin demo aparte del panel.
-   - [ ] La dueña: registro DNS `mockup` (CNAME a `dale-contacto-mockup.netlify.app.`) en su hosting y agregar `mockup.dalecontacto.cl` en Netlify (Domain management).
-   - [ ] Decidir quién puede verlo: solo su cuenta de Netlify (como está hoy), con contraseña o abierto.
+   - [ ] La dueña: registros DNS `mockup` y `panel-mockup` (CNAME a `dale-contacto-mockup.netlify.app.`) en su hosting, y agregar `mockup.dalecontacto.cl` y `panel-mockup.dalecontacto.cl` en Netlify (Domain management).
+   - [x] Quién puede verlo (9-nov): sitio público con una clave dentro de la demo (la misma para /panel). La clave la tiene la dueña.
+   - [x] **Demo del panel** en /panel del mismo sitio, conectada con la demo del conductor y entrando por rol (publicada el 9-nov). Dirección corta: panel-mockup.dalecontacto.cl (falta el DNS).
    - [ ] Revisar las reglas que el mockup tuvo que inventar: qué pasa al bajar de plan, textos de rechazo de los PDF, si el equipo ve la dirección del conductor y el pie "Sugerencias de Google Maps".
-   - Para actualizarlo: `npx expo export -p web` en `aplicacion/` y subir `dist/` a ese proyecto.
+   - Para actualizarlo: `npm run export:demo` en `panel/` y subir la carpeta `dist-demo/` completa a ese proyecto.
 6. [ ] **Bolsa de trabajo** (pedida el 2-nov): maqueta del conductor y del titular, y modelo de datos. Después, decidir si sale en el lanzamiento y qué incluye cada plan (`docs/propuesta-bolsa-trabajo.md`).
 
 ## Para empezar a construir (revisado el 2-nov)
