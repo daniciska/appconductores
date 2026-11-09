@@ -30,7 +30,7 @@ Actualizado: 9-nov-2026. Se actualiza a medida que avanzamos.
 
 Se puede partir por la **base de datos y la app del conductor** mientras se termina el prototipo del titular. Para eso falta:
 
-- [ ] Visto bueno al prototipo del conductor (o la última lista de ajustes).
+- [x] Visto bueno al prototipo del conductor: las pantallas del mockup, tal como están (9-nov).
 - [ ] Revisar el modelo de datos, al menos las tablas del conductor y los catálogos.
 - [x] Decisiones que cambian la base de datos y el match (2-nov): años por categoría, días proporcionales, negocios no permitidos en gris, modo de contrato como crecimiento futuro, pregunta de peso o pasajeros, lanzamiento con Taxi y Taxi ejecutivo.
 - [x] Propuesta de zonas aprobada (2-nov).
@@ -45,7 +45,7 @@ Antes de construir la parte del titular: su prototipo, las reglas de mensajes (e
    - [x] **Etapa 1** (2-nov): catálogos, cuentas, equipo, autorizaciones y perfil del conductor. Aplicada en dale-contacto, idéntica a lo probado en local (261 pruebas). Asesor de seguridad sin avisos.
    - [ ] Etapa 2: titulares, búsquedas y match. Etapa 3: documentos, mensajes, reportes y bloqueos. Etapa 4: planes y cobro. (Bolsa de trabajo: cuando se decida.)
    - [ ] Crear el primer administrador (a mano, después de que la dueña entre una vez con su celular; ver `supabase/README.md`).
-7. [ ] App del conductor.
+7. [ ] **App del conductor** (en curso desde el 9-nov): conectada a Supabase, primera versión con los pasos 1 a 4; al inicio solo celulares de prueba de la dueña y su equipo; comuna de una lista hasta tener Google Maps. Documentos (paso 5) después, con la Etapa 3 y el abogado.
 8. [ ] App del titular y cobro.
 9. [ ] Panel de administración: **app web aparte** (Expo, mismo repositorio, comparte diseño, tipos y reglas del match; su propia dirección y su propio sitio de Netlify). Se construye junto con la Etapa 3 de la base (documentos). Antes: las decisiones abiertas de `docs/propuesta-panel-administracion.md`.
 10. [ ] **Lanzamiento como app web** (decidido el 2-nov): dominio propio, alojamiento y pago web.
