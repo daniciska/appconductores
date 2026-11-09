@@ -14,6 +14,7 @@ import { useDemoHidratada } from '@/datos/hooks';
 import { iniciarSimulacion } from '@/datos/simulacion';
 import { Cargando, HostAvisos, color } from '@/ui';
 import { FUENTES } from '@/ui/fuentes';
+import { PuertaClave } from '@/pantallas/ingreso/PuertaClave';
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
@@ -32,16 +33,18 @@ export default function LayoutRaiz() {
     <SafeAreaProvider>
       <StatusBar style="dark" />
       {listo ? (
-        <View style={{ flex: 1 }}>
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              title: 'Dale Contacto · Demo',
-              contentStyle: { backgroundColor: color.fondoEscritorio },
-            }}
-          />
-          <HostAvisos />
-        </View>
+        <PuertaClave>
+          <View style={{ flex: 1 }}>
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                title: 'Dale Contacto · Demo',
+                contentStyle: { backgroundColor: color.fondoEscritorio },
+              }}
+            />
+            <HostAvisos />
+          </View>
+        </PuertaClave>
       ) : (
         <Cargando style={{ backgroundColor: color.fondo }} />
       )}

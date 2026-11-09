@@ -14,6 +14,7 @@ import { useDemoHidratada } from '@/datos/hooks';
 import { iniciarSimulacion } from '@/datos/simulacion';
 import { Cargando, HostAvisos, color } from '@/ui';
 import { FUENTES } from '@/ui/fuentes';
+import { PuertaClave } from '@/pantallas/ingreso/PuertaClave';
 
 import { iniciarSesionPanel } from '@panel/sesion';
 
@@ -32,10 +33,12 @@ export default function LayoutRaizPanel() {
   return (
     <SafeAreaProvider>
       {listo ? (
-        <View style={{ flex: 1 }}>
-          <Stack screenOptions={{ headerShown: false, title: 'Panel · Dale Contacto', contentStyle: { backgroundColor: color.fondo } }} />
-          <HostAvisos />
-        </View>
+        <PuertaClave>
+          <View style={{ flex: 1 }}>
+            <Stack screenOptions={{ headerShown: false, title: 'Panel · Dale Contacto', contentStyle: { backgroundColor: color.fondo } }} />
+            <HostAvisos />
+          </View>
+        </PuertaClave>
       ) : (
         <Cargando style={{ backgroundColor: color.fondo }} />
       )}

@@ -66,7 +66,7 @@ http://panel-mockup.dalecontacto.cl/*   https://mockup.dalecontacto.cl/panel/:sp
 
 Las reglas de `/panel` no llevan `!`: así los archivos reales (`/panel/_expo/…`, `/panel/assets/…`) se sirven directo. `dist-demo/_headers`: `X-Robots-Tag: noindex` para todo y, en `/panel` y `/panel/*`, `X-Frame-Options: DENY` y `Content-Security-Policy: frame-ancestors 'none'` (no se puede abrir dentro de otra página).
 
-**Falta la pantalla de clave** que pide la decisión de acceso del 9-nov (CLAUDE.md, "Mockup funcional": la misma clave para el mockup y para `/panel`). Mientras no esté, esta carpeta no se publica en el sitio público.
+**Clave de entrada** (decisión de acceso del 9-nov): el sitio es público y la demo pide una clave una vez por navegador, la misma para la raíz y para `/panel` (mismo sitio, mismo `localStorage`). La pantalla está en `aplicacion/src/pantallas/ingreso/PuertaClave.tsx` y envuelve los dos layouts raíz; en el código solo está el SHA-256 de la clave (`aplicacion/src/datos/claveDemo.ts`, ahí se explica cómo cambiarla). Es protección liviana: todo es de ejemplo.
 
 Se publica **la carpeta `dist-demo` completa**, en el mismo sitio de Netlify del mockup. Publicar solo `aplicacion/dist` dejaría `/panel` en "Esta pantalla no existe". Las dos demos comparten la versión del estado: se publican siempre juntas. Para la dirección corta, en Netlify se agrega `panel-mockup.dalecontacto.cl` como dominio del mismo sitio y la dueña agrega el registro DNS en su hosting [verificar en Netlify].
 
