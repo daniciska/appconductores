@@ -1,4 +1,4 @@
-// Piezas comunes del panel de administración (solo para src/panel/pantallas).
+// Piezas comunes de las pantallas del panel (src/pantallas).
 import { useCallback, useEffect, useRef, useState, type ComponentRef, type ReactNode } from 'react';
 import {
   Animated,
@@ -305,6 +305,7 @@ export function Deslizador({
   onCambiar,
   etiquetaAccesible,
   marca,
+  soloLectura,
 }: {
   valor: number;
   min?: number;
@@ -314,11 +315,16 @@ export function Deslizador({
   etiquetaAccesible: string;
   /** Valor marcado con una rayita (ej. el umbral inicial). */
   marca?: number;
+  /** Solo muestra el valor (sin poder moverlo). */
+  soloLectura?: boolean;
 }) {
   const frac = (Math.min(max, Math.max(min, valor)) - min) / (max - min || 1);
   const pct = `${frac * 100}%` as const;
   return (
-    <View style={{ height: 44, justifyContent: 'center' }}>
+    <View
+      style={{ height: 44, justifyContent: 'center', opacity: soloLectura ? 0.75 : 1 }}
+      role={soloLectura ? 'img' : undefined}
+      aria-label={soloLectura ? `${etiquetaAccesible}: ${valor}` : undefined}>
       <View style={{ height: 6, borderRadius: 3, backgroundColor: color.segmentado, overflow: 'hidden' }}>
         <View style={{ width: pct, height: 6, backgroundColor: color.oscuro }} />
       </View>
@@ -354,7 +360,7 @@ export function Deslizador({
           sombra.suave,
         ]}
       />
-      {Platform.OS === 'web' ? (
+      {Platform.OS === 'web' && !soloLectura ? (
         <input
           type="range"
           min={min}

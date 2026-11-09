@@ -1,11 +1,6 @@
-// Enlaces entre las secciones del panel guardado (ver src/panel/README.md).
-// El panel ya no tiene rutas en el mockup, así que sus enlaces no pueden ir escritos como texto con
-// tipos de expo-router ('/admin/…' dejó de existir). Se arman aquí: si el panel vuelve a ser rutas
-// (en el mockup o en su propia app), basta con cambiar PREFIJO_PANEL.
+// Enlaces del panel. El panel es otra app del mismo sitio que la demo del conductor: se publica con
+// la base '/panel' (app.json, experiments.baseUrl), así que '/documentos' aquí es /panel/documentos.
 import type { Href } from 'expo-router';
-
-/** Dónde vivía el panel en el mockup. En una app propia del panel sería ''. */
-export const PREFIJO_PANEL = '/admin';
 
 export type SeccionPanel =
   | 'resumen'
@@ -18,14 +13,21 @@ export type SeccionPanel =
   | 'ajustes'
   | 'equipo';
 
-/** Enlace a una sección del panel ('resumen' es la portada). */
+/** Enlace a una sección del panel (la portada, con la elección de rol, es '/'). */
 export function rutaPanel(seccion: SeccionPanel): Href {
-  const ruta = seccion === 'resumen' ? PREFIJO_PANEL || '/' : `${PREFIJO_PANEL}/${seccion}`;
-  return ruta as Href;
+  return `/${seccion}` as Href;
 }
 
 /** Sección activa a partir de la ruta actual (para marcarla en el menú). */
 export function seccionDeRuta(ruta: string): string {
-  const resto = ruta.startsWith(PREFIJO_PANEL) ? ruta.slice(PREFIJO_PANEL.length) : ruta;
-  return resto.replace(/^\/+/, '').split('/')[0] || 'resumen';
+  return ruta.replace(/^\/+/, '').split('/')[0] || 'resumen';
+}
+
+/**
+ * Abre la demo del conductor (raíz del sitio) en otra pestaña, siempre la misma. Comparte lo guardado
+ * en el navegador con el panel, así que muestra en vivo lo que se cambia aquí. Ej.: '/conductor/inicio'.
+ */
+export function abrirDemoConductor(ruta = '/'): void {
+  if (typeof window === 'undefined') return;
+  window.open(`${window.location.origin}${ruta}`, 'dale-demo-conductor');
 }

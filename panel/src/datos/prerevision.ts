@@ -1,6 +1,10 @@
 // Pre-revisión simulada del agente de IA para la cola del panel (solo la demo).
 // En la app real, el agente lee el documento y devuelve códigos (nunca copia anotaciones ni datos de salud).
 // Aquí se arma una lectura FICTICIA y estable a partir de lo que declaró el conductor.
+// Solo se muestra lo que la lista cerrada de R13 permite guardar: de la cédula, el RUN, si el nombre
+// coincide y el vencimiento (nunca la fecha de nacimiento); de la licencia, las clases y el próximo
+// control; de la Hoja de Vida y los antecedentes, la fecha de emisión, si el folio es válido y el resultado.
+// El RUN aparece tapado: verlo queda en el registro de acciones (R26).
 import { EJEMPLO_USUARIO } from '@/datos/semilla';
 import type { ConductorVista } from '@/datos/selectores';
 import type { DocumentoUsuario, MotivoRechazoId, TipoDocumentoId } from '@/datos/tipos';
@@ -19,6 +23,8 @@ export interface LecturaIA {
   /** true coincide · false no coincide · null solo informativo o lectura dudosa. */
   coincide: boolean | null;
   nota?: string;
+  /** El RUN: se muestra tapado hasta "Ver RUN", que queda en el registro (R26). */
+  esRun?: boolean;
 }
 
 export interface Prerevision {
@@ -54,6 +60,11 @@ export function runFicticio(id: string): string {
   return `${String(cuerpo).replace(/\B(?=(\d{3})+(?!\d))/g, '.')}-${dv}`;
 }
 
+/** El RUN tapado, para mostrarlo sin verlo (ej.: ••.•••.•••-•). */
+export function runTapado(run: string): string {
+  return run.replace(/[0-9Kk?]/g, '•');
+}
+
 /** RUN leído a medias (cuando la foto tiene reflejos). */
 function runDudoso(run: string): string {
   return run.replace(/\d/g, (d, i: number) => (i % 3 === 1 ? '?' : d));
@@ -72,7 +83,6 @@ export interface EntradaPrerevision {
   conductor: ConductorVista;
   /** Nombre tal como lo escribió la persona (vacío si no lo escribió). */
   nombreDeclarado: string;
-  fechaNacimientoDeclarada: string;
   tipo: TipoDocumentoId;
   documento: DocumentoUsuario;
   diasAntiguedadPdf: number;
@@ -105,14 +115,7 @@ export function prerevisar(e: EntradaPrerevision): Prerevision {
 
   if (tipo === 'cedula') {
     dudosa = true;
-    lecturas.push({ dato: 'RUN', leyo: runDudoso(run), declarado: 'Se obtiene de la cédula', coincide: null, nota: 'Lectura dudosa' });
-    const fn = e.fechaNacimientoDeclarada.trim() || EJEMPLO_USUARIO.fechaNacimiento;
-    lecturas.push({
-      dato: 'Fecha de nacimiento',
-      leyo: fn,
-      declarado: e.fechaNacimientoDeclarada.trim() || 'Sin dato',
-      coincide: !!e.fechaNacimientoDeclarada.trim(),
-    });
+    lecturas.push({ dato: 'RUN', leyo: runDudoso(run), declarado: 'Se obtiene de la cédula', coincide: null, nota: 'Lectura dudosa', esRun: true });
     lecturas.push({ dato: 'Vence', leyo: fechaLarga(new Date(subido + 4 * 365 * DIA_MS).toISOString()), declarado: 'Vigente', coincide: true });
   } else if (tipo === 'licencia') {
     dudosa = true;
@@ -126,7 +129,7 @@ export function prerevisar(e: EntradaPrerevision): Prerevision {
       coincide: true,
     });
   } else {
-    lecturas.push({ dato: 'RUN', leyo: run, declarado: 'Igual al de la cédula', coincide: true });
+    lecturas.push({ dato: 'RUN', leyo: run, declarado: 'Igual al de la cédula', coincide: true, esRun: true });
     if (tipo === 'antecedentes') {
       lecturas.push({ dato: 'Tipo', leyo: 'Para fines especiales', declarado: 'Para fines especiales', coincide: true });
     }

@@ -1,22 +1,23 @@
 // Panel · Conductores
-// Era la ruta (ya no existe en el mockup): /admin/conductores
+// Ruta: /panel/conductores
 // Sin maqueta (panel web). Lista con filtros por estado y detalle de solo lectura.
 import { useMemo, useState, type ReactNode } from 'react';
 import { View } from 'react-native';
 import { router } from 'expo-router';
 
-import { useAhora, useCatalogos, useDerivado, useTodosLosConductores } from '@/datos/hooks';
+import { useAhora, useCatalogos, useDerivado } from '@/datos/hooks';
 import { TEXTO_PRECONDICION } from '@/datos/match';
 import * as sel from '@/datos/selectores';
 import type { ConductorVista } from '@/datos/selectores';
 import type { TipoDocumentoId } from '@/datos/tipos';
 import { fechaLarga, haceCuanto, iniciales, plural, textoDias, textoTurnos } from '@/datos/formato';
 import { Aviso, Avatar, Boton, EstadoVacio, Insignia, Presionable, Separador, Texto, Titulo, color, radio } from '@/ui';
-import { rutaPanel } from '@/panel/enlaces';
-import { PaginaPanel } from '@/panel/marco';
+import { rutaPanel } from '@panel/enlaces';
+import { PaginaPanel } from '@panel/marco';
 import { Lock, MapPin, UserRound, Users } from '@/ui/iconos';
 
-import { conteoMatches, matchesDeConductor, precondicionDeConductor } from './datosPanel';
+import { useTodosLosConductores } from '@panel/datos/hooks';
+import { conteoMatches, matchesDeConductor, precondicionDeConductor } from '@panel/datos/lecturas';
 import { CabeceraTabla, CampoBusqueda, Dato, FilaElegible, Filtros, GrillaDatos, InsigniaConductor, ListaDetalle, TarjetaPanel, useAnchoPanel } from './piezas';
 
 type Filtro = 'todos' | 'verificado' | 'en_revision' | 'con_observaciones' | 'incompleto' | 'suspendido';

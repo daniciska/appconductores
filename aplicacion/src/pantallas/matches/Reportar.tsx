@@ -2,7 +2,7 @@
 // Ruta: /conductor/mensajes/[id]/reportar
 // Maqueta: docs/maqueta/CondReportar.dc.html
 // Hoja sobre la conversación (de fondo, atenuada). El reporte queda abierto, con la copia de la
-// conversación, para que lo revise el equipo (en el mockup no hay panel: queda abierto); bloquear
+// conversación, para que lo revise el equipo (queda abierto hasta que lo resuelvan); bloquear
 // saca ese match y cierra el chat.
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, ScrollView, Text, View, useWindowDimensions } from 'react-native';

@@ -1,17 +1,19 @@
 // Panel · Resumen
-// Era la ruta (ya no existe en el mockup): /admin
+// Ruta: /panel/resumen
 // Sin maqueta (panel web). Cifras, lo pendiente, la configuración vigente y las últimas acciones del equipo.
 import { View } from 'react-native';
 import { router, type Href } from 'expo-router';
 
-import { useAhora, useColaDocumentos, useDerivado, useNegociosActivos, useReportesAbiertos, useResumenPanel } from '@/datos/hooks';
+import { useAhora, useDerivado, useNegociosActivos } from '@/datos/hooks';
 import { useDemo } from '@/datos/tienda';
 import { haceCuanto, iniciales, plural } from '@/datos/formato';
 import { Avatar, Boton, Presionable, Separador, Texto, color, radio, type LucideIcon } from '@/ui';
-import { rutaPanel } from '@/panel/enlaces';
-import { PaginaPanel } from '@/panel/marco';
+import { useColaDocumentos, useReportesAbiertos, useResumenPanel } from '@panel/datos/hooks';
+import { abrirDemoConductor, rutaPanel } from '@panel/enlaces';
+import { PaginaPanel } from '@panel/marco';
+import { usePuede } from '@panel/sesion';
 import {
-  ArrowRight,
+  ArrowUpRight,
   ChevronRight,
   CircleCheck,
   FileCheck,
@@ -36,6 +38,8 @@ export default function Resumen() {
   const conObservaciones = useDerivado((s) => s.conductores.filter((c) => c.estadoVerificacion === 'con_observaciones').length + (s.conductor.estadoVerificacion === 'con_observaciones' ? 1 : 0));
   const ahora = useAhora(30000);
   const { escritorio } = useAnchoPanel();
+  // El registro de acciones lo ven solo los administradores (propuesta del modelo de datos).
+  const verRegistro = usePuede('ver_registro');
   const masAntiguo = cola[0]?.documento.otraRevisionEl ?? cola[0]?.documento.enviadoEl;
 
   const pendientes: { icono: LucideIcon; titulo: string; detalle: string; href: Href; urgente: boolean }[] = [
@@ -122,9 +126,9 @@ export default function Resumen() {
               </Texto>
             </View>
             {[
-              'Entra como conductor, completa tu perfil y envía tus documentos.',
-              'Aquí, en Documentos, aprueba la Hoja de Vida y los antecedentes.',
-              'Vuelve a la app del conductor: ya ves tus matches.',
+              'En la demo del conductor (otra pestaña), regístrate y envía tus documentos.',
+              'Aquí, en Documentos, aprueba o no aprueba la Hoja de Vida y los antecedentes.',
+              'Vuelve a la otra pestaña: el conductor ya ve el resultado.',
             ].map((t, i) => (
               <View key={t} style={{ flexDirection: 'row', gap: 10, alignItems: 'flex-start' }}>
                 <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: 'rgba(255,255,255,0.12)', alignItems: 'center', justifyContent: 'center', marginTop: 1 }}>
@@ -137,28 +141,30 @@ export default function Resumen() {
                 </Texto>
               </View>
             ))}
-            {/* Enlace a la app del conductor: solo sirve dentro del mockup; se quita en la app del panel. */}
-            <Boton titulo="Abrir la app del conductor" variante="principal" tamano="mediano" iconoDerecha={ArrowRight} onPress={() => router.push('/conductor')} />
+            {/* La demo del conductor es otra app del mismo sitio: se abre en otra pestaña. */}
+            <Boton titulo="Abrir la demo del conductor" variante="principal" tamano="mediano" iconoDerecha={ArrowUpRight} onPress={() => abrirDemoConductor('/conductor')} />
           </View>
 
-          <TarjetaPanel titulo="Últimas acciones del equipo" derecha={<Boton titulo="Ver todo" variante="texto" tamano="mediano" onPress={() => router.navigate(rutaPanel('equipo'))} />} separacion={4}>
-            {acciones.slice(0, 6).map((a, i) => (
-              <View key={a.id}>
-                {i > 0 ? <Separador sangria={44} /> : null}
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 56, paddingVertical: 8 }}>
-                  <Avatar texto={a.quien.startsWith('Tú') ? 'TÚ' : iniciales(a.quien)} tamano={32} forma="circulo" tono={a.quien.startsWith('Tú') ? 'acento' : 'claro'} />
-                  <View style={{ flex: 1, minWidth: 0, gap: 1 }}>
-                    <Texto variante="secundario" peso={600}>
-                      {a.que}
-                    </Texto>
-                    <Texto variante="pequeno">
-                      {a.quien} · {haceCuanto(a.fecha, ahora)}
-                    </Texto>
+          {verRegistro ? (
+            <TarjetaPanel titulo="Últimas acciones del equipo" derecha={<Boton titulo="Ver todo" variante="texto" tamano="mediano" onPress={() => router.navigate(rutaPanel('equipo'))} />} separacion={4}>
+              {acciones.slice(0, 6).map((a, i) => (
+                <View key={a.id}>
+                  {i > 0 ? <Separador sangria={44} /> : null}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 56, paddingVertical: 8 }}>
+                    <Avatar texto={a.quien.startsWith('Tú') ? 'TÚ' : iniciales(a.quien)} tamano={32} forma="circulo" tono={a.quien.startsWith('Tú') ? 'acento' : 'claro'} />
+                    <View style={{ flex: 1, minWidth: 0, gap: 1 }}>
+                      <Texto variante="secundario" peso={600}>
+                        {a.que}
+                      </Texto>
+                      <Texto variante="pequeno">
+                        {a.quien} · {haceCuanto(a.fecha, ahora)}
+                      </Texto>
+                    </View>
                   </View>
                 </View>
-              </View>
-            ))}
-          </TarjetaPanel>
+              ))}
+            </TarjetaPanel>
+          ) : null}
         </View>
       </View>
     </PaginaPanel>

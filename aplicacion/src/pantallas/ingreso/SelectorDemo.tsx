@@ -1,5 +1,6 @@
 // / · Selector de la demo: elegir con qué rol entrar (conductor o titular), atajos y reiniciar.
-// El panel de administración no se muestra en el mockup (pedido de la dueña, 7-nov; ver src/panel).
+// El panel de administración no se muestra ni se enlaza aquí (pedido de la dueña, 7 y 9-nov): es otra
+// app del mismo sitio (carpeta panel/ del repositorio).
 // Estilo de la Bienvenida (docs/maqueta/CondBienvenida.dc.html): fondo casi negro y tarjetas grandes.
 import { useState } from 'react';
 import { Text, View } from 'react-native';

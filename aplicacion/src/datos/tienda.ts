@@ -6,7 +6,9 @@
 //   const guardarPaso1 = useDemo((s) => s.guardarPaso1);        // una acción
 //   const matches = useMatchesDelUsuario();                     // listas: hooks de ./hooks
 // Fuera de React: useDemo.getState().alternarFavorito('b01').
-// Cada grupo puede escribir acciones propias con useDemo.setState(...) en su carpeta.
+// Cada grupo puede escribir acciones propias con useDemo.setState(...) en su carpeta. Otra app del mismo
+// sitio puede crear su propia tienda con este módulo y escribir con useDemo.setState: comparten lo
+// guardado en el navegador (misma clave y misma versión), no el código.
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
@@ -18,12 +20,11 @@ import {
   CLAVE_ALMACENAMIENTO,
   CLAVE_ALMACENAMIENTO_ANTERIOR,
   VERSION_ESTADO,
-  ajustesIniciales,
   crearEstadoInicial,
   migrarEstado,
-  reglasIniciales,
   type DatosDemo,
 } from './estado';
+import { reiniciarRevisionManual } from './revisionManual';
 import { EJEMPLO_USUARIO, conductorInicial, cuentaInicial, documentoVacio, documentosVacios, venceEnEjemplo } from './semilla';
 import {
   ID_USUARIO,
@@ -36,9 +37,7 @@ import {
   titularPorId,
 } from './selectores';
 import type {
-  Ajustes,
   Autorizaciones,
-  CodigoRegla,
   ConductorFicticio,
   CuentaUsuario,
   Dia,
@@ -47,18 +46,15 @@ import type {
   EstadoBusqueda,
   EstadoVerificacion,
   Mensaje,
-  MotivoRechazoId,
   MotivoReporteId,
   PerfilConductor,
   PerfilesBolsa,
   PlanTitular,
   QueSeEntrego,
   Rol,
-  RolEquipo,
   TareaSimulada,
   TipoDocumentoId,
   Turno,
-  UsoRegla,
   VisibilidadBolsa,
 } from './tipos';
 
@@ -70,8 +66,8 @@ export interface Resultado {
   error?: string;
 }
 
-/** Quién firma las acciones del panel (guardado en src/panel, fuera del mockup). */
-export const QUIEN_EN_PANEL = 'Tú (demo)';
+/** Lo que ve el titular de la demo si el equipo suspendió su cuenta (R18: sale del match y no puede escribir). */
+export const TEXTO_CUENTA_SUSPENDIDA = 'Tu cuenta está suspendida: tus búsquedas no salen en los matches y no puedes escribir.';
 
 /** Cuánto tarda la persona del equipo (simulada) en revisar un documento que no aprobó la IA. */
 export const SEGUNDOS_REVISION_EQUIPO = 12;
@@ -107,7 +103,7 @@ export interface DatosPaso4 {
 export interface AccionesDemo {
   // --- General ---
   elegirRol: (rol: Rol | null) => void;
-  /** Vuelve todo a como estaba al abrir la demo por primera vez. */
+  /** Vuelve todo a como estaba al abrir la demo por primera vez (y vuelve la revisión simulada). */
   reiniciarDemo: () => void;
   /** Atajo: deja al usuario como conductor con perfil completo y verificado, con 2 conversaciones. */
   prepararConductorVerificado: () => void;
@@ -178,43 +174,11 @@ export interface AccionesDemo {
   quitarDestacado: (busquedaId: string) => void;
   cambiarEstadoBusqueda: (busquedaId: string, estado: EstadoBusqueda) => Resultado;
   verPostulacion: (postulacionId: string) => void;
-  escribirAPostulante: (postulacionId: string, texto: string) => void;
+  /** El titular le escribe a un postulante (no puede si su cuenta está suspendida: R18). */
+  escribirAPostulante: (postulacionId: string, texto: string) => Resultado;
   descartarPostulacion: (postulacionId: string) => void;
   alternarFavoritoTitular: (conductorId: string) => void;
-
-  // --- Panel de administración (solo las usa el panel guardado en src/panel, fuera del mockup) ---
-  /** duenoId: 'yo' (usuario de la demo) o id de conductor ficticio. */
-  aprobarDocumento: (duenoId: string, tipo: TipoDocumentoId) => void;
-  rechazarDocumento: (duenoId: string, tipo: TipoDocumentoId, motivo: MotivoRechazoId) => void;
-  cambiarNegocioActivo: (negocioId: string, activo: boolean) => void;
-  renombrarNegocio: (negocioId: string, nombre: string) => void;
-  cambiarIndustriaActiva: (industriaId: string, activo: boolean) => void;
-  renombrarZona: (zonaId: string, nombre: string) => void;
-  /** La comuna solo puede ir a una zona de su misma región. */
-  moverComunaAZona: (comunaId: string, zonaId: string) => Resultado;
-  crearZona: (regionId: string, nombre: string) => string;
-  cambiarUmbral: (umbral: number) => void;
-  cambiarUsoRegla: (codigo: CodigoRegla, uso: UsoRegla) => void;
-  cambiarPesoRegla: (codigo: CodigoRegla, peso: number) => void;
-  restablecerReglas: () => void;
-  cambiarAjuste: <K extends keyof Ajustes>(clave: K, valor: Ajustes[K]) => void;
-  restablecerAjustes: () => void;
-  resolverReporte: (reporteId: string, queSeHizo: string) => void;
-  /** personaId: id de titular ('t01') o de conductor ficticio ('c01'). */
-  suspenderCuenta: (personaId: string) => void;
-  reactivarCuenta: (personaId: string) => void;
-  agregarMiembro: (d: { nombre: string; celular: string; rol: RolEquipo }) => void;
-  cambiarRolMiembro: (miembroId: string, rol: RolEquipo) => void;
-  alternarMiembroActivo: (miembroId: string) => void;
-  /** Agrega una línea al registro "Acción del equipo". */
-  registrarAccionEquipo: (que: string) => void;
-
-  // --- Simulación (la usa src/datos/simulacion.ts) ---
-  programarTarea: (tarea: DistributiveOmit<TareaSimulada, 'id'>) => void;
-  quitarTarea: (id: string) => void;
 }
-
-type DistributiveOmit<T, K extends keyof never> = T extends unknown ? Omit<T, K> : never;
 
 export type EstadoDemo = DatosDemo & AccionesDemo;
 
@@ -236,7 +200,7 @@ export function calcularVerificacion(docs: Record<TipoDocumentoId, DocumentoUsua
 }
 
 /** Recalcula pasos, estado del perfil y de verificación del usuario. */
-function recalcularUsuario(s: DatosDemo): Pick<DatosDemo, 'conductor'> {
+export function recalcularUsuario(s: DatosDemo): Pick<DatosDemo, 'conductor'> {
   const docs = s.documentos;
   const enviados = TIPOS_DOC_ORDEN.every((t) => docs[t].estado !== 'falta' && docs[t].estado !== 'subido');
   const pasosListos = { ...s.conductor.pasosListos, documentos: s.conductor.pasosListos.documentos || enviados };
@@ -251,7 +215,8 @@ function recalcularUsuario(s: DatosDemo): Pick<DatosDemo, 'conductor'> {
   };
 }
 
-function docAprobado(doc: DocumentoUsuario, quien: 'ia' | 'persona'): DocumentoUsuario {
+/** El documento aprobado ahora, por el agente de IA o por una persona del equipo. */
+export function docAprobado(doc: DocumentoUsuario, quien: 'ia' | 'persona'): DocumentoUsuario {
   const ahora = Date.now();
   return {
     ...doc,
@@ -263,13 +228,6 @@ function docAprobado(doc: DocumentoUsuario, quien: 'ia' | 'persona'): DocumentoU
     motivo: null,
   };
 }
-
-const NOMBRE_DOC: Record<TipoDocumentoId, string> = {
-  cedula: 'la cédula',
-  licencia: 'la licencia',
-  hoja_vida: 'la Hoja de Vida',
-  antecedentes: 'el certificado de antecedentes',
-};
 
 function mensajeSistema(texto: string): Mensaje {
   return { id: nuevoId('m'), autor: 'sistema', texto, hora: ahoraISO(), leido: true };
@@ -293,11 +251,6 @@ function nuevaEntrega(s: DatosDemo, busquedaId: string, que: QueSeEntrego[], des
 
 /** Tareas de la simulación que dependen de lo que hizo el usuario (se descartan con los atajos). */
 const TAREAS_DEL_USUARIO = new Set<TareaSimulada['tipo']>(['prerevision', 'revision_equipo', 'respuesta_titular', 'abre_ficha']);
-
-/** Quién firma, en el registro del equipo, las revisiones que la demo simula sola. */
-function revisorSimulado(s: DatosDemo): string {
-  return s.equipo.find((m) => m.activo && m.rol === 'revisor')?.nombre ?? 'Equipo de Dale Contacto';
-}
 
 /**
  * Conductor de ejemplo con el perfil completo y los 4 documentos aprobados hace un día (la cédula y
@@ -353,13 +306,57 @@ function conductorDeEjemplo(ahora: number): Pick<DatosDemo, 'cuenta' | 'conducto
 }
 
 /** Programa que algunos titulares con match "abran la ficha" del conductor recién verificado. */
-function tareasAlVerificar(s: DatosDemo): TareaSimulada[] {
+export function tareasAlVerificar(s: DatosDemo): TareaSimulada[] {
   const ahora = Date.now();
   return matchesDelUsuario(s)
     .filter((m) => !s.fichasAbiertas.includes(m.id))
     .slice(0, 2)
     .map((m, i) => ({ id: nuevoId('t'), tipo: 'abre_ficha' as const, venceEn: ahora + 7000 + i * 9000, busquedaId: m.id }));
 }
+
+/**
+ * Cambia un documento del usuario ('yo') o de un conductor ficticio y recalcula su verificación.
+ * No guarda nada: devuelve los cambios para useDemo.setState y si el usuario quedó verificado recién
+ * (en ese caso ya van programadas las tareas de tareasAlVerificar).
+ */
+export function cambiarDocumento(
+  s: DatosDemo,
+  duenoId: string,
+  tipo: TipoDocumentoId,
+  cambio: (d: DocumentoUsuario) => DocumentoUsuario,
+  extra?: (c: { clasesDeclaradas: string[] }) => Partial<PerfilConductor>,
+): { cambios: Partial<DatosDemo>; quedoVerificado: boolean } {
+  if (duenoId === ID_USUARIO) {
+    const antes = s.conductor.estadoVerificacion;
+    const documentos = { ...s.documentos, [tipo]: cambio(s.documentos[tipo]) };
+    const conductor = { ...s.conductor, ...(extra ? extra(s.conductor) : {}) };
+    const siguiente = { ...s, documentos, conductor };
+    const rec = recalcularUsuario(siguiente);
+    const quedoVerificado = antes !== 'verificado' && rec.conductor.estadoVerificacion === 'verificado';
+    return {
+      cambios: {
+        documentos,
+        ...rec,
+        pendientes: quedoVerificado ? [...s.pendientes, ...tareasAlVerificar({ ...siguiente, ...rec })] : s.pendientes,
+      },
+      quedoVerificado,
+    };
+  }
+  return {
+    cambios: {
+      conductores: s.conductores.map((c): ConductorFicticio => {
+        if (c.id !== duenoId) return c;
+        const documentos = { ...c.documentos, [tipo]: cambio(c.documentos[tipo]) };
+        return { ...c, ...(extra ? extra(c) : {}), documentos, estadoVerificacion: calcularVerificacion(documentos) };
+      }),
+    },
+    quedoVerificado: false,
+  };
+}
+
+/** La licencia aprobada copia las clases declaradas a revisadas. */
+export const extraAlAprobar = (tipo: TipoDocumentoId) =>
+  tipo === 'licencia' ? (c: { clasesDeclaradas: string[] }) => ({ clasesRevisadas: [...c.clasesDeclaradas] }) : undefined;
 
 // ---------------------------------------------------------------------------
 // Tienda
@@ -373,52 +370,17 @@ export const useDemo = create<EstadoDemo>()(
       const set = ((...args: unknown[]) => {
         (setOriginal as (...a: unknown[]) => unknown)(...args);
       }) as typeof setOriginal;
-      /** Cambia un documento del usuario o de un conductor ficticio y recalcula su verificación. */
+      /** Cambia un documento del usuario (ver cambiarDocumento) y avisa si quedó verificado. */
       const cambiarDocumentoDe = (
         duenoId: string,
         tipo: TipoDocumentoId,
         cambio: (d: DocumentoUsuario) => DocumentoUsuario,
         extra?: (c: { clasesDeclaradas: string[] }) => Partial<PerfilConductor>,
       ) => {
-        const s = get();
-        if (duenoId === ID_USUARIO) {
-          const antes = s.conductor.estadoVerificacion;
-          const documentos = { ...s.documentos, [tipo]: cambio(s.documentos[tipo]) };
-          const conductor = { ...s.conductor, ...(extra ? extra(s.conductor) : {}) };
-          const siguiente = { ...s, documentos, conductor };
-          const rec = recalcularUsuario(siguiente);
-          const ahoraVerificado = antes !== 'verificado' && rec.conductor.estadoVerificacion === 'verificado';
-          const conRec = { ...siguiente, ...rec };
-          set({
-            documentos,
-            ...rec,
-            pendientes: ahoraVerificado ? [...s.pendientes, ...tareasAlVerificar(conRec)] : s.pendientes,
-          });
-          if (ahoraVerificado) avisar('¡Listo! Tus 4 documentos están aprobados.', 'exito');
-          return;
-        }
-        set({
-          conductores: s.conductores.map((c): ConductorFicticio => {
-            if (c.id !== duenoId) return c;
-            const documentos = { ...c.documentos, [tipo]: cambio(c.documentos[tipo]) };
-            return { ...c, ...(extra ? extra(c) : {}), documentos, estadoVerificacion: calcularVerificacion(documentos) };
-          }),
-        });
+        const r = cambiarDocumento(get(), duenoId, tipo, cambio, extra);
+        set(r.cambios);
+        if (r.quedoVerificado) avisar('¡Listo! Tus 4 documentos están aprobados.', 'exito');
       };
-
-      const nombreDueno = (duenoId: string) => {
-        const s = get();
-        if (duenoId === ID_USUARIO) return nombreCompleto(s.cuenta) || 'el conductor de la demo';
-        const c = s.conductores.find((x) => x.id === duenoId);
-        return c ? nombreCompleto(c) : duenoId;
-      };
-
-      const nombreMotivo = (motivo: MotivoRechazoId) =>
-        get().catalogos.motivosRechazo.find((m) => m.id === motivo)?.nombre ?? motivo;
-
-      /** Agrega una línea al registro "Acción del equipo" (lo muestra el panel guardado). */
-      const anotarAccionEquipo = (quien: string, que: string) =>
-        set((s) => ({ accionesEquipo: [{ id: nuevoId('a'), quien, que, fecha: ahoraISO() }, ...s.accionesEquipo].slice(0, 200) }));
 
       return {
         ...crearEstadoInicial(),
@@ -428,6 +390,9 @@ export const useDemo = create<EstadoDemo>()(
 
         reiniciarDemo: () => {
           borrarTodosLosBorradores();
+          // Si alguien revisaba los documentos a mano en este navegador, vuelve la revisión simulada
+          // (y las demás pestañas del sitio se enteran del reinicio).
+          reiniciarRevisionManual();
           set({ ...crearEstadoInicial() });
         },
 
@@ -537,10 +502,6 @@ export const useDemo = create<EstadoDemo>()(
             postulaciones: s.postulaciones.filter((p) => p.conductorId !== ID_USUARIO),
             pendientes: s.pendientes.filter((t) => !TAREAS_DEL_USUARIO.has(t.tipo)),
           });
-          anotarAccionEquipo(
-            revisorSimulado(get()),
-            `No aprobó ${NOMBRE_DOC.hoja_vida} de ${nombreDueno(ID_USUARIO)} (${nombreMotivo('vencido')})`,
-          );
         },
 
         // ------------------------------------------------------------------ Ingreso
@@ -682,23 +643,9 @@ export const useDemo = create<EstadoDemo>()(
           }
         },
 
-        aprobarPorAgenteIA: (tipo) =>
-          cambiarDocumentoDe(
-            ID_USUARIO,
-            tipo,
-            (d) => docAprobado(d, 'ia'),
-            tipo === 'licencia' ? (c) => ({ clasesRevisadas: [...c.clasesDeclaradas] }) : undefined,
-          ),
+        aprobarPorAgenteIA: (tipo) => cambiarDocumentoDe(ID_USUARIO, tipo, (d) => docAprobado(d, 'ia'), extraAlAprobar(tipo)),
 
-        aprobarPorEquipo: (tipo) => {
-          cambiarDocumentoDe(
-            ID_USUARIO,
-            tipo,
-            (d) => docAprobado(d, 'persona'),
-            tipo === 'licencia' ? (c) => ({ clasesRevisadas: [...c.clasesDeclaradas] }) : undefined,
-          );
-          anotarAccionEquipo(revisorSimulado(get()), `Aprobó ${NOMBRE_DOC[tipo]} de ${nombreDueno(ID_USUARIO)}`);
-        },
+        aprobarPorEquipo: (tipo) => cambiarDocumentoDe(ID_USUARIO, tipo, (d) => docAprobado(d, 'persona'), extraAlAprobar(tipo)),
 
         // ------------------------------------------------------------------ Disponibilidad y cuenta
         cambiarDisponible: (disponible) =>
@@ -1004,7 +951,9 @@ export const useDemo = create<EstadoDemo>()(
         escribirAPostulante: (postulacionId, texto) => {
           const s = get();
           const p = s.postulaciones.find((x) => x.id === postulacionId);
-          if (!p) return;
+          if (!p) return { ok: false, error: 'No encontramos la postulación.' };
+          const b = busquedaPorId(s, p.busquedaId);
+          if (b && titularPorId(s, b.titularId)?.suspendido) return { ok: false, error: TEXTO_CUENTA_SUSPENDIDA };
           const cambios: Partial<DatosDemo> = {
             postulaciones: s.postulaciones.map((x) =>
               x.id === postulacionId
@@ -1020,6 +969,7 @@ export const useDemo = create<EstadoDemo>()(
               : [...s.matchesPorPostulacion, p.busquedaId];
           }
           set(cambios);
+          return { ok: true };
         },
 
         descartarPostulacion: (postulacionId) =>
@@ -1035,194 +985,6 @@ export const useDemo = create<EstadoDemo>()(
               ? s.favoritosTitular.filter((x) => x !== conductorId)
               : [...s.favoritosTitular, conductorId],
           })),
-
-        // ------------------------------------------------------------------ Panel
-        aprobarDocumento: (duenoId, tipo) => {
-          cambiarDocumentoDe(
-            duenoId,
-            tipo,
-            (d) => docAprobado(d, 'persona'),
-            tipo === 'licencia' ? (c) => ({ clasesRevisadas: [...c.clasesDeclaradas] }) : undefined,
-          );
-          get().registrarAccionEquipo(`Aprobó ${NOMBRE_DOC[tipo]} de ${nombreDueno(duenoId)}`);
-        },
-
-        rechazarDocumento: (duenoId, tipo, motivo) => {
-          cambiarDocumentoDe(duenoId, tipo, (d) => ({
-            ...d,
-            estado: 'rechazado',
-            etapa: null,
-            revisadoEn: ahoraISO(),
-            venceEn: null,
-            quienDecidio: 'persona',
-            motivo,
-          }));
-          get().registrarAccionEquipo(`No aprobó ${NOMBRE_DOC[tipo]} de ${nombreDueno(duenoId)} (${nombreMotivo(motivo)})`);
-          if (duenoId === ID_USUARIO) avisar(`No pudimos aprobar ${NOMBRE_DOC[tipo]}.`, 'error');
-        },
-
-        cambiarNegocioActivo: (negocioId, activo) => {
-          const s = get();
-          const n = s.catalogos.negocios.find((x) => x.id === negocioId);
-          set({
-            catalogos: {
-              ...s.catalogos,
-              negocios: s.catalogos.negocios.map((x) => (x.id === negocioId ? { ...x, activo } : x)),
-            },
-          });
-          get().registrarAccionEquipo(`${activo ? 'Activó' : 'Apagó'} el negocio ${n?.nombre ?? negocioId}`);
-        },
-
-        renombrarNegocio: (negocioId, nombre) => {
-          const s = get();
-          set({
-            catalogos: {
-              ...s.catalogos,
-              negocios: s.catalogos.negocios.map((x) => (x.id === negocioId ? { ...x, nombre: nombre.trim() || x.nombre } : x)),
-            },
-          });
-          get().registrarAccionEquipo(`Cambió el nombre del negocio a ${nombre.trim()}`);
-        },
-
-        cambiarIndustriaActiva: (industriaId, activo) => {
-          const s = get();
-          const i = s.catalogos.industrias.find((x) => x.id === industriaId);
-          set({
-            catalogos: {
-              ...s.catalogos,
-              industrias: s.catalogos.industrias.map((x) => (x.id === industriaId ? { ...x, activo } : x)),
-            },
-          });
-          get().registrarAccionEquipo(`${activo ? 'Activó' : 'Apagó'} la industria ${i?.nombre ?? industriaId}`);
-        },
-
-        renombrarZona: (zonaId, nombre) => {
-          const s = get();
-          const limpio = nombre.trim();
-          if (!limpio) return;
-          set({
-            catalogos: { ...s.catalogos, zonas: s.catalogos.zonas.map((z) => (z.id === zonaId ? { ...z, nombre: limpio } : z)) },
-          });
-          get().registrarAccionEquipo(`Cambió el nombre de una zona a ${limpio}`);
-        },
-
-        moverComunaAZona: (comunaId, zonaId) => {
-          const s = get();
-          const comuna = s.catalogos.comunas.find((c) => c.id === comunaId);
-          const zona = s.catalogos.zonas.find((z) => z.id === zonaId);
-          if (!comuna || !zona) return { ok: false, error: 'No encontramos la comuna o la zona.' };
-          if (comuna.regionId !== zona.regionId) return { ok: false, error: 'La comuna solo puede ir a una zona de su región.' };
-          set({
-            catalogos: {
-              ...s.catalogos,
-              comunas: s.catalogos.comunas.map((c) => (c.id === comunaId ? { ...c, zonaId } : c)),
-            },
-          });
-          get().registrarAccionEquipo(`Movió ${comuna.nombre} a la zona ${zona.nombre}`);
-          return { ok: true };
-        },
-
-        crearZona: (regionId, nombre) => {
-          const s = get();
-          const enRegion = s.catalogos.zonas.filter((z) => z.regionId === regionId);
-          const orden = enRegion.reduce((m, z) => Math.max(m, z.orden), 0) + 1;
-          const id = `${regionId}-z${orden}-${Date.now().toString(36)}`;
-          set({
-            catalogos: { ...s.catalogos, zonas: [...s.catalogos.zonas, { id, regionId, nombre: nombre.trim() || 'Zona nueva', orden }] },
-          });
-          get().registrarAccionEquipo(`Creó la zona ${nombre.trim() || 'Zona nueva'}`);
-          return id;
-        },
-
-        cambiarUmbral: (umbral) => {
-          const valor = Math.min(100, Math.max(0, Math.round(umbral)));
-          set((s) => ({ reglas: { ...s.reglas, umbral: valor } }));
-          get().registrarAccionEquipo(`Cambió el umbral del match a ${valor} %`);
-        },
-
-        cambiarUsoRegla: (codigo, uso) => {
-          set((s) => ({ reglas: { ...s.reglas, reglas: s.reglas.reglas.map((r) => (r.codigo === codigo ? { ...r, uso } : r)) } }));
-          const textoUso = uso === 'filtro' ? 'filtro obligatorio' : uso === 'variable' ? 'variable del %' : 'apagada';
-          get().registrarAccionEquipo(`Dejó la regla ${codigo} como ${textoUso}`);
-        },
-
-        cambiarPesoRegla: (codigo, peso) => {
-          const valor = Math.max(0, Math.min(10, Math.round(peso * 10) / 10));
-          set((s) => ({
-            reglas: { ...s.reglas, reglas: s.reglas.reglas.map((r) => (r.codigo === codigo ? { ...r, peso: valor } : r)) },
-          }));
-          get().registrarAccionEquipo(`Cambió el peso de ${codigo} a ${valor}`);
-        },
-
-        restablecerReglas: () => {
-          set({ reglas: reglasIniciales() });
-          get().registrarAccionEquipo('Restableció las reglas del match');
-        },
-
-        cambiarAjuste: (clave, valor) => {
-          set((s) => ({ ajustes: { ...s.ajustes, [clave]: valor } }));
-          const NOMBRE_AJUSTE: Record<keyof Ajustes, string> = {
-            bolsaActiva: 'Bolsa de trabajo',
-            validarObligatorios: 'Validar campos obligatorios',
-            diasReconfirmar: 'Días para reconfirmar disponibilidad',
-            diasAntiguedadPdf: 'Antigüedad máxima de los PDF',
-            segundosPrerevision: 'Segundos de la pre-revisión',
-          };
-          const texto = typeof valor === 'boolean' ? (valor ? 'encendido' : 'apagado') : String(valor);
-          get().registrarAccionEquipo(`Cambió «${NOMBRE_AJUSTE[clave] ?? String(clave)}» a ${texto}`);
-        },
-
-        restablecerAjustes: () => set({ ajustes: ajustesIniciales() }),
-
-        resolverReporte: (reporteId, queSeHizo) => {
-          set((s) => ({
-            reportes: s.reportes.map((r) =>
-              r.id === reporteId ? { ...r, estado: 'resuelto', queSeHizo: queSeHizo.trim() || 'Sin acción', resueltoEl: ahoraISO() } : r,
-            ),
-          }));
-          get().registrarAccionEquipo(`Resolvió un reporte: ${queSeHizo.trim() || 'Sin acción'}`);
-        },
-
-        suspenderCuenta: (personaId) => {
-          set((s) => ({
-            titulares: s.titulares.map((t) => (t.id === personaId ? { ...t, suspendido: true } : t)),
-            conductores: s.conductores.map((c) => (c.id === personaId ? { ...c, suspendido: true } : c)),
-          }));
-          get().registrarAccionEquipo(`Suspendió la cuenta ${personaId}`);
-        },
-
-        reactivarCuenta: (personaId) => {
-          set((s) => ({
-            titulares: s.titulares.map((t) => (t.id === personaId ? { ...t, suspendido: false } : t)),
-            conductores: s.conductores.map((c) => (c.id === personaId ? { ...c, suspendido: false } : c)),
-          }));
-          get().registrarAccionEquipo(`Reactivó la cuenta ${personaId}`);
-        },
-
-        agregarMiembro: ({ nombre, celular, rol }) => {
-          set((s) => ({
-            equipo: [...s.equipo, { id: nuevoId('e'), nombre: nombre.trim(), celular: celular.trim(), rol, activo: true, agregadoEl: ahoraISO() }],
-          }));
-          get().registrarAccionEquipo(`Agregó a ${nombre.trim()} como ${rol === 'administrador' ? 'Administrador' : 'Revisor'}`);
-        },
-
-        cambiarRolMiembro: (miembroId, rol) => {
-          set((s) => ({ equipo: s.equipo.map((m) => (m.id === miembroId ? { ...m, rol } : m)) }));
-          get().registrarAccionEquipo(`Cambió un rol del equipo a ${rol === 'administrador' ? 'Administrador' : 'Revisor'}`);
-        },
-
-        alternarMiembroActivo: (miembroId) => {
-          set((s) => ({ equipo: s.equipo.map((m) => (m.id === miembroId ? { ...m, activo: !m.activo } : m)) }));
-          get().registrarAccionEquipo('Cambió el acceso de una persona del equipo');
-        },
-
-        registrarAccionEquipo: (que) => anotarAccionEquipo(QUIEN_EN_PANEL, que),
-
-        // ------------------------------------------------------------------ Simulación
-        programarTarea: (tarea) =>
-          set((s) => ({ pendientes: [...s.pendientes, { ...tarea, id: nuevoId('t') } as TareaSimulada] })),
-
-        quitarTarea: (id) => set((s) => ({ pendientes: s.pendientes.filter((t) => t.id !== id) })),
       };
     },
     {

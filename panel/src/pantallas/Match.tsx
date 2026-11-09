@@ -1,13 +1,11 @@
 // Panel · Match · Reglas del match
-// Era la ruta (ya no existe en el mockup): /admin/match
+// Ruta: /panel/match
 // Sin maqueta (panel web). Umbral, uso y peso de cada regla. Todo cambia los matches en vivo.
 import { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
-import { router } from 'expo-router';
 
 import { useDerivado } from '@/datos/hooks';
 import { reglasIniciales } from '@/datos/estado';
-import * as sel from '@/datos/selectores';
 import { useDemo } from '@/datos/tienda';
 import type { ReglaMatch, UsoRegla } from '@/datos/tipos';
 import { plural } from '@/datos/formato';
@@ -16,6 +14,7 @@ import {
   Campo,
   ControlSegmentado,
   Dialogo,
+  Insignia,
   Separador,
   Stepper,
   Texto,
@@ -24,19 +23,22 @@ import {
   radio,
   tipo,
 } from '@/ui';
-import { PaginaPanel } from '@/panel/marco';
-import { ArrowRight, RotateCcw } from '@/ui/iconos';
+import { PaginaPanel } from '@panel/marco';
+import { ArrowUpRight, RotateCcw } from '@/ui/iconos';
 
-import { fijarPeso, fijarUmbral, fijarUsoRegla } from './acciones';
-import { distribucionMatch } from './datosPanel';
+import { fijarPeso, fijarUmbral, fijarUsoRegla, restablecerReglas } from '@panel/datos/acciones';
+import { distribucionMatch, variablesQuePuedenFallar } from '@panel/datos/lecturas';
+import { abrirDemoConductor } from '@panel/enlaces';
+import { usePuede } from '@panel/sesion';
 import { Codigo, Deslizador, TarjetaPanel, useAnchoPanel } from './piezas';
 
 const UMBRAL_INICIAL = reglasIniciales().umbral;
 
 export default function Match() {
   const reglas = useDemo((s) => s.reglas);
-  const restablecerReglas = useDemo((s) => s.restablecerReglas);
-  const pueden = useDerivado(sel.variablesQuePuedenFallar);
+  const pueden = useDerivado(variablesQuePuedenFallar);
+  // Umbral, pesos y uso de las reglas: solo un administrador (el revisor los ve).
+  const editable = usePuede('cambiar_reglas');
   const { escritorio } = useAnchoPanel();
   const [confirmar, setConfirmar] = useState(false);
   const [texto, setTexto] = useState(String(reglas.umbral));
@@ -64,6 +66,7 @@ export default function Match() {
       titulo="Reglas del match"
       descripcion="Qué se compara entre el conductor y la búsqueda. Los cambios se aplican en vivo."
       anchoMaximo={1180}
+      soloLectura={!editable}
       acciones={<Boton titulo="Restablecer" icono={RotateCcw} variante="contorno" tamano="mediano" onPress={() => setConfirmar(true)} />}>
       <View style={{ flexDirection: escritorio ? 'row' : 'column', gap: 16, alignItems: 'flex-start' }}>
         <View style={{ flex: escritorio ? 1.45 : undefined, width: escritorio ? undefined : '100%', gap: 16 }}>
@@ -72,33 +75,37 @@ export default function Match() {
             titulo="Umbral"
             descripcion="El % mínimo de coincidencia para que haya match."
             derecha={
-              <View style={{ width: 112 }}>
-                <Campo
-                  valor={texto}
-                  aria-label="Umbral en porcentaje"
-                  keyboardType="number-pad"
-                  maxLength={3}
-                  onFocus={() => setEnfocado(true)}
-                  error={errorUmbral}
-                  onBlur={() => {
-                    setEnfocado(false);
-                    if (errorUmbral || !texto.trim()) {
-                      mostrarToast('Usa un número entero del 0 al 100. Quedó el umbral anterior.', 'error');
-                    }
-                    setErrorUmbral(false);
-                    setTexto(String(useDemo.getState().reglas.umbral));
-                  }}
-                  onCambiar={(t) => {
-                    // Solo se aplica un número entero del 0 al 100; "7.5" o "-5" no se cambian a escondidas.
-                    setTexto(t);
-                    const limpio = t.trim();
-                    const valido = /^\d{1,3}$/.test(limpio) && Number(limpio) <= 100;
-                    setErrorUmbral(limpio !== '' && !valido);
-                    if (valido) fijarUmbral(Number(limpio));
-                  }}
-                  derecha={<Texto variante="cuerpo" peso={700}>%</Texto>}
-                />
-              </View>
+              !editable ? (
+                <Text style={[tipo.h1, { color: color.texto }]}>{reglas.umbral} %</Text>
+              ) : (
+                <View style={{ width: 112 }}>
+                  <Campo
+                    valor={texto}
+                    aria-label="Umbral en porcentaje"
+                    keyboardType="number-pad"
+                    maxLength={3}
+                    onFocus={() => setEnfocado(true)}
+                    error={errorUmbral}
+                    onBlur={() => {
+                      setEnfocado(false);
+                      if (errorUmbral || !texto.trim()) {
+                        mostrarToast('Usa un número entero del 0 al 100. Quedó el umbral anterior.', 'error');
+                      }
+                      setErrorUmbral(false);
+                      setTexto(String(useDemo.getState().reglas.umbral));
+                    }}
+                    onCambiar={(t) => {
+                      // Solo se aplica un número entero del 0 al 100; "7.5" o "-5" no se cambian a escondidas.
+                      setTexto(t);
+                      const limpio = t.trim();
+                      const valido = /^\d{1,3}$/.test(limpio) && Number(limpio) <= 100;
+                      setErrorUmbral(limpio !== '' && !valido);
+                      if (valido) fijarUmbral(Number(limpio));
+                    }}
+                    derecha={<Texto variante="cuerpo" peso={700}>%</Texto>}
+                  />
+                </View>
+              )
             }>
             <View style={{ gap: 6 }}>
               {errorUmbral ? (
@@ -106,7 +113,7 @@ export default function Match() {
                   Usa un número entero del 0 al 100.
                 </Texto>
               ) : null}
-              <Deslizador valor={reglas.umbral} onCambiar={fijarUmbral} etiquetaAccesible="Umbral del match" marca={UMBRAL_INICIAL} />
+              <Deslizador valor={reglas.umbral} onCambiar={fijarUmbral} etiquetaAccesible="Umbral del match" marca={UMBRAL_INICIAL} soloLectura={!editable} />
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Texto variante="pequeno">0 %</Texto>
                 <Texto variante="pequeno">Inicial: {UMBRAL_INICIAL} %</Texto>
@@ -155,7 +162,7 @@ export default function Match() {
         {ordenadas.map((r, i) => (
           <View key={r.codigo}>
             {i > 0 ? <Separador /> : null}
-            <FilaRegla regla={r} onUso={(uso) => fijarUsoRegla(r.codigo, uso)} />
+            <FilaRegla regla={r} editable={editable} onUso={(uso) => fijarUsoRegla(r.codigo, uso)} />
           </View>
         ))}
       </TarjetaPanel>
@@ -178,9 +185,15 @@ export default function Match() {
   );
 }
 
-function FilaRegla({ regla: r, onUso }: { regla: ReglaMatch; onUso: (u: UsoRegla) => void }) {
+const NOMBRE_USO: Record<UsoRegla, string> = { filtro: 'Filtro', variable: 'Variable', apagado: 'Apagado' };
+
+function FilaRegla({ regla: r, editable, onUso }: { regla: ReglaMatch; editable: boolean; onUso: (u: UsoRegla) => void }) {
   const { escritorio } = useAnchoPanel();
-  const segmentado = (
+  const segmentado = !editable ? (
+    <View style={{ width: escritorio ? 270 : undefined, flexDirection: 'row', justifyContent: escritorio ? 'center' : 'flex-start' }}>
+      <Insignia texto={NOMBRE_USO[r.uso]} tono={r.uso === 'filtro' ? 'oscura' : 'gris'} icono={null} />
+    </View>
+  ) : (
     <ControlSegmentado
       etiquetaAccesible={`Cómo cuenta ${r.nombre}`}
       style={{ width: escritorio ? 270 : '100%' }}
@@ -196,8 +209,14 @@ function FilaRegla({ regla: r, onUso }: { regla: ReglaMatch; onUso: (u: UsoRegla
   const peso =
     r.uso === 'variable' ? (
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        {!escritorio ? <Texto variante="ayuda">Peso</Texto> : null}
-        <Stepper valor={r.peso} onCambiar={(v) => fijarPeso(r.codigo, v)} min={0} max={10} etiquetaAccesible={`peso de ${r.nombre}`} />
+        {!escritorio || !editable ? <Texto variante="ayuda">Peso</Texto> : null}
+        {editable ? (
+          <Stepper valor={r.peso} onCambiar={(v) => fijarPeso(r.codigo, v)} min={0} max={10} etiquetaAccesible={`peso de ${r.nombre}`} />
+        ) : (
+          <Texto variante="cuerpo" peso={700} style={{ minWidth: escritorio ? 92 : undefined }}>
+            {r.peso}
+          </Texto>
+        )}
       </View>
     ) : escritorio ? (
       <Texto variante="ayuda" style={{ width: 132, textAlign: 'center' }}>
@@ -308,8 +327,8 @@ function VistaPrevia() {
             {registrado ? plural(d.matchesUsuario, 'match vigente', 'matches vigentes') : 'Aún no se registra'}
           </Texto>
         </View>
-        {/* Enlace a la app del conductor: solo sirve dentro del mockup; se quita en la app del panel. */}
-        <Boton titulo="Ver en la app" variante="contorno" tamano="mediano" iconoDerecha={ArrowRight} onPress={() => router.push('/conductor')} />
+        {/* La demo del conductor es otra app del mismo sitio: se abre en otra pestaña. */}
+        <Boton titulo="Ver en la demo" variante="contorno" tamano="mediano" iconoDerecha={ArrowUpRight} onPress={() => abrirDemoConductor('/conductor')} />
       </View>
     </TarjetaPanel>
   );

@@ -41,13 +41,6 @@ export const useBusquedasDelTitular = () => useDerivado(sel.busquedasDelTitularD
 export const usePostulantes = (busquedaId: string) => useDerivado((s) => sel.postulantesDeBusqueda(s, busquedaId));
 export const useConductoresQueCalzan = (busquedaId: string) => useDerivado((s) => sel.conductoresQueCalzan(s, busquedaId));
 
-// Estos cuatro solo los usa el panel guardado en src/panel (fuera del mockup).
-export const useTodosLosConductores = () => useDerivado(sel.todosLosConductores);
-export const useColaDocumentos = (incluirEnPrerevision = false) =>
-  useDerivado((s) => sel.colaDocumentos(s, incluirEnPrerevision));
-export const useReportesAbiertos = () => useDerivado(sel.reportesAbiertos);
-export const useResumenPanel = () => useDerivado(sel.resumenPanel);
-
 /** true cuando ya se leyó lo guardado en el navegador. */
 export function useDemoHidratada(): boolean {
   const [listo, setListo] = useState(() => useDemo.persist.hasHydrated());

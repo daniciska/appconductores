@@ -1,0 +1,15 @@
+{
+  "name": "dale-contacto-panel",
+  "version": "0.1.0",
+  "private": true,
+  "main": "expo-router/entry",
+  "scripts": {
+    "preparar": "node scripts/enlazar-dependencias.mjs",
+    "web": "npm run preparar && expo start --web",
+    "tipos-rutas": "npm run preparar && node scripts/tipos-rutas.cjs",
+    "typecheck": "npm run tipos-rutas && tsc --noEmit",
+    "test": "npm run preparar && node --test --test-reporter=spec \"tests/**/*.test.ts\"",
+    "export:web": "npm run preparar && expo export -p web",
+    "export:demo": "npm run preparar && node scripts/armar-sitio-demo.mjs"
+  }
+}

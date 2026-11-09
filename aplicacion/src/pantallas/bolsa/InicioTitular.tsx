@@ -10,7 +10,7 @@ import { plural } from '@/datos/formato';
 import { useBusquedasDelTitular, useDerivado, usePlanDemo, useTitularDemo } from '@/datos/hooks';
 import * as sel from '@/datos/selectores';
 import type { BusquedaTitular } from '@/datos/selectores';
-import { useDemo } from '@/datos/tienda';
+import { TEXTO_CUENTA_SUSPENDIDA, useDemo } from '@/datos/tienda';
 import type { PlanTitular } from '@/datos/tipos';
 import {
   Aviso,
@@ -221,6 +221,8 @@ export default function InicioTitular() {
           {titular.revisado ? <Insignia texto={sel.insigniaTitular(titular)} tono="verde" /> : null}
         </View>
       </View>
+
+      {titular.suspendido ? <Aviso tono="error" icono="alerta" texto={TEXTO_CUENTA_SUSPENDIDA} /> : null}
 
       <Tarjeta padding={0} separacion={0} style={{ flexDirection: 'row' }}>
         {[

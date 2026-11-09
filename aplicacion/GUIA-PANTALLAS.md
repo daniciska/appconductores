@@ -2,6 +2,8 @@
 
 Demo navegable de **Dale Contacto** (mockup.dalecontacto.cl). Expo + expo-router + TypeScript estricto, salida web "single". Todo vive en el navegador con datos de ejemplo: no hay servidor ni Supabase.
 
+El **panel de administración de la demo es otra app** (carpeta `panel/` del repositorio, publicada en `/panel` del mismo sitio; ver `panel/README.md`). Esta app no lo enlaza ni lo nombra: solo comparte con él lo guardado en el navegador.
+
 Antes de empezar, lee en `/home/user/appconductores/CLAUDE.md` las **Decisiones tomadas**: mandan sobre todo lo demás.
 
 ## 1. Reglas de trabajo (importante)
@@ -58,7 +60,25 @@ Antes de empezar, lee en `/home/user/appconductores/CLAUDE.md` las **Decisiones 
 
 Otras rutas (ya hechas, no se tocan): `/conductor` (redirige a Inicio si ya se registró; si no, a A1), `/componentes` (muestrario del sistema de diseño), `+not-found`.
 
-**Sin panel de administración:** el mockup no muestra el panel (pedido de la dueña, 7-nov). No hay rutas `/admin`: un enlace viejo a `/admin` muestra "Esta pantalla no existe". El código del panel quedó guardado en `src/panel/` (ver su `README.md`), fuera de `src/app`, así que no entra en el sitio publicado. Ninguna pantalla del mockup debe enlazarlo ni nombrarlo.
+**Panel de administración: otra app, en `/panel` (9-nov).** Esta app no tiene rutas del panel: `/admin` muestra "Esta pantalla no existe" y el menú de la demo no enlaza `/panel`. El panel vive en `panel/` (su propio proyecto Expo, publicado con la base `/panel` en el mismo sitio) y está **conectado** con esta demo por lo guardado en el navegador: lo que se aprueba o se cambia allá se ve aquí en vivo (otra pestaña del mismo navegador), y al revés. Ninguna pantalla de `aplicacion/` debe enlazarlo ni nombrarlo; `npm run revisar:sin-panel` lo revisa en el export (corta la publicación si encuentra algo).
+
+Pantallas del panel (en `panel/src/`; se entra eligiendo rol en la portada, sin pantalla de ingreso):
+
+| Ruta | Pantalla | Archivo | Revisor | Administrador |
+|---|---|---|---|---|
+| `/panel` | Portada: "Entrar como administrador" o "Entrar como revisor" | `app/index.tsx` | — | — |
+| `/panel/resumen` | Resumen | `pantallas/Resumen.tsx` | Ve todo, sin "Últimas acciones del equipo" | Ve todo |
+| `/panel/documentos` | Revisión de documentos | `pantallas/Documentos.tsx` | Aprueba o no aprueba (con motivo) | Igual |
+| `/panel/conductores` | Conductores (lista y ficha) | `pantallas/Conductores.tsx` | Solo ve | Solo ve |
+| `/panel/reportes` | Reportes | `pantallas/Reportes.tsx` | Resuelve, suspende y reactiva | Igual |
+| `/panel/match` | Reglas del match | `pantallas/Match.tsx` | Solo lectura | Umbral, uso y pesos |
+| `/panel/catalogos` | Catálogos | `pantallas/Catalogos.tsx` | Solo lectura | Enciende y apaga negocios e industrias, cambia nombres |
+| `/panel/zonas` | Zonas y comunas | `pantallas/Zonas.tsx` | Solo lectura | Crea y renombra zonas, mueve comunas |
+| `/panel/ajustes` | Ajustes | `pantallas/Ajustes.tsx` | Solo lectura | Bolsa, plazos y ajustes de la demo |
+| `/panel/equipo` | Equipo | `pantallas/Equipo.tsx` | Ve la lista | Agrega, cambia rol y acceso; ve el registro de acciones |
+| `/panel/<otra>` | "Esta página del panel no existe" | `app/+not-found.tsx` | | |
+
+Mientras el panel está abierto con un rol en otra pestaña del navegador, esta demo **no aprueba sola** los documentos que esperan a una persona: esperan la decisión del panel (ver "Simulación").
 
 **Editar desde Perfil:** E1 abre los pasos 1–4 con `?editar=1` (`useModoEdicion()` en `src/pantallas/ingreso/acciones.ts`). En ese modo no se muestra "Paso n de 5", el botón dice "Guardar cambios" y, al guardar, vuelve a Perfil. Desde Inicio, Matches o la Bolsa (completar el perfil) los pasos siguen en orden.
 
@@ -81,7 +101,7 @@ Muestrario en vivo: ruta `/componentes`.
 - `color`: `texto #111111`, `textoSuave #3D3D3D`, `textoSecundario #6B6B6B`, `textoDeshabilitado #9A9A9A`, `fondo #F6F6F6`, `superficie #FFFFFF`, `superficieHundida #EEEEEE`, `segmentado #EAEAEA`, `oscuro #111111`, `borde #ECECEC`, `bordeCampo #DDDDDD`, `separador #F0F0F0`, `acento #F5B400`, `acentoSuave #FFF6D6`, `acentoTrazo #B88500`, `acentoBorde #F0DFA0`, `amarilloFondo #FFF4DB`, `amarilloTexto #8A5300`, `exitoFondo #E3F4EA`, `exitoTexto #145F3B`, `exito #17784A`, `errorFondo #FDECEA`, `error #A3261B`, `interruptorApagado #C4C4C4`, `velo`.
 - `familia` (Sora 600/700 y Plus Jakarta Sans 400/500/600/700) y `fuente(peso)` → `{ fontFamily }`. **En web el peso va en la familia:** nunca uses `fontWeight` solo; usa `Texto`/`Titulo` o `fuente(700)`.
 - `tipo`: estilos de texto listos (`hero`, `h1`, `h2`, `tituloTarjeta`, `fuerte`, `cuerpo`, `parrafo`, `etiqueta`, `secundario`, `ayuda`, `pequeno`, `seccion`, `boton`, `botonChico`).
-- `espacio` (lateral 20, superior 56, bloque 16…), `radio` (insignia 8, icono 10, boton44 12, campo 14, boton 16, tarjeta 20, pastilla 22), `alto` (tactil 44, campo 52, fila 52, boton 56), `sombra` (suave, flotante), `duracion` (rapida 140, normal 220, lenta 320), `ANCHO_CELULAR` 430, `ANCHO_ESCRITORIO` 900 (solo lo usa el panel guardado).
+- `espacio` (lateral 20, superior 56, bloque 16…), `radio` (insignia 8, icono 10, boton44 12, campo 14, boton 16, tarjeta 20, pastilla 22), `alto` (tactil 44, campo 52, fila 52, boton 56), `sombra` (suave, flotante), `duracion` (rapida 140, normal 220, lenta 320), `ANCHO_CELULAR` 430, `ANCHO_ESCRITORIO` 900 (lo usa el panel, otra app).
 
 ### Componentes
 
@@ -123,7 +143,7 @@ Muestrario en vivo: ruta `/componentes`.
 | `BarraInferior`, `BotonDemo`, `MarcoCelular` | — | Ya los usan los layouts. |
 | `EnConstruccion` | `codigo`, `titulo?` | Marcador (bórralo al construir). |
 
-`MarcoPanel`, `PaginaPanel` y `Metrica` ya no están en `@/ui`: se fueron con el panel a `src/panel/marco.tsx`.
+`MarcoPanel`, `PaginaPanel` y `Metrica` no están en `@/ui`: son del panel (`panel/src/marco.tsx`). Las fuentes (`FUENTES`) están en `src/ui/fuentes.ts`, que usan los layouts raíz de las dos apps.
 
 **Íconos:** `import { Star, MessageSquare } from '@/ui/iconos'` (lucide, trazo 2). Propios con el dibujo de las maquetas: `Volante`, `Llave` (logo), `AutoFrente` desde `@/ui`. Si falta un ícono, impórtalo en tu carpeta con `import Nombre from 'lucide-react-native/icons/nombre-en-kebab'`. **Nunca** `from 'lucide-react-native'` a secas (carga 2.000 íconos). Tamaños de las maquetas: 22 en la barra, 20 en botones de 44, 18 en filas, 14 en checks.
 
@@ -134,7 +154,11 @@ Muestrario en vivo: ruta `/componentes`.
 - `tipos.ts`: todos los tipos (`Busqueda`, `Titular`, `ConductorUsuario`, `DocumentoUsuario`, `Mensaje`, `Postulacion`, `ReglaMatch`, `Ajustes`, `Plan`…).
 - `semilla/`: catálogos **idénticos a la base** (`geografia.ts` generado desde `docs/propuesta-zonas.csv` con `npm run semilla`: 16 regiones, 81 zonas, 346 comunas; `catalogos.ts`: clases de licencia, industrias, 7 tamaños, 11 negocios, turnos, días, idiomas, tipos de documento, motivos, planes, reglas del match) y **ficticios** (`ficticios.ts`).
 - `estado.ts`: forma del estado (`DatosDemo`) y `crearEstadoInicial()`.
-- `tienda.ts`: la tienda `useDemo` (zustand + persist en `localStorage`, clave `dale-demo-datos`) con todas las acciones.
+- `tienda.ts`: la tienda `useDemo` (zustand + persist en `localStorage`, clave `dale-demo-datos`) con las acciones de la demo del conductor y del titular. Exporta también ayudas puras (`cambiarDocumento`, `docAprobado`, `recalcularUsuario`, `tareasAlVerificar`) que usa el panel para escribir sus propias acciones (`panel/src/datos/acciones.ts`).
+- `migracion.ts`: cómo se lleva lo guardado a la versión actual (desde la 3 se conserva todo; desde la 2 la configuración vuelve a sus valores iniciales). Probado en `tests/migracion.test.ts`.
+- `revisionManual.ts`: lee las marcas "una persona del equipo revisa a mano en este navegador" (una por pestaña del panel, `dale-demo-revision-manual:<pestaña>`, con plazo: el panel las renueva y las quita al salir o al cerrar la pestaña; "Reiniciar demo" las borra). `useRevisionManual()` (`true` o `false`) para pantallas.
+- `revisionEquipo.ts`: cuándo se programa (o se quita) la revisión simulada de la persona del equipo (puro, probado en `tests/revision-equipo.test.ts`).
+- `avisosEntrePestanas.ts`: avisos al conductor ("Tu Hoja de Vida fue aprobada.") cuando el cambio llega desde otra pestaña (el panel).
 - `almacenamiento.ts`: cómo se guarda la tienda. Trae una sola vez lo de la clave anterior (`dale-demo-v1`, versiones 1 y 2, con panel) y una pestaña con código más viejo que lo guardado deja de guardar en vez de pisarlo. Al subir `VERSION_ESTADO` no hace falta cambiar la clave. Probado en `tests/almacenamiento.test.ts`.
 - `selectores.ts`: lecturas derivadas (funciones puras sobre el estado).
 - `hooks.ts`: hooks memorizados para pantallas.
@@ -162,7 +186,7 @@ const avance = useDerivado(sel.avancePerfil);           // cualquier selector, m
 
 ### Estado (`DatosDemo`, en `src/datos/estado.ts`)
 
-- `rol`: `'conductor' | 'titular' | null` (lo ponen los layouts; el tipo conserva `'admin'` solo para el panel guardado).
+- `rol`: `'conductor' | 'titular' | null` (lo ponen los layouts). El rol del panel no está aquí: vive en `revisionManual.ts`.
 - `cuenta`: `celular` (8 dígitos, "5555 0123"), `celularVerificado`, `correo`, `nombres`, `apellido1`, `apellido2`, `creadaEl`, `autorizaciones { terminos, privacidad, compartirFicha, recordatoriosWhatsapp }`.
 - `conductor` (`ConductorUsuario`): `registrado`, `registradoEl`, `pasosListos { datos, direccion, experiencia, trabajo, documentos }`, `pasoActual`, `estadoPerfil` (`incompleto`/`completo`), `estadoVerificacion` (`sin_documentos`/`en_revision`/`verificado`/`con_observaciones`), `disponible`, `disponibilidadConfirmadaEn`, `fechaNacimiento` ('dd/mm/aaaa'), `direccion`, `depto`, `comunaId`, `tieneEstacionamiento`, `clasesDeclaradas`, `clasesRevisadas`, `idiomas`, `experiencia { liviano: 5 }`, `negocios`, `turnos`, `dias`.
   - Al empezar, los textos están vacíos y las selecciones vienen marcadas como en las maquetas (A2 y B; 5 años liviano y 2 van; Español; Taxi y Taxi ejecutivo; Día; lunes a sábado; con estacionamiento; disponible). Los formularios deben **partir con lo que hay en el estado** y guardar lo que la persona cambie. `EJEMPLO_USUARIO` (en `@/datos/semilla`) tiene datos de ejemplo por si quieres ofrecer "Usar datos de ejemplo".
@@ -170,7 +194,7 @@ const avance = useDerivado(sel.avancePerfil);           // cualquier selector, m
 - `favoritos` (ids de búsqueda), `mensajes` (`{ [busquedaId]: Mensaje[] }`, `Mensaje { id, autor: 'conductor'|'titular'|'sistema', texto, hora, leido }`), `titularEscribiendo`, `contactoCompartido` y `direccionCompartida` (`{ [busquedaId]: fecha }`), `matchesPorPostulacion`, `entregasDatos` (Quién recibió mis datos), `bloqueos` (ids de titular).
 - `titularDemo`: `{ titularId: 't01', plan: 'sin_plan'|'basico'|'flota_chica'|'flota' (parte en flota_chica), destacadasUsadas }`, `favoritosTitular`.
 - `titulares` (7), `busquedas` (14), `conductores` (10 ficticios), `postulaciones`, `reportes`.
-- `catalogos` (`negocios[].activo/nombre`, `industrias[].activo`, `zonas[].nombre`, `comunas[].zonaId`), `reglas` (`umbral` y `reglas[]` con `uso`: `filtro`/`variable`/`apagado` y `peso`), `ajustes` (`bolsaActiva: true`, `validarObligatorios: false`, `diasReconfirmar: 30`, `diasAntiguedadPdf: 30`, `segundosPrerevision: 3`), `equipo`, `accionesEquipo`. **En el mockup no cambian:** quedan con sus valores iniciales (solo los cambiaba el panel, que está guardado). Así se ve lo del lanzamiento: solo Taxi y Taxi ejecutivo, transporte de carga apagado, umbral 66 % y la bolsa encendida. Lo guardado en el navegador cuando la demo tenía panel (versión 2 del estado) vuelve a esos valores al abrirla (`migrarEstado` en `estado.ts`).
+- `catalogos` (`negocios[].activo/nombre`, `industrias[].activo`, `zonas[].nombre`, `comunas[].zonaId`), `reglas` (`umbral` y `reglas[]` con `uso`: `filtro`/`variable`/`apagado` y `peso`), `ajustes` (`bolsaActiva: true`, `validarObligatorios: false`, `diasReconfirmar: 30`, `diasAntiguedadPdf: 30`, `segundosPrerevision: 3`), `equipo`, `accionesEquipo`. **Esta app solo los lee:** los cambia el panel de la demo (otra app, en `/panel`), y el cambio llega en vivo por el evento "storage". Parten como el lanzamiento: solo Taxi y Taxi ejecutivo, transporte de carga apagado, umbral 66 % y la bolsa encendida. `equipo` y `accionesEquipo` parten vacíos: los llena el panel al entrar. `VERSION_ESTADO` es 4 (9-nov): desde la 3 se conserva todo; lo guardado en la versión 2 (la demo del 4-nov, con el panel dentro) vuelve a los valores iniciales (`migracion.ts`).
 - `pendientes`: tareas de la simulación (no tocar).
 
 ### Acciones (`useDemo((s) => s.accion)`; firmas exactas en `AccionesDemo`, `src/datos/tienda.ts`)
@@ -182,8 +206,8 @@ const avance = useDerivado(sel.avancePerfil);           // cualquier selector, m
 - **Disponibilidad y cuenta:** `cambiarDisponible(bool)`, `confirmarDisponibilidad()`, `eliminarCuenta()` (borra lo del usuario; después navega a `/`).
 - **Matches y mensajes:** `alternarFavorito(busquedaId)`, `enviarMensaje(busquedaId, texto)`, `marcarConversacionLeida(busquedaId)` (llámala al abrir D4), `compartirMiDireccion(busquedaId)`, `reportarConversacion({ busquedaId, motivo, detalle? })`, `bloquearTitular(titularId)`, `desbloquearTitular(titularId)`.
 - **Bolsa (conductor):** `postular(busquedaId) → { ok, error? }`.
-- **Bolsa (titular):** `cambiarPlanTitular(plan)`, `publicarEnBolsa(busquedaId, { visibilidad, perfiles? }) → { ok, error? }` (respeta visibilidades y cupo del plan), `quitarDeBolsa(id)`, `destacarOferta(id) → { ok, error? }` (solo plan Flota), `quitarDestacado(id)`, `cambiarEstadoBusqueda(id, 'activa'|'pausada'|'cubierta') → { ok, error? }`, `verPostulacion(postulacionId)`, `escribirAPostulante(postulacionId, texto)`, `descartarPostulacion(postulacionId)`, `alternarFavoritoTitular(conductorId)`.
-- **Panel (solo para el panel guardado en `src/panel`; ninguna pantalla del mockup las usa):** `aprobarDocumento(duenoId, tipo)` y `rechazarDocumento(duenoId, tipo, motivo)` (`duenoId` = `'yo'` para el usuario de la demo o `'c01'`…), `cambiarNegocioActivo(id, bool)`, `renombrarNegocio(id, nombre)`, `cambiarIndustriaActiva(id, bool)`, `renombrarZona(zonaId, nombre)`, `moverComunaAZona(comunaId, zonaId) → { ok, error? }`, `crearZona(regionId, nombre) → id`, `cambiarUmbral(n)`, `cambiarUsoRegla(codigo, uso)`, `cambiarPesoRegla(codigo, peso)`, `restablecerReglas()`, `cambiarAjuste(clave, valor)`, `restablecerAjustes()`, `resolverReporte(id, queSeHizo)`, `suspenderCuenta(personaId)`, `reactivarCuenta(personaId)`, `agregarMiembro({ nombre, celular, rol })`, `cambiarRolMiembro(id, rol)`, `alternarMiembroActivo(id)`, `registrarAccionEquipo(que)`. Las acciones del panel ya anotan "Acción del equipo".
+- **Bolsa (titular):** `cambiarPlanTitular(plan)`, `publicarEnBolsa(busquedaId, { visibilidad, perfiles? }) → { ok, error? }` (respeta visibilidades y cupo del plan), `quitarDeBolsa(id)`, `destacarOferta(id) → { ok, error? }` (solo plan Flota), `quitarDestacado(id)`, `cambiarEstadoBusqueda(id, 'activa'|'pausada'|'cubierta') → { ok, error? }`, `verPostulacion(postulacionId)`, `escribirAPostulante(postulacionId, texto) → { ok, error? }` (no puede si la cuenta del titular está suspendida), `descartarPostulacion(postulacionId)`, `alternarFavoritoTitular(conductorId)`.
+- **Panel:** sus acciones (aprobar o no aprobar documentos, negocios, zonas, reglas, ajustes, reportes, equipo y el registro de acciones) **no están en esta tienda**: viven en `panel/src/datos/acciones.ts` y escriben con `useDemo.setState`. Ninguna pantalla de esta app las usa.
 
 **Acciones propias:** en tu carpeta, `src/pantallas/<grupo>/acciones.ts`:
 
@@ -215,13 +239,10 @@ Si cambias documentos del usuario a mano, recuerda que `estadoVerificacion` se c
 | `useBusquedasDelTitular()` | `BusquedaTitular[]` (`coinciden` = conductores verificados que hacen match: el adelanto anónimo, `postulantes`, `postulantesNuevos`, `destacada`, `condiciones`) |
 | `usePostulantes(busquedaId)` | `{ postulacion, conductor: ConductorVista }[]` |
 | `useConductoresQueCalzan(busquedaId)` | `{ conductor: ConductorVista, resultado }[]` |
-| `useTodosLosConductores()` | `ConductorVista[]` (el usuario primero si se registró, con id `'yo'`). Solo lo usa el panel guardado. |
-| `useColaDocumentos(incluirEnPrerevision?)` | `DocumentoEnCola[]` que esperan a una persona, los más antiguos primero. Solo lo usa el panel guardado. |
-| `useReportesAbiertos()`, `useResumenPanel()` | Reportes abiertos; cifras del panel. Solo los usa el panel guardado. |
 | `useCatalogos()`, `useAjustes()`, `useNegociosActivos()`, `useNegociosPorIndustria(soloActivos?)` | Catálogos y ajustes |
 | `useAhora(ms?)` | Fecha actual que se refresca (para "hace 5 min") |
 
-Funciones útiles de `selectores.ts`: `nombreTitular(t)` (razón social o nombre), `insigniaTitular(t)` ("Empresa revisada en SII" / "Cédula revisada"), `nombreCompleto(p)`, `primerNombre(s)`, `textoCondiciones(s, b)`, `lugar(s, comunaId)` → `{ comuna, zona, region }`, `negocioPorId`, `titularPorId`, `busquedaPorId`, `comunaPorId`, `zonasDeRegion`, `comunasDeRegion`, `negocioPermitidoPorDeclaradas(s, negocioId)`, `debeReconfirmarDisponibilidad(s)`, `proximaReconfirmacion(s)`, `documentoVencePronto(doc)`, `simularMatch(s, conductorId, busquedaId)`, `cumplePerfiles(s, conductorId, negocioId, perfiles)`, `puedeElegirVisibilidad(s, v)`, `variablesQuePuedenFallar(s)`, `SECCIONES`, `TIPOS_DOC_ORDEN`, `ID_USUARIO` (`'yo'`).
+Funciones útiles de `selectores.ts`: `nombreTitular(t)` (razón social o nombre), `insigniaTitular(t)` ("Empresa revisada en SII" / "Cédula revisada"), `nombreCompleto(p)`, `primerNombre(s)`, `textoCondiciones(s, b)`, `lugar(s, comunaId)` → `{ comuna, zona, region }`, `negocioPorId`, `titularPorId`, `busquedaPorId`, `comunaPorId`, `zonasDeRegion`, `comunasDeRegion`, `negocioPermitidoPorDeclaradas(s, negocioId)`, `debeReconfirmarDisponibilidad(s)`, `proximaReconfirmacion(s)`, `documentoVencePronto(doc)`, `simularMatch(s, conductorId, busquedaId)`, `cumplePerfiles(s, conductorId, negocioId, perfiles)`, `puedeElegirVisibilidad(s, v)`, `todosLosConductores(s)`, `SECCIONES`, `TIPOS_DOC_ORDEN`, `ID_USUARIO` (`'yo'`).
 
 `formato.ts`: `textoDias(dias)` ("Lu a Sá", "Todos los días"), `textoTurnos(turnos)` ("Día y noche"), `fechaLarga` (dd/mm/aaaa), `fechaCorta` (dd/mm), `fechaConMes` ("4 nov"), `hora`, `cuandoCorto` (hora, "Ayer" o dd/mm), `haceCuanto`, `diasHasta`, `edad('dd/mm/aaaa')`, `mascaraFecha`, `mascaraCelular`, `celularCompleto`, `iniciales`, `plural`.
 
@@ -241,7 +262,11 @@ Puro, sin React. Lo usan los selectores con las reglas editables del estado; las
 ### Simulación (`simulacion.ts`, ya encendida en el layout raíz)
 
 - **Pre-revisión IA:** `enviarDocumentosARevision()` deja los 4 en revisión; a los ~3 s la cédula y la licencia se aprueban solas (`quienDecidio: 'ia'`; la licencia copia las clases declaradas a revisadas) y la Hoja de Vida y los antecedentes quedan con `etapa: 'equipo'` ("En revisión").
-- **Revisión del equipo (simulada, porque el mockup no tiene panel):** cada documento con `etapa: 'equipo'` se aprueba solo a los ~12 s (`SEGUNDOS_REVISION_EQUIPO` en `tienda.ts`; `quienDecidio: 'persona'`). Lo mismo después de "No estoy de acuerdo: pedir otra revisión". "Aprobar ahora" (Inicio, C3) no espera. Con los 4 aprobados → `verificado` (toast "¡Listo! Tus 4 documentos están aprobados."). El equipo simulado no rechaza: para ver `con_observaciones` y C4 está el atajo "Documento no aprobado" del selector. Al quedar verificado, a los ~7 y ~16 s dos titulares "abren su ficha" (aparecen en Quién recibió mis datos).
+- **Revisión del equipo:** si nadie la hace a mano en el panel, se simula: cada documento con `etapa: 'equipo'` se aprueba solo a los ~12 s (`SEGUNDOS_REVISION_EQUIPO` en `tienda.ts`; `quienDecidio: 'persona'`). Lo mismo después de "No estoy de acuerdo: pedir otra revisión". "Aprobar ahora" (Inicio, C3) no espera. Con los 4 aprobados → `verificado` (toast "¡Listo! Tus 4 documentos están aprobados."). El equipo simulado no rechaza: para ver `con_observaciones` y C4 está el atajo "Documento no aprobado" del selector. Al quedar verificado, a los ~7 y ~16 s dos titulares "abren su ficha" (aparecen en Quién recibió mis datos).
+- **Revisión a mano (panel en uso):** mientras el panel de la demo está en uso en el navegador (`useRevisionManual()` es `true`), no se programa la revisión simulada y se quitan las ya programadas: los documentos esperan la decisión del panel. Inicio (C3) dice "Demo: esperando la revisión del equipo." y "Aprobar ahora" sigue funcionando. Al salir del panel (o con "Reiniciar demo") vuelve la simulación: lo que espera se aprueba ~12 s después. Las decisiones del panel llegan por el evento "storage" y se avisan con un toast en las pantallas del conductor (`avisosEntrePestanas.ts`).
+- La simulación corre en la pestaña de esta demo. El panel la enciende de respaldo (`iniciarSimulacion({ respaldo: true })`): la lleva solo si esta demo no está abierta y sin sus avisos; cuando se abre, esta demo retoma el turno.
+- Una pestaña con la versión anterior de la demo (v3) no simula mientras haya una de esta versión: se le deja tomado su turno.
+- Mensajes ocultos por el equipo (`oculto: true`, al resolver un reporte) se ven como "Mensaje oculto por el equipo.". Un titular suspendido no responde ni puede escribir (`escribirAPostulante` devuelve un error).
 - **Chat:** `enviarMensaje()` programa la respuesta del titular a los 2–4 s (`titularEscribiendo[busquedaId]` es `true` durante los últimos ~2,5 s: muestra "escribiendo…"). Después del segundo mensaje del conductor, el titular comparte su contacto (mensaje de sistema y `contactoCompartido[busquedaId]`). El teléfono que se muestra es `titular.telefono` (ficticio).
 - **Bolsa:** al postular a una oferta de otro titular, a los ~6 s queda "Vista" y (una de cada dos) a los ~14 s "Te escribió", con un mensaje nuevo y el match con origen "Postulación". Las postulaciones a ofertas de `t01` (el titular de la demo) cambian cuando alguien entra como titular y responde.
 - Las tareas viven en `state.pendientes`: sobreviven a cambiar de pantalla y a recargar.
@@ -251,8 +276,8 @@ Puro, sin React. Lo usan los selectores con las reglas editables del estado; las
 - **Titular de la demo:** `t01` Transportes Los Aromos SpA (empresa, plan Flota chica). Búsquedas `b01` (Taxi, Providencia, en la bolsa: solo match; 3 postulantes), `b05` (Taxi, Maipú, bolsa: solo match; 1 postulante), `b06` (Taxi, La Florida, bolsa: perfiles Zona Sur; 1 postulante), `b12` (Taxi ejecutivo, Vitacura, pausada).
 - **Otros titulares:** `t02` Ejecutivos Cordillera SpA (b02, b04, b13 destacada en la bolsa para todos, b14 bolsa perfiles Zona Oriente), `t03` Rodrigo Pizarro (b03), `t04` Mónica Sepúlveda (b07), `t05` Taxis Bahía Azul Ltda. (Viña y Valparaíso: b08, b10), `t06` Jorge Alarcón (Concepción: b09), `t07` Claudio Espinoza (Puente Alto: b11).
 - **Conductor de ejemplo** (Ñuñoa, A2 y B, 5 años liviano, Taxi y Taxi ejecutivo, día, lunes a sábado, con estacionamiento): **5 matches** `b01` 100 %, `b02` 100 %, `b14` 100 %, `b07` 88 %, `b03` 71 %. En la bolsa ve `b13` (destacada), `b11`, `b14` y, ya verificado, `b01` (que es "solo quienes hacen match"). Con una dirección en otra comuna de Santiago el número cambia (3–5); en Concepción no tiene matches (C6).
-- **Conductores ficticios** `c01`…`c10`: verificados, uno con la licencia rechazada (`c06`), uno incompleto (`c07`) y tres con documentos esperando al equipo (`c03`, `c08`, `c10`: 7 documentos en total; en el mockup quedan así, porque los revisaba el panel).
-- **Reportes:** `r01` (pide dinero) y `r02` (spam), abiertos, con su conversación. En el mockup nadie los resuelve: un reporte del conductor queda abierto ("Nuestro equipo la está revisando").
+- **Conductores ficticios** `c01`…`c10`: verificados, uno con la licencia rechazada (`c06`), uno incompleto (`c07`) y tres con documentos esperando al equipo (`c03`, `c08`, `c10`: 7 documentos en total; nunca se aprueban solos: los decide el panel de la demo).
+- **Reportes:** `r01` (pide dinero) y `r02` (spam), abiertos, con su conversación. Los resuelve el panel de la demo; un reporte del conductor queda abierto ("Nuestro equipo la está revisando") hasta que el panel lo resuelve.
 
 ## 5. Comandos y comprobación
 
@@ -262,9 +287,12 @@ Desde `/home/user/appconductores/aplicacion`. **Cada agente usa su propia carpet
 export TMPDIR=/tmp/claude-0/-home-user-appconductores/a49116f8-7c86-54b9-8624-19dd22438642/scratchpad/mf/tmp-<tu-etiqueta>
 mkdir -p "$TMPDIR"
 npx tsc --noEmit                 # sin errores antes de terminar (si moviste o borraste rutas, corre antes `npm run web` una vez: regenera .expo/types y así tsc avisa de los enlaces rotos)
-npm run test:match               # pruebas del motor (32)
+npm run test:match               # pruebas (58): motor del match, guardado, migración, revisión manual y revisor del export
 CI=1 npx expo export -p web --output-dir /tmp/claude-0/-home-user-appconductores/a49116f8-7c86-54b9-8624-19dd22438642/scratchpad/mf/dist-<tu-etiqueta>
+node scripts/revisar-export-sin-panel.mjs <esa carpeta>   # el export no lleva nada del panel
 ```
+
+Para publicar el sitio completo (esta demo en la raíz y el panel en `/panel`): `cd ../panel && npm run export:demo` → `dist-demo/` en la raíz del repositorio (ver `panel/README.md`).
 
 Servir y capturar (Playwright ya está instalado; `require('playwright')` funciona desde cualquier carpeta):
 

@@ -14,6 +14,7 @@ import {
   useMensajesNoLeidos,
   useResumenDocumentos,
 } from '@/datos/hooks';
+import { useRevisionManual } from '@/datos/revisionManual';
 import { TIPOS_DOC_ORDEN, debeReconfirmarDisponibilidad, nombreTitular, primerNombre } from '@/datos/selectores';
 import { useDemo } from '@/datos/tienda';
 import type { DocumentoUsuario } from '@/datos/tipos';
@@ -44,7 +45,8 @@ import {
   TarjetaDisponible,
   TarjetaOscura,
 } from './piezas';
-import { RUTA_PASO, estadoDocumento, rutaNoAprobado, rutaSubir, type TonoEstado } from './textos';
+import { RUTA_PASO, rutaNoAprobado, rutaSubir } from './rutas';
+import { estadoDocumento, type TonoEstado } from './textos';
 
 const NOMBRE_SECCION: Record<string, string> = {
   datos: 'Tus datos y licencia',
@@ -247,6 +249,8 @@ function VistaRevision() {
   const tipos = useDemo((s) => s.catalogos.tiposDocumento);
   const resumen = useResumenDocumentos();
   const aprobarPendientesDemo = useDemo((s) => s.aprobarPendientesDemo);
+  // Si una persona del equipo revisa a mano en este navegador, los documentos esperan su decisión.
+  const revisionManual = useRevisionManual();
   const enRevision = TIPOS_DOC_ORDEN.some((t) => documentos[t].estado === 'en_revision');
 
   // Como en la maqueta C3: el título no cambia aunque haya un documento no aprobado (eso se ve en su fila).
@@ -304,7 +308,9 @@ function VistaRevision() {
       {enRevision ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 4 }}>
           <Sparkles size={14} color={color.textoSecundario} strokeWidth={2} />
-          <Text style={[tipo.pequeno, { flex: 1, color: color.textoSecundario }]}>Demo: el equipo los aprueba en unos segundos.</Text>
+          <Text style={[tipo.pequeno, { flex: 1, color: color.textoSecundario }]}>
+            {revisionManual ? 'Demo: esperando la revisión del equipo.' : 'Demo: el equipo los aprueba en unos segundos.'}
+          </Text>
           <Presionable
             role="button"
             aria-label="Aprobar ahora (atajo de la demo)"

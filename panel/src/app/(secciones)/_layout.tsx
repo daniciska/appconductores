@@ -1,13 +1,9 @@
-// Layout del panel de administración: ancho completo, barra lateral en escritorio y menú en celular.
-// No es ruta del mockup: estaba en src/app/admin/_layout.tsx y queda guardado para la app del panel
-// (ver src/panel/README.md). Si vuelve a ser ruta, va en el _layout.tsx de la carpeta del panel.
+// Layout de las secciones del panel (/panel/resumen, /panel/documentos…): marco con barra lateral en
+// escritorio y menú en celular. Sin rol elegido en esta pestaña (o al salir del panel, o con "Reiniciar
+// demo" en la demo del conductor) vuelve a la portada.
 import { useEffect } from 'react';
-import { Slot, usePathname } from 'expo-router';
+import { Redirect, Slot, usePathname } from 'expo-router';
 
-import { useColaDocumentos, useReportesAbiertos } from '@/datos/hooks';
-import { useDemo } from '@/datos/tienda';
-import { rutaPanel, seccionDeRuta } from '@/panel/enlaces';
-import { MarcoPanel, type ElementoPanel } from '@/panel/marco';
 import {
   FileCheck,
   Flag,
@@ -19,31 +15,45 @@ import {
   Users,
   UserRound,
 } from '@/ui/iconos';
+import { useDemo } from '@/datos/tienda';
 
-export default function LayoutPanel() {
-  const elegirRol = useDemo((s) => s.elegirRol);
-  useEffect(() => {
-    elegirRol('admin');
-  }, [elegirRol]);
+import { useColaDocumentos, useReportesAbiertos } from '@panel/datos/hooks';
+import { IDS_REPORTES_DE_EJEMPLO } from '@panel/datos/semillaPanel';
+import { rutaPanel, seccionDeRuta } from '@panel/enlaces';
+import { MarcoPanel, type ElementoPanel } from '@panel/marco';
+import { prepararDatosDelPanel, useRolPanel } from '@panel/sesion';
+
+export default function LayoutSecciones() {
+  const rol = useRolPanel();
   const cola = useColaDocumentos().length;
   const reportes = useReportesAbiertos().length;
+  // Faltan los datos de ejemplo del panel (por ejemplo, al recargar después de "Reiniciar demo").
+  const faltanDatos = useDemo(
+    (s) => (s.equipo.length === 0 && s.accionesEquipo.length === 0) || !s.reportes.some((r) => IDS_REPORTES_DE_EJEMPLO.includes(r.id)),
+  );
   const ruta = usePathname();
 
+  // Con el panel en uso, el equipo y los reportes de ejemplo deben estar.
+  useEffect(() => {
+    if (rol && faltanDatos) prepararDatosDelPanel();
+  }, [rol, faltanDatos]);
+
+  if (!rol) return <Redirect href="/" />;
+
   const elementos: ElementoPanel[] = [
-    { clave: 'resumen', etiqueta: 'Resumen', icono: LayoutDashboard, href: rutaPanel('resumen') },
-    { clave: 'documentos', etiqueta: 'Documentos', icono: FileCheck, href: rutaPanel('documentos'), contador: cola },
-    { clave: 'conductores', etiqueta: 'Conductores', icono: UserRound, href: rutaPanel('conductores') },
-    { clave: 'reportes', etiqueta: 'Reportes', icono: Flag, href: rutaPanel('reportes'), contador: reportes },
-    { clave: 'match', etiqueta: 'Reglas del match', icono: SlidersHorizontal, href: rutaPanel('match') },
-    { clave: 'catalogos', etiqueta: 'Catálogos', icono: ListChecks, href: rutaPanel('catalogos') },
-    { clave: 'zonas', etiqueta: 'Zonas y comunas', icono: IconoMapa, href: rutaPanel('zonas') },
-    { clave: 'ajustes', etiqueta: 'Ajustes', icono: Settings, href: rutaPanel('ajustes') },
-    { clave: 'equipo', etiqueta: 'Equipo', icono: Users, href: rutaPanel('equipo') },
+    { clave: 'resumen', etiqueta: 'Resumen', icono: LayoutDashboard, href: rutaPanel('resumen'), grupo: 'inicio' },
+    { clave: 'documentos', etiqueta: 'Documentos', icono: FileCheck, href: rutaPanel('documentos'), contador: cola, grupo: 'revision' },
+    { clave: 'conductores', etiqueta: 'Conductores', icono: UserRound, href: rutaPanel('conductores'), grupo: 'revision' },
+    { clave: 'reportes', etiqueta: 'Reportes', icono: Flag, href: rutaPanel('reportes'), contador: reportes, grupo: 'revision' },
+    { clave: 'match', etiqueta: 'Reglas del match', icono: SlidersHorizontal, href: rutaPanel('match'), grupo: 'configuracion' },
+    { clave: 'catalogos', etiqueta: 'Catálogos', icono: ListChecks, href: rutaPanel('catalogos'), grupo: 'configuracion' },
+    { clave: 'zonas', etiqueta: 'Zonas y comunas', icono: IconoMapa, href: rutaPanel('zonas'), grupo: 'configuracion' },
+    { clave: 'ajustes', etiqueta: 'Ajustes', icono: Settings, href: rutaPanel('ajustes'), grupo: 'configuracion' },
+    { clave: 'equipo', etiqueta: 'Equipo', icono: Users, href: rutaPanel('equipo'), grupo: 'configuracion' },
   ];
-  const seccion = seccionDeRuta(ruta);
 
   return (
-    <MarcoPanel elementos={elementos} activa={seccion}>
+    <MarcoPanel elementos={elementos} activa={seccionDeRuta(ruta)} rol={rol}>
       <Slot />
     </MarcoPanel>
   );

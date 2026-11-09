@@ -12,7 +12,7 @@ import { haceCuanto, iniciales, textoDias, textoTurnos } from '@/datos/formato';
 import { useEstado } from '@/datos/hooks';
 import * as sel from '@/datos/selectores';
 import type { ConductorVista } from '@/datos/selectores';
-import { useDemo } from '@/datos/tienda';
+import { TEXTO_CUENTA_SUSPENDIDA, useDemo } from '@/datos/tienda';
 import type { EstadoPostulacion, Postulacion } from '@/datos/tipos';
 import {
   Aviso,
@@ -91,6 +91,7 @@ function Ficha({
   const p = q;
   const c = p.conductor;
   const negocio = sel.negocioPorId(estado, negocioId);
+  const suspendido = !!sel.titularPorId(estado, estado.titularDemo.titularId)?.suspendido;
   const favorito = estado.favoritosTitular.includes(c.id);
   const docs = c.documentos;
   const idiomas = c.idiomas.map((k) => estado.catalogos.idiomas.find((i) => i.clave === k)?.nombre ?? k);
@@ -107,7 +108,7 @@ function Ficha({
       onCerrar={onCerrar}
       pie={
         <View style={{ flexDirection: 'row', gap: 10 }}>
-          <Boton titulo="Escribir" variante="principal" icono={MessageSquare} onPress={onEscribir} style={{ flex: 1 }} />
+          <Boton titulo="Escribir" variante="principal" icono={MessageSquare} onPress={onEscribir} deshabilitado={suspendido} style={{ flex: 1 }} />
           <BotonIcono
             icono={Star}
             tamano={56}
@@ -358,6 +359,7 @@ export default function Postulantes() {
   }
 
   const negocio = sel.negocioPorId(estado, b.negocioId);
+  const suspendido = !!sel.titularPorId(estado, b.titularId)?.suspendido;
   const condiciones = sel.textoCondiciones(estado, b);
   const comuna = sel.comunaPorId(estado, b.comunaId);
   const pausada = b.estado !== 'activa';
@@ -411,8 +413,12 @@ export default function Postulantes() {
 
   const enviar = (texto: string) => {
     if (!aEscribir) return;
-    escribirAPostulanteDesdeBolsa(aEscribir.postulacion.id, texto);
+    const r = escribirAPostulanteDesdeBolsa(aEscribir.postulacion.id, texto);
     setEscribirA(null);
+    if (!r.ok) {
+      mostrarToast(r.error ?? 'No se pudo enviar.', 'error');
+      return;
+    }
     mostrarToast(
       aEscribir.conductor.esUsuario ? 'Enviado. Lo verá en Mensajes como conductor.' : `Mensaje enviado a ${aEscribir.conductor.nombres.split(/\s+/)[0]}.`,
       'exito',
@@ -435,6 +441,7 @@ export default function Postulantes() {
       />
       <Titulo style={{ paddingHorizontal: 4 }}>Postulantes</Titulo>
       {tarjetaBusqueda}
+      {suspendido ? <Aviso tono="error" icono="alerta" texto={TEXTO_CUENTA_SUSPENDIDA} /> : null}
 
       <ControlSegmentado<Pestana>
         etiquetaAccesible="Filtrar postulantes"
@@ -537,6 +544,7 @@ export default function Postulantes() {
                       tamano="mediano"
                       icono={MessageSquare}
                       anchoCompleto
+                      deshabilitado={suspendido}
                       style={{ flex: 1 }}
                       onPress={() => setEscribirA(p.postulacion.id)}
                     />

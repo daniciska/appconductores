@@ -1,19 +1,20 @@
 // Panel · Zonas
-// Era la ruta (ya no existe en el mockup): /admin/zonas
+// Ruta: /panel/zonas
 // Sin maqueta (panel web). Región → zonas → comunas. Renombrar zonas, crear zonas y mover comunas.
 // La zona se usa en el % del match (M2): mover una comuna cambia los matches en vivo.
 import { useMemo, useState } from 'react';
 import { Text, View } from 'react-native';
 
 import { useCatalogos, useDerivado } from '@/datos/hooks';
-import { useDemo } from '@/datos/tienda';
 import type { Comuna, Zona } from '@/datos/tipos';
 import { plural } from '@/datos/formato';
 import { Boton, BotonIcono, Campo, EstadoVacio, FilaRadio, Insignia, Presionable, Texto, color, fuente, mostrarToast, radio } from '@/ui';
-import { PaginaPanel } from '@/panel/marco';
+import { PaginaPanel } from '@panel/marco';
 import { Check, ChevronDown, Map as IconoMapa, MapPin, Pencil, Plus, X } from '@/ui/iconos';
 
-import { usoZonas } from './datosPanel';
+import { crearZona, moverComunaAZona, renombrarZona } from '@panel/datos/acciones';
+import { usoZonas } from '@panel/datos/lecturas';
+import { usePuede } from '@panel/sesion';
 import { CampoBusqueda, TarjetaPanel, VentanaPanel, useAnchoPanel } from './piezas';
 
 const sinTildes = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
@@ -21,9 +22,9 @@ const sinTildes = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLo
 export default function Zonas() {
   const cat = useCatalogos();
   const uso = useDerivado(usoZonas);
-  const crearZona = useDemo((s) => s.crearZona);
-  const moverComunaAZona = useDemo((s) => s.moverComunaAZona);
   const { dosColumnas } = useAnchoPanel();
+  // Crear y renombrar zonas y mover comunas: solo un administrador (el revisor las ve).
+  const editable = usePuede('cambiar_zonas');
 
   const [regionId, setRegionId] = useState('r07');
   const [elegirRegion, setElegirRegion] = useState(false);
@@ -63,6 +64,7 @@ export default function Zonas() {
   return (
     <PaginaPanel
       titulo="Zonas y comunas"
+      soloLectura={!editable}
       descripcion="Cada zona agrupa comunas de una región. El match suma puntos cuando el conductor y la búsqueda están en la misma zona."
       acciones={<Boton titulo="Nueva zona" icono={Plus} variante="oscuro" tamano="mediano" onPress={() => { setNombreNueva(''); setNueva(true); }} />}>
       <View style={{ flexDirection: dosColumnas ? 'row' : 'column', gap: 12, alignItems: dosColumnas ? 'center' : 'stretch' }}>
@@ -99,7 +101,7 @@ export default function Zonas() {
         </View>
       </View>
 
-      <Texto variante="ayuda">Toca una comuna para moverla a otra zona.</Texto>
+      {editable ? <Texto variante="ayuda">Toca una comuna para moverla a otra zona.</Texto> : null}
 
       {zonasVisibles.length === 0 ? (
         <TarjetaPanel>
@@ -114,7 +116,7 @@ export default function Zonas() {
               comunas={comunasDe(z.id)}
               resaltar={q ? coincide : undefined}
               uso={uso[z.id] ?? { conductores: 0, busquedas: 0 }}
-              onComuna={abrirMover}
+              onComuna={editable ? abrirMover : undefined}
             />
           ))}
         </View>
@@ -186,8 +188,7 @@ export default function Zonas() {
               titulo="Crear zona"
               deshabilitado={!nombreNueva.trim()}
               onPress={() => {
-                crearZona(region.id, nombreNueva);
-                mostrarToast(`Zona ${nombreNueva.trim()} creada`, 'exito');
+                if (crearZona(region.id, nombreNueva)) mostrarToast(`Zona ${nombreNueva.trim()} creada`, 'exito');
                 setNueva(false);
               }}
             />
@@ -211,23 +212,24 @@ function TarjetaZona({
   comunas: Comuna[];
   resaltar?: (c: Comuna) => boolean;
   uso: { conductores: number; busquedas: number };
-  onComuna: (c: Comuna) => void;
+  /** Sin esta función (revisor), las comunas solo se ven. */
+  onComuna?: (c: Comuna) => void;
 }) {
-  const renombrarZona = useDemo((s) => s.renombrarZona);
   const { escritorio } = useAnchoPanel();
   const [editando, setEditando] = useState(false);
   const [nombre, setNombre] = useState(zona.nombre);
   const guardar = () => {
     if (nombre.trim() && nombre.trim() !== zona.nombre) {
-      renombrarZona(zona.id, nombre);
-      mostrarToast('Nombre guardado', 'exito');
+      const r = renombrarZona(zona.id, nombre);
+      if (r.ok) mostrarToast('Nombre guardado', 'exito');
+      else mostrarToast(r.error ?? 'No se pudo guardar.', 'error');
     }
     setEditando(false);
   };
   return (
     <TarjetaPanel style={escritorio ? { flexGrow: 1, flexBasis: 380, minWidth: 0 } : { width: '100%', minWidth: 0 }} separacion={14}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 44 }}>
-        {editando ? (
+        {editando && onComuna ? (
           <>
             <Campo valor={nombre} onCambiar={setNombre} aria-label={`Nombre de ${zona.nombre}`} maxLength={40} autoFocus onSubmitEditing={guardar} style={{ flex: 1 }} />
             <BotonIcono icono={Check} etiquetaAccesible="Guardar nombre" variante="oscuro" onPress={guardar} />
@@ -249,7 +251,9 @@ function TarjetaZona({
                 {plural(comunas.length, 'comuna', 'comunas')} · {plural(uso.conductores, 'conductor', 'conductores')} · {plural(uso.busquedas, 'búsqueda', 'búsquedas')}
               </Texto>
             </View>
-            <BotonIcono icono={Pencil} etiquetaAccesible={`Cambiar nombre de ${zona.nombre}`} variante="suave" onPress={() => setEditando(true)} />
+            {onComuna ? (
+              <BotonIcono icono={Pencil} etiquetaAccesible={`Cambiar nombre de ${zona.nombre}`} variante="suave" onPress={() => setEditando(true)} />
+            ) : null}
           </>
         )}
       </View>
@@ -262,6 +266,24 @@ function TarjetaZona({
           {comunas.map((c) => {
             const marcada = resaltar ? resaltar(c) : false;
             const apagada = resaltar ? !marcada : false;
+            if (!onComuna) {
+              return (
+                <View
+                  key={c.id}
+                  style={{
+                    minHeight: 38,
+                    paddingHorizontal: 12,
+                    borderRadius: 19,
+                    justifyContent: 'center',
+                    borderWidth: 1,
+                    borderColor: marcada ? color.oscuro : color.borde,
+                    backgroundColor: marcada ? color.oscuro : color.fondo,
+                    opacity: apagada ? 0.45 : 1,
+                  }}>
+                  <Text style={[fuente(600), { fontSize: 13, color: marcada ? color.blanco : color.texto }]}>{c.nombre}</Text>
+                </View>
+              );
+            }
             return (
               <Presionable
                 key={c.id}

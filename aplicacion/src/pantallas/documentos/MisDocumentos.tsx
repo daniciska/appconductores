@@ -13,7 +13,8 @@ import { Clock, Lock, RefreshCw, Upload, X } from '@/ui/iconos';
 import { Hoja } from '@/ui/iconosPropios';
 
 import { CuadroIcono, Nota, TituloPantalla } from './piezas';
-import { estadoDocumento, fem, motivoSimple, rutaNoAprobado, rutaSubir } from './textos';
+import { rutaNoAprobado, rutaSubir } from './rutas';
+import { estadoDocumento, fem, motivoSimple } from './textos';
 
 /** Días de anticipación con que se avisa que un documento vence (igual que documentoVencePronto). */
 const DIAS_AVISO = 30;

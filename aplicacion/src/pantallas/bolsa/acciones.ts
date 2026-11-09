@@ -1,7 +1,7 @@
 // Acciones propias del grupo "bolsa" (BC1–BC3 y BT1–BT5) que no están en la tienda común.
 // Escriben en la misma tienda (useDemo.setState), así que todo queda guardado en el navegador.
 import { ID_USUARIO } from '@/datos/selectores';
-import { ahoraISO, useDemo } from '@/datos/tienda';
+import { ahoraISO, useDemo, type Resultado } from '@/datos/tienda';
 import type { EstadoPostulacion, PerfilesBolsa } from '@/datos/tipos';
 
 /**
@@ -44,10 +44,10 @@ export function restaurarPostulacion(postulacionId: string, estado: EstadoPostul
  * "Quién recibió mis datos" si es el usuario de la demo) y después le escribe. Si el postulante es
  * el usuario de la demo, se crea el match con origen "Postulación" y la conversación aparece en sus Mensajes.
  */
-export function escribirAPostulanteDesdeBolsa(postulacionId: string, texto: string) {
+export function escribirAPostulanteDesdeBolsa(postulacionId: string, texto: string): Resultado {
   const s = useDemo.getState();
   const p = s.postulaciones.find((x) => x.id === postulacionId);
-  if (!p) return;
+  if (!p) return { ok: false, error: 'No encontramos la postulación.' };
   if (p.estado === 'enviada') s.verPostulacion(postulacionId);
-  useDemo.getState().escribirAPostulante(postulacionId, texto);
+  return useDemo.getState().escribirAPostulante(postulacionId, texto);
 }

@@ -1,4 +1,4 @@
-// Datos FICTICIOS de la demo: titulares, búsquedas, conductores, postulaciones, reportes y equipo.
+// Datos FICTICIOS de la demo: titulares, búsquedas, conductores y postulaciones.
 // Nombres inventados, sin marcas ni empresas reales. Teléfonos +56 9 5555 xxxx y correos
 // @demo.dalecontacto.cl para que no se confundan con datos reales.
 //
@@ -7,16 +7,13 @@
 // Las demás búsquedas no calzan por región (b08, b09, b10), turno (b04, b11), porcentaje
 // (b05, b06, b13) o porque están pausadas (b12).
 import type {
-  AccionEquipo,
   ConductorFicticio,
   CuentaUsuario,
   ConductorUsuario,
   Dia,
   DocumentoUsuario,
   EstadoDocumento,
-  MiembroEquipo,
   Postulacion,
-  Reporte,
   Titular,
   Busqueda,
   TipoDocumentoId,
@@ -73,9 +70,6 @@ export interface DatosFicticios {
   busquedas: Busqueda[];
   conductores: ConductorFicticio[];
   postulaciones: Postulacion[];
-  reportes: Reporte[];
-  equipo: MiembroEquipo[];
-  accionesEquipo: AccionEquipo[];
 }
 
 /** Cuenta del usuario de la demo al empezar: todo vacío salvo lo que la maqueta trae marcado. */
@@ -745,68 +739,5 @@ export function crearFicticios(ahora: number): DatosFicticios {
     { id: 'p05', busquedaId: 'b06', conductorId: 'c04', estado: 'vista', postuloEl: hace(2), vistaEl: hace(1, 10), cambioEl: hace(1, 10) },
   ];
 
-  // -------------------------------------------------------------------------
-  // Reportes de ejemplo (abiertos, para la cola del panel)
-  // -------------------------------------------------------------------------
-  const msg = (id: string, autor: 'conductor' | 'titular', texto: string, horasAtras: number) => ({
-    id,
-    autor,
-    texto,
-    hora: hace(0, horasAtras),
-    leido: true,
-  });
-  const reportes: Reporte[] = [
-    {
-      id: 'r01',
-      busquedaId: 'b07',
-      quienReporta: { id: 'c02', nombre: 'Luis Henríquez Parra', rol: 'conductor' },
-      reportado: { id: 't04', nombre: 'Mónica Sepúlveda Riquelme', rol: 'titular' },
-      motivo: 'dinero',
-      detalle: 'Me pidió transferir una garantía antes de ver el auto.',
-      estado: 'abierto',
-      queSeHizo: null,
-      reportadoEl: hace(0, 3),
-      resueltoEl: null,
-      conversacion: [
-        msg('r01m1', 'conductor', 'Hola, vi tu búsqueda para fines de semana. ¿Sigue disponible?', 6),
-        msg('r01m2', 'titular', 'Hola, sí. Para reservarlo tienes que transferirme $200.000 hoy.', 5),
-        msg('r01m3', 'conductor', '¿Puedo ver el auto antes?', 5),
-        msg('r01m4', 'titular', 'Primero la transferencia, después coordinamos.', 4),
-      ],
-    },
-    {
-      id: 'r02',
-      busquedaId: 'b08',
-      quienReporta: { id: 't05', nombre: 'Taxis Bahía Azul Ltda.', rol: 'titular' },
-      reportado: { id: 'c09', nombre: 'Patricio Leiva Contreras', rol: 'conductor' },
-      motivo: 'spam',
-      detalle: 'Envía publicidad de un curso en vez de hablar de la oferta.',
-      estado: 'abierto',
-      queSeHizo: null,
-      reportadoEl: hace(1, 2),
-      resueltoEl: null,
-      conversacion: [
-        msg('r02m1', 'conductor', 'Hola, ¿te interesa un curso para sacar la licencia profesional? Escríbeme a mi número.', 30),
-        msg('r02m2', 'titular', 'Hola, buscamos conductor para el taxi, no un curso.', 29),
-        msg('r02m3', 'conductor', 'Tengo cupos con descuento esta semana, aprovecha.', 28),
-      ],
-    },
-  ];
-
-  // -------------------------------------------------------------------------
-  // Equipo del panel
-  // -------------------------------------------------------------------------
-  const equipo: MiembroEquipo[] = [
-    { id: 'e01', nombre: 'Paula Vergara', celular: '+56 9 5555 0301', rol: 'administrador', activo: true, agregadoEl: hace(45) },
-    { id: 'e02', nombre: 'Ignacio Toro', celular: '+56 9 5555 0302', rol: 'revisor', activo: true, agregadoEl: hace(30) },
-    { id: 'e03', nombre: 'Camila Rojas', celular: '+56 9 5555 0303', rol: 'revisor', activo: false, agregadoEl: hace(60) },
-  ];
-
-  const accionesEquipo: AccionEquipo[] = [
-    { id: 'a01', quien: 'Paula Vergara', que: 'Apagó la industria Transporte de carga', fecha: hace(20) },
-    { id: 'a02', quien: 'Ignacio Toro', que: 'Aprobó la Hoja de Vida de Marcela Ortiz Fuenzalida', fecha: hace(20, 2) },
-    { id: 'a03', quien: 'Ignacio Toro', que: 'No aprobó la licencia de Andrés Figueroa Lillo (Ilegible)', fecha: hace(4) },
-  ];
-
-  return { titulares, busquedas, conductores, postulaciones, reportes, equipo, accionesEquipo };
+  return { titulares, busquedas, conductores, postulaciones };
 }

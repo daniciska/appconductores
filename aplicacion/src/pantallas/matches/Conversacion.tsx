@@ -35,9 +35,9 @@ import {
   tipo,
   volver,
 } from '@/ui';
-import { ArrowRight, Check, ChevronLeft, CircleHelp, LockOpen, MapPin, MessageSquare, Phone } from '@/ui/iconos';
+import { ArrowRight, Check, ChevronLeft, CircleHelp, EyeOff, LockOpen, MapPin, MessageSquare, Phone } from '@/ui/iconos';
 
-import { esAvisoDeContacto, fechaDelMatch, useIrA, useRegistroFichaVista } from './acciones';
+import { TEXTO_MENSAJE_OCULTO, esAvisoDeContacto, fechaDelMatch, useIrA, useRegistroFichaVista } from './acciones';
 import { Aparecer, AvisoBloqueado, BotonFavorito, ChipSistema } from './piezas';
 
 const SUGERENCIAS = ['Hola, vi tu búsqueda. ¿Sigue disponible?', '¿El vehículo se retira en la mañana?', '¿Podemos hablar por teléfono?'];
@@ -48,6 +48,27 @@ const SUGERENCIAS = ['Hola, vi tu búsqueda. ¿Sigue disponible?', '¿El vehícu
 
 function Burbuja({ m }: { m: Mensaje }) {
   const propia = m.autor === 'conductor';
+  if (m.oculto) {
+    return (
+      <View
+        style={{
+          alignSelf: propia ? 'flex-end' : 'flex-start',
+          maxWidth: '78%',
+          borderWidth: 1,
+          borderStyle: 'dashed',
+          borderColor: color.textoDeshabilitado,
+          borderRadius: 18,
+          paddingHorizontal: 14,
+          paddingVertical: 10,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 8,
+        }}>
+        <EyeOff size={15} color={color.textoSecundario} strokeWidth={2} />
+        <Text style={[tipo.secundario, { color: color.textoSecundario, fontStyle: 'italic' }]}>{TEXTO_MENSAJE_OCULTO}</Text>
+      </View>
+    );
+  }
   return (
     <View
       style={{

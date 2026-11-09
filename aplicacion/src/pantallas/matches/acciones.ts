@@ -13,6 +13,9 @@ import { ahoraISO, nuevoId, useDemo } from '@/datos/tienda';
 import type { DatosDemo } from '@/datos/estado';
 import type { EntregaDatos, Mensaje } from '@/datos/tipos';
 
+/** Lo que se ve en lugar de un mensaje que el equipo ocultó al resolver un reporte (R18). */
+export const TEXTO_MENSAJE_OCULTO = 'Mensaje oculto por el equipo.';
+
 function yaRecibioFicha(s: DatosDemo, busquedaId: string): boolean {
   return (
     s.fichasAbiertas.includes(busquedaId) ||

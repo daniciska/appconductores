@@ -1,5 +1,5 @@
 // Panel · Reportes
-// Era la ruta (ya no existe en el mockup): /admin/reportes
+// Ruta: /panel/reportes
 // Sin maqueta (panel web). Reportes de conversaciones: leer la conversación (queda registrado) y resolver.
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
@@ -25,10 +25,11 @@ import {
   radio,
   type TonoInsignia,
 } from '@/ui';
-import { PaginaPanel } from '@/panel/marco';
+import { PaginaPanel } from '@panel/marco';
 import { CircleCheck, Eye, Flag, Lock } from '@/ui/iconos';
 
-import { OPCIONES_RESOLUCION, cambiarSuspension, registrarLectura, resolverReporteCon, type QueSeHizo } from './acciones';
+import { OPCIONES_RESOLUCION, cambiarSuspension, registrarLectura, resolverReporteCon, type QueSeHizo } from '@panel/datos/acciones';
+import { usePuede } from '@panel/sesion';
 import { FilaElegible, ListaDetalle, TarjetaPanel, useAnchoPanel } from './piezas';
 
 type Vista = 'abiertos' | 'resueltos';
@@ -114,7 +115,8 @@ export default function Reportes() {
 function DetalleReporte({ reporte: r, nombreMotivo, ahora, onResuelto }: { reporte: Reporte; nombreMotivo: string; ahora: number; onResuelto: () => void }) {
   const { escritorio } = useAnchoPanel();
   const [leida, setLeida] = useState(false);
-  const [opcion, setOpcion] = useState<QueSeHizo>('advertencia');
+  // Sin opción marcada: la persona elige qué hacer (R18: ocultar los mensajes o suspender la cuenta).
+  const [opcion, setOpcion] = useState<QueSeHizo | null>(null);
   const [nota, setNota] = useState('');
   const suspendido = useDerivado((s) => !!(s.titulares.find((t) => t.id === r.reportado.id)?.suspendido || s.conductores.find((c) => c.id === r.reportado.id)?.suspendido));
   const contexto = useDerivado((s) => {
@@ -122,7 +124,9 @@ function DetalleReporte({ reporte: r, nombreMotivo, ahora, onResuelto }: { repor
     if (!b) return null;
     return `${sel.negocioPorId(s, b.negocioId)?.nombre ?? ''} · ${sel.comunaPorId(s, b.comunaId)?.nombre ?? ''} · ${sel.nombreTitular(sel.titularPorId(s, b.titularId))}`;
   });
-  const opciones = OPCIONES_RESOLUCION.filter((o) => o.clave !== 'suspender' || r.reportado.id !== sel.ID_USUARIO);
+  // Suspender: el revisor también puede (propuesta, por confirmar: MD52). Al conductor de la demo no se le suspende.
+  const puedeSuspender = usePuede('suspender_cuentas');
+  const opciones = OPCIONES_RESOLUCION.filter((o) => o.clave !== 'suspender' || (puedeSuspender && r.reportado.id !== sel.ID_USUARIO));
 
   const leer = () => {
     registrarLectura(`Leyó la conversación reportada entre ${r.quienReporta.nombre} y ${r.reportado.nombre}`);
@@ -202,27 +206,41 @@ function DetalleReporte({ reporte: r, nombreMotivo, ahora, onResuelto }: { repor
           {opciones.map((o) => (
             <FilaRadio key={o.clave} titulo={o.titulo} descripcion={o.descripcion} seleccionada={opcion === o.clave} onPress={() => setOpcion(o.clave)} />
           ))}
-          <Campo etiqueta="Nota interna" notaEtiqueta="(opcional)" valor={nota} onCambiar={setNota} placeholder="Ej.: primera advertencia" maxLength={140} />
+          <Campo etiqueta="Nota interna" notaEtiqueta="(opcional)" valor={nota} onCambiar={setNota} placeholder="Ej.: pidió dinero por adelantado" maxLength={140} />
           <Boton
             titulo="Resolver reporte"
             variante="oscuro"
+            deshabilitado={!opcion}
             onPress={() => {
-              resolverReporteCon(r, opcion, nota);
-              mostrarToast(opcion === 'suspender' ? `Reporte resuelto: ${r.reportado.nombre} quedó suspendido` : 'Reporte resuelto', 'exito');
+              if (!opcion) return;
+              const resultado = resolverReporteCon(r, opcion, nota);
+              if (!resultado.ok) {
+                mostrarToast(resultado.error ?? 'No se pudo resolver.', 'error');
+                return;
+              }
+              mostrarToast(
+                opcion === 'suspender'
+                  ? `Reporte resuelto: ${r.reportado.nombre} quedó suspendido`
+                  : opcion === 'mensaje_oculto'
+                    ? 'Reporte resuelto: mensajes ocultos'
+                    : 'Reporte resuelto',
+                'exito',
+              );
               onResuelto();
             }}
           />
         </TarjetaPanel>
       ) : (
         <Aviso tono="exito" icono={CircleCheck} titulo={`Resuelto ${haceCuanto(r.resueltoEl, ahora)}`} texto={r.queSeHizo ?? 'Sin acción'} accion={
-          suspendido ? (
+          suspendido && puedeSuspender ? (
             <Boton
               titulo="Reactivar cuenta"
               variante="contorno"
               tamano="mediano"
               onPress={() => {
-                cambiarSuspension(r.reportado.id, r.reportado.nombre, false);
-                mostrarToast(`${r.reportado.nombre} puede volver a usar la app`, 'exito');
+                const resultado = cambiarSuspension(r.reportado.id, r.reportado.nombre, false);
+                if (resultado.ok) mostrarToast(`${r.reportado.nombre} puede volver a usar la app`, 'exito');
+                else mostrarToast(resultado.error ?? 'No se pudo reactivar.', 'error');
               }}
             />
           ) : undefined

@@ -13,13 +13,14 @@ import { nombreTitular, type ConversacionResumen } from '@/datos/selectores';
 import { Avatar, EstadoVacio, Insignia, Pantalla, Presionable, Separador, color, fuente, tipo } from '@/ui';
 import { Ban, Info, MessageSquare, Phone } from '@/ui/iconos';
 
-import { useRegistroFichaVista } from './acciones';
+import { TEXTO_MENSAJE_OCULTO, useRegistroFichaVista } from './acciones';
 import { Aparecer, TituloPestana } from './piezas';
 
 function vistaPrevia(c: ConversacionResumen, borrador?: string): string {
   if (borrador?.trim()) return `Borrador: ${borrador.trim()}`;
   const u = c.ultimo;
   if (!u) return '';
+  if (u.oculto) return TEXTO_MENSAJE_OCULTO;
   if (u.autor === 'conductor') return `Tú: ${u.texto}`;
   return u.texto;
 }

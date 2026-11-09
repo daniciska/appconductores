@@ -84,7 +84,7 @@ export function BarraInferior({ pestanas, activa, onElegir }: PropsBarraInferior
  * Va en los layouts de /conductor y /titular: saca esa sección de la pila raíz y vuelve a "/"
  * (si "/" no estaba en la pila, por ejemplo al abrir un enlace directo, lo agrega).
  * Zona táctil de 44 px; en conductor y titular va sobre la franja fija de Pantalla (MarcoCelular bandaDemo).
- * Con `enLinea` no flota (lo usa la barra lateral del panel guardado en src/panel).
+ * Con `enLinea` no flota (para ponerlo dentro de una barra o una lista).
  */
 export function BotonDemo({ style, enLinea = false }: { style?: StyleProp<ViewStyle>; enLinea?: boolean }) {
   const insets = useSafeAreaInsets();

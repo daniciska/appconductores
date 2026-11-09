@@ -148,8 +148,8 @@ export interface DocumentoUsuario {
 // Personas
 // ---------------------------------------------------------------------------
 
-/** 'admin' lo usaba el panel, que ya no está en el mockup (queda guardado en src/panel). */
-export type Rol = 'conductor' | 'titular' | 'admin';
+/** Con qué rol se ve la demo (el equipo usa otra app: ver RolEquipo). */
+export type Rol = 'conductor' | 'titular';
 export type EstadoPerfil = 'incompleto' | 'completo';
 export type EstadoVerificacion = 'sin_documentos' | 'en_revision' | 'verificado' | 'con_observaciones';
 /** Las 5 secciones del perfil del conductor (pasos 1 a 5). */
@@ -297,6 +297,8 @@ export interface Mensaje {
   texto: string;
   hora: string; // ISO
   leido: boolean;
+  /** El equipo lo ocultó al resolver un reporte (R18): quien reportó ya no ve el texto. */
+  oculto?: boolean;
 }
 
 export type QueSeEntrego = 'ficha' | 'telefono' | 'correo' | 'direccion';
@@ -345,8 +347,8 @@ export interface Reporte {
 }
 
 // ---------------------------------------------------------------------------
-// Configuración (la cambia el panel de administración; en el mockup, sin panel, queda con sus
-// valores iniciales)
+// Configuración (la cambia el panel de administración, otra app; en la demo, el panel de la demo,
+// publicado en el mismo sitio y conectado por lo guardado en el navegador)
 // ---------------------------------------------------------------------------
 
 export type CodigoRegla = 'F1' | 'F2' | 'F3' | 'M2' | 'M3' | 'M4' | 'M6' | 'M7';

@@ -38,6 +38,7 @@
     "test:match": "node --test --test-reporter=spec \"tests/**/*.test.ts\"",
     "semilla": "node scripts/generar-semilla.mjs",
     "export:web": "expo export -p web",
+    "revisar:sin-panel": "node scripts/revisar-export-sin-panel.mjs",
     "lint": "expo lint"
   },
   "private": true

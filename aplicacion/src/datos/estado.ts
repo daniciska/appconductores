@@ -21,6 +21,7 @@ import {
   cuentaInicial,
   documentosVacios,
 } from './semilla';
+import { migrarDatos } from './migracion';
 import type {
   AccionEquipo,
   Ajustes,
@@ -48,8 +49,11 @@ import type {
  * (o pasan por migrarEstado, si se sabe cómo llevarlos a la versión nueva). Una pestaña abierta con el
  * código anterior deja de guardar en cuanto ve datos de la versión nueva (ver almacenamiento.ts).
  * 3 (7-nov): el panel de administración salió del mockup.
+ * 4 (9-nov): revisión de documentos a mano (revisionManual.ts). La forma de los datos no cambia: se sube
+ *   para que una pestaña abierta con la versión anterior, que no conoce la revisión manual, deje de
+ *   guardar (y de aprobar sola) y pida recargar. Desde la 3 se conserva todo (migracion.ts).
  */
-export const VERSION_ESTADO = 3;
+export const VERSION_ESTADO = 4;
 /**
  * Clave en el almacenamiento del navegador (localStorage). Desde la versión 3 del estado (7-nov).
  * No cambiarla al subir VERSION_ESTADO: almacenamiento.ts ya evita que las pestañas viejas la pisen.
@@ -111,10 +115,11 @@ export interface DatosDemo {
   postulaciones: Postulacion[];
   reportes: Reporte[];
 
-  // --- Configuración (la cambiaba el panel; sin panel en el mockup queda con sus valores iniciales) ---
+  // --- Configuración (en la demo la cambia otra app del mismo sitio; esta solo la lee) ---
   catalogos: Catalogos;
   reglas: ReglasMatch;
   ajustes: Ajustes;
+  /** Parten vacíos: los llena la otra app al usarse. */
   equipo: MiembroEquipo[];
   accionesEquipo: AccionEquipo[];
 
@@ -179,37 +184,18 @@ export function crearEstadoInicial(ahora = Date.now()): DatosDemo {
     busquedas: f.busquedas,
     conductores: f.conductores,
     postulaciones: f.postulaciones,
-    reportes: f.reportes,
+    // Solo los que hace el conductor de la demo. Los de ejemplo entre personas ficticias los agrega la otra app.
+    reportes: [],
     catalogos: catalogosIniciales(),
     reglas: reglasIniciales(),
     ajustes: ajustesIniciales(),
-    equipo: f.equipo,
-    accionesEquipo: f.accionesEquipo,
+    equipo: [],
+    accionesEquipo: [],
     pendientes: [],
   };
 }
 
-/**
- * Lleva lo guardado en el navegador a la versión actual del estado.
- * - Desde la versión 2 (la demo tenía panel de administración): se conserva lo que hizo la persona,
- *   pero los catálogos (negocios, industrias, zonas), las reglas del match y los ajustes (bolsa,
- *   validación, plazos) vuelven a sus valores iniciales, y las cuentas suspendidas se reactivan.
- *   Lo que se haya cambiado en el panel ya no se podría deshacer, porque el panel no está.
- * - Desde otra versión: se parte de cero.
- */
+/** Lleva lo guardado en el navegador a la versión actual del estado (ver migracion.ts). */
 export function migrarEstado(guardado: unknown, version: number): DatosDemo {
-  const inicial = crearEstadoInicial();
-  if (version !== 2 || !guardado || typeof guardado !== 'object') return inicial;
-  const viejo = guardado as Partial<DatosDemo>;
-  return {
-    ...inicial,
-    ...viejo,
-    version: VERSION_ESTADO,
-    rol: viejo.rol === 'admin' ? null : (viejo.rol ?? null),
-    catalogos: inicial.catalogos,
-    reglas: inicial.reglas,
-    ajustes: inicial.ajustes,
-    titulares: (viejo.titulares ?? inicial.titulares).map((t) => ({ ...t, suspendido: false })),
-    conductores: (viejo.conductores ?? inicial.conductores).map((c) => ({ ...c, suspendido: false })),
-  };
+  return migrarDatos(guardado, version, crearEstadoInicial());
 }

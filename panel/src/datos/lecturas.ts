@@ -1,4 +1,5 @@
-// Lecturas derivadas propias del panel (funciones puras sobre el estado; úsalas con useDerivado).
+// Lecturas derivadas propias del panel (funciones puras sobre el estado compartido de la demo; úsalas
+// con useDerivado o con los hooks de ./hooks). Antes vivían en src/datos/selectores.ts de la demo.
 import type { DatosDemo } from '@/datos/tienda';
 import * as sel from '@/datos/selectores';
 import type { ResultadoMatch } from '@/datos/match';
@@ -137,4 +138,81 @@ export function usoZonas(s: DatosDemo): Record<string, { conductores: number; bu
   for (const c of sel.todosLosConductores(s)) sumar(c.comuna?.id, 'conductores');
   for (const b of s.busquedas) sumar(b.comunaId, 'busquedas');
   return salida;
+}
+
+// ---------------------------------------------------------------------------
+// Cola de documentos, reportes y cifras del resumen
+// ---------------------------------------------------------------------------
+
+export interface DocumentoEnCola {
+  duenoId: string;
+  nombre: string;
+  tipo: TipoDocumentoId;
+  documento: DocumentoUsuario;
+  /** Clases que declaró (para comparar con la licencia). */
+  clasesDeclaradas: string[];
+  pidioOtraRevision: boolean;
+}
+
+/** Documentos que esperan a una persona (etapa 'equipo'), los más antiguos primero. */
+export function colaDocumentos(s: DatosDemo, incluirEnPrerevision = false): DocumentoEnCola[] {
+  const salida: DocumentoEnCola[] = [];
+  for (const c of sel.todosLosConductores(s)) {
+    for (const tipo of sel.TIPOS_DOC_ORDEN) {
+      const d = c.documentos[tipo];
+      if (d.estado !== 'en_revision') continue;
+      if (d.etapa !== 'equipo' && !incluirEnPrerevision) continue;
+      salida.push({
+        duenoId: c.id,
+        nombre: c.nombre,
+        tipo,
+        documento: d,
+        clasesDeclaradas: c.clasesDeclaradas,
+        pidioOtraRevision: !!d.otraRevisionEl,
+      });
+    }
+  }
+  return salida.sort((a, b) => (a.documento.enviadoEl ?? '').localeCompare(b.documento.enviadoEl ?? ''));
+}
+
+export const reportesAbiertos = (s: DatosDemo) =>
+  s.reportes.filter((r) => r.estado === 'abierto').sort((a, b) => a.reportadoEl.localeCompare(b.reportadoEl));
+
+/** Total de matches vigentes entre todos los conductores y todas las búsquedas. */
+export function totalMatches(s: DatosDemo): number {
+  let n = 0;
+  for (const c of sel.todosLosConductores(s)) for (const b of s.busquedas) if (sel.simularMatch(s, c.id, b.id)?.hayMatch) n += 1;
+  return n;
+}
+
+/** Con los pesos actuales: cuántas variables del % pueden fallar y aun así haber match. */
+export function variablesQuePuedenFallar(s: DatosDemo): number {
+  const variables = s.reglas.reglas.filter((r) => r.uso === 'variable');
+  const total = variables.reduce((a, r) => a + Math.max(0, r.peso), 0);
+  if (total === 0) return 0;
+  const pesos = variables.map((r) => Math.max(0, r.peso)).sort((a, b) => a - b);
+  let pierde = 0;
+  let fallan = 0;
+  for (const p of pesos) {
+    if ((total - pierde - p) * 100 + 1e-9 >= s.reglas.umbral * total) {
+      pierde += p;
+      fallan += 1;
+    } else break;
+  }
+  return fallan;
+}
+
+export function resumenPanel(s: DatosDemo) {
+  const conductores = sel.todosLosConductores(s);
+  return {
+    conductores: conductores.length,
+    verificados: conductores.filter((c) => c.estadoVerificacion === 'verificado').length,
+    incompletos: conductores.filter((c) => c.estadoPerfil === 'incompleto').length,
+    documentosEnCola: colaDocumentos(s).length,
+    reportesAbiertos: reportesAbiertos(s).length,
+    titulares: s.titulares.length,
+    busquedasActivas: s.busquedas.filter((b) => b.estado === 'activa').length,
+    ofertasEnBolsa: s.busquedas.filter((b) => b.enBolsa && b.estado === 'activa').length,
+    matches: totalMatches(s),
+  };
 }

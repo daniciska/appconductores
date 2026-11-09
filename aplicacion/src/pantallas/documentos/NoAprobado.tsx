@@ -13,7 +13,8 @@ import { Boton, Encabezado, EstadoVacio, Insignia, Pantalla, color, fuente, most
 import { Bell, Camera, FileText, Info, RefreshCw, Upload, X } from '@/ui/iconos';
 
 import { BotonContornoLargo, Caja, CuadroIcono, Nota, TituloPantalla } from './piezas';
-import { GUIAS, esTipoDocumento, fem, motivoSimple, queHacerMotivo, rutaSubir } from './textos';
+import { rutaSubir } from './rutas';
+import { GUIAS, esTipoDocumento, fem, motivoSimple, queHacerMotivo } from './textos';
 
 export default function NoAprobado() {
   const { tipo } = useLocalSearchParams<{ tipo: string }>();

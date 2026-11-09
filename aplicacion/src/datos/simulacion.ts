@@ -2,10 +2,11 @@
 // (a) pre-revisión del "agente de IA": a los ~3 s la cédula y la licencia se aprueban solas
 //     (caso claro; la licencia copia las clases declaradas a revisadas) y la Hoja de Vida y los
 //     antecedentes quedan "En revisión", esperando a una persona del equipo.
-// (a2) revisión de esa persona del equipo: el mockup no tiene panel de administración, así que
-//     también se simula. A los ~12 s de quedar esperando (SEGUNDOS_REVISION_EQUIPO), el documento se
-//     aprueba, con el mismo aviso de siempre. Pasa igual después de "pedir otra revisión". Para ver
-//     un documento no aprobado está el atajo del menú de la demo (prepararDocumentoNoAprobado).
+// (a2) revisión de esa persona del equipo: también se simula. A los ~12 s de quedar esperando
+//     (SEGUNDOS_REVISION_EQUIPO), el documento se aprueba, con el mismo aviso de siempre. Pasa igual
+//     después de "pedir otra revisión". Para ver un documento no aprobado está el atajo del menú de la
+//     demo (prepararDocumentoNoAprobado). Mientras una persona del equipo revisa a mano en este mismo
+//     navegador (revisionManual.ts), no se simula: los documentos esperan su decisión.
 // (b) respuestas del titular en el chat: a los 2–4 s responde con frases de ejemplo; después del
 //     segundo mensaje del conductor, el titular comparte su contacto (teléfono ficticio).
 // (c) titulares con plan que abren la ficha del conductor recién verificado ("Quién recibió mis datos").
@@ -13,12 +14,15 @@
 //
 // Las tareas se guardan en el estado (state.pendientes) con su hora de vencimiento, y un reloj
 // (iniciarSimulacion, montado en el layout raíz) las ejecuta. Así sobreviven a cambiar de pantalla
-// y a recargar la página.
+// y a recargar la página. Otra app del mismo sitio puede montar el reloj de respaldo, para que las
+// tareas avancen aunque la demo del conductor no esté abierta (ver OpcionesSimulacion).
 import { avisar } from './avisos';
 import { CLAVE_ALMACENAMIENTO, VERSION_ESTADO } from './estado';
+import { planificarRevisionEquipo, rondaDe } from './revisionEquipo';
+import { leerRevisionManual } from './revisionManual';
 import { ID_USUARIO, TIPOS_DOC_ORDEN, busquedaPorId, nombreTitular, primerNombre, titularPorId } from './selectores';
-import { SEGUNDOS_REVISION_EQUIPO, ahoraISO, nuevoId, useDemo } from './tienda';
-import type { DocumentoUsuario, EntregaDatos, Mensaje, TareaSimulada } from './tipos';
+import { SEGUNDOS_REVISION_EQUIPO, ahoraISO, cambiarDocumento, docAprobado, extraAlAprobar, nuevoId, useDemo } from './tienda';
+import type { EntregaDatos, Mensaje, TareaSimulada } from './tipos';
 
 const RESPUESTAS_INICIALES = [
   'Hola {nombre}, gracias por escribir. ¿Desde cuándo podrías partir?',
@@ -39,6 +43,18 @@ const RESPUESTAS_SIGUIENTES = [
 
 const elegir = (lista: string[], semilla: number) => lista[Math.abs(semilla) % lista.length];
 
+/**
+ * La pestaña simula solo de respaldo (otra app del mismo sitio, ver iniciarSimulacion): ahí no se
+ * muestran los avisos del conductor. Si la demo del conductor está abierta en otra pestaña, los
+ * cambios le llegan igual (avisosEntrePestanas.ts).
+ */
+let deRespaldo = false;
+const avisarConductor: typeof avisar = (...args) => {
+  if (!deRespaldo) avisar(...args);
+};
+
+const AVISO_VERIFICADO = '¡Listo! Tus 4 documentos están aprobados.';
+
 function procesarTarea(t: TareaSimulada): void {
   const demo = useDemo.getState();
   switch (t.tipo) {
@@ -48,8 +64,10 @@ function procesarTarea(t: TareaSimulada): void {
       const tipo = demo.catalogos.tiposDocumento.find((x) => x.id === t.documento);
       if (tipo?.prerevisionAutomatica) {
         // Caso claro: lo aprueba el agente de IA (la licencia copia las clases declaradas a revisadas).
-        demo.aprobarPorAgenteIA(t.documento);
-        avisar(t.documento === 'cedula' ? 'Tu cédula fue aprobada.' : 'Tu licencia fue aprobada.', 'exito');
+        const r = cambiarDocumento(demo, ID_USUARIO, t.documento, (d) => docAprobado(d, 'ia'), extraAlAprobar(t.documento));
+        useDemo.setState(r.cambios);
+        avisarConductor(t.documento === 'cedula' ? 'Tu cédula fue aprobada.' : 'Tu licencia fue aprobada.', 'exito');
+        if (r.quedoVerificado) avisarConductor(AVISO_VERIFICADO, 'exito');
       } else {
         // Pre-revisado: pasa a una persona del equipo (la programa asegurarRevisionDelEquipo).
         useDemo.setState({ documentos: { ...demo.documentos, [t.documento]: { ...doc, etapa: 'equipo' } } });
@@ -61,7 +79,11 @@ function procesarTarea(t: TareaSimulada): void {
       const doc = demo.documentos[t.documento];
       // Si mientras tanto cambió (lo aprobó "Aprobar ahora", lo subió de nuevo, un atajo…), no se toca.
       if (doc.estado !== 'en_revision' || doc.etapa !== 'equipo' || rondaDe(doc) !== t.ronda) return;
-      demo.aprobarPorEquipo(t.documento);
+      // Una persona del equipo lo revisa a mano en este navegador: decide ella.
+      if (leerRevisionManual()) return;
+      const r = cambiarDocumento(demo, ID_USUARIO, t.documento, (d) => docAprobado(d, 'persona'), extraAlAprobar(t.documento));
+      useDemo.setState(r.cambios);
+      if (r.quedoVerificado) avisarConductor(AVISO_VERIFICADO, 'exito');
       return;
     }
 
@@ -69,7 +91,8 @@ function procesarTarea(t: TareaSimulada): void {
       const lista = demo.mensajes[t.busquedaId] ?? [];
       const b = busquedaPorId(demo, t.busquedaId);
       const titular = b ? titularPorId(demo, b.titularId) : undefined;
-      if (!b || !titular || demo.bloqueos.includes(titular.id)) {
+      // Un titular bloqueado o con la cuenta suspendida no responde.
+      if (!b || !titular || demo.bloqueos.includes(titular.id) || titular.suspendido) {
         useDemo.setState({ titularEscribiendo: { ...demo.titularEscribiendo, [t.busquedaId]: false } });
         return;
       }
@@ -134,42 +157,30 @@ function procesarTarea(t: TareaSimulada): void {
       if (!p || p.conductorId !== ID_USUARIO || p.estado === 'te_escribio' || p.estado === 'descartada') return;
       const b = busquedaPorId(demo, p.busquedaId);
       const titular = b ? titularPorId(demo, b.titularId) : undefined;
-      if (!b || !titular || demo.bloqueos.includes(titular.id)) return;
+      if (!b || !titular || demo.bloqueos.includes(titular.id) || titular.suspendido) return;
       demo.escribirAPostulante(
         p.id,
         `Hola ${primerNombre(demo)}, vimos tu postulación. ¿Podemos conversar sobre la oferta?`,
       );
-      avisar(`${nombreTitular(titular)} te escribió.`, 'info');
+      avisarConductor(`${nombreTitular(titular)} te escribió.`, 'info');
       return;
     }
   }
 }
 
-/** Qué envío del documento se está revisando (cambia al subirlo de nuevo o al pedir otra revisión). */
-function rondaDe(doc: DocumentoUsuario): string {
-  return `${doc.enviadoEl ?? ''}|${doc.otraRevisionEl ?? ''}`;
-}
-
-/**
- * Cada documento del usuario que espera a una persona del equipo tiene programada su revisión
- * (a los SEGUNDOS_REVISION_EQUIPO). Sirve para los que acaban de salir de la pre-revisión, para
- * "pedir otra revisión" y para lo guardado de antes, cuando los revisaba el panel.
- */
+/** Programa (o quita, con revisión manual) la revisión simulada de la persona del equipo. */
 function asegurarRevisionDelEquipo(ahora: number): void {
   const { documentos, pendientes } = useDemo.getState();
-  const nuevas: TareaSimulada[] = [];
-  for (const tipo of TIPOS_DOC_ORDEN) {
-    const doc = documentos[tipo];
-    if (doc.estado !== 'en_revision' || doc.etapa !== 'equipo') continue;
-    const ronda = rondaDe(doc);
-    const yaProgramada = pendientes.some((t) => t.tipo === 'revision_equipo' && t.documento === tipo && t.ronda === ronda);
-    if (!yaProgramada) {
-      // Si hay dos esperando, la segunda llega un poco después (como en la pre-revisión).
-      const venceEn = ahora + SEGUNDOS_REVISION_EQUIPO * 1000 + nuevas.length * 600;
-      nuevas.push({ id: nuevoId('t'), tipo: 'revision_equipo', venceEn, documento: tipo, ronda });
-    }
-  }
-  if (nuevas.length > 0) useDemo.setState({ pendientes: [...pendientes, ...nuevas] });
+  const nuevas = planificarRevisionEquipo({
+    documentos,
+    pendientes,
+    tipos: TIPOS_DOC_ORDEN,
+    ahora,
+    manual: leerRevisionManual(),
+    segundos: SEGUNDOS_REVISION_EQUIPO,
+    nuevoId: () => nuevoId('t'),
+  });
+  if (nuevas) useDemo.setState({ pendientes: nuevas });
 }
 
 /** Ejecuta las tareas vencidas. Devuelve cuántas ejecutó. */
@@ -207,35 +218,102 @@ let reloj: ReturnType<typeof setInterval> | null = null;
 // esté a la vista); las demás reciben el resultado por el evento "storage" (ver tienda.ts).
 // El turno es por clave de datos y por versión del estado: una pestaña con otra versión de la demo
 // (por ejemplo, la publicada antes, que usaba 'dale-demo-lider') no le quita el turno a esta.
+// Una pestaña de respaldo (otra app del mismo sitio) toma el turno solo si ninguna pestaña de la demo
+// del conductor lo lleva hace un rato, y se lo devuelve en cuanto aparece una.
 const CLAVE_LIDER = `${CLAVE_ALMACENAMIENTO}-lider-v${VERSION_ESTADO}`;
 const ID_PESTANA = Math.random().toString(36).slice(2);
+/** Cuánto espera una pestaña de respaldo, desde que venció el último turno, antes de tomarlo. */
+const ESPERA_RESPALDO_MS = 4000;
+
+interface Turno {
+  id: string;
+  hasta: number;
+  /** Lo lleva una pestaña de respaldo. */
+  respaldo?: boolean;
+}
+
+function leerTurno(clave: string): Turno | null {
+  const crudo = window.localStorage.getItem(clave);
+  const v = crudo ? (JSON.parse(crudo) as Turno | null) : null;
+  return v && typeof v.id === 'string' && typeof v.hasta === 'number' ? v : null;
+}
+
+function tomarTurno(ahora: number): void {
+  const turno: Turno = deRespaldo ? { id: ID_PESTANA, hasta: ahora + 2500, respaldo: true } : { id: ID_PESTANA, hasta: ahora + 2500 };
+  window.localStorage.setItem(CLAVE_LIDER, JSON.stringify(turno));
+}
 
 function soyLaPestanaQueSimula(ahora: number): boolean {
   if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') return true;
   try {
-    const crudo = window.localStorage.getItem(CLAVE_LIDER);
-    const lider = crudo ? (JSON.parse(crudo) as { id: string; hasta: number }) : null;
+    const lider = leerTurno(CLAVE_LIDER);
     const mia = lider?.id === ID_PESTANA;
     const vigente = !!lider && lider.hasta >= ahora;
-    if (vigente && !mia) return false;
+    if (deRespaldo) {
+      if (vigente && !mia) return false;
+      if (!mia && lider && ahora - lider.hasta < ESPERA_RESPALDO_MS) return false;
+      tomarTurno(ahora);
+      return true;
+    }
+    if (vigente && !mia) {
+      if (!lider.respaldo) return false;
+      // La demo del conductor tiene prioridad: toma el turno ahora y simula desde la vuelta siguiente,
+      // cuando la pestaña de respaldo ya lo vio (así nunca simulan las dos a la vez).
+      tomarTurno(ahora);
+      return false;
+    }
     if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
       // Una pestaña oculta termina su turno sin renovarlo y espera un poco antes de tomar otro,
       // para que lo tome una pestaña a la vista si la hay.
       if (mia && vigente) return true;
       if (lider && ahora - lider.hasta < 1500) return false;
     }
-    window.localStorage.setItem(CLAVE_LIDER, JSON.stringify({ id: ID_PESTANA, hasta: ahora + 2500 }));
+    tomarTurno(ahora);
     return true;
   } catch {
     return true;
   }
 }
 
+// Una pestaña abierta con una versión anterior de la demo (desde la 3) ya no guarda (almacenamiento.ts),
+// pero su simulación seguiría "aprobando" documentos en su propia pantalla. Mientras haya una pestaña con
+// esta versión, se le deja tomado su turno (su clave de turno), con un plazo largo: así no simula.
+const VERSION_MAS_ANTIGUA_CON_TURNO = 3;
+const ID_VERSION_NUEVA = 'version-nueva';
+const PLAZO_TURNO_VIEJO_MS = 120_000;
+
+function retenerTurnosDeVersionesAnteriores(ahora: number): void {
+  if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') return;
+  for (let v = VERSION_MAS_ANTIGUA_CON_TURNO; v < VERSION_ESTADO; v++) {
+    const clave = `${CLAVE_ALMACENAMIENTO}-lider-v${v}`;
+    try {
+      const turno = leerTurno(clave);
+      // Se renueva una vez por minuto, no en cada vuelta.
+      if (turno?.id === ID_VERSION_NUEVA && turno.hasta - ahora > PLAZO_TURNO_VIEJO_MS / 2) continue;
+      window.localStorage.setItem(clave, JSON.stringify({ id: ID_VERSION_NUEVA, hasta: ahora + PLAZO_TURNO_VIEJO_MS }));
+    } catch {
+      // Sin almacenamiento: no hay otras pestañas con las que coordinar.
+    }
+  }
+}
+
+export interface OpcionesSimulacion {
+  intervaloMs?: number;
+  /**
+   * De respaldo (la usa otra app del mismo sitio): simula solo si la demo del conductor no está abierta
+   * en otra pestaña, y sin mostrar los avisos del conductor.
+   */
+  respaldo?: boolean;
+}
+
 /** Enciende el reloj de la simulación (idempotente). Devuelve una función para apagarlo. */
-export function iniciarSimulacion(intervaloMs = 500): () => void {
+export function iniciarSimulacion({ intervaloMs = 500, respaldo = false }: OpcionesSimulacion = {}): () => void {
+  deRespaldo = respaldo;
   if (!reloj)
     reloj = setInterval(() => {
-      if (soyLaPestanaQueSimula(Date.now())) procesarPendientes();
+      const ahora = Date.now();
+      retenerTurnosDeVersionesAnteriores(ahora);
+      if (soyLaPestanaQueSimula(ahora)) procesarPendientes(ahora);
     }, intervaloMs);
   return () => {
     if (reloj) clearInterval(reloj);

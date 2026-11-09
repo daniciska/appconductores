@@ -1,16 +1,17 @@
 // Panel · Ajustes
-// Era la ruta (ya no existe en el mockup): /admin/ajustes
+// Ruta: /panel/ajustes
 // Sin maqueta (panel web). Interruptores y números que cambian el comportamiento de la app en vivo.
 import { useState } from 'react';
 import { View } from 'react-native';
 
 import { useAjustes } from '@/datos/hooks';
 import type { Ajustes as TipoAjustes } from '@/datos/tipos';
-import { Boton, Dialogo, Interruptor, Separador, Stepper, Texto, mostrarToast } from '@/ui';
-import { PaginaPanel } from '@/panel/marco';
+import { Boton, Dialogo, Insignia, Interruptor, Separador, Stepper, Texto, mostrarToast } from '@/ui';
+import { PaginaPanel } from '@panel/marco';
 import { RotateCcw } from '@/ui/iconos';
 
-import { fijarAjuste, restablecerAjustesPanel } from './acciones';
+import { fijarAjuste, restablecerAjustes } from '@panel/datos/acciones';
+import { usePuede } from '@panel/sesion';
 import { TarjetaPanel, useAnchoPanel } from './piezas';
 
 type ClaveNumero = 'diasReconfirmar' | 'diasAntiguedadPdf' | 'segundosPrerevision';
@@ -19,16 +20,20 @@ type ClaveSiNo = 'bolsaActiva' | 'validarObligatorios';
 export default function Ajustes() {
   const a = useAjustes();
   const [confirmar, setConfirmar] = useState(false);
+  // Solo un administrador cambia los ajustes (el revisor los ve).
+  const editable = usePuede('cambiar_ajustes');
 
   return (
     <PaginaPanel
       titulo="Ajustes"
+      soloLectura={!editable}
       descripcion="Cambian la app en vivo."
       acciones={<Boton titulo="Restablecer" icono={RotateCcw} variante="contorno" tamano="mediano" onPress={() => setConfirmar(true)} />}>
       {/* Mismo ancho y alineación que las otras páginas; solo las tarjetas quedan más angostas (filas legibles). */}
       <View style={{ width: '100%', maxWidth: 860, gap: 20 }}>
       <TarjetaPanel titulo="Funciones" separacion={4}>
         <FilaSiNo
+          editable={editable}
           clave="bolsaActiva"
           valor={a.bolsaActiva}
           titulo="Bolsa de trabajo"
@@ -37,6 +42,7 @@ export default function Ajustes() {
         />
         <Separador />
         <FilaSiNo
+          editable={editable}
           clave="validarObligatorios"
           valor={a.validarObligatorios}
           titulo="Validar campos obligatorios"
@@ -47,6 +53,7 @@ export default function Ajustes() {
 
       <TarjetaPanel titulo="Plazos" separacion={4}>
         <FilaNumero
+          editable={editable}
           clave="diasReconfirmar"
           valor={a.diasReconfirmar}
           min={7}
@@ -57,6 +64,7 @@ export default function Ajustes() {
         />
         <Separador />
         <FilaNumero
+          editable={editable}
           clave="diasAntiguedadPdf"
           valor={a.diasAntiguedadPdf}
           min={1}
@@ -69,6 +77,7 @@ export default function Ajustes() {
 
       <TarjetaPanel titulo="Solo para la demo" descripcion="No existen en la app real." separacion={4}>
         <FilaNumero
+          editable={editable}
           clave="segundosPrerevision"
           valor={a.segundosPrerevision}
           min={1}
@@ -88,7 +97,7 @@ export default function Ajustes() {
         confirmar={{
           titulo: 'Restablecer',
           onPress: () => {
-            restablecerAjustesPanel();
+            restablecerAjustes();
             setConfirmar(false);
             mostrarToast('Ajustes restablecidos', 'exito');
           },
@@ -99,7 +108,21 @@ export default function Ajustes() {
   );
 }
 
-function FilaSiNo({ clave, valor, titulo, ayuda, aviso }: { clave: ClaveSiNo; valor: boolean; titulo: string; ayuda: string; aviso: (v: boolean) => string }) {
+function FilaSiNo({
+  clave,
+  valor,
+  titulo,
+  ayuda,
+  aviso,
+  editable,
+}: {
+  clave: ClaveSiNo;
+  valor: boolean;
+  titulo: string;
+  ayuda: string;
+  aviso: (v: boolean) => string;
+  editable: boolean;
+}) {
   const { escritorio } = useAnchoPanel();
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, minHeight: 72, paddingVertical: 12 }}>
@@ -107,19 +130,25 @@ function FilaSiNo({ clave, valor, titulo, ayuda, aviso }: { clave: ClaveSiNo; va
         <Texto variante="fuerte">{titulo}</Texto>
         <Texto variante="ayuda">{ayuda}</Texto>
       </View>
-      {escritorio ? (
-        <Texto variante="ayuda" peso={600}>
-          {valor ? 'Encendido' : 'Apagado'}
-        </Texto>
-      ) : null}
-      <Interruptor
-        valor={valor}
-        etiquetaAccesible={titulo}
-        onCambiar={(v) => {
-          fijarAjuste(clave, v as TipoAjustes[ClaveSiNo], titulo);
-          mostrarToast(aviso(v), v ? 'exito' : 'info');
-        }}
-      />
+      {!editable ? (
+        <Insignia texto={valor ? 'Encendido' : 'Apagado'} tono={valor ? 'verde' : 'gris'} icono={valor ? 'check' : null} />
+      ) : (
+        <>
+          {escritorio ? (
+            <Texto variante="ayuda" peso={600}>
+              {valor ? 'Encendido' : 'Apagado'}
+            </Texto>
+          ) : null}
+          <Interruptor
+            valor={valor}
+            etiquetaAccesible={titulo}
+            onCambiar={(v) => {
+              fijarAjuste(clave, v as TipoAjustes[ClaveSiNo], titulo);
+              mostrarToast(aviso(v), v ? 'exito' : 'info');
+            }}
+          />
+        </>
+      )}
     </View>
   );
 }
@@ -132,6 +161,7 @@ function FilaNumero({
   sufijo,
   titulo,
   ayuda,
+  editable,
 }: {
   clave: ClaveNumero;
   valor: number;
@@ -140,6 +170,7 @@ function FilaNumero({
   sufijo: string;
   titulo: string;
   ayuda: string;
+  editable: boolean;
 }) {
   const { escritorio } = useAnchoPanel();
   return (
@@ -149,7 +180,13 @@ function FilaNumero({
         <Texto variante="ayuda">{ayuda}</Texto>
       </View>
       <View style={{ alignSelf: escritorio ? 'auto' : 'flex-start' }}>
-        <Stepper valor={valor} onCambiar={(v) => fijarAjuste(clave, v, titulo)} min={min} max={max} sufijo={sufijo} etiquetaAccesible={titulo} />
+        {editable ? (
+          <Stepper valor={valor} onCambiar={(v) => fijarAjuste(clave, v, titulo)} min={min} max={max} sufijo={sufijo} etiquetaAccesible={titulo} />
+        ) : (
+          <Texto variante="cuerpo" peso={700}>
+            {valor} {sufijo}
+          </Texto>
+        )}
       </View>
     </View>
   );

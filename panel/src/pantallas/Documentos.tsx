@@ -1,14 +1,12 @@
 // Panel · Documentos · Revisión de documentos
-// Era la ruta (ya no existe en el mockup): /admin/documentos
+// Ruta: /panel/documentos
 // Sin maqueta (panel web). Cola de lo que el agente de IA no aprobó solo; la decisión cambia en vivo
 // el estado del conductor (y, si es el usuario de la demo, lo que ve en su app).
 import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
-import { router } from 'expo-router';
+import { ActivityIndicator, Text, View } from 'react-native';
 
-import { useAhora, useColaDocumentos, useDerivado } from '@/datos/hooks';
+import { useAhora, useDerivado } from '@/datos/hooks';
 import * as sel from '@/datos/selectores';
-import type { DocumentoEnCola } from '@/datos/selectores';
 import { useDemo } from '@/datos/tienda';
 import type { MotivoRechazoId, TipoDocumentoId } from '@/datos/tipos';
 import { fechaLarga, haceCuanto, iniciales, plural } from '@/datos/formato';
@@ -23,17 +21,22 @@ import {
   Separador,
   Texto,
   Titulo,
+  Presionable,
   color,
+  fuente,
+  mostrarToast,
   radio,
 } from '@/ui';
-import { PaginaPanel } from '@/panel/marco';
 import { Bot, Check, CircleCheck, CircleX, Eye, FileText, Hourglass, Image as IconoImagen, Inbox, Lock, X } from '@/ui/iconos';
-
-import { registrarLectura } from './acciones';
-import { NOMBRE_DOC_CON_ARTICULO, clavedoc, decididosRecientes, matchesDeConductor } from './datosPanel';
-import { FilaElegible, ListaDetalle, TarjetaPanel, VentanaPanel, useAnchoPanel, useIrA } from './piezas';
-import { prerevisar, type LecturaIA, type Prerevision } from './prerevision';
 import { motivoSimple, motivosPara, queHacerMotivo } from '@/pantallas/documentos/textos';
+
+import { aprobarDocumento, rechazarDocumento, registrarLectura } from '@panel/datos/acciones';
+import { useColaDocumentos } from '@panel/datos/hooks';
+import { NOMBRE_DOC_CON_ARTICULO, clavedoc, decididosRecientes, matchesDeConductor, type DocumentoEnCola } from '@panel/datos/lecturas';
+import { abrirDemoConductor } from '@panel/enlaces';
+import { PaginaPanel } from '@panel/marco';
+import { FilaElegible, ListaDetalle, TarjetaPanel, VentanaPanel, useAnchoPanel, useIrA } from './piezas';
+import { prerevisar, runTapado, type LecturaIA, type Prerevision } from '@panel/datos/prerevision';
 
 type Vista = 'cola' | 'decididos';
 
@@ -77,8 +80,11 @@ export default function Documentos() {
     const s0 = useDemo.getState();
     const antes = sel.conductorVista(s0, item.duenoId)?.estadoVerificacion;
     const indice = ordenada.findIndex((d) => d.duenoId === item.duenoId && d.tipo === item.tipo);
-    if (aprobado) s0.aprobarDocumento(item.duenoId, item.tipo);
-    else if (motivo) s0.rechazarDocumento(item.duenoId, item.tipo, motivo);
+    const r = aprobado ? aprobarDocumento(item.duenoId, item.tipo) : motivo ? rechazarDocumento(item.duenoId, item.tipo, motivo) : null;
+    if (!r?.ok) {
+      if (r?.error) mostrarToast(r.error, 'error');
+      return;
+    }
 
     const s1 = useDemo.getState();
     const despues = sel.conductorVista(s1, item.duenoId);
@@ -208,9 +214,9 @@ export default function Documentos() {
           texto={resultado.texto}
           accion={
             <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
-              {/* Enlace a la app del conductor: solo sirve dentro del mockup; se quita en la app del panel. */}
+              {/* La demo del conductor es otra app del mismo sitio: se abre en otra pestaña. */}
               {resultado.esUsuario ? (
-                <Boton titulo="Ver como conductor" variante="oscuro" tamano="mediano" onPress={() => router.push('/conductor/inicio')} />
+                <Boton titulo="Ver como conductor" variante="oscuro" tamano="mediano" onPress={() => abrirDemoConductor('/conductor/inicio')} />
               ) : null}
               <Boton titulo="Cerrar" variante="texto" tamano="mediano" onPress={() => setResultado(null)} />
             </View>
@@ -272,22 +278,21 @@ function DetalleDocumento({
   const nombreDeclarado = useDerivado((s) =>
     item.duenoId === sel.ID_USUARIO ? sel.nombreCompleto(s.cuenta) : (conductor?.nombre ?? ''),
   );
-  const fechaDeclarada = useDerivado((s) =>
-    item.duenoId === sel.ID_USUARIO ? s.conductor.fechaNacimiento : (sel.conductorFicticioPorId(s, item.duenoId)?.fechaNacimiento ?? ''),
-  );
   const tipoDoc = useDerivado((s) => sel.tipoDocumentoPorId(s, item.tipo));
   const todosLosMotivos = useDemo((s) => s.catalogos.motivosRechazo);
   const motivos = useMemo(() => motivosPara(todosLosMotivos, item.tipo), [todosLosMotivos, item.tipo]);
   const diasPdf = useDemo((s) => s.ajustes.diasAntiguedadPdf);
   const [verArchivo, setVerArchivo] = useState(false);
   const [rechazando, setRechazando] = useState(false);
+  // El RUN se ve tapado: mostrarlo queda en el registro de acciones (R26).
+  const [verRun, setVerRun] = useState(false);
 
   const pre: Prerevision | null = useMemo(
     () =>
       conductor
-        ? prerevisar({ conductor, nombreDeclarado, fechaNacimientoDeclarada: fechaDeclarada, tipo: item.tipo, documento: item.documento, diasAntiguedadPdf: diasPdf })
+        ? prerevisar({ conductor, nombreDeclarado, tipo: item.tipo, documento: item.documento, diasAntiguedadPdf: diasPdf })
         : null,
-    [conductor, nombreDeclarado, fechaDeclarada, item.tipo, item.documento, diasPdf],
+    [conductor, nombreDeclarado, item.tipo, item.documento, diasPdf],
   );
   // La propuesta de la IA, si aplica a este documento; si no, el primer motivo que aplica.
   const motivoInicial = (): MotivoRechazoId =>
@@ -299,6 +304,11 @@ function DetalleDocumento({
   const quedariaVerificado = otros.every((t) => conductor.documentos[t].estado === 'aprobado');
   const motivoElegido = motivos.find((m) => m.id === motivo);
   const tonoIA = pre.resultado === 'no_coincide' ? 'roja' : pre.resultado === 'persona' ? 'gris' : 'amarilla';
+
+  const mostrarRun = () => {
+    registrarLectura(`Vio el RUN de ${conductor.nombre} en ${NOMBRE_DOC_CON_ARTICULO[item.tipo]}`);
+    setVerRun(true);
+  };
 
   const abrirArchivo = () => {
     registrarLectura(`Abrió el archivo de ${NOMBRE_DOC_CON_ARTICULO[item.tipo]} de ${conductor.nombre}`);
@@ -324,6 +334,10 @@ function DetalleDocumento({
           {item.pidioOtraRevision ? <Insignia texto="Pidió otra revisión" tono="gris" icono={null} /> : null}
           {quedariaVerificado ? <Insignia texto="Si lo apruebas, queda verificado" tono="verde" /> : null}
         </View>
+        {item.pidioOtraRevision ? (
+          // R13: la segunda revisión la decide otra persona del equipo. En la demo hay una sola persona.
+          <Aviso icono="info" titulo="Segunda revisión" texto="En la app real la decide otra persona del equipo." />
+        ) : null}
       </TarjetaPanel>
 
       {/* Archivo */}
@@ -347,7 +361,7 @@ function DetalleDocumento({
         <Texto variante="secundario" tono="suave">
           {pre.razon}
         </Texto>
-        <TablaLecturas lecturas={pre.lecturas} />
+        <TablaLecturas lecturas={pre.lecturas} verRun={verRun} onVerRun={mostrarRun} />
         {pre.propuesta ? (
           <Texto variante="ayuda">
             Propone no aprobar:{' '}
@@ -471,7 +485,33 @@ function DatoCorto({ etiqueta, valor }: { etiqueta: string; valor: string }) {
   );
 }
 
-function TablaLecturas({ lecturas }: { lecturas: LecturaIA[] }) {
+/** Lo que leyó el agente. El RUN va tapado, con "Ver RUN" (queda en el registro). */
+function ValorLeido({ l, verRun, onVerRun }: { l: LecturaIA; verRun: boolean; onVerRun: () => void }) {
+  if (!l.esRun || verRun) {
+    return (
+      <Texto variante="secundario" peso={600}>
+        {l.leyo}
+      </Texto>
+    );
+  }
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+      <Texto variante="secundario" peso={600} aria-label="RUN oculto">
+        {runTapado(l.leyo)}
+      </Texto>
+      <Presionable
+        role="button"
+        aria-label="Ver RUN (queda en el registro)"
+        onPress={onVerRun}
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 4, minHeight: 32, paddingHorizontal: 2 }}>
+        <Eye size={14} color={color.texto} strokeWidth={2.2} />
+        <Text style={[fuente(700), { fontSize: 13, color: color.texto, textDecorationLine: 'underline' }]}>Ver RUN</Text>
+      </Presionable>
+    </View>
+  );
+}
+
+function TablaLecturas({ lecturas, verRun, onVerRun }: { lecturas: LecturaIA[]; verRun: boolean; onVerRun: () => void }) {
   const { escritorio } = useAnchoPanel();
   return (
     <View style={{ borderWidth: 1, borderColor: color.borde, borderRadius: radio.campo, overflow: 'hidden' }}>
@@ -508,9 +548,7 @@ function TablaLecturas({ lecturas }: { lecturas: LecturaIA[] }) {
                   {l.dato}
                 </Texto>
                 <View style={{ flex: 1.4, gap: 1 }}>
-                  <Texto variante="secundario" peso={600}>
-                    {l.leyo}
-                  </Texto>
+                  <ValorLeido l={l} verRun={verRun} onVerRun={onVerRun} />
                   {l.nota ? <Texto variante="pequeno">{l.nota}</Texto> : null}
                 </View>
                 <Texto variante="secundario" style={{ flex: 1.4 }}>
@@ -522,9 +560,7 @@ function TablaLecturas({ lecturas }: { lecturas: LecturaIA[] }) {
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, paddingVertical: 10 }}>
                 <View style={{ flex: 1, gap: 2 }}>
                   <Texto variante="pequeno">{l.dato}</Texto>
-                  <Texto variante="secundario" peso={600}>
-                    {l.leyo}
-                  </Texto>
+                  <ValorLeido l={l} verRun={verRun} onVerRun={onVerRun} />
                   <Texto variante="pequeno">
                     Declarado: {l.declarado}
                     {l.nota ? ` · ${l.nota}` : ''}
