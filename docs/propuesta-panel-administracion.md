@@ -1,6 +1,6 @@
 # Propuesta: panel de administración como app aparte
 
-**Estado:** Propuesta, por decidir. Fecha: 7-nov-2026. Lo marcado **[verificar]** no está confirmado.
+**Estado:** Decisiones 1, 2, 3 y 11 tomadas el 9-nov: **opción B** (app aparte, misma tecnología), **se construye con el panel real**, **sin demo aparte** del panel y **sin interruptores** nuevos en la demo. Las demás (4 a 10 y 12) siguen abiertas. Propuesta del 7-nov-2026. Lo marcado **[verificar]** no está confirmado.
 
 ## Qué pidió la dueña (7-nov)
 

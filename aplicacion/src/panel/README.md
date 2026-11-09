@@ -1,6 +1,6 @@
 # Panel de administración (guardado, en espera)
 
-**El panel no se muestra en el mockup** (pedido de la dueña, 7-nov). Su código queda guardado aquí, sin borrar, **hasta decidir si el panel será una app distinta** de la de conductores y titulares.
+**El panel no se muestra en el mockup** (pedido de la dueña, 7-nov). Su código queda guardado aquí, sin borrar. **Decidido (9-nov): el panel será una app aparte** de la de conductores y titulares, con la misma tecnología, y se construye junto con el panel real conectado a Supabase (ver `docs/propuesta-panel-administracion.md`). Hasta entonces este código no se publica.
 
 - No es parte de la demo publicada: nada fuera de esta carpeta lo importa y aquí no hay rutas de expo-router (las rutas viven solo en `src/app/`), así que no entra en el sitio exportado (`dist/`).
 - Sigue compilando con el resto (`npm run typecheck`), para que no se eche a perder mientras espera.
