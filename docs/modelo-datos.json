@@ -680,7 +680,7 @@
      "tipo": "lista",
      "referencia": "",
      "obligatorio": true,
-     "descripcion": "Se calcula solo (lo escribe el sistema). Opciones fijas: Incompleto (se registró con el Paso 1 y eligió 'Guardar y terminar después') o Completo (las 5 secciones listas). Con perfil incompleto no entra al match. El avance se muestra como 'N de 5 pasos listos · %'. Qué exige cada sección: MD36.",
+     "descripcion": "Se calcula solo (lo escribe el sistema). Opciones fijas: Incompleto (se registró con el Paso 1 y eligió 'Guardar y terminar después') o Completo (las 5 secciones listas). Con perfil incompleto no entra al match. El avance se muestra como 'N de 5 pasos listos · %'. Qué exige cada sección: MD36. App real v1 (9-nov): la app calcula el avance solo para mostrarlo; en la base queda 'incompleto' hasta la Etapa 3 (documentos).",
      "quien_ve": "El conductor y el equipo",
      "codigo": "",
      "estado": "decidido",
@@ -739,8 +739,8 @@
      "nombre": "Dirección",
      "tipo": "texto",
      "referencia": "",
-     "obligatorio": true,
-     "descripcion": "Paso 2 (obligatoria para completar el perfil). La dirección que eligió de las sugerencias de Google Maps. Es privada y no se usa para el match.",
+     "obligatorio": false,
+     "descripcion": "Paso 2 (obligatoria para completar el perfil). La dirección que eligió de las sugerencias de Google Maps. Es privada y no se usa para el match. Temporal (9-nov): queda vacía; el conductor elige la comuna de una lista hasta que exista la cuenta de Google Cloud.",
      "quien_ve": "El conductor y el equipo. Un titular solo si hay match vigente y el conductor tocó 'Compartir mi dirección' en esa conversación (R8)",
      "codigo": "",
      "estado": "decidido",
@@ -776,7 +776,7 @@
      "tipo": "referencia",
      "referencia": "comunas",
      "obligatorio": true,
-     "descripcion": "Se completa sola con la dirección (el conductor no la escribe); de ella salen su zona y su región. Es lo único del domicilio que usa el match: región (F3) y zona (M2). Se eliminaron 'otras comunas donde puede retirar' (C6) y 'cualquier comuna de mi región'.",
+     "descripcion": "Se completa sola con la dirección (el conductor no la escribe); de ella salen su zona y su región. Es lo único del domicilio que usa el match: región (F3) y zona (M2). Se eliminaron 'otras comunas donde puede retirar' (C6) y 'cualquier comuna de mi región'. Temporal (9-nov): la elige el conductor de una lista (no verificada); con Google se completará desde la dirección.",
      "quien_ve": "El conductor, el equipo y el titular con plan, tras el match ('Vive en [comuna]')",
      "codigo": "C5",
      "estado": "decidido",
@@ -4188,7 +4188,7 @@
      "tipo": "texto",
      "referencia": "",
      "obligatorio": true,
-     "descripcion": "Ej. 'v1', 'v2'.",
+     "descripcion": "Ej. 'v1', 'v2'. En la etapa de prueba (9-nov): 'prueba-1' = los 4 textos de la maqueta, cargados sin revisión del abogado; cuando lleguen los definitivos se reemplazan por 'v1' con 'pedir aceptar de nuevo'.",
      "quien_ve": "Quien la acepta",
      "codigo": "",
      "estado": "propuesta",
@@ -4282,7 +4282,7 @@
      "tipo": "id",
      "referencia": "",
      "obligatorio": true,
-     "descripcion": "Ej.: umbral_match (66, decidido); forma_umbral ('igual o mayor', propuesta, MD28); dias_reconfirmar_disponibilidad (30, propuesta); dias_aviso_vencimiento (7, propuesta); recordatorio_perfil_cada_dias, recordatorio_perfil_maximo y recordatorio_perfil_primer_canal (pendientes, MD6); horas_plazo_revision (pendiente, MD21); dias_borrar_archivos_no_enviados (pendiente, abogado); busquedas_sin_plan (pendiente, MD10); meses_conservar_mensajes (MD13), meses_conservar_matches_no_vigentes, dias_conservar_conversacion_reportada, meses_conservar_reportes, meses_conservar_avisos y meses_borrar_cuenta_incompleta (pendientes, abogado, MD38); dias_responder_solicitudes [verificar con abogado]; max_conductores_nuevos_por_titular_mes y max_cambios_por_busqueda (pendientes, MD34); conductor_ve_lista_matches (sí, propuesta); bolsa_activa (no, hasta que se decida si sale en el lanzamiento); max_postulaciones_por_dia (pendiente, MD49).",
+     "descripcion": "Ej.: umbral_match (66, decidido); forma_umbral ('igual o mayor', propuesta, MD28); dias_reconfirmar_disponibilidad (30, propuesta; cargado y público desde el 9-nov); dias_aviso_vencimiento (7, propuesta); recordatorio_perfil_cada_dias, recordatorio_perfil_maximo y recordatorio_perfil_primer_canal (pendientes, MD6); horas_plazo_revision (pendiente, MD21); dias_borrar_archivos_no_enviados (pendiente, abogado); busquedas_sin_plan (pendiente, MD10); meses_conservar_mensajes (MD13), meses_conservar_matches_no_vigentes, dias_conservar_conversacion_reportada, meses_conservar_reportes, meses_conservar_avisos y meses_borrar_cuenta_incompleta (pendientes, abogado, MD38); dias_responder_solicitudes [verificar con abogado]; max_conductores_nuevos_por_titular_mes y max_cambios_por_busqueda (pendientes, MD34); conductor_ve_lista_matches (sí, propuesta); bolsa_activa (no, hasta que se decida si sale en el lanzamiento); max_postulaciones_por_dia (pendiente, MD49).",
      "quien_ve": "Solo el equipo",
      "codigo": "P5, P16",
      "estado": "propuesta",
@@ -4310,6 +4310,18 @@
      "quien_ve": "Solo el equipo",
      "codigo": "",
      "estado": "propuesta",
+     "configurable": false
+    },
+    {
+     "id": "publico",
+     "nombre": "La app lo puede leer",
+     "tipo": "si_no",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Si la app lo puede leer sin ser del equipo (también sin sesión). Por defecto no. Nunca para ajustes sensibles. Hoy solo dias_reconfirmar_disponibilidad.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "decidido",
      "configurable": false
     },
     {
@@ -5164,6 +5176,14 @@
     "consentimientos",
     "experiencia_conductor"
    ]
+  },
+  {
+   "id": "R32",
+   "nombre": "Dirección vacía = comuna elegida de una lista (temporal)",
+   "descripcion": "Mientras no exista la cuenta de Google Cloud, el Paso 2 pide la comuna de una lista y la dirección queda vacía. Un conductor con dirección vacía tiene una comuna declarada, no verificada. Cuando llegue Google Maps se le pedirá la dirección.",
+   "entidades": [
+    "conductores"
+   ]
   }
  ],
  "pendientes": [
@@ -5472,7 +5492,7 @@
   {
    "id": "MD36",
    "pregunta": "¿Qué exige cada sección del perfil para contar como 'lista'?",
-   "opciones": "a) Propuesta: Paso 2 dirección elegida; Paso 3 al menos un tamaño marcado (los años pueden ser 0); Paso 4 al menos un negocio, un turno y un día; Paso 5 los 4 documentos enviados a revisión. b) Igual, pero el Paso 3 es opcional para quien no tiene experiencia. c) El Paso 5 (documentos) cuenta como listo solo con los 4 aprobados.",
+   "opciones": "a) Propuesta: Paso 2 dirección elegida; Paso 3 al menos un tamaño marcado (los años pueden ser 0); Paso 4 al menos un negocio, un turno y un día; Paso 5 los 4 documentos enviados a revisión. b) Igual, pero el Paso 3 es opcional para quien no tiene experiencia. c) El Paso 5 (documentos) cuenta como listo solo con los 4 aprobados. Nota (9-nov): en la app real v1 el Paso 3 cuenta como listo con al menos un vehículo o un idioma marcado, o con el Paso 4 listo (propuesta).",
    "entidades": [
     "conductores",
     "experiencia_conductor",
@@ -5594,6 +5614,18 @@
   }
  ],
  "cambios": [
+  {
+   "n": 40,
+   "fecha": "2026-11-09",
+   "cambio": "App real del conductor v1 (pasos 1 a 4, celulares de prueba): se cargan los 4 textos de 'Antes de empezar' como versión 'prueba-1' (sin abogado); ajustes suma 'La app lo puede leer' y se carga dias_reconfirmar_disponibilidad = 30 como público; Paso 2 temporal con comuna de una lista y dirección vacía (regla nueva R32); estado del perfil queda 'incompleto' en la base hasta la Etapa 3; nota en MD36 sobre cuándo cuenta el Paso 3.",
+   "porque": "La dueña pidió construir la app real para empezar a llenar la base con ella y su equipo (9-nov), aprobó cargar los textos de prueba y el ajuste de 30 días, y eligió la comuna de una lista hasta tener Google Maps. Sin textos vigentes la base no deja guardar ninguna autorización.",
+   "origen": "Decisión",
+   "entidades": [
+    "textos_autorizacion",
+    "ajustes",
+    "conductores"
+   ]
+  },
   {
    "n": 39,
    "fecha": "2026-11-02",

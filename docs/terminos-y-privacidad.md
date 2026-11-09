@@ -38,3 +38,10 @@ Lista de trabajo para redactar los textos legales con el abogado. Se agrega un p
 
 - [ ] Cómo eliminar la cuenta y qué se borra.
 - [ ] Derechos del titular de los datos: acceso, rectificación, supresión, oposición y portabilidad.
+
+## Etapa de prueba con el equipo (desde el 9-nov)
+
+- [ ] La dueña y su equipo aceptan en la app real los 4 textos de "Antes de empezar" en su **versión de prueba** ('prueba-1', copiados de la maqueta, sin revisión del abogado). Cuando lleguen los definitivos, todos deberán **aceptarlos de nuevo** (versión 'v1').
+- [ ] Se guardan **datos reales** del equipo (nombre, fecha de nacimiento, correo, celular, comuna y lo demás de los pasos 1 a 4) **antes** de tener los Términos y la Política aprobados. [verificar con abogado]
+- [ ] Solo entran los **celulares de prueba** que la dueña anota en Supabase; no se envían mensajes. Cómo se borran estos datos de prueba antes del lanzamiento se decide aparte (hoy la base no deja borrar a quien aceptó autorizaciones).
+

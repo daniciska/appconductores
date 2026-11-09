@@ -43,6 +43,7 @@ Antes de construir la parte del titular: su prototipo, las reglas de mensajes (e
 
 6. [ ] Base de datos en Supabase (tablas y seguridad: quién ve qué).
    - [x] **Etapa 1** (2-nov): catálogos, cuentas, equipo, autorizaciones y perfil del conductor. Aplicada en dale-contacto, idéntica a lo probado en local (261 pruebas). Asesor de seguridad sin avisos.
+   - [x] Para la app real del conductor v1 (9-nov): textos de prueba de "Antes de empezar", ajustes que la app puede leer y borrado de la tabla ajena `etmday_leads`. 298 pruebas locales en verde; asesor de seguridad sin avisos.
    - [ ] Etapa 2: titulares, búsquedas y match. Etapa 3: documentos, mensajes, reportes y bloqueos. Etapa 4: planes y cobro. (Bolsa de trabajo: cuando se decida.)
    - [ ] Crear el primer administrador (a mano, después de que la dueña entre una vez con su celular; ver `supabase/README.md`).
 7. [ ] **App del conductor** (en curso desde el 9-nov): conectada a Supabase, primera versión con los pasos 1 a 4; al inicio solo celulares de prueba de la dueña y su equipo; comuna de una lista hasta tener Google Maps. Documentos (paso 5) después, con la Etapa 3 y el abogado.

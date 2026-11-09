@@ -4,6 +4,12 @@ Cada vez que cambia una pantalla de la maqueta o una decisión, se anota aquí *
 
 Origen: **Comentario** = comentario de la dueña en la maqueta · **Decisión** = decisión registrada en `CLAUDE.md` · **Construcción** = algo que apareció al construir y revisar la base de datos.
 
+## 2026-11-09
+
+| # | Cambio en los datos | Por qué | Origen |
+|---|---|---|---|
+| 40 | **App real del conductor v1** (pasos 1 a 4, celulares de prueba). Se cargan en la base los 4 textos de "Antes de empezar" como versión **'prueba-1'** (copia de la maqueta, sin abogado). **Ajustes** suma el campo **"La app lo puede leer"** y se carga **dias_reconfirmar_disponibilidad = 30** como público, para que la app lo lea y se cambie desde el panel. **Paso 2 temporal:** la comuna se elige de una lista y la **dirección queda vacía** (deja de ser obligatoria mientras no exista Google Maps; regla nueva **R32**). El **estado del perfil** queda "incompleto" en la base hasta la Etapa 3; la app calcula el avance solo para mostrarlo. Nota en **MD36**: en la v1 el Paso 3 cuenta como listo con un vehículo o un idioma marcado, o con el Paso 4 listo (propuesta). Aplicado en Supabase con 2 migraciones nuevas y 37 pruebas nuevas (298 en total, en verde). | La dueña pidió construir la app real para empezar a llenar la base con ella y su equipo, aprobó los textos de prueba y el ajuste de 30 días, y eligió la comuna de una lista hasta tener Google Maps. Sin textos vigentes la base no deja guardar ninguna autorización. | Decisión |
+
 ## 2026-11-02
 
 | # | Cambio en los datos | Por qué | Origen |
