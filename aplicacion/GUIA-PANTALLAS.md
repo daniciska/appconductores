@@ -18,6 +18,7 @@ Antes de empezar, lee en `/home/user/appconductores/CLAUDE.md` las **Decisiones 
 - **Privacidad:** el conductor nunca ve el contacto del titular, salvo que el titular lo comparta (`contactoCompartido[busquedaId]`). La dirección del conductor es privada: solo se entrega si toca "Compartir mi dirección".
 - **Obligatorios:** se marcan con asterisco (`<Campo obligatorio />`). La dueña pidió dejar la validación **apagada** en el mockup: si `ajustes.validarObligatorios` es `false` (por defecto), se puede guardar sin completar; si es `true`, al intentar guardar sin un obligatorio aparece la alerta "Completa los campos marcados con * para guardar." y el campo en rojo con su mensaje (ver `CondPaso1.dc.html`).
 - Un solo acento: amarillo `#F5B400`. Verde solo para estados positivos.
+- **Pantallas compartidas con la app real** (`../app-real`, conectada a Supabase): `ingreso/` (Bienvenida, Celular, Código, Autorizaciones, Paso1, Paso3, Paso4, Paso2Comuna, comunes, acciones), `documentos/VistaIncompleta`, `documentos/PerfilBase`, `documentos/Disponibilidad` y `documentos/piezas`. Estas **no usan `useDemo`**: leen y escriben por la interfaz de datos (`useVista`, `useVistaDerivada`, `useAcciones`, `useEntorno` de `@/datos/puerto/contexto`; las acciones devuelven una promesa con `{ ok, valor }` o `{ ok: false, error }`). Tampoco nombran rutas que la app real no tiene (`/titular`, `/conductor/registro/5`, documentos, matches…): esas llegan como *prop* desde la ruta de la demo (`Bienvenida alElegirTitular`, `Paso4 alTerminar`, `PerfilBase seccionSeguridad`). Los textos y atajos propios de la demo ("Demo: …", datos de ejemplo, textos legales de la demo) vienen de `useEntorno()` (implementación demo: `src/datos/demo/puertoDemo.tsx`). `cd ../app-real && npm run typecheck` revisa con sus rutas tipadas que no quede un enlace roto. **Tras cada `await` de una acción**, antes de navegar o avisar, revisar `usePantallaAbierta().salio()` (o pasar `senal()` a la acción): si la persona ya salió con "Volver", no se la lleva a otra pantalla (en la app real la espera es la de la red, hasta 15 s).
 
 ## 2. Mapa de rutas
 
@@ -140,8 +141,8 @@ Muestrario en vivo: ruta `/componentes`.
 | `HojaInferior` | `visible`, `onCerrar`, `titulo?`, `descripcion?`, `children`, `pie?` | Hoja que sube desde abajo (dentro de la columna). |
 | `Dialogo` | `visible`, `titulo`, `texto?`, `children?`, `confirmar {titulo, onPress, peligro?}`, `cancelar? {titulo?, onPress}` | Confirmaciones ("No se puede deshacer"). |
 | `mostrarToast(texto, tipo?)` | `tipo`: `info`/`exito`/`error` | Aviso breve abajo (ya montado en el layout raíz). No uses `alert()`. |
-| `BarraInferior`, `BotonDemo`, `MarcoCelular` | — | Ya los usan los layouts. |
-| `EnConstruccion` | `codigo`, `titulo?` | Marcador (bórralo al construir). |
+| `BarraInferior`, `MarcoCelular` | — | Ya los usan los layouts. |
+| `BotonDemo`, `EnConstruccion` (`@/ui/demo`) | — · `codigo`, `titulo?` | Solo de la demo: no se exportan desde `@/ui` (la app real no los lleva). |
 
 `MarcoPanel`, `PaginaPanel` y `Metrica` no están en `@/ui`: son del panel (`panel/src/marco.tsx`). Las fuentes (`FUENTES`) están en `src/ui/fuentes.ts`, que usan los layouts raíz de las dos apps.
 
@@ -154,13 +155,14 @@ Muestrario en vivo: ruta `/componentes`.
 - `tipos.ts`: todos los tipos (`Busqueda`, `Titular`, `ConductorUsuario`, `DocumentoUsuario`, `Mensaje`, `Postulacion`, `ReglaMatch`, `Ajustes`, `Plan`…).
 - `semilla/`: catálogos **idénticos a la base** (`geografia.ts` generado desde `docs/propuesta-zonas.csv` con `npm run semilla`: 16 regiones, 81 zonas, 346 comunas; `catalogos.ts`: clases de licencia, industrias, 7 tamaños, 11 negocios, turnos, días, idiomas, tipos de documento, motivos, planes, reglas del match) y **ficticios** (`ficticios.ts`).
 - `estado.ts`: forma del estado (`DatosDemo`) y `crearEstadoInicial()`.
-- `tienda.ts`: la tienda `useDemo` (zustand + persist en `localStorage`, clave `dale-demo-datos`) con las acciones de la demo del conductor y del titular. Exporta también ayudas puras (`cambiarDocumento`, `docAprobado`, `recalcularUsuario`, `tareasAlVerificar`) que usa el panel para escribir sus propias acciones (`panel/src/datos/acciones.ts`).
+- `tienda.ts`: la tienda `useDemo` (zustand + persist en `localStorage`, clave `dale-demo-datos`) con las acciones de la demo del conductor y del titular. (Las pantallas compartidas con la app real no la usan directo: ver "Pantallas compartidas con la app real".) Exporta también ayudas puras (`cambiarDocumento`, `docAprobado`, `recalcularUsuario`, `tareasAlVerificar`) que usa el panel para escribir sus propias acciones (`panel/src/datos/acciones.ts`).
 - `migracion.ts`: cómo se lleva lo guardado a la versión actual (desde la 3 se conserva todo; desde la 2 la configuración vuelve a sus valores iniciales). Probado en `tests/migracion.test.ts`.
 - `revisionManual.ts`: lee las marcas "una persona del equipo revisa a mano en este navegador" (una por pestaña del panel, `dale-demo-revision-manual:<pestaña>`, con plazo: el panel las renueva y las quita al salir o al cerrar la pestaña; "Reiniciar demo" las borra). `useRevisionManual()` (`true` o `false`) para pantallas.
 - `revisionEquipo.ts`: cuándo se programa (o se quita) la revisión simulada de la persona del equipo (puro, probado en `tests/revision-equipo.test.ts`).
 - `avisosEntrePestanas.ts`: avisos al conductor ("Tu Hoja de Vida fue aprobada.") cuando el cambio llega desde otra pestaña (el panel).
 - `almacenamiento.ts`: cómo se guarda la tienda. Trae una sola vez lo de la clave anterior (`dale-demo-v1`, versiones 1 y 2, con panel) y una pestaña con código más viejo que lo guardado deja de guardar en vez de pisarlo. Al subir `VERSION_ESTADO` no hace falta cambiar la clave. Probado en `tests/almacenamiento.test.ts`.
-- `selectores.ts`: lecturas derivadas (funciones puras sobre el estado).
+- `selectores.ts`: lecturas derivadas (funciones puras sobre el estado). `avancePerfil`, `negociosPorIndustria`, `negocioPermitidoPorDeclaradas` y `SECCIONES` viven en `puerto/derivados.ts` (comunes con la app real) y se reexportan aquí.
+- `puerto/`: interfaz de datos común con la app real (`tipos.ts`, `contexto.tsx`, `derivados.ts`); `demo/puertoDemo.tsx`, su implementación con esta tienda.
 - `hooks.ts`: hooks memorizados para pantallas.
 - `match.ts`: motor del match (puro y probado).
 - `simulacion.ts`: lo que harían otras personas (IA, equipo, titulares).

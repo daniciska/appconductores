@@ -7,24 +7,28 @@ import { useState } from 'react';
 import { Text, View } from 'react-native';
 import { router } from 'expo-router';
 
-import { useDemo } from '@/datos/tienda';
+import { useAcciones, useVista } from '@/datos/puerto/contexto';
 import { Boton, Chip, Encabezado, Pantalla, Presionable, Stepper, color, fuente, radio, tipo } from '@/ui';
 import { ChevronDown } from '@/ui/iconos';
 
-import { RUTA_PASO, terminarEdicion, useModoEdicion, volverDesdePaso } from './acciones';
-import { CabeceraFormulario, EtiquetaGrupo, useBorradorPaso, useRecordarBorrador } from './comunes';
+import { RUTA_PASO, terminarEdicion, useGuardando, useModoEdicion, usePantallaAbierta, useVolverDesdePaso } from './acciones';
+import { AlertaObligatorios, CabeceraFormulario, EtiquetaGrupo, useBorradorPaso, useRecordarBorrador } from './comunes';
 
 /** Cuántas categorías se ven antes de "Ver los N tipos de vehículo" (hoy son 7: se ven todas). */
 const VISIBLES = 7;
 const ANCHO_CONTADOR = 132;
 
 export default function Paso3() {
-  const experienciaGuardada = useDemo((s) => s.conductor.experiencia);
-  const idiomasGuardados = useDemo((s) => s.conductor.idiomas);
-  const tamanosCatalogo = useDemo((s) => s.catalogos.tamanos);
-  const idiomasCatalogo = useDemo((s) => s.catalogos.idiomas);
-  const guardarPaso3 = useDemo((s) => s.guardarPaso3);
+  const experienciaGuardada = useVista((v) => v.conductor.experiencia);
+  const idiomasGuardados = useVista((v) => v.conductor.idiomas);
+  const tamanosCatalogo = useVista((v) => v.catalogos.tamanos);
+  const idiomasCatalogo = useVista((v) => v.catalogos.idiomas);
+  const acciones = useAcciones();
   const editar = useModoEdicion();
+  const volverA = useVolverDesdePaso(3);
+  const { guardando, ejecutar } = useGuardando();
+  const pantalla = usePantallaAbierta();
+  const [errorGuardar, setErrorGuardar] = useState<string | null>(null);
 
   const borrador = useBorradorPaso(3, !editar, {
     marcados: Object.keys(experienciaGuardada).filter((k) => experienciaGuardada[k] > 0),
@@ -50,18 +54,29 @@ export default function Paso3() {
     }
   };
 
-  const continuar = () => {
-    const experiencia: Record<string, number> = {};
-    for (const id of marcados) experiencia[id] = Math.max(1, anios[id] ?? 1);
-    guardarPaso3({ experiencia, idiomas });
-    borrador.olvidar();
-    if (editar) terminarEdicion();
-    else router.push(RUTA_PASO[4]);
-  };
+  const continuar = () =>
+    ejecutar(async () => {
+      const experiencia: Record<string, number> = {};
+      for (const id of marcados) experiencia[id] = Math.max(1, anios[id] ?? 1);
+      setErrorGuardar(null);
+      const r = await acciones.guardarPaso3({ experiencia, idiomas });
+      if (pantalla.salio()) {
+        // Salió mientras se guardaba: lo guardado queda, pero no se la lleva a otra pantalla.
+        if (r.ok) borrador.olvidar();
+        return;
+      }
+      if (!r.ok) {
+        setErrorGuardar(r.error);
+        return;
+      }
+      borrador.olvidar();
+      if (editar) terminarEdicion();
+      else router.push(RUTA_PASO[4]);
+    });
 
   return (
     <Pantalla>
-      <Encabezado paso={editar ? undefined : 3} volverA={editar ? '/conductor/perfil' : volverDesdePaso(3)} />
+      <Encabezado paso={editar ? undefined : 3} volverA={editar ? '/conductor/perfil' : volverA} />
       <CabeceraFormulario equilibrar titulo="Tu experiencia" subtitulo="Marca los vehículos que has manejado y cuántos años llevas manejando cada uno." />
 
       <View style={{ marginTop: 8, gap: 12 }}>
@@ -133,8 +148,9 @@ export default function Paso3() {
         </View>
       </View>
 
-      <View style={{ marginTop: 'auto', paddingTop: 16 }}>
-        <Boton titulo={editar ? 'Guardar cambios' : 'Continuar'} onPress={continuar} />
+      <View style={{ marginTop: 'auto', paddingTop: 16, gap: 10 }}>
+        {errorGuardar ? <AlertaObligatorios texto={errorGuardar} /> : null}
+        <Boton titulo={editar ? 'Guardar cambios' : 'Continuar'} onPress={continuar} cargando={guardando} />
       </View>
     </Pantalla>
   );

@@ -1,4 +1,4 @@
-// Información: Insignia, Aviso, EstadoVacio, Cargando, Avatar y EnConstruccion.
+// Información: Insignia, Aviso, EstadoVacio, Cargando y Avatar. (El marcador EnConstruccion de la demo está en ./demo.tsx.)
 import type { ReactNode } from 'react';
 import { ActivityIndicator, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import type { Href } from 'expo-router';
@@ -187,23 +187,6 @@ export function Avatar({ texto, tamano = 48, forma = 'cuadrado', tono = 'oscuro'
         style,
       ]}>
       <Text style={{ ...fuente(700), fontSize: Math.round(tamano * 0.31), color: letra }}>{texto}</Text>
-    </View>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// EnConstruccion (marcador para pantallas que aún no se construyen)
-// ---------------------------------------------------------------------------
-
-export function EnConstruccion({ codigo, titulo, children }: { codigo: string; titulo?: string; children?: ReactNode }) {
-  return (
-    <View style={{ gap: 12, paddingVertical: 24 }}>
-      <Insignia texto={`En construcción: ${codigo}`} tono="amarilla" icono={null} />
-      {titulo ? <Titulo>{titulo}</Titulo> : null}
-      <Texto variante="parrafo" tono="secundario">
-        Esta pantalla de la demo todavía se está armando.
-      </Texto>
-      {children}
     </View>
   );
 }

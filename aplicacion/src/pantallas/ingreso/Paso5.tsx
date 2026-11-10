@@ -13,7 +13,9 @@ import { Aviso, Boton, Encabezado, Insignia, Pantalla, Presionable, color, fuent
 import { ArrowUpRight, Camera, ChevronRight, Hourglass } from '@/ui/iconos';
 import { Hoja } from '@/ui/iconosPropios';
 
-import { enviarYMostrarEnviado, irAInicioConductor, volverDesdePaso } from './acciones';
+import { enviarYMostrarEnviado } from '../documentos/acciones';
+
+import { irAInicioConductor } from './acciones';
 import { CabeceraFormulario, ayudaDocumento, equilibrado } from './comunes';
 
 const REGISTRO_CIVIL = 'https://www.registrocivil.cl';
@@ -101,7 +103,7 @@ export default function Paso5() {
 
   return (
     <Pantalla>
-      <Encabezado paso={5} volverA={volverDesdePaso(5)} />
+      <Encabezado paso={5} volverA="/conductor/registro/4" />
       <CabeceraFormulario
         titulo="Tus documentos"
         subtitulo="Los titulares solo ven conductores con sus 4 documentos aprobados. Nunca ven tus archivos, solo una insignia."

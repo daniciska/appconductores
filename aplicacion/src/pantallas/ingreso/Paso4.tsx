@@ -3,35 +3,38 @@
 // Maqueta: docs/maqueta/CondPaso4.dc.html
 // Negocios ACTIVOS (negocio e industria activos en el catálogo), agrupados por industria. Los que la
 // licencia declarada no permite aparecen en gris con "Pide licencia X". Turno y días: filtro M3 y
-// variable M7 del match.
+// variable M7 del match. A dónde lleva "Continuar" lo decide la ruta (`alTerminar`): en la demo, al
+// Paso 5; en la app real v1, a Inicio. Lo guardado de un negocio que hoy no se muestra no se toca.
 import { useRef, useState, type ComponentRef } from 'react';
 import { ScrollView, View } from 'react-native';
-import { router } from 'expo-router';
 
-import { useDerivado, useNegociosPorIndustria } from '@/datos/hooks';
 import { textoPideLicencia } from '@/datos/match';
-import { negocioPermitidoPorDeclaradas } from '@/datos/selectores';
-import { useDemo } from '@/datos/tienda';
+import { useAcciones, useVista, useVistaDerivada } from '@/datos/puerto/contexto';
+import { negocioPermitidoPorDeclaradas, negociosPorIndustria } from '@/datos/puerto/derivados';
 import type { Dia, Turno } from '@/datos/tipos';
 import { Aviso, Boton, Chip, Encabezado, FilaCheck, OpcionIcono, Pantalla, Texto, color, type LucideIcon } from '@/ui';
 import { Moon, Sun } from '@/ui/iconos';
 
-import { RUTA_PASO, terminarEdicion, useModoEdicion, volverDesdePaso } from './acciones';
+import { terminarEdicion, useGuardando, useModoEdicion, usePantallaAbierta, useVolverDesdePaso } from './acciones';
 import { AlertaObligatorios, CabeceraFormulario, EtiquetaGrupo, irAlPrimerError, useBorradorPaso, useRecordarBorrador, useValidarObligatorios } from './comunes';
 
 const ICONO_TURNO: Record<string, LucideIcon> = { dia: Sun, noche: Moon };
 
-export default function Paso4() {
-  const guardados = useDemo((s) => s.conductor.negocios);
-  const turnosGuardados = useDemo((s) => s.conductor.turnos);
-  const diasGuardados = useDemo((s) => s.conductor.dias);
-  const turnosCatalogo = useDemo((s) => s.catalogos.turnos);
-  const diasCatalogo = useDemo((s) => s.catalogos.dias);
-  const guardarPaso4 = useDemo((s) => s.guardarPaso4);
+export default function Paso4({ alTerminar }: { /** Después de guardar (sin editar): a dónde sigue. */ alTerminar: () => void }) {
+  const guardados = useVista((v) => v.conductor.negocios);
+  const turnosGuardados = useVista((v) => v.conductor.turnos);
+  const diasGuardados = useVista((v) => v.conductor.dias);
+  const turnosCatalogo = useVista((v) => v.catalogos.turnos);
+  const diasCatalogo = useVista((v) => v.catalogos.dias);
+  const acciones = useAcciones();
   const editar = useModoEdicion();
-  const grupos = useNegociosPorIndustria(true);
-  const permitidos = useDerivado((s) => s.catalogos.negocios.filter((n) => negocioPermitidoPorDeclaradas(s, n.id)).map((n) => n.id));
+  const grupos = useVistaDerivada((v) => negociosPorIndustria(v, true));
+  const permitidos = useVistaDerivada((v) => v.catalogos.negocios.filter((n) => negocioPermitidoPorDeclaradas(v, n.id)).map((n) => n.id));
   const validar = useValidarObligatorios();
+  const volverA = useVolverDesdePaso(4);
+  const { guardando, ejecutar } = useGuardando();
+  const pantalla = usePantallaAbierta();
+  const [errorGuardar, setErrorGuardar] = useState<string | null>(null);
 
   const visibles = grupos.flatMap((g) => g.negocios.map((n) => n.id));
   const borrador = useBorradorPaso(4, !editar, {
@@ -57,24 +60,35 @@ export default function Paso4() {
 
   const alternar = <T,>(lista: T[], valor: T): T[] => (lista.includes(valor) ? lista.filter((x) => x !== valor) : [...lista, valor]);
 
-  const continuar = () => {
-    if (validar && hayErrores) {
-      setIntento(true);
-      irAlPrimerError(scrollRef);
-      return;
-    }
-    // Se guardan los marcados que la licencia permite (los negocios apagados en el catálogo no se tocan).
-    guardarPaso4({ negocios: negocios.filter((id) => permitidos.includes(id)), turnos, dias });
-    borrador.olvidar();
-    if (editar) terminarEdicion();
-    else router.push(RUTA_PASO[5]);
-  };
+  const continuar = () =>
+    ejecutar(async () => {
+      if (validar && hayErrores) {
+        setIntento(true);
+        irAlPrimerError(scrollRef);
+        return;
+      }
+      setErrorGuardar(null);
+      // Se guardan los marcados que la licencia permite (los negocios apagados en el catálogo no se tocan).
+      const r = await acciones.guardarPaso4({ negocios: negocios.filter((id) => permitidos.includes(id)), turnos, dias });
+      if (pantalla.salio()) {
+        // Salió mientras se guardaba: lo guardado queda, pero no se la lleva a otra pantalla.
+        if (r.ok) borrador.olvidar();
+        return;
+      }
+      if (!r.ok) {
+        setErrorGuardar(r.error);
+        return;
+      }
+      borrador.olvidar();
+      if (editar) terminarEdicion();
+      else alTerminar();
+    });
 
   const ordenDias = diasCatalogo.map((d) => d.clave as Dia);
 
   return (
     <Pantalla scrollRef={scrollRef}>
-      <Encabezado paso={editar ? undefined : 4} volverA={editar ? '/conductor/perfil' : volverDesdePaso(4)} />
+      <Encabezado paso={editar ? undefined : 4} volverA={editar ? '/conductor/perfil' : volverA} />
       <CabeceraFormulario equilibrar titulo="¿Qué trabajo buscas?" subtitulo="Solo verás vehículos que calcen con lo que marques aquí." />
 
       <View style={{ marginTop: 8, gap: 12 }}>
@@ -156,8 +170,8 @@ export default function Paso4() {
       </View>
 
       <View style={{ marginTop: 'auto', paddingTop: 16, gap: 10 }}>
-        {ver && hayErrores ? <AlertaObligatorios /> : null}
-        <Boton titulo={editar ? 'Guardar cambios' : 'Continuar'} onPress={continuar} />
+        {ver && hayErrores ? <AlertaObligatorios /> : errorGuardar ? <AlertaObligatorios texto={errorGuardar} /> : null}
+        <Boton titulo={editar ? 'Guardar cambios' : 'Continuar'} onPress={continuar} cargando={guardando} />
       </View>
     </Pantalla>
   );

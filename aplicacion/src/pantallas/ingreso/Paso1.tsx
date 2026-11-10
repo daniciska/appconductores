@@ -2,18 +2,19 @@
 // Ruta: /conductor/registro/1
 // Maqueta: docs/maqueta/CondPaso1.dc.html
 // Al guardar, el conductor ya queda registrado ("Guardar y continuar" o "Guardar y terminar después").
-// Validación (solo con el ajuste validarObligatorios encendido): campos con *, fecha real, no futura y
-// de 18 años o más (propuesta), correo con formato y al menos una clase de licencia.
+// Validación (en la demo, solo con el ajuste validarObligatorios encendido; en la app real, siempre):
+// campos con *, fecha real, no futura y de 18 años o más (propuesta), correo con formato y al menos una
+// clase de licencia. Si el guardado falla (app real), el mensaje sale arriba de los botones y lo escrito
+// sigue en pantalla.
 import { useRef, useState, type ComponentRef } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { router } from 'expo-router';
 
 import { celularCompleto, edad, mascaraFecha } from '@/datos/formato';
-import { EJEMPLO_USUARIO } from '@/datos/semilla';
-import { useDemo } from '@/datos/tienda';
+import { useAcciones, useEntorno, useVista } from '@/datos/puerto/contexto';
 import { Boton, Campo, Chip, Encabezado, FilaInterruptor, Insignia, Pantalla, color, fuente, mostrarToast, radio, tipo } from '@/ui';
 
-import { RUTA_PASO, irAInicioConductor, terminarEdicion, useModoEdicion, volverDesdePaso } from './acciones';
+import { RUTA_PASO, irAInicioConductor, terminarEdicion, useGuardando, useModoEdicion, usePantallaAbierta, useVolverDesdePaso } from './acciones';
 import {
   AlertaObligatorios,
   CabeceraFormulario,
@@ -44,13 +45,18 @@ function errorFecha(texto: string): string | null {
 }
 
 export default function Paso1() {
-  const cuenta = useDemo((s) => s.cuenta);
-  const conductor = useDemo((s) => s.conductor);
-  const clasesCatalogo = useDemo((s) => s.catalogos.clases);
-  const diasReconfirmar = useDemo((s) => s.ajustes.diasReconfirmar);
-  const guardarPaso1 = useDemo((s) => s.guardarPaso1);
+  const cuenta = useVista((v) => v.cuenta);
+  const conductor = useVista((v) => v.conductor);
+  const clasesCatalogo = useVista((v) => v.catalogos.clases);
+  const { diasReconfirmar, ejemplo } = useEntorno();
+  const acciones = useAcciones();
   const editar = useModoEdicion();
   const validar = useValidarObligatorios();
+  const volverA = useVolverDesdePaso(1);
+  const { guardando, ejecutar } = useGuardando();
+  const pantalla = usePantallaAbierta();
+  const [errorGuardar, setErrorGuardar] = useState<string | null>(null);
+  const [pulsado, setPulsado] = useState<'continuar' | 'despues'>('continuar');
 
   const borrador = useBorradorPaso(1, !editar, {
     nombres: cuenta.nombres,
@@ -89,42 +95,56 @@ export default function Paso1() {
 
   const vacio = !nombres && !apellido1 && !apellido2 && !fecha && !correo;
   const rellenarEjemplo = () => {
-    setNombres(EJEMPLO_USUARIO.nombres);
-    setApellido1(EJEMPLO_USUARIO.apellido1);
-    setApellido2(EJEMPLO_USUARIO.apellido2);
-    setFecha(EJEMPLO_USUARIO.fechaNacimiento);
-    setCorreo(EJEMPLO_USUARIO.correo);
+    if (!ejemplo) return;
+    setNombres(ejemplo.usuario.nombres);
+    setApellido1(ejemplo.usuario.apellido1);
+    setApellido2(ejemplo.usuario.apellido2);
+    setFecha(ejemplo.usuario.fechaNacimiento);
+    setCorreo(ejemplo.usuario.correo);
   };
 
-  const guardar = (siguiente: 'continuar' | 'despues') => {
-    if (validar && hayErrores) {
-      setIntento(true);
-      irAlPrimerError(scrollRef);
-      return;
-    }
-    const primeraVez = !conductor.registrado;
-    guardarPaso1({ nombres, apellido1, apellido2, fechaNacimiento: fecha, correo, clasesDeclaradas: clases, disponible });
-    borrador.olvidar();
-    if (editar) {
-      terminarEdicion();
-    } else if (siguiente === 'continuar') {
-      router.push(RUTA_PASO[2]);
-    } else {
-      irAInicioConductor();
-    }
-    if (primeraVez) {
-      // El aviso sale después de navegar para que se vea sobre la pantalla nueva.
-      setTimeout(() => mostrarToast('Listo, ya quedaste registrado.', 'exito'), 50);
-    }
-  };
+  const guardar = (siguiente: 'continuar' | 'despues') =>
+    ejecutar(async () => {
+      setPulsado(siguiente);
+      if (validar && hayErrores) {
+        setIntento(true);
+        irAlPrimerError(scrollRef);
+        return;
+      }
+      setErrorGuardar(null);
+      const primeraVez = !conductor.registrado;
+      const r = await acciones.guardarPaso1({ nombres, apellido1, apellido2, fechaNacimiento: fecha, correo, clasesDeclaradas: clases, disponible });
+      if (pantalla.salio()) {
+        // Salió mientras se guardaba: lo guardado queda, pero no se la lleva a otra pantalla.
+        if (r.ok) borrador.olvidar();
+        return;
+      }
+      if (!r.ok) {
+        setErrorGuardar(r.error);
+        irAlPrimerError(scrollRef);
+        return;
+      }
+      borrador.olvidar();
+      if (editar) {
+        terminarEdicion();
+      } else if (siguiente === 'continuar') {
+        router.push(RUTA_PASO[2]);
+      } else {
+        irAInicioConductor();
+      }
+      if (primeraVez) {
+        // El aviso sale después de navegar para que se vea sobre la pantalla nueva.
+        setTimeout(() => mostrarToast('Listo, ya quedaste registrado.', 'exito'), 50);
+      }
+    });
 
   return (
     <Pantalla scrollRef={scrollRef}>
-      <Encabezado paso={editar ? undefined : 1} volverA={editar ? '/conductor/perfil' : volverDesdePaso(1)} />
+      <Encabezado paso={editar ? undefined : 1} volverA={editar ? '/conductor/perfil' : volverA} />
       <CabeceraFormulario
         titulo="Tus datos"
         subtitulo={editar ? 'Mantén tus datos al día.' : 'Con estos datos ya quedas registrado. El resto lo puedes completar ahora o después.'}>
-        {vacio ? <NotaDemo texto="Demo:" accion={{ titulo: 'Rellenar con datos de ejemplo', onPress: rellenarEjemplo }} /> : null}
+        {ejemplo && vacio ? <NotaDemo texto={ejemplo.etiqueta} accion={{ titulo: ejemplo.rellenarDatos, onPress: rellenarEjemplo }} /> : null}
       </CabeceraFormulario>
 
       <View style={{ marginTop: 8, gap: 18 }}>
@@ -244,13 +264,18 @@ export default function Paso1() {
       </View>
 
       <View style={{ marginTop: 'auto', paddingTop: 16, gap: 10 }}>
-        {ver && hayErrores ? <AlertaObligatorios /> : null}
+        {ver && hayErrores ? <AlertaObligatorios /> : errorGuardar ? <AlertaObligatorios texto={errorGuardar} /> : null}
         {editar ? (
-          <Boton titulo="Guardar cambios" onPress={() => guardar('continuar')} />
+          <Boton titulo="Guardar cambios" onPress={() => guardar('continuar')} cargando={guardando} />
         ) : (
           <>
-            <Boton titulo="Guardar y continuar" onPress={() => guardar('continuar')} />
-            <Boton titulo="Guardar y terminar después" variante="contorno" onPress={() => guardar('despues')} />
+            <Boton titulo="Guardar y continuar" onPress={() => guardar('continuar')} cargando={guardando && pulsado === 'continuar'} />
+            <Boton
+              titulo="Guardar y terminar después"
+              variante="contorno"
+              onPress={() => guardar('despues')}
+              cargando={guardando && pulsado === 'despues'}
+            />
           </>
         )}
         <NotaObligatorio />

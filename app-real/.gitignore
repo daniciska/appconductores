@@ -1,0 +1,7 @@
+# La app real usa las dependencias de aplicacion/: node_modules es un enlace (sin barra al final, para que
+# también se ignore el enlace y no solo una carpeta).
+node_modules
+dist
+.expo
+expo-env.d.ts
+.env*.local

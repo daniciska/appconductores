@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "Dale Contacto",
+    "slug": "dale-contacto-app",
+    "version": "0.1.0",
+    "scheme": "dalecontactoapp",
+    "userInterfaceStyle": "light",
+    "platforms": ["web"],
+    "web": {
+      "output": "single",
+      "bundler": "metro",
+      "lang": "es",
+      "name": "Dale Contacto",
+      "shortName": "Dale Contacto",
+      "description": "Encuentra vehículos para trabajar.",
+      "themeColor": "#111111",
+      "backgroundColor": "#F6F6F6",
+      "favicon": "../aplicacion/assets/images/favicon.png"
+    },
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}

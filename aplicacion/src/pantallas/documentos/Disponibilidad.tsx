@@ -6,9 +6,11 @@
 import { useEffect, useRef } from 'react';
 import { Animated, Text, View } from 'react-native';
 
-import { useDemo } from '@/datos/tienda';
+import { useAcciones, useEntorno, useVista } from '@/datos/puerto/contexto';
 import { Boton, color, duracion, mostrarToast, sombra, volver } from '@/ui';
 import { Bell } from '@/ui/iconos';
+
+import { usePantallaAbierta } from '../ingreso/acciones';
 
 const DIA_MS = 24 * 60 * 60 * 1000;
 
@@ -78,11 +80,12 @@ function SiluetaInicio({ pestanas }: { pestanas: number }) {
 }
 
 export default function Disponibilidad() {
-  const disponible = useDemo((s) => s.conductor.disponible);
-  const confirmadaEn = useDemo((s) => s.conductor.disponibilidadConfirmadaEn);
-  const bolsaActiva = useDemo((s) => s.ajustes.bolsaActiva);
-  const confirmarDisponibilidad = useDemo((s) => s.confirmarDisponibilidad);
-  const cambiarDisponible = useDemo((s) => s.cambiarDisponible);
+  const disponible = useVista((v) => v.conductor.disponible);
+  const confirmadaEn = useVista((v) => v.conductor.disponibilidadConfirmadaEn);
+  const { pestanas } = useEntorno();
+  const acciones = useAcciones();
+  const enCurso = useRef(false);
+  const pantalla = usePantallaAbierta();
 
   const entrada = useRef(new Animated.Value(0)).current;
   useEffect(() => {
@@ -98,14 +101,31 @@ export default function Disponibilidad() {
     ? `${hace}Te lo preguntamos para que los titulares solo vean conductores activos.`
     : 'Tu perfil está en pausa: los titulares no te ven en sus matches.';
 
-  const si = () => {
-    confirmarDisponibilidad();
+  // Sin dobles toques; si no se pudo guardar (app real), se avisa y el diálogo sigue abierto.
+  const si = async () => {
+    if (enCurso.current) return;
+    enCurso.current = true;
+    const r = await acciones.confirmarDisponibilidad();
+    enCurso.current = false;
+    if (pantalla.salio()) return;
+    if (!r.ok) {
+      mostrarToast(r.error, 'error');
+      return;
+    }
     mostrarToast(disponible ? '¡Bien! Sigues disponible.' : 'Estás disponible para trabajar.', 'exito');
     volver('/conductor/inicio');
   };
-  const pausar = () => {
+  const pausar = async () => {
+    if (enCurso.current) return;
     if (disponible) {
-      cambiarDisponible(false);
+      enCurso.current = true;
+      const r = await acciones.cambiarDisponible(false);
+      enCurso.current = false;
+      if (pantalla.salio()) return;
+      if (!r.ok) {
+        mostrarToast(r.error, 'error');
+        return;
+      }
       mostrarToast('Quedaste en pausa: no apareces en los matches.');
     }
     volver('/conductor/inicio');
@@ -113,7 +133,7 @@ export default function Disponibilidad() {
 
   return (
     <View style={{ flex: 1, backgroundColor: color.fondo, overflow: 'hidden' }}>
-      <SiluetaInicio pestanas={bolsaActiva ? 5 : 4} />
+      <SiluetaInicio pestanas={pestanas} />
       <Animated.View
         style={{
           position: 'absolute',

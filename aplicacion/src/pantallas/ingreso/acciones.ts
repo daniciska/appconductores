@@ -1,17 +1,19 @@
-// Acciones y navegación propias del grupo "ingreso" (A1–A4, B1–B5).
+// Navegación y ayudas propias del grupo "ingreso" (A1–A4, B1–B4).
+// Lo comparten la demo y la app real: aquí solo van rutas que existen en las dos (la del Paso 5 y la
+// de "Enviado a revisión" son de la demo y viven en src/pantallas/documentos/).
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 
 import { mascaraCelular } from '@/datos/formato';
-import { useDemo } from '@/datos/tienda';
+import { useVista } from '@/datos/puerto/contexto';
 import { mostrarToast, volver } from '@/ui';
 
-/** Ruta de cada paso del registro (rutas con tipo). */
-export const RUTA_PASO: Record<1 | 2 | 3 | 4 | 5, Href> = {
+/** Ruta de cada paso del registro que comparten la demo y la app real (rutas con tipo). */
+export const RUTA_PASO: Record<1 | 2 | 3 | 4, Href> = {
   1: '/conductor/registro/1',
   2: '/conductor/registro/2',
   3: '/conductor/registro/3',
   4: '/conductor/registro/4',
-  5: '/conductor/registro/5',
 };
 
 /**
@@ -30,9 +32,10 @@ export function terminarEdicion() {
 }
 
 /** Ruta de respaldo del botón volver de cada paso (si se abrió el enlace directo). */
-export function volverDesdePaso(paso: 1 | 2 | 3 | 4 | 5): Href {
-  if (paso > 1) return RUTA_PASO[(paso - 1) as 1 | 2 | 3 | 4];
-  return useDemo.getState().conductor.registrado ? '/conductor/inicio' : '/conductor/autorizaciones';
+export function useVolverDesdePaso(paso: 1 | 2 | 3 | 4): Href {
+  const registrado = useVista((v) => v.conductor.registrado);
+  if (paso > 1) return RUTA_PASO[(paso - 1) as 1 | 2 | 3];
+  return registrado ? '/conductor/inicio' : '/conductor/autorizaciones';
 }
 
 /** Lo que se escribe en el campo del celular ("9 1234 5678") → los 8 dígitos que guarda la tienda ("1234 5678"). */
@@ -62,17 +65,6 @@ export function celularValido(escrito: string): boolean {
 }
 
 /**
- * Después de verificar el código: quien ya se registró va a Inicio; quien ya aceptó las
- * autorizaciones sigue en el Paso 1; los demás pasan por "Antes de empezar" (A4).
- */
-export function rutaTrasVerificar(): 'inicio' | Href {
-  const s = useDemo.getState();
-  if (s.conductor.registrado) return 'inicio';
-  if (s.cuenta.autorizaciones.terminos) return RUTA_PASO[1];
-  return '/conductor/autorizaciones';
-}
-
-/**
  * Lleva a Inicio dejando la pila limpia: saca el ingreso y los pasos del registro de la pila del
  * conductor (para que "volver" no regrese a la bienvenida ni al formulario).
  */
@@ -81,13 +73,52 @@ export function irAInicioConductor() {
   router.replace('/conductor/inicio');
 }
 
-/**
- * Envía a revisión los documentos subidos y abre "Enviado a revisión" (C2) sobre Inicio, de modo que
- * "Ir al inicio" vuelva a Inicio y no al Paso 5.
- */
-export function enviarYMostrarEnviado() {
-  useDemo.getState().enviarDocumentosARevision();
+/** Tras cerrar sesión (app real): pila limpia y a la Bienvenida, con el aviso. */
+export function irABienvenidaTrasCerrarSesion() {
   if (router.canDismiss()) router.dismissAll();
-  router.replace('/conductor/inicio');
-  router.push('/conductor/documentos/enviado');
+  router.replace('/conductor/bienvenida');
+  mostrarToast('Cerraste sesión.');
+}
+
+/**
+ * ¿La persona sigue en esta pantalla? Tras un `await` (pedir o verificar el código, guardar un paso),
+ * si ya salió (por ejemplo, con "Volver"), no se navega ni se avisa nada, como la demo cancelaba su
+ * temporizador al salir. `senal()` da una señal que se cancela al salir, para pasársela a la acción.
+ */
+export function usePantallaAbierta() {
+  const control = useRef<AbortController | null>(null);
+  useEffect(() => {
+    const c = new AbortController();
+    control.current = c;
+    return () => c.abort();
+  }, []);
+  return useMemo(
+    () => ({
+      senal: () => (control.current ??= new AbortController()).signal,
+      salio: () => control.current?.signal.aborted ?? false,
+    }),
+    [],
+  );
+}
+
+/**
+ * Guardar sin dobles toques: `ejecutar(fn)` no corre si ya hay un guardado en curso, y `guardando`
+ * se enciende solo si tarda (más de 150 ms), para que un guardado inmediato no haga parpadear el botón.
+ */
+export function useGuardando() {
+  const [guardando, setGuardando] = useState(false);
+  const enCurso = useRef(false);
+  async function ejecutar(fn: () => Promise<void>) {
+    if (enCurso.current) return;
+    enCurso.current = true;
+    const t = setTimeout(() => setGuardando(true), 150);
+    try {
+      await fn();
+    } finally {
+      clearTimeout(t);
+      enCurso.current = false;
+      setGuardando(false);
+    }
+  }
+  return { guardando, ejecutar };
 }

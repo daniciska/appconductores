@@ -1,6 +1,6 @@
 # Plan de trabajo — Dale Contacto (nombre provisorio)
 
-Actualizado: 9-nov-2026. Se actualiza a medida que avanzamos.
+Actualizado: 10-nov-2026. Se actualiza a medida que avanzamos.
 
 ## Ya hecho
 
@@ -19,7 +19,7 @@ Actualizado: 9-nov-2026. Se actualiza a medida que avanzamos.
 5. [ ] Retomar lo que está en pausa: documentos, mensajes y zonas.
 7. [x] **Mockup funcional** (4-nov): conductor completo y bolsa de trabajo, con datos de ejemplo, en Expo (`aplicacion/`). **Publicado** en https://dale-contacto-mockup.netlify.app (proyecto Netlify `dale-contacto-mockup`).
    - [x] **Sin panel de administración** (pedido de la dueña, 7-nov; publicado el 7-nov). Su código quedó guardado en `aplicacion/src/panel/`. En la demo, la revisión de la persona del equipo se simula sola (~12 s) y hay un atajo para ver un documento no aprobado.
-   - [x] El panel será una **app aparte** con la misma tecnología, construida junto con el panel real (decidido el 9-nov; `docs/propuesta-panel-administracion.md`). Sin demo aparte del panel.
+   - [x] El panel será una **app aparte** con la misma tecnología, construida junto con el panel real (decidido el 9-nov; `docs/propuesta-panel-administracion.md`). Su demo va en /panel (ver abajo).
    - [ ] La dueña: registros DNS `mockup` y `panel-mockup` (CNAME a `dale-contacto-mockup.netlify.app.`) en su hosting, y agregar `mockup.dalecontacto.cl` y `panel-mockup.dalecontacto.cl` en Netlify (Domain management).
    - [x] Quién puede verlo (9-nov): sitio público con una clave dentro de la demo (la misma para /panel). La clave la tiene la dueña.
    - [x] **Demo del panel** en /panel del mismo sitio, conectada con la demo del conductor y entrando por rol (publicada el 9-nov). Dirección corta: panel-mockup.dalecontacto.cl (falta el DNS).
@@ -48,6 +48,12 @@ Antes de construir la parte del titular: su prototipo, las reglas de mensajes (e
    - [ ] Etapa 2: titulares, búsquedas y match. Etapa 3: documentos, mensajes, reportes y bloqueos. Etapa 4: planes y cobro. (Bolsa de trabajo: cuando se decida.)
    - [ ] Crear el primer administrador (a mano, después de que la dueña entre una vez con su celular; ver `supabase/README.md`).
 7. [ ] **App del conductor** (en curso desde el 9-nov): conectada a Supabase, primera versión con los pasos 1 a 4; al inicio solo celulares de prueba de la dueña y su equipo; comuna de una lista hasta tener Google Maps. Documentos (paso 5) después, con la Etapa 3 y el abogado.
+   - [x] **v1 construida** (10-nov) en `app-real/`: mismas pantallas del mockup (una sola copia, compartida con la demo), pasos 1 a 4 guardando en la base, Inicio, Perfil reducido y "¿Sigues buscando trabajo?". Revisada por agentes y corregida (12 problemas). Probada con un Supabase simulado y con la base local; la demo quedó idéntica.
+   - [ ] La dueña: encender el ingreso por celular en Supabase y cargar los números de prueba (sección 17 de `docs/especificacion-app-conductor-v1.md`). Después, prueba de punta a punta contra la base real.
+   - [ ] La dueña: registro DNS `app` (CNAME a `dale-contacto-app.netlify.app.`) y agregar `app.dalecontacto.cl` en Netlify.
+   - [ ] Por confirmar: que "Volver" en "Antes de empezar" ofrezca cerrar sesión; textos nuevos ("Se guardó, pero se cortó la conexión. Inténtalo de nuevo." y "Tu sesión se cerró. Vuelve a entrar.").
+   - [ ] Propuestas de base (sin aplicar): que cada persona pueda leer los textos que aceptó; guardar cada paso en una sola transacción; rechazar comunas, tamaños y clases inactivas.
+   - Para actualizarla: `npm run export:web` en `app-real/` y subir la carpeta `app-real/dist/` completa al proyecto de Netlify `dale-contacto-app`.
 8. [ ] App del titular y cobro.
 9. [ ] Panel de administración: **app web aparte** (Expo, mismo repositorio, comparte diseño, tipos y reglas del match; su propia dirección y su propio sitio de Netlify). Se construye junto con la Etapa 3 de la base (documentos). Antes: las decisiones abiertas de `docs/propuesta-panel-administracion.md`.
 10. [ ] **Lanzamiento como app web** (decidido el 2-nov): dominio propio, alojamiento y pago web.

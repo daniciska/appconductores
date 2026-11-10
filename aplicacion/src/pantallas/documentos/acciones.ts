@@ -1,5 +1,6 @@
 // Acciones propias del grupo "documentos" (sobre la tienda de la demo) y ayudas de navegación.
 import { Platform } from 'react-native';
+import { router } from 'expo-router';
 
 import { useDemo } from '@/datos/tienda';
 import type { TipoDocumentoId } from '@/datos/tipos';
@@ -12,6 +13,17 @@ export function subirYEnviar(tipo: TipoDocumentoId, nombreArchivo: string) {
   const s = useDemo.getState();
   s.subirDocumento(tipo, nombreArchivo);
   s.enviarDocumentosARevision([tipo]);
+}
+
+/**
+ * Envía a revisión los documentos subidos y abre "Enviado a revisión" (C2) sobre Inicio, de modo que
+ * "Ir al inicio" vuelva a Inicio y no al Paso 5.
+ */
+export function enviarYMostrarEnviado() {
+  useDemo.getState().enviarDocumentosARevision();
+  if (router.canDismiss()) router.dismissAll();
+  router.replace('/conductor/inicio');
+  router.push('/conductor/documentos/enviado');
 }
 
 /**

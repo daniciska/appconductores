@@ -7,7 +7,6 @@ import { router, useNavigation } from 'expo-router';
 
 import { iniciales, plural } from '@/datos/formato';
 import {
-  useAvancePerfil,
   useDerivado,
   useEstadoInicio,
   useMatchesDelUsuario,
@@ -46,15 +45,8 @@ import {
   TarjetaOscura,
 } from './piezas';
 import { RUTA_PASO, rutaNoAprobado, rutaSubir } from './rutas';
+import { VistaIncompleta } from './VistaIncompleta';
 import { estadoDocumento, type TonoEstado } from './textos';
-
-const NOMBRE_SECCION: Record<string, string> = {
-  datos: 'Tus datos y licencia',
-  direccion: 'Dónde vives',
-  experiencia: 'Tu experiencia',
-  trabajo: 'Qué trabajo buscas',
-  documentos: 'Tus documentos',
-};
 
 const ESTILO_ESTADO: Record<TonoEstado, { fondo: string; tinta: string; icono: LucideIcon }> = {
   exito: { fondo: color.exitoFondo, tinta: color.exitoTexto, icono: Check },
@@ -115,101 +107,16 @@ function AvisoReconfirmar() {
 }
 
 // ---------------------------------------------------------------------------
-// B6 · Perfil incompleto
+// B6 · Perfil incompleto (la vista es común con la app real: ./VistaIncompleta.tsx)
 // ---------------------------------------------------------------------------
 
-function VistaIncompleta() {
-  const avance = useAvancePerfil();
-  const registrado = useDemo((s) => s.conductor.registrado);
-  const pasos = useDemo((s) => s.conductor.pasosListos);
+function VistaIncompletaDemo() {
   const docs = useResumenDocumentos();
-  const siguiente = avance.siguientePaso ?? 5;
-
-  const filas = (['datos', 'direccion', 'experiencia', 'trabajo', 'documentos'] as const).map((id, i) => {
-    const listo = pasos[id];
-    const estado = listo
-      ? id === 'documentos'
-        ? 'Enviados'
-        : 'Listo'
-      : id === 'documentos'
-        ? `${4 - docs.faltan} de 4 subidos`
-        : 'Falta';
-    return { id, paso: i + 1, nombre: NOMBRE_SECCION[id], listo, estado };
-  });
-
   return (
-    <>
-      <TarjetaOscura>
-        <View style={{ gap: 6 }}>
-          <Text style={{ fontFamily: 'Sora_700Bold', fontSize: 20, lineHeight: 25, letterSpacing: -0.2, color: color.blanco }}>
-            {registrado ? 'Ya estás registrado' : 'Aún no te registras'}
-          </Text>
-          <Text style={[tipo.secundario, { lineHeight: 21, color: GRIS_SOBRE_OSCURO }]}>
-            {registrado
-              ? 'Completa tu perfil para empezar a aparecer en los matches.'
-              : 'Crea tu perfil para empezar a aparecer en los matches.'}
-          </Text>
-        </View>
-        <View style={{ gap: 6 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Text style={[tipo.ayuda, { color: GRIS_SOBRE_OSCURO }]}>
-              {avance.listos} de {avance.total} pasos listos
-            </Text>
-            <Text style={[tipo.ayuda, { color: GRIS_SOBRE_OSCURO }]}>{avance.porcentaje}%</Text>
-          </View>
-          <BarraAvance
-            valor={avance.listos / avance.total}
-            etiqueta="Avance del perfil"
-            maximo={avance.total}
-            actual={avance.listos}
-          />
-        </View>
-        <Boton
-          titulo={registrado ? 'Continuar mi perfil' : 'Crear mi perfil'}
-          variante="principal"
-          href={registrado ? RUTA_PASO[siguiente] : '/conductor/bienvenida'}
-        />
-      </TarjetaOscura>
-
-      <View style={{ backgroundColor: color.superficie, borderWidth: 1, borderColor: color.borde, borderRadius: radio.tarjeta, paddingVertical: 6, paddingHorizontal: 16 }}>
-        <Separado>
-          {filas.map((f) => {
-            const contenido = (
-              <>
-                {f.listo ? (
-                  <View aria-hidden style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: color.exitoFondo, alignItems: 'center', justifyContent: 'center' }}>
-                    <Check size={15} color={color.exito} strokeWidth={2.8} />
-                  </View>
-                ) : (
-                  <View aria-hidden style={{ width: 32, height: 32, borderRadius: 16, borderWidth: 1.5, borderStyle: 'dashed', borderColor: color.interruptorApagado }} />
-                )}
-                <View style={{ flex: 1, minWidth: 0 }}>
-                  <Text style={[tipo.cuerpo, fuente(600), { color: color.texto }]}>{f.nombre}</Text>
-                  <Text style={[tipo.ayuda, f.listo ? [fuente(600), { color: color.exitoTexto }] : { color: color.textoSecundario }]}>
-                    {f.estado}
-                  </Text>
-                </View>
-                {f.listo ? null : <ChevronRight size={18} color={color.texto} strokeWidth={2} />}
-              </>
-            );
-            const estilo = { minHeight: 56, flexDirection: 'row' as const, alignItems: 'center' as const, gap: 12, paddingVertical: 6 };
-            return f.listo || !registrado ? (
-              <View key={f.id} style={estilo}>
-                {contenido}
-              </View>
-            ) : (
-              <Presionable key={f.id} role="button" aria-label={`${f.nombre}: ${f.estado}`} href={RUTA_PASO[f.paso]} style={estilo}>
-                {contenido}
-              </Presionable>
-            );
-          })}
-        </Separado>
-      </View>
-
-      <Nota icono={Bell} tono="suave">
-        Te recordaremos por WhatsApp o correo para que termines tu perfil. Mientras esté incompleto, no apareces en los matches.
-      </Nota>
-    </>
+    <VistaIncompleta
+      documentos={{ modo: 'activo', subidos: 4 - docs.faltan, ruta: RUTA_PASO[5] }}
+      nota="Te recordaremos por WhatsApp o correo para que termines tu perfil. Mientras esté incompleto, no apareces en los matches."
+    />
   );
 }
 
@@ -500,7 +407,7 @@ export default function Inicio() {
         insignia={insignia}
         onAvatar={() => irAPestana(navigation, 'perfil')}
       />
-      {vista === 'incompleto' ? <VistaIncompleta /> : null}
+      {vista === 'incompleto' ? <VistaIncompletaDemo /> : null}
       {vista === 'en_revision' || vista === 'con_observaciones' ? <VistaRevision /> : null}
       {vista === 'verificado' ? <VistaActiva /> : null}
       {vista === 'sin_matches' ? <VistaSinMatches /> : null}

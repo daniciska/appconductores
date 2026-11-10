@@ -1,10 +1,10 @@
-// Navegación: barra inferior de pestañas y botón "Demo" (vuelve al selector).
+// Navegación: barra inferior de pestañas. (El botón "Demo" de la demo está en ./demo.tsx.)
 import { Text, View, type StyleProp, type ViewStyle } from 'react-native';
-import { router, useNavigation, type Href } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Presionable } from './controles';
-import { RotateCcw, type LucideIcon } from './iconos';
+import type { LucideIcon } from './iconos';
 import { color, fuente } from './tokens';
 
 export interface PestanaBarra {
@@ -75,56 +75,6 @@ export function BarraInferior({ pestanas, activa, onElegir }: PropsBarraInferior
           </Presionable>
         );
       })}
-    </View>
-  );
-}
-
-/**
- * Botón discreto "Demo" (arriba a la derecha) que vuelve al selector de la demo.
- * Va en los layouts de /conductor y /titular: saca esa sección de la pila raíz y vuelve a "/"
- * (si "/" no estaba en la pila, por ejemplo al abrir un enlace directo, lo agrega).
- * Zona táctil de 44 px; en conductor y titular va sobre la franja fija de Pantalla (MarcoCelular bandaDemo).
- * Con `enLinea` no flota (para ponerlo dentro de una barra o una lista).
- */
-export function BotonDemo({ style, enLinea = false }: { style?: StyleProp<ViewStyle>; enLinea?: boolean }) {
-  const insets = useSafeAreaInsets();
-  const navigation = useNavigation();
-  const irAlMenu = () => {
-    try {
-      navigation.dispatch({ type: 'POP_TO', payload: { name: 'index', params: undefined, merge: false } });
-    } catch {
-      router.replace('/');
-    }
-  };
-  const boton = (
-    <Presionable
-      role="button"
-      aria-label="Menú de la demo"
-      onPress={irAlMenu}
-      style={{ minHeight: 44, minWidth: 44, paddingHorizontal: enLinea ? 0 : 6, justifyContent: 'center', alignItems: enLinea ? 'flex-start' : 'center' }}>
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: enLinea ? 6 : 4,
-          height: enLinea ? 32 : 26,
-          paddingHorizontal: enLinea ? 12 : 10,
-          borderRadius: enLinea ? 16 : 13,
-          backgroundColor: enLinea ? color.superficie : 'rgba(255,255,255,0.88)',
-          borderWidth: 1,
-          borderColor: color.borde,
-        }}>
-        <RotateCcw size={enLinea ? 13 : 11} color={color.textoSecundario} strokeWidth={2.4} />
-        <Text style={[fuente(700), { fontSize: enLinea ? 12 : 11, color: color.textoSecundario, letterSpacing: 0.2 }]}>
-          {enLinea ? 'Menú de la demo' : 'Demo'}
-        </Text>
-      </View>
-    </Presionable>
-  );
-  if (enLinea) return <View style={style}>{boton}</View>;
-  return (
-    <View pointerEvents="box-none" style={[{ position: 'absolute', top: insets.top, right: 6, zIndex: 50 }, style]}>
-      {boton}
     </View>
   );
 }

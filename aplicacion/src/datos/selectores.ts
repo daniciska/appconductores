@@ -5,7 +5,6 @@ import type { DatosDemo } from './estado';
 import { textoDias, textoTurnos, edad } from './formato';
 import {
   evaluarMatch,
-  habilitaNegocio,
   visibleEnBolsa,
   cumplePerfilesBolsa,
   type CatalogoMatch,
@@ -27,7 +26,6 @@ import type {
   Plan,
   Postulacion,
   Region,
-  SeccionPerfil,
   TipoDocumentoId,
   Titular,
   Turno,
@@ -38,13 +36,9 @@ import type {
 /** Id con que el usuario de la demo aparece en postulaciones y reportes. */
 export const ID_USUARIO = 'yo';
 
-export const SECCIONES: { id: SeccionPerfil; paso: number; nombre: string }[] = [
-  { id: 'datos', paso: 1, nombre: 'Tus datos' },
-  { id: 'direccion', paso: 2, nombre: 'Dónde vives' },
-  { id: 'experiencia', paso: 3, nombre: 'Tu experiencia' },
-  { id: 'trabajo', paso: 4, nombre: '¿Qué trabajo buscas?' },
-  { id: 'documentos', paso: 5, nombre: 'Tus documentos' },
-];
+// Las 5 secciones, el avance del perfil, los negocios por industria y lo que permiten las clases declaradas
+// son comunes con la app real (interfaz de datos): viven en ./puerto/derivados.ts.
+export { SECCIONES, avancePerfil, negociosPorIndustria, negocioPermitidoPorDeclaradas } from './puerto/derivados';
 
 export const TIPOS_DOC_ORDEN: TipoDocumentoId[] = ['cedula', 'licencia', 'hoja_vida', 'antecedentes'];
 
@@ -81,23 +75,6 @@ export function negocioActivo(s: DatosDemo, negocioId: string): boolean {
 /** Negocios activos (negocio e industria activos), en orden. */
 export function negociosActivos(s: DatosDemo): Negocio[] {
   return s.catalogos.negocios.filter((n) => negocioActivo(s, n.id)).sort((a, b) => a.orden - b.orden);
-}
-
-/** Negocios agrupados por industria. Con soloActivos (por defecto), solo lo que la app muestra. */
-export function negociosPorIndustria(
-  s: DatosDemo,
-  soloActivos = true,
-): { industria: Industria; negocios: Negocio[] }[] {
-  return [...s.catalogos.industrias]
-    .sort((a, b) => a.orden - b.orden)
-    .filter((i) => !soloActivos || i.activo)
-    .map((industria) => ({
-      industria,
-      negocios: s.catalogos.negocios
-        .filter((n) => n.industriaId === industria.id && (!soloActivos || n.activo))
-        .sort((a, b) => a.orden - b.orden),
-    }))
-    .filter((g) => g.negocios.length > 0);
 }
 
 export const zonasDeRegion = (s: DatosDemo, regionId: string): Zona[] =>
@@ -244,19 +221,6 @@ export function matchDelUsuario(s: DatosDemo, busquedaId: string): MatchUsuario 
 // Perfil, documentos y diagnóstico del usuario
 // ---------------------------------------------------------------------------
 
-export function avancePerfil(s: DatosDemo) {
-  const faltantes = SECCIONES.filter((x) => !s.conductor.pasosListos[x.id]);
-  const listos = SECCIONES.length - faltantes.length;
-  return {
-    listos,
-    total: SECCIONES.length,
-    porcentaje: Math.round((listos / SECCIONES.length) * 100),
-    faltantes,
-    /** Primer paso que falta (1 a 5), o null si está completo. */
-    siguientePaso: faltantes[0]?.paso ?? null,
-  };
-}
-
 /** ¿Vence en los próximos `dias` días? */
 export function documentoVencePronto(doc: DocumentoUsuario, dias = 30, ahora = Date.now()): boolean {
   if (doc.estado !== 'aprobado' || !doc.venceEn) return false;
@@ -318,12 +282,6 @@ export function diagnosticoMatches(s: DatosDemo) {
     porFiltro: Object.fromEntries(filtros) as Record<string, number>,
     bajoUmbral,
   };
-}
-
-/** ¿Las clases DECLARADAS permiten el negocio? (Paso 4: los que no, en gris con "Pide licencia X"). */
-export function negocioPermitidoPorDeclaradas(s: DatosDemo, negocioId: string): boolean {
-  const n = negocioPorId(s, negocioId);
-  return !!n && habilitaNegocio(s.conductor.clasesDeclaradas, n, null, s.catalogos.clases);
 }
 
 /** Debe reconfirmar disponibilidad (pasaron diasReconfirmar desde la última confirmación). */

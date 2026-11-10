@@ -14,6 +14,7 @@ Todavía no hay titulares, búsquedas, match, documentos, mensajes ni cobro.
 | `migrations/20261110120000_app_conductor_v1_textos_prueba.sql` | Los 4 textos de "Antes de empezar" como versión `prueba-1` (sin abogado), para que la app pueda guardar lo que se acepta. |
 | `migrations/20261110120100_app_conductor_v1_ajustes_publicos.sql` | Columna `publico` en `ajustes` (lo que la app puede leer) y `dias_reconfirmar_disponibilidad = 30`. |
 | `pruebas/app_conductor_v1_pruebas.sql` | Pruebas de lo que escribe la app del conductor v1 en cada pantalla (37). Terminan en `ROLLBACK`. |
+| `pruebas/app_conductor_v1_postgrest.sql` | La app real v1 con el SQL que arma PostgREST para sus pedidos (upsert con `DO UPDATE SET` de todas las columnas, `RETURNING id`, insert por columnas) y los ids de catálogo que usan sus pruebas (15). Terminan en `ROLLBACK`. |
 | `scripts/generar_zonas.py` | Genera el bloque de regiones, zonas y comunas de la migración de datos desde `docs/propuesta-zonas.csv`. Ese bloque no se edita a mano. |
 | `pruebas/auth_simulado.sql` | Imita lo mínimo de Supabase (roles y `auth.users`) para probar en local. **Nunca se aplica en Supabase.** |
 | `pruebas/etapa1_pruebas.sql` | Pruebas de datos y de seguridad. Terminan en `ROLLBACK`: no dejan datos. |
@@ -31,11 +32,12 @@ su postgres -c "psql -p 5499 -d dale -X -v ON_ERROR_STOP=1 \
   -f supabase/migrations/20261109190000_quitar_etmday_leads.sql \
   -f supabase/migrations/20261110120000_app_conductor_v1_textos_prueba.sql \
   -f supabase/migrations/20261110120100_app_conductor_v1_ajustes_publicos.sql \
-  -f supabase/pruebas/app_conductor_v1_pruebas.sql"
+  -f supabase/pruebas/app_conductor_v1_pruebas.sql \
+  -f supabase/pruebas/app_conductor_v1_postgrest.sql"
 ```
 
 Cada prueba imprime `OK  [código] ...`. Si una falla, psql se detiene con
-`FALLA: ...`. Al final aparecen `FIN: todas las pruebas de la Etapa 1 pasaron.` y `FIN: todas las pruebas de la app del conductor v1 pasaron.` (298 en total). Si los archivos están en una carpeta que el usuario postgres no puede leer, cópialos antes a una carpeta legible (por ejemplo `/tmp`).
+`FALLA: ...`. Al final aparecen `FIN: todas las pruebas de la Etapa 1 pasaron.`, `FIN: todas las pruebas de la app del conductor v1 pasaron.` y `FIN: todas las pruebas de las formas de PostgREST de la app v1 pasaron.` (313 en total). Si los archivos están en una carpeta que el usuario postgres no puede leer, cópialos antes a una carpeta legible (por ejemplo `/tmp`).
 El aviso `no se pudo crear o actualizar la cuenta` es esperado: lo provoca la prueba A8.
 
 Para repetir desde cero: `su postgres -c "dropdb -p 5499 dale"` y volver a crearla.

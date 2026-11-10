@@ -4,6 +4,8 @@
 // porque no son datos de la demo, solo una ayuda para no perder lo escrito.
 //
 // Claves: 'chat:<busquedaId>' (D4) y 'paso:<n>' (B1–B4).
+// Cada app elige dónde se guardan con configurarBorradores(nombre) al cargar (la demo y la app real
+// usan nombres distintos); hasta entonces viven solo en memoria.
 import { create } from 'zustand';
 import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware';
 
@@ -33,10 +35,25 @@ function almacen(): StateStorage {
 
 export const useBorradores = create<EstadoBorradores>()(
   persist(() => ({ datos: {} }), {
-    name: 'dale-demo-borradores',
+    name: 'borradores',
     storage: createJSONStorage(almacen),
+    // Nada se lee ni se escribe en el navegador hasta que la app diga dónde (configurarBorradores).
+    skipHydration: true,
   }),
 );
+
+let configurado = false;
+
+/**
+ * Dónde se guardan los borradores de esta app (clave de sessionStorage) y los lee. Se llama una vez,
+ * al cargar la app, antes de mostrar pantallas. Con sessionStorage la lectura es inmediata.
+ */
+export function configurarBorradores(nombre: string): void {
+  if (configurado && useBorradores.persist.getOptions().name === nombre) return;
+  configurado = true;
+  useBorradores.persist.setOptions({ name: nombre });
+  void useBorradores.persist.rehydrate();
+}
 
 /** Lee un borrador (o undefined si no hay). */
 export function leerBorrador<T>(clave: string): T | undefined {

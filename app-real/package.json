@@ -1,0 +1,15 @@
+{
+  "name": "dale-contacto-app",
+  "version": "0.1.0",
+  "private": true,
+  "main": "expo-router/entry",
+  "scripts": {
+    "preparar": "node scripts/enlazar-dependencias.mjs",
+    "web": "npm run preparar && expo start --web",
+    "tipos-rutas": "npm run preparar && node scripts/tipos-rutas.cjs",
+    "typecheck": "npm run tipos-rutas && tsc --noEmit",
+    "test": "npm run preparar && node --test --test-reporter=spec \"tests/**/*.test.ts\"",
+    "revisar": "npm run preparar && node scripts/revisar-sin-demo.mjs",
+    "export:web": "npm run preparar && node scripts/exportar.mjs"
+  }
+}

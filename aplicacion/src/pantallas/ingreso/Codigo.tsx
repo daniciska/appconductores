@@ -1,34 +1,43 @@
 // A3 · Código (WhatsApp o SMS)
 // Ruta: /conductor/codigo
 // Maqueta: docs/maqueta/CondCodigo.dc.html
-// En la demo se acepta cualquier código de 6 dígitos (se dice discretamente sobre el botón).
+// La nota sobre "Verificar" la da el entorno (demo: "cualquier código de 6 dígitos"). La espera para
+// pedir otro código también (demo 30 s; app real 60 s, contados desde que se pidió el último). Si la
+// persona vuelve atrás mientras se verifica, se queda donde fue.
 import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import { Platform, Text, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 
 import { celularCompleto } from '@/datos/formato';
-import { useDemo } from '@/datos/tienda';
+import { useAcciones, useEntorno, useVista } from '@/datos/puerto/contexto';
+import type { CanalCodigo } from '@/datos/puerto/tipos';
 import { Boton, Encabezado, Pantalla, color, fuente, mostrarToast, radio, tipo } from '@/ui';
 import { Clock, MessageSquare } from '@/ui/iconos';
 
-import { irAInicioConductor, rutaTrasVerificar } from './acciones';
+import { RUTA_PASO, irAInicioConductor, usePantallaAbierta } from './acciones';
 import { BotonTexto, CabeceraFormulario, NotaDemo } from './comunes';
 
 const LARGO = 6;
-const ESPERA_REENVIO = 30;
+const NOMBRE_CANAL: Record<CanalCodigo, 'WhatsApp' | 'SMS'> = { whatsapp: 'WhatsApp', sms: 'SMS' };
 
 export default function Codigo() {
-  const celular = useDemo((s) => s.cuenta.celular);
-  const verificarCelular = useDemo((s) => s.verificarCelular);
+  const celular = useVista((v) => v.cuenta.celular);
+  const ingreso = useVista((v) => v.ingreso ?? null);
+  const acciones = useAcciones();
+  const { esperaReenvioSegundos: espera, notaCodigo } = useEntorno();
 
   const [codigo, setCodigo] = useState('');
   const [foco, setFoco] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [canal, setCanal] = useState<'WhatsApp' | 'SMS'>('WhatsApp');
-  const [segundos, setSegundos] = useState(ESPERA_REENVIO);
+  const [canal, setCanal] = useState<'WhatsApp' | 'SMS'>(() => NOMBRE_CANAL[ingreso?.canal ?? 'whatsapp']);
+  // Si se pidió el código hace un rato (o se recargó la página), la espera sigue desde ahí.
+  const [segundos, setSegundos] = useState(() =>
+    ingreso ? Math.max(0, espera - Math.floor((Date.now() - ingreso.pedidoEn) / 1000)) : espera,
+  );
   const [verificando, setVerificando] = useState(false);
+  const reenviando = useRef(false);
   const entrada = useRef<ComponentRef<typeof TextInput>>(null);
-  const temporizador = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pantalla = usePantallaAbierta();
 
   // Cuenta regresiva para reenviar.
   useEffect(() => {
@@ -36,38 +45,46 @@ export default function Codigo() {
     const id = setTimeout(() => setSegundos((n) => n - 1), 1000);
     return () => clearTimeout(id);
   }, [segundos]);
-  useEffect(
-    () => () => {
-      if (temporizador.current) clearTimeout(temporizador.current);
-    },
-    [],
-  );
-
   const numero = celular.replace(/\D/g, '') ? celularCompleto(celular) : null;
 
-  const verificar = () => {
+  const verificar = async () => {
+    if (verificando) return;
     if (codigo.length < LARGO) {
       setError(`Ingresa los ${LARGO} dígitos del código.`);
       entrada.current?.focus();
       return;
     }
     setVerificando(true);
-    temporizador.current = setTimeout(() => {
-      setVerificando(false);
-      verificarCelular();
-      mostrarToast('Celular verificado.', 'exito');
-      const destino = rutaTrasVerificar();
-      if (destino === 'inicio') irAInicioConductor();
-      else router.push(destino);
-    }, 700);
+    const senal = pantalla.senal();
+    const r = await acciones.verificarCodigo(codigo, { senal });
+    if (senal.aborted) return;
+    setVerificando(false);
+    if (!r.ok) {
+      setError(r.error);
+      entrada.current?.focus();
+      return;
+    }
+    mostrarToast('Celular verificado.', 'exito');
+    if (r.valor === 'inicio') irAInicioConductor();
+    else router.push(r.valor === 'paso1' ? RUTA_PASO[1] : '/conductor/autorizaciones');
   };
 
-  const reenviar = (nuevoCanal: 'WhatsApp' | 'SMS') => {
-    setCanal(nuevoCanal);
-    setSegundos(ESPERA_REENVIO);
+  const reenviar = async (nuevoCanal: CanalCodigo) => {
+    if (reenviando.current) return;
+    reenviando.current = true;
+    const senal = pantalla.senal();
+    const r = await acciones.pedirCodigo(celular, nuevoCanal, { reenvio: true, senal });
+    reenviando.current = false;
+    if (senal.aborted) return;
+    if (!r.ok) {
+      mostrarToast(r.error, 'error');
+      return;
+    }
+    setCanal(NOMBRE_CANAL[nuevoCanal]);
+    setSegundos(espera);
     setCodigo('');
     setError(null);
-    mostrarToast(`Te enviamos un código nuevo por ${nuevoCanal}.`, 'info');
+    mostrarToast(`Te enviamos un código nuevo por ${NOMBRE_CANAL[nuevoCanal]}.`, 'info');
     entrada.current?.focus();
   };
 
@@ -153,13 +170,13 @@ export default function Codigo() {
         {segundos > 0 ? (
           <BotonTexto titulo={`Reenviar por WhatsApp en ${mm}:${ss}`} icono={Clock} deshabilitado />
         ) : (
-          <BotonTexto titulo="Reenviar por WhatsApp" onPress={() => reenviar('WhatsApp')} />
+          <BotonTexto titulo="Reenviar por WhatsApp" onPress={() => reenviar('whatsapp')} />
         )}
       </View>
-      <BotonTexto titulo="Recibir el código por SMS" icono={MessageSquare} onPress={() => reenviar('SMS')} />
+      <BotonTexto titulo="Recibir el código por SMS" icono={MessageSquare} onPress={() => reenviar('sms')} />
 
       <View style={{ marginTop: 'auto', paddingTop: 16, gap: 8 }}>
-        <NotaDemo texto="Demo: cualquier código de 6 dígitos" centrada />
+        {notaCodigo ? <NotaDemo texto={notaCodigo} centrada /> : null}
         <Boton titulo="Verificar" onPress={verificar} cargando={verificando} />
       </View>
     </Pantalla>

@@ -2,6 +2,7 @@
 // Ruta: /conductor/bienvenida
 // Maqueta: docs/maqueta/CondBienvenida.dc.html
 // Sin "modo de contrato" (crecimiento futuro): el párrafo nombra solo lo que usa el match.
+// "Tengo vehículos" se dibuja solo si la ruta pasa `alElegirTitular` (la demo sí; la app real v1, no).
 import { Text, View } from 'react-native';
 import { router } from 'expo-router';
 
@@ -56,7 +57,7 @@ function TarjetaEntrada({
   );
 }
 
-export default function Bienvenida() {
+export default function Bienvenida({ alElegirTitular }: { alElegirTitular?: () => void } = {}) {
   return (
     <Pantalla fondo={color.oscuro}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
@@ -83,13 +84,15 @@ export default function Bienvenida() {
           icono={Volante}
           onPress={() => router.push('/conductor/celular')}
         />
-        <TarjetaEntrada
-          titulo="Tengo vehículos"
-          texto="Encuentra conductores verificados."
-          icono={AutoFrente}
-          acento
-          onPress={() => router.push('/titular')}
-        />
+        {alElegirTitular ? (
+          <TarjetaEntrada
+            titulo="Tengo vehículos"
+            texto="Encuentra conductores verificados."
+            icono={AutoFrente}
+            acento
+            onPress={alElegirTitular}
+          />
+        ) : null}
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingTop: 12, gap: 4 }}>
           <Text style={[fuente(400), { fontSize: 15, color: '#BDBDBD' }]}>¿Ya tienes cuenta?</Text>
           <Presionable

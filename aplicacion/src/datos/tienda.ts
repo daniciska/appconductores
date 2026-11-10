@@ -15,7 +15,7 @@ import { persist } from 'zustand/middleware';
 
 import { crearAlmacenDemo } from './almacenamiento';
 import { avisar } from './avisos';
-import { borrarTodosLosBorradores } from './borradores';
+import { borrarTodosLosBorradores, configurarBorradores } from './borradores';
 import {
   CLAVE_ALMACENAMIENTO,
   CLAVE_ALMACENAMIENTO_ANTERIOR,
@@ -58,6 +58,9 @@ import type {
   VisibilidadBolsa,
 } from './tipos';
 
+// Los borradores de la demo viven en su clave de siempre (la app real usa otra).
+configurarBorradores('dale-demo-borradores');
+
 export type { DatosDemo } from './estado';
 
 /** Resultado de una acción que puede no permitirse (por ejemplo, por el plan). */
@@ -72,33 +75,9 @@ export const TEXTO_CUENTA_SUSPENDIDA = 'Tu cuenta está suspendida: tus búsqued
 /** Cuánto tarda la persona del equipo (simulada) en revisar un documento que no aprobó la IA. */
 export const SEGUNDOS_REVISION_EQUIPO = 12;
 
-export interface DatosPaso1 {
-  nombres: string;
-  apellido1: string;
-  apellido2: string;
-  fechaNacimiento: string;
-  correo: string;
-  clasesDeclaradas: string[];
-  disponible: boolean;
-}
-
-export interface DatosPaso2 {
-  direccion: string;
-  depto: string;
-  comunaId: string | null;
-  tieneEstacionamiento: boolean;
-}
-
-export interface DatosPaso3 {
-  experiencia: Record<string, number>;
-  idiomas: string[];
-}
-
-export interface DatosPaso4 {
-  negocios: string[];
-  turnos: Turno[];
-  dias: Dia[];
-}
+// Datos de cada paso del registro: los define la interfaz de datos común con la app real.
+import type { DatosPaso1, DatosPaso2, DatosPaso3, DatosPaso4 } from './puerto/tipos';
+export type { DatosPaso1, DatosPaso2, DatosPaso3, DatosPaso4 } from './puerto/tipos';
 
 export interface AccionesDemo {
   // --- General ---

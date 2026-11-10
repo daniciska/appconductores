@@ -4,16 +4,19 @@ import { useEffect, useRef, useState, type ComponentRef, type ReactNode, type Re
 import { Platform, ScrollView, Text, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
 
 import { borrarBorrador, guardarBorrador, leerBorrador } from '@/datos/borradores';
-import { useDemo } from '@/datos/tienda';
+import { useEntorno } from '@/datos/puerto/contexto';
 import { Presionable, Texto, Titulo, color, fuente, radio, tipo, type LucideIcon } from '@/ui';
 import { CircleAlert, Info, Sparkles } from '@/ui/iconos';
 
 /** En web, reparte las líneas de un texto corto de forma pareja (como `text-wrap: balance` de las maquetas). */
 export const equilibrado = (Platform.OS === 'web' ? { textWrap: 'balance' } : {}) as TextStyle;
 
-/** ¿Los formularios exigen los campos con *? (ajuste validarObligatorios; en el mockup, apagado a pedido de la dueña). */
+/**
+ * ¿Los formularios exigen los campos con *? En la demo, el ajuste validarObligatorios (apagado a pedido
+ * de la dueña); en la app real, siempre.
+ */
 export function useValidarObligatorios(): boolean {
-  return useDemo((s) => s.ajustes.validarObligatorios);
+  return useEntorno().validarObligatorios;
 }
 
 /**

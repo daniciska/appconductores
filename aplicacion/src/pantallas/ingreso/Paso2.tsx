@@ -3,17 +3,17 @@
 // Maqueta: docs/maqueta/CondPaso2.dc.html
 // La dirección se elige de una lista de sugerencias SIMULADAS (en la app real, Google Maps Places).
 // De la dirección elegida sale la comuna verificada, con su zona y región (lo único que usa el match).
-// La dirección es privada.
+// La dirección es privada. Este es el Paso 2 de la demo; la app real v1 usa Paso2Comuna (la comuna de
+// una lista) mientras no exista la cuenta de Google Cloud.
 import { useMemo, useRef, useState, type ComponentRef } from 'react';
 import { ScrollView, Text, View, type TextInputKeyPressEvent } from 'react-native';
 import { router } from 'expo-router';
 
-import { EJEMPLO_USUARIO } from '@/datos/semilla';
-import { useDemo } from '@/datos/tienda';
+import { useAcciones, useEntorno, useVista } from '@/datos/puerto/contexto';
 import { Boton, Campo, Encabezado, Insignia, Pantalla, Presionable, Separador, color, fuente, radio, sombra, tipo, ZonaInterruptor } from '@/ui';
 import { Lock, MapPin } from '@/ui/iconos';
 
-import { RUTA_PASO, terminarEdicion, useModoEdicion, volverDesdePaso } from './acciones';
+import { RUTA_PASO, terminarEdicion, useGuardando, useModoEdicion, usePantallaAbierta, useVolverDesdePaso } from './acciones';
 import {
   AlertaObligatorios,
   CabeceraFormulario,
@@ -28,11 +28,16 @@ import {
 import { sugerirDireccionesDemo, type Sugerencia } from './sugerencias';
 
 export default function Paso2() {
-  const conductor = useDemo((s) => s.conductor);
-  const catalogos = useDemo((s) => s.catalogos);
-  const guardarPaso2 = useDemo((s) => s.guardarPaso2);
+  const conductor = useVista((v) => v.conductor);
+  const catalogos = useVista((v) => v.catalogos);
+  const acciones = useAcciones();
+  const { ejemplo } = useEntorno();
   const editar = useModoEdicion();
   const validar = useValidarObligatorios();
+  const volverA = useVolverDesdePaso(2);
+  const { guardando, ejecutar } = useGuardando();
+  const pantalla = usePantallaAbierta();
+  const [errorGuardar, setErrorGuardar] = useState<string | null>(null);
 
   const borrador = useBorradorPaso(2, !editar, {
     texto: conductor.direccion,
@@ -90,29 +95,41 @@ export default function Paso2() {
   };
 
   const usarEjemplo = () => {
-    setTexto(EJEMPLO_USUARIO.direccion);
-    setComunaId(EJEMPLO_USUARIO.comunaId);
-    setDepto(EJEMPLO_USUARIO.depto);
+    if (!ejemplo) return;
+    setTexto(ejemplo.usuario.direccion);
+    setComunaId(ejemplo.usuario.comunaId);
+    setDepto(ejemplo.usuario.depto);
     setEditando(false);
   };
 
-  const continuar = () => {
-    if (validar && !comunaId) {
-      setIntento(true);
-      irAlPrimerError(scrollRef);
-      return;
-    }
-    guardarPaso2({ direccion: texto, depto, comunaId, tieneEstacionamiento: estacionamiento });
-    borrador.olvidar();
-    if (editar) terminarEdicion();
-    else router.push(RUTA_PASO[3]);
-  };
+  const continuar = () =>
+    ejecutar(async () => {
+      if (validar && !comunaId) {
+        setIntento(true);
+        irAlPrimerError(scrollRef);
+        return;
+      }
+      setErrorGuardar(null);
+      const r = await acciones.guardarPaso2({ direccion: texto, depto, comunaId, tieneEstacionamiento: estacionamiento });
+      if (pantalla.salio()) {
+        // Salió mientras se guardaba: lo guardado queda, pero no se la lleva a otra pantalla.
+        if (r.ok) borrador.olvidar();
+        return;
+      }
+      if (!r.ok) {
+        setErrorGuardar(r.error);
+        return;
+      }
+      borrador.olvidar();
+      if (editar) terminarEdicion();
+      else router.push(RUTA_PASO[3]);
+    });
 
   return (
     <Pantalla scrollRef={scrollRef}>
-      <Encabezado paso={editar ? undefined : 2} volverA={editar ? '/conductor/perfil' : volverDesdePaso(2)} />
+      <Encabezado paso={editar ? undefined : 2} volverA={editar ? '/conductor/perfil' : volverA} />
       <CabeceraFormulario equilibrar titulo="¿Dónde vives?" subtitulo="Con tu dirección sabemos tu comuna exacta y te mostramos vehículos cerca.">
-        {!texto && !comunaId ? <NotaDemo texto="Demo:" accion={{ titulo: 'Usar una dirección de ejemplo', onPress: usarEjemplo }} /> : null}
+        {ejemplo && !texto && !comunaId ? <NotaDemo texto={ejemplo.etiqueta} accion={{ titulo: ejemplo.usarDireccion, onPress: usarEjemplo }} /> : null}
       </CabeceraFormulario>
 
       <View style={{ marginTop: 8, gap: 8 }}>
@@ -258,8 +275,8 @@ export default function Paso2() {
       </ZonaInterruptor>
 
       <View style={{ marginTop: 'auto', paddingTop: 16, gap: 10 }}>
-        {error ? <AlertaObligatorios /> : null}
-        <Boton titulo={editar ? 'Guardar cambios' : 'Continuar'} onPress={continuar} />
+        {error ? <AlertaObligatorios /> : errorGuardar ? <AlertaObligatorios texto={errorGuardar} /> : null}
+        <Boton titulo={editar ? 'Guardar cambios' : 'Continuar'} onPress={continuar} cargando={guardando} />
       </View>
     </Pantalla>
   );

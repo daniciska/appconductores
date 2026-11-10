@@ -3,7 +3,8 @@ import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 
 import { useDemo } from '@/datos/tienda';
-import { BotonDemo, MarcoCelular, color } from '@/ui';
+import { MarcoCelular, color } from '@/ui';
+import { BotonDemo } from '@/ui/demo';
 
 export default function LayoutConductor() {
   const elegirRol = useDemo((s) => s.elegirRol);
