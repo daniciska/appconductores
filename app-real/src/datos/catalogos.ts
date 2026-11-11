@@ -4,7 +4,7 @@
 // En la base los ids son números; en la app, texto (String(id)). Las clases de licencia se identifican
 // por su código ('A2', 'B'…) igual que en la demo. Lo inactivo se oculta, salvo los negocios y las
 // industrias: las pantallas filtran por `activo` (y así lo guardado de un negocio apagado no se toca).
-import type { CasillaAutorizacion, CatalogosRegistro } from '@/datos/puerto/tipos';
+import type { CatalogosRegistro } from '@/datos/puerto/tipos';
 import type { Negocio, OpcionLista, PreguntaVehiculo } from '@/datos/tipos';
 
 export interface FilasCatalogo {
@@ -49,15 +49,7 @@ export interface MapasCatalogo {
   opcionPorId: Record<number, { lista: ListaConductor; clave: string }>;
 }
 
-/** Casilla de "Antes de empezar" (A4) → clave del texto en la base (textos_autorizacion.clave). */
-export const CLAVE_TEXTO = {
-  terminos: 'terminos_privacidad',
-  compartir: 'compartir_ficha',
-  revision: 'revision_documentos',
-  mensajes: 'normas_mensajes',
-} as const;
-
-/** Un texto de "Antes de empezar" vigente para el conductor. */
+/** Un texto de "Antes de empezar" vigente para el conductor (lectura ordenada por `orden`). */
 export interface TextoVigente {
   id: number;
   clave: string;
@@ -67,14 +59,14 @@ export interface TextoVigente {
   texto: string;
 }
 
-/** Texto vigente de cada casilla de A4 (las que la base no tiene quedan fuera: A4 usa el suyo y no deja continuar). */
-export function textosDeCasillas(textos: TextoVigente[]): Partial<Record<CasillaAutorizacion, string>> {
-  const r: Partial<Record<CasillaAutorizacion, string>> = {};
-  for (const [casilla, clave] of Object.entries(CLAVE_TEXTO) as [CasillaAutorizacion, string][]) {
-    const t = textos.find((x) => x.clave === clave);
-    if (t?.texto.trim()) r[casilla] = t.texto.trim();
-  }
-  return r;
+/**
+ * Lo que la persona debe aceptar en A4: los textos obligatorios vigentes, en el orden de la base, sea
+ * cual sea su clave (una autorización nueva aparece sola). A4 muestra una casilla por cada uno, se
+ * registra la aceptación de estos mismos y la persona está al día cuando aceptó todos (cada versión
+ * por su id: una versión nueva se pide de nuevo).
+ */
+export function textosObligatorios(textos: TextoVigente[]): TextoVigente[] {
+  return textos.filter((t) => t.obligatoria);
 }
 
 export interface CatalogosLeidos {

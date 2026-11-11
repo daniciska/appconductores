@@ -2,7 +2,7 @@
 
 App web real del conductor, conectada a **Supabase** (proyecto `dale-contacto`), para que la dueña y su equipo empiecen a llenar la base con **celulares de prueba**. Especificación aprobada el 9-nov: `docs/especificacion-app-conductor-v1.md` (incluidas las adaptaciones de su sección 18). Se publicará en **app.dalecontacto.cl** (sitio de Netlify aparte, `dale-contacto-app`); este repositorio solo la arma, no la publica.
 
-- **Qué trae:** ingreso con celular y código (A1 sin "Tengo vehículos", A2, A3 con 60 s entre códigos, A4 "Antes de empezar" con los textos vigentes de la base), pasos 1 a 4 guardando en la base campo por campo (Paso 2 temporal: la comuna elegida de una lista), Inicio "perfil incompleto" con los documentos como "Próximamente", Perfil reducido, "¿Sigues buscando trabajo?" (E4) y editar cada paso desde Perfil.
+- **Qué trae:** ingreso con celular y código (A1 sin "Tengo vehículos", A2, A3 con 60 s entre códigos, A4 "Antes de empezar" con una casilla por cada texto obligatorio vigente de la base), pasos 1 a 4 guardando en la base campo por campo (Paso 2 temporal: la comuna elegida de una lista), Inicio "perfil incompleto" con los documentos como "Próximamente", Perfil reducido, "¿Sigues buscando trabajo?" (E4) y editar cada paso desde Perfil.
 - **Qué no trae:** titular, matches, mensajes, bolsa, documentos (Paso 5), quién recibió mis datos, bloqueos, eliminar cuenta, recordatorios ni Google Maps. Tampoco la clave de la demo, datos de ejemplo, el menú de la demo, la simulación ni nada del panel (`npm run revisar` lo comprueba).
 
 ## Cómo está armada
@@ -18,8 +18,8 @@ Igual que `../panel/`: **app Expo aparte** (Expo + expo-router + TypeScript, sal
 | Espera entre códigos | 30 s | 60 s, contados desde el último pedido |
 | Atajos "Demo: …" | sí | no |
 | Paso 2 | dirección con sugerencias (maqueta) | comuna de una lista (`Paso2Comuna.tsx`) |
-| Textos de A4 | los de la pantalla (`prueba-1`) | los vigentes de la base (se registran esos mismos) |
-| "Volver" en A4 | al código (A3) | ofrece cerrar sesión (la sesión ya está abierta) |
+| Casillas de A4 | las 4 de la pantalla (`prueba-1`) | una por cada texto obligatorio vigente de la base, en su orden (se registran esos mismos) |
+| "Volver" en A4 | al código (A3) | a Inicio si la guardia la deja salir de A4; si no, ofrece cerrar sesión |
 
 ```
 app-real/
@@ -54,7 +54,7 @@ app-real/
 ```bash
 npm run web          # modo desarrollo (contra el Supabase real: solo entran los números de prueba)
 npm run typecheck    # genera las rutas tipadas y corre TypeScript (también revisa los enlaces de las pantallas compartidas)
-npm test             # pruebas: configuración, errores, mapeo, planes, guardia, textos de A4, buscador de comunas,
+npm test             # pruebas: configuración, errores, mapeo, planes, guardia, textos y versiones de A4, buscador de comunas,
                      # "sin demo", guardar con el perfil al día, la sesión y la capa real con supabase-js
                      # contra el Supabase simulado
 npm run revisar      # desde las rutas no se llega a nada de la demo ni del panel
@@ -92,6 +92,9 @@ Encender **Phone** en Supabase con Twilio de relleno y cargar los **números de 
 - **Otra pestaña** cierra la sesión o entra otra persona: esta pestaña va a la entrada que corresponde con la pila limpia ("Tu sesión se cerró. Vuelve a entrar.").
 - **Salir de una pantalla mientras espera** (código, verificación, guardado): no se navega después; lo guardado queda guardado.
 - **A2 con el mismo número antes de 60 s** (volvió de A3 a revisarlo): sigue a A3 sin pedir otro código.
-- **Textos de A4:** los vigentes de la base, dibujados como en la maqueta (lo que va antes de ":" en negrita; "Términos" y "Política de privacidad" como enlaces). Cuando lleguen los del abogado, basta con cargarlos en la base; quien ya aceptó la versión anterior verá A4 una vez. Una clave nueva (una 5.ª autorización) sí necesita una versión nueva de la app.
+- **A4 "Antes de empezar":** una casilla por cada texto **obligatorio vigente** para el conductor (`para_quien` conductor o todos), en el orden de la columna `orden`, sea cual sea su clave. Con los 4 textos `prueba-1` se ve igual que la maqueta (mismo dibujo); cualquier otro texto se dibuja con las mismas reglas (lo que va antes de ":" en negrita; "Términos" y "Política de privacidad" como enlaces). Cuando lleguen los del abogado o una autorización nueva (una 5.ª clave), basta con cargarlos en la base: no hace falta publicar otra app.
+  - Cada casilla parte marcada **solo si la persona ya aceptó esa misma versión** (su id). Una versión nueva parte sin marcar y hay que marcarla para continuar; se registran solo las versiones que faltan. Quien ya aceptó la versión anterior verá A4 una vez.
+  - `exige_aceptar_de_nuevo` no se puede respetar todavía: la persona no puede leer las versiones viejas que aceptó (RLS), así que no sabe de qué clave eran. Por eso **cualquier versión nueva se pide de nuevo** (lo prudente).
+  - "Volver" lleva a Inicio solo si la guardia la deja salir de A4 (registrada y al día); si no, ofrece "¿Cerrar sesión?" (así nunca da vueltas). Las reglas están en `aplicacion/src/pantallas/ingreso/textosAutorizacion.ts` y las prueban `tests/autorizaciones.test.ts` y `tests/a4-versiones.test.ts`.
 - **iPhone:** en `public/index.html`, solo en Safari de iOS los campos usan 16 px (si no, Safari agranda la página al tocarlos).
 - Cada pantalla compartida que cambie afecta también al mockup y a la demo del panel: antes de publicar cualquiera, revisar las tres.

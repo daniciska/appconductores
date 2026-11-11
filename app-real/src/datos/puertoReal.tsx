@@ -20,7 +20,7 @@ import type {
 import { CONFIG } from '../config';
 import { almacenSesion, supabase } from '../supabase';
 
-import { mapearCatalogos, textosDeCasillas } from './catalogos';
+import { mapearCatalogos } from './catalogos';
 import { TEXTO, esErrorDeRed, textoErrorPedirCodigo, textoErrorVerificar } from './errores';
 import {
   ejecutarPlan,
@@ -37,7 +37,7 @@ import {
 } from './escrituras';
 import { guardarAlDia } from './guardado';
 import { leerCatalogos, leerPerfil } from './lecturas';
-import { celularParaAuth, mapearPerfil } from './perfil';
+import { celularParaAuth, mapearPerfil, textosParaA4 } from './perfil';
 import { cerrarSesionEnEsteEquipo, leerConSesion } from './sesion';
 import {
   asegurarDuenoBorradores,
@@ -119,7 +119,7 @@ async function cargarPerfil(uid: string): Promise<ConSesion<{ hayCuenta: boolean
   const p = mapearPerfil(r.datos, e.mapas, e.textos);
   useTiendaReal.setState({
     uid,
-    vista: { ...e.vista, cuenta: p.cuenta, conductor: p.conductor, ingreso: null },
+    vista: { ...e.vista, cuenta: p.cuenta, conductor: p.conductor, ingreso: null, textosAutorizacion: p.textosAutorizacion },
     aceptados: p.aceptados,
     autorizacionesCompletas: p.autorizacionesCompletas,
   });
@@ -180,7 +180,7 @@ export async function iniciarAppReal(): Promise<void> {
     mapas: c.mapas,
     textos: c.textos,
     diasReconfirmar: c.diasReconfirmar,
-    vista: { ...e.vista, catalogos: c.catalogos, textosAutorizacion: textosDeCasillas(c.textos) },
+    vista: { ...e.vista, catalogos: c.catalogos, textosAutorizacion: textosParaA4(c.textos, e.aceptados) },
   });
   const sesion = primera.vencida ? null : ses.data.session;
   if (sesion) {
@@ -290,7 +290,8 @@ const acciones: AccionesConductor = {
   },
 
   async aceptarAutorizaciones(marcas) {
-    // Los textos que muestra A4 salen de esta misma lista (vista.textosAutorizacion).
+    // Las casillas de A4 salen de esta misma lista (vista.textosAutorizacion): una por texto obligatorio
+    // vigente. Se registran solo las versiones que faltan (las ya aceptadas no se duplican).
     const textos = textosParaAceptar(marcas, useTiendaReal.getState().textos);
     if (!textos.ok) return textos;
     const r = await guardar((e) => planAutorizaciones(e.uid ?? '', textos.valor, e.aceptados));

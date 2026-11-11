@@ -13,9 +13,9 @@
 //   negocios solo los que hoy se muestran (lo guardado de un negocio apagado no se toca).
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-import type { CasillaAutorizacion, DatosPaso1, DatosPaso2Comuna, DatosPaso3, DatosPaso4, MarcasAutorizacion, Resultado } from '@/datos/puerto/tipos';
+import type { DatosPaso1, DatosPaso2Comuna, DatosPaso3, DatosPaso4, MarcasAutorizacion, Resultado } from '@/datos/puerto/tipos';
 
-import { CLAVE_TEXTO, type ListaConductor, type MapasCatalogo, type TextoVigente } from './catalogos.ts';
+import { textosObligatorios, type ListaConductor, type MapasCatalogo, type TextoVigente } from './catalogos.ts';
 import { TEXTO, esSesionVencida, textoErrorGuardar, type ErrorSupabase } from './errores.ts';
 import { fechaParaLaBase } from './perfil.ts';
 import { renovarSesion } from './sesion.ts';
@@ -54,18 +54,18 @@ const menos = <T,>(a: T[], b: T[]) => a.filter((x) => !b.includes(x));
 // ---------------------------------------------------------------------------
 
 /**
- * A4: los textos vigentes que corresponden a las casillas marcadas. Son los mismos que muestra la
- * pantalla (los lee de la vista, que sale de esta misma lista). Si a la base le falta alguno, no se
- * registra nada.
+ * A4: los textos que se aceptan son los obligatorios vigentes, los mismos de las casillas de la pantalla
+ * (vista.textosAutorizacion sale de esta misma lista; cada casilla, por el id de su texto). Hay que
+ * marcarlos todos: si falta alguno, o la base no tiene textos, no se registra nada.
  */
 export function textosParaAceptar(marcas: MarcasAutorizacion, vigentes: TextoVigente[]): Resultado<TextoVigente[]> {
-  const casillas = (Object.keys(CLAVE_TEXTO) as CasillaAutorizacion[]).filter((c) => marcas[c]);
-  const textos = casillas.map((c) => vigentes.find((t) => t.clave === CLAVE_TEXTO[c]));
-  if (vigentes.length === 0 || textos.some((t) => !t)) return { ok: false, error: TEXTO.sinTextos };
-  return { ok: true, valor: textos as TextoVigente[] };
+  const obligatorios = textosObligatorios(vigentes);
+  if (obligatorios.length === 0) return { ok: false, error: TEXTO.sinTextos };
+  if (obligatorios.some((t) => !marcas[String(t.id)])) return { ok: false, error: TEXTO.marcarTodas };
+  return { ok: true, valor: obligatorios };
 }
 
-/** A4: se agregan solo los textos marcados que todavía no están aceptados. */
+/** A4: se agregan solo los textos que todavía no están aceptados (esa versión): las ya aceptadas no se duplican. */
 export function planAutorizaciones(uid: string, textosMarcados: TextoVigente[], aceptados: number[]): Plan {
   const faltan = textosMarcados.filter((t) => !aceptados.includes(t.id));
   if (faltan.length === 0) return [];

@@ -33,10 +33,21 @@ export interface VistaConductor {
   /** Código pedido y todavía sin verificar (app real). La demo no lo usa. */
   ingreso?: IngresoPendiente | null;
   /**
-   * Textos vigentes de "Antes de empezar" leídos de la base, por casilla (app real): A4 muestra estos y
-   * la app registra la aceptación de estos mismos. La demo no los tiene (usa los de la pantalla).
+   * Textos de "Antes de empezar" (app real): uno por cada texto obligatorio vigente de la base, en su
+   * orden. A4 muestra una casilla por cada uno y la app registra la aceptación de estos mismos. La demo
+   * no los tiene (usa las 4 casillas de la pantalla).
    */
-  textosAutorizacion?: Partial<Record<CasillaAutorizacion, string>> | null;
+  textosAutorizacion?: TextoAutorizacion[] | null;
+}
+
+/** Un texto de "Antes de empezar" (A4) leído de la base (app real). */
+export interface TextoAutorizacion {
+  /** Id de ESTA versión del texto (texto_autorizacion_id, como texto): identifica su casilla. */
+  id: string;
+  /** Lo que la persona acepta. */
+  texto: string;
+  /** Ya aceptó esta misma versión (su casilla parte marcada). */
+  aceptado: boolean;
 }
 
 export type Resultado<T = void> = { ok: true; valor: T } | { ok: false; error: string };
@@ -82,9 +93,13 @@ export interface DatosPaso4 {
   dias: Dia[];
 }
 
-/** Las 4 casillas de "Antes de empezar" (A4). */
+/** Las 4 casillas de "Antes de empezar" (A4) de la maqueta (las de la demo). */
 export type CasillaAutorizacion = 'terminos' | 'compartir' | 'revision' | 'mensajes';
-export type MarcasAutorizacion = Record<CasillaAutorizacion, boolean>;
+/**
+ * Lo marcado en A4, por casilla: en la demo, las 4 de la maqueta ('terminos'…); en la app real, el id
+ * de cada texto (TextoAutorizacion.id).
+ */
+export type MarcasAutorizacion = Record<string, boolean>;
 
 /** `senal`: se cancela si la persona sale de la pantalla mientras se espera (ver usePantallaAbierta). */
 export interface OpcionesAccion {

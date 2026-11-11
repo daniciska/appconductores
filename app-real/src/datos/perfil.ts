@@ -9,9 +9,10 @@
 //   Paso 3 · algún vehículo con años, o algún idioma, o el Paso 4 listo (el Paso 3 es opcional).
 //   Paso 4 · al menos un negocio, un turno y un día.
 //   Paso 5 · documentos: siempre falta en la v1.
+import type { TextoAutorizacion } from '@/datos/puerto/tipos';
 import type { ConductorUsuario, CuentaUsuario, Dia, EstadoVerificacion, Turno } from '@/datos/tipos';
 
-import type { MapasCatalogo, TextoVigente } from './catalogos.ts';
+import { textosObligatorios, type MapasCatalogo, type TextoVigente } from './catalogos.ts';
 
 export interface FilasPerfil {
   cuenta: {
@@ -46,6 +47,8 @@ export interface FilasPerfil {
 export interface PerfilLeido {
   cuenta: CuentaUsuario;
   conductor: ConductorUsuario;
+  /** Las casillas de A4: una por texto obligatorio vigente, aceptada solo si aceptó esa misma versión. */
+  textosAutorizacion: TextoAutorizacion[];
   /** Están aceptados todos los textos vigentes obligatorios (y hay al menos uno). */
   autorizacionesCompletas: boolean;
   /** Ids de textos aceptados y vigentes (sin retirar). */
@@ -77,6 +80,14 @@ export function fechaParaLaBase(texto: string): string {
   return m ? `${m[3]}-${m[2]}-${m[1]}` : texto.trim();
 }
 
+/**
+ * Las casillas de A4 (vista.textosAutorizacion): una por texto obligatorio vigente, en su orden, con
+ * `aceptado` solo si la persona aceptó ESA versión (su id). Nunca se deduce de otras claves.
+ */
+export function textosParaA4(textos: TextoVigente[], aceptados: number[]): TextoAutorizacion[] {
+  return textosObligatorios(textos).map((t) => ({ id: String(t.id), texto: t.texto.trim(), aceptado: aceptados.includes(t.id) }));
+}
+
 const VERIFICACION: EstadoVerificacion[] = ['sin_documentos', 'en_revision', 'verificado', 'con_observaciones'];
 const texto = (t: string | null | undefined) => (t ?? '').trim();
 
@@ -85,8 +96,9 @@ export function mapearPerfil(f: FilasPerfil, mapas: MapasCatalogo, textos: Texto
   const d = f.conductor;
   const aceptados = f.consentimientos.map((x) => x.texto_autorizacion_id);
   const aceptada = (clave: string) => textos.some((t) => t.clave === clave && aceptados.includes(t.id));
-  const obligatorios = textos.filter((t) => t.obligatoria);
-  const autorizacionesCompletas = obligatorios.length > 0 && obligatorios.every((t) => aceptados.includes(t.id));
+  // La guardia (al día) y A4 (sus casillas) salen de la misma lista.
+  const textosAutorizacion = textosParaA4(textos, aceptados);
+  const autorizacionesCompletas = textosAutorizacion.length > 0 && textosAutorizacion.every((t) => t.aceptado);
 
   const cuenta: CuentaUsuario = {
     celular: c ? celularDeLaBase(c.celular) : ingresoCelular,
@@ -96,6 +108,7 @@ export function mapearPerfil(f: FilasPerfil, mapas: MapasCatalogo, textos: Texto
     apellido1: c?.primer_apellido ?? '',
     apellido2: c?.segundo_apellido ?? '',
     creadaEl: c?.creado_en ?? null,
+    // Solo informativo (las pantallas de la v1 no lo usan): A4 usa textosAutorizacion, versión por versión.
     autorizaciones: {
       terminos: aceptada('terminos_privacidad'),
       privacidad: aceptada('terminos_privacidad'),
@@ -151,7 +164,7 @@ export function mapearPerfil(f: FilasPerfil, mapas: MapasCatalogo, textos: Texto
       : 'sin_documentos',
   };
 
-  return { cuenta, conductor, autorizacionesCompletas, aceptados };
+  return { cuenta, conductor, textosAutorizacion, autorizacionesCompletas, aceptados };
 }
 
 /** Perfil vacío (sin sesión): el celular que se está verificando, si hay. */

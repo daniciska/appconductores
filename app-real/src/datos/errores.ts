@@ -26,6 +26,8 @@ export const TEXTO = {
   sinPermiso: 'No tienes permiso para hacer esto.',
   opcionNoDisponible: 'Esa opción ya no está disponible. Vuelve a abrir la pantalla.',
   sinTextos: 'Faltan los textos de autorización. Avísale al equipo.',
+  /** A4 sin marcar todas (la pantalla ya lo impide; es el resguardo de la acción). */
+  marcarTodas: 'Marca todas las autorizaciones para continuar.',
   sesionVencida: 'Tu sesión venció. Vuelve a entrar.',
   /** Se cerró fuera de esta pestaña (en otra pestaña, o la base ya no la acepta). */
   sesionCerrada: 'Tu sesión se cerró. Vuelve a entrar.',

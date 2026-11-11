@@ -1,12 +1,14 @@
 // A4 · Autorizaciones ("Antes de empezar")
 // Ruta: /conductor/autorizaciones
 // Maqueta: docs/maqueta/CondConsentimientos.dc.html
-// Las casillas parten sin marcar (el consentimiento debe ser expreso). Con la validación de
-// obligatorios apagada (por defecto en la demo) se puede continuar igual; en la app real hay que
-// marcar las 4. Textos (./textosAutorizacion.ts): la demo muestra los de la versión de prueba
-// 'prueba-1'; la app real, los vigentes de la base, y registra la aceptación de esos mismos.
-// "Volver": en la demo, al código (A3); en la app real la sesión ya está abierta, así que ofrece
-// cerrar sesión (para entrar con otro número).
+// Las casillas parten sin marcar (el consentimiento debe ser expreso): solo parte marcada la que la
+// persona ya aceptó en esa misma versión. Con la validación de obligatorios apagada (por defecto en la
+// demo) se puede continuar igual; en la app real hay que marcarlas todas.
+// Casillas y textos (./textosAutorizacion.ts): la demo muestra las 4 de la maqueta ('prueba-1'); la app
+// real, una por cada texto obligatorio vigente de la base (en su orden), y registra la aceptación de esos
+// mismos. Un texto igual al de la maqueta se dibuja con el JSX aprobado; cualquier otro, con partesTexto.
+// "Volver": en la demo, al código (A3); en la app real, a Inicio solo si la guardia la deja salir de A4;
+// si no, ofrece cerrar sesión (la sesión ya está abierta y no hay otra salida).
 // Teclado: Tab llega a cada casilla y a cada enlace; Espacio o Enter marcan la casilla y Enter abre
 // el enlace (sin marcar la casilla).
 import { useState, type ReactNode } from 'react';
@@ -14,20 +16,27 @@ import { Text, View } from 'react-native';
 import { router } from 'expo-router';
 
 import { useAcciones, useEntorno, useVista } from '@/datos/puerto/contexto';
-import type { CasillaAutorizacion } from '@/datos/puerto/tipos';
+import type { CasillaAutorizacion, MarcasAutorizacion } from '@/datos/puerto/tipos';
 import { Boton, Casilla, Dialogo, Encabezado, HojaInferior, Pantalla, Presionable, Texto, color, fuente, radio, tipo } from '@/ui';
 
 import { RUTA_PASO, irABienvenidaTrasCerrarSesion, irAInicioConductor, useGuardando, usePantallaAbierta } from './acciones';
 import { AlertaObligatorios, CabeceraFormulario, useValidarObligatorios } from './comunes';
-import { TEXTOS_AUTORIZACION, partesTexto, type DocumentoLegal } from './textosAutorizacion';
+import {
+  TEXTOS_AUTORIZACION,
+  casillaDeLaMaqueta,
+  casillasA4,
+  faltanEnA4,
+  marcasIniciales,
+  partesTexto,
+  textoMarcaTodas,
+  volverDeA4,
+  type DocumentoLegal,
+} from './textosAutorizacion';
 
 export { TEXTOS_AUTORIZACION };
 
 /** Tecla del teclado en la web (react-native-web entrega el evento del navegador). */
 type EventoTecla = { key?: string; repeat?: boolean; target?: unknown; currentTarget?: unknown; preventDefault?: () => void; stopPropagation?: () => void };
-
-type Clave = CasillaAutorizacion;
-const CLAVES: Clave[] = ['terminos', 'compartir', 'revision', 'mensajes'];
 
 function FilaAutorizacion({
   marcada,
@@ -104,7 +113,7 @@ function EnlaceTexto({ titulo, onPress }: { titulo: string; onPress: () => void 
 }
 
 /** Los 4 textos aprobados, tal como en la maqueta (la demo y la app real mientras la base tenga 'prueba-1'). */
-function contenidoMaqueta(c: Clave, abrir: (d: DocumentoLegal) => void): ReactNode {
+function contenidoMaqueta(c: CasillaAutorizacion, abrir: (d: DocumentoLegal) => void): ReactNode {
   switch (c) {
     case 'terminos':
       return (
@@ -133,12 +142,13 @@ function contenidoMaqueta(c: Clave, abrir: (d: DocumentoLegal) => void): ReactNo
 }
 
 /**
- * El texto de una casilla: el aprobado se dibuja igual que en la maqueta; uno que llegue de la base
- * (por ejemplo, el del abogado) se dibuja con las mismas reglas (título en negrita y enlaces a
- * Términos y Política, ver partesTexto).
+ * El texto de una casilla: uno aprobado (igual a una casilla de la maqueta) se dibuja igual que en la
+ * maqueta; cualquier otro que llegue de la base (por ejemplo, el del abogado o una autorización nueva)
+ * se dibuja con las mismas reglas (título en negrita y enlaces a Términos y Política, ver partesTexto).
  */
-function ContenidoTexto({ casilla, texto, abrir }: { casilla: Clave; texto: string; abrir: (d: DocumentoLegal) => void }) {
-  if (texto === TEXTOS_AUTORIZACION[casilla]) return <>{contenidoMaqueta(casilla, abrir)}</>;
+function ContenidoTexto({ texto, abrir }: { texto: string; abrir: (d: DocumentoLegal) => void }) {
+  const deLaMaqueta = casillaDeLaMaqueta(texto);
+  if (deLaMaqueta) return <>{contenidoMaqueta(deLaMaqueta, abrir)}</>;
   return (
     <>
       {partesTexto(texto).map((p, i) =>
@@ -168,22 +178,17 @@ export default function Autorizaciones() {
   const [errorGuardar, setErrorGuardar] = useState<string | null>(null);
   const [salir, setSalir] = useState(false);
 
-  const yaAceptadas = guardadas.terminos && guardadas.privacidad && guardadas.compartirFicha;
-  const [marcas, setMarcas] = useState<Record<Clave, boolean>>(() => ({
-    terminos: yaAceptadas,
-    compartir: yaAceptadas,
-    revision: yaAceptadas,
-    mensajes: yaAceptadas,
-  }));
+  // Demo: las 4 de la maqueta parten marcadas si ya las aceptó en la demo (como siempre).
+  const casillas = casillasA4(deLaBase, guardadas.terminos && guardadas.privacidad && guardadas.compartirFicha);
+  const [marcas, setMarcas] = useState<MarcasAutorizacion>(() => marcasIniciales(casillas));
   const [intento, setIntento] = useState(false);
   const [documento, setDocumento] = useState<DocumentoLegal | null>(null);
 
-  const textoDe = (c: Clave) => deLaBase?.[c] ?? TEXTOS_AUTORIZACION[c];
-  const faltan = CLAVES.filter((c) => !marcas[c]);
+  const faltan = faltanEnA4(casillas, marcas);
   const mostrarErrores = intento && validar && faltan.length > 0;
-  const alternar = (c: Clave) => setMarcas((m) => ({ ...m, [c]: !m[c] }));
-  // App real: quien ya está registrado y al día vuelve como siempre; si no, "Volver" ofrece cerrar sesión.
-  const ofrecerCerrarSesion = volverDesdeAutorizaciones === 'cerrarSesion' && !(registrado && yaAceptadas);
+  const alternar = (id: string) => setMarcas((m) => ({ ...m, [id]: !m[id] }));
+  // App real: a Inicio solo si la guardia la deja salir de A4; si no, "Volver" ofrece cerrar sesión.
+  const ofrecerCerrarSesion = volverDeA4(volverDesdeAutorizaciones, registrado, casillas) === 'cerrarSesion';
 
   const continuar = () =>
     ejecutar(async () => {
@@ -218,15 +223,15 @@ export default function Autorizaciones() {
       <CabeceraFormulario titulo="Antes de empezar" subtitulo="Necesitamos tu autorización para cada uno de estos puntos." />
 
       <View role="group" aria-label="Autorizaciones" style={{ marginTop: 8, gap: 10 }}>
-        {CLAVES.map((c) => (
-          <FilaAutorizacion key={c} marcada={marcas[c]} error={mostrarErrores && !marcas[c]} onPress={() => alternar(c)} etiqueta={textoDe(c)}>
-            <ContenidoTexto casilla={c} texto={textoDe(c)} abrir={setDocumento} />
+        {casillas.map((c) => (
+          <FilaAutorizacion key={c.id} marcada={!!marcas[c.id]} error={mostrarErrores && !marcas[c.id]} onPress={() => alternar(c.id)} etiqueta={c.texto}>
+            <ContenidoTexto texto={c.texto} abrir={setDocumento} />
           </FilaAutorizacion>
         ))}
       </View>
 
       <View style={{ marginTop: 'auto', paddingTop: 16, gap: 10 }}>
-        {mostrarErrores ? <AlertaObligatorios texto="Marca las 4 autorizaciones para continuar." /> : null}
+        {mostrarErrores ? <AlertaObligatorios texto={textoMarcaTodas(casillas.length)} /> : null}
         {errorGuardar && !mostrarErrores ? <AlertaObligatorios texto={errorGuardar} /> : null}
         <Boton titulo="Continuar" onPress={continuar} cargando={guardando} />
       </View>

@@ -90,7 +90,7 @@ function estadoInicial(): EstadoReal {
   return {
     fase: 'cargando',
     uid: null,
-    vista: { cuenta: p.cuenta, conductor: p.conductor, catalogos: c.catalogos, ingreso },
+    vista: { cuenta: p.cuenta, conductor: p.conductor, catalogos: c.catalogos, ingreso, textosAutorizacion: p.textosAutorizacion },
     mapas: c.mapas,
     textos: c.textos,
     aceptados: [],
@@ -138,7 +138,7 @@ export function limpiarSesion(): void {
   const p = perfilVacio(e.mapas, e.textos, ingreso?.celular ?? '');
   useTiendaReal.setState({
     uid: null,
-    vista: { ...e.vista, cuenta: p.cuenta, conductor: p.conductor, ingreso },
+    vista: { ...e.vista, cuenta: p.cuenta, conductor: p.conductor, ingreso, textosAutorizacion: p.textosAutorizacion },
     aceptados: [],
     autorizacionesCompletas: false,
   });
