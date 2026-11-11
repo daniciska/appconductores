@@ -52,7 +52,8 @@ Antes de construir la parte del titular: su prototipo, las reglas de mensajes (e
    - [ ] La dueña: encender el ingreso por celular en Supabase y cargar los números de prueba (sección 17 de `docs/especificacion-app-conductor-v1.md`). Después, prueba de punta a punta contra la base real.
    - [x] **Publicada** (10-nov) en https://dale-contacto-app.netlify.app (proyecto Netlify `dale-contacto-app`, abierto). Lee las listas de la base real sin errores.
    - [ ] La dueña: registro DNS `app` (CNAME a `dale-contacto-app.netlify.app.`) y agregar `app.dalecontacto.cl` en Netlify.
-   - [ ] Por confirmar: que "Volver" en "Antes de empezar" ofrezca cerrar sesión; textos nuevos ("Se guardó, pero se cortó la conexión. Inténtalo de nuevo." y "Tu sesión se cerró. Vuelve a entrar.").
+   - [x] "Antes de empezar" (11-nov): una casilla por cada texto obligatorio vigente de la base; cada una parte marcada solo si la persona ya aceptó esa misma versión. Los textos del abogado o una autorización nueva se cargan en la base sin publicar otra app. Publicado.
+   - [ ] Por confirmar: que "Volver" en "Antes de empezar" ofrezca cerrar sesión cuando no hay otra salida; textos nuevos ("Se guardó, pero se cortó la conexión. Inténtalo de nuevo.", "Tu sesión se cerró. Vuelve a entrar." y "Marca la autorización para continuar." cuando hay una sola pendiente); que al pedir de nuevo una versión, las casillas ya aceptadas se vean marcadas.
    - [ ] Propuestas de base (sin aplicar): que cada persona pueda leer los textos que aceptó; guardar cada paso en una sola transacción; rechazar comunas, tamaños y clases inactivas.
    - Para actualizarla: `npm run export:web` en `app-real/` y subir la carpeta `app-real/dist/` completa al proyecto de Netlify `dale-contacto-app`.
 8. [ ] App del titular y cobro.
