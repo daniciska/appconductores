@@ -2,6 +2,16 @@
 
 Actualizado: 10-nov-2026. Se actualiza a medida que avanzamos.
 
+## Carta Gantt (propuesta del 16-nov)
+
+Construcción **en pausa** hasta que la dueña apruebe el plan (pedido del 16-nov). Carta: https://claude.ai/artifact/BLfWkckPMSF45LDes2eEHt (fuente: `docs/carta-gantt.html`). Fechas estimadas:
+
+- **Hito 1 · ~16 dic:** abrir a conductores reales (documentos con revisión de una persona, panel real para revisar, códigos reales por WhatsApp y textos del abogado).
+- **Hito 2 · ~1 feb 2027:** lanzamiento operativo y vendible (prototipo y app del titular, match, planes y cobro web, mensajes, avisos, revisión completa y piloto).
+- **Ruta crítica:** prototipo del titular → su aprobación → base de titulares y match → app del titular → cobro web → revisión completa → piloto → lanzamiento.
+- **Atajos por decidir:** lanzar sin mensajes; cobro manual el primer mes; piloto de una semana.
+- **Después:** revisión con IA, Google Maps, entrar con clave, bolsa de trabajo y tiendas.
+
 ## Ya hecho
 
 - [x] Reglas y decisiones del proyecto (`CLAUDE.md`).

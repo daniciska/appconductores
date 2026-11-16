@@ -1,0 +1,405 @@
+<title>Dale Contacto · Carta Gantt</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Plan de obra: una hoja de proyecto sobria, como la app (casi negro sobre blanco, un solo acento amarillo);
+   la carta ocupa el ancho y el resto es lectura. Las barras se colorean por quién hace el trabajo. */
+:root {
+  --bg: #ffffff;
+  --surface: #f6f6f4;
+  --ink: #111111;
+  --ink-2: #4d4c48;
+  --ink-3: #7a7973;
+  --line: #e4e3df;
+  --line-2: #efeeea;
+  --accent: #f5b400;
+  --accent-ink: #111111;
+  --holiday: #f1efe8;
+  --claude: #2a78d6;
+  --tu: #eb6834;
+  --terceros: #1baf7a;
+  --hecho: #c9c8c2;
+  --despues-fill: #ffffff;
+  --gap: #ffffff;
+  --font-display: "Sora", "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-body: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121211; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --ink-3: #96958d;
+    --line: #2d2d2b; --line-2: #232322; --accent: #f5b400; --accent-ink: #111111; --holiday: #1f1f1d;
+    --claude: #3987e5; --tu: #d95926; --terceros: #199e70; --hecho: #4a4a46; --despues-fill: #121211; --gap: #121211;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121211; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --ink-3: #96958d;
+  --line: #2d2d2b; --line-2: #232322; --accent: #f5b400; --accent-ink: #111111; --holiday: #1f1f1d;
+  --claude: #3987e5; --tu: #d95926; --terceros: #199e70; --hecho: #4a4a46; --despues-fill: #121211; --gap: #121211;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 56px;
+}
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 28px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: clamp(26px, 4vw, 36px); line-height: 1.15; }
+h2 { font-size: 20px; }
+h3 { font-size: 15px; }
+p { margin: 0; }
+.eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+.lead { color: var(--ink-2); max-width: 68ch; }
+header.top { display: grid; gap: 10px; }
+
+/* Hitos */
+.hitos { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+.hito { border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 6px; background: var(--bg); min-width: 0; }
+.hito.principal { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.hito .fecha { font-family: var(--font-display); font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.hito .que { font-weight: 600; }
+.hito .detalle { font-size: 13px; color: var(--ink-2); }
+.hito.principal .detalle { color: color-mix(in srgb, var(--bg) 75%, var(--ink)); }
+.marca { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.marca::before { content: ""; width: 9px; height: 9px; transform: rotate(45deg); background: var(--accent); border-radius: 1px; }
+
+/* Leyenda */
+.leyenda { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; color: var(--ink-2); align-items: center; }
+.leyenda span { display: inline-flex; align-items: center; gap: 8px; }
+.sw { width: 22px; height: 10px; border-radius: 3px; display: inline-block; }
+.sw.claude { background: var(--claude); } .sw.tu { background: var(--tu); } .sw.terceros { background: var(--terceros); }
+.sw.hecho { background: var(--hecho); }
+.sw.despues { background: var(--despues-fill); border: 1.5px dashed var(--ink-3); }
+.sw.critica { background: transparent; border: 2px solid var(--ink); height: 12px; }
+.sw.hoy { width: 2px; height: 14px; background: var(--accent); border-radius: 1px; }
+.dia { width: 10px; height: 10px; background: var(--ink); transform: rotate(45deg); display: inline-block; border-radius: 1px; }
+
+/* Carta */
+.carta { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--bg); }
+.scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.gantt { display: grid; grid-template-columns: var(--col-etiqueta) var(--ancho-tiempo); position: relative; }
+.gantt .esq, .gantt .etq { position: sticky; left: 0; z-index: 3; background: var(--bg); border-right: 1px solid var(--line); }
+.esq { border-bottom: 1px solid var(--line); }
+.cab { position: relative; height: 54px; border-bottom: 1px solid var(--line); }
+.cab .mes { position: absolute; top: 6px; font-size: 12px; font-weight: 700; color: var(--ink); white-space: nowrap; padding-left: 6px; border-left: 1px solid var(--line); height: 18px; }
+.cab .sem { position: absolute; top: 30px; font-size: 11px; color: var(--ink-3); font-variant-numeric: tabular-nums; padding-left: 4px; white-space: nowrap; }
+.grupo-etq { padding: 14px 14px 6px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); border-top: 1px solid var(--line); }
+.grupo-pista { border-top: 1px solid var(--line); position: relative; }
+.etq { padding: 0 14px; display: flex; align-items: center; min-height: 40px; font-size: 13px; line-height: 1.3; color: var(--ink); }
+.etq small { display: block; color: var(--ink-3); font-size: 11.5px; }
+.etq .txt { min-width: 0; }
+.pista { position: relative; min-height: 40px; }
+.fondo { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+.fondo .lsem { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--line-2); }
+.fondo .fer { position: absolute; top: 0; bottom: 0; background: var(--holiday); }
+.fondo .hoy { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--accent); }
+.barra {
+  position: absolute; top: 9px; height: 22px; border-radius: 5px; border: 0; padding: 0; cursor: default; z-index: 1;
+  box-shadow: 0 0 0 2px var(--gap);
+}
+.barra.claude { background: var(--claude); } .barra.tu { background: var(--tu); } .barra.terceros { background: var(--terceros); }
+.barra.hecho { background: var(--hecho); }
+.barra.despues { background: var(--despues-fill); border: 1.5px dashed var(--ink-3); box-shadow: none; }
+.barra.critica { outline: 2px solid var(--ink); outline-offset: 2px; }
+.barra:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.rombo { position: absolute; top: 12px; width: 16px; height: 16px; transform: translateX(-8px) rotate(45deg); background: var(--ink); border-radius: 2px; z-index: 2; border: 0; padding: 0; box-shadow: 0 0 0 2px var(--bg); }
+.rombo:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.rotulo { position: absolute; top: 11px; font-size: 12px; font-weight: 700; color: var(--ink); white-space: nowrap; z-index: 2; pointer-events: none; }
+.tip {
+  position: fixed; z-index: 20; max-width: 300px; background: var(--ink); color: var(--bg); border-radius: 10px;
+  padding: 10px 12px; font-size: 12.5px; line-height: 1.45; pointer-events: none; box-shadow: 0 8px 24px rgba(0,0,0,.18);
+}
+.tip b { display: block; font-size: 13px; margin-bottom: 2px; }
+.tip .q { opacity: .8; }
+.pie-carta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; padding: 10px 14px; border-top: 1px solid var(--line); font-size: 12px; color: var(--ink-3); }
+
+/* Lectura */
+.dos { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.panel { border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.panel ul, .panel ol { margin: 0; padding-left: 20px; display: grid; gap: 8px; color: var(--ink-2); }
+.panel li b { color: var(--ink); }
+.tag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .03em; padding: 1px 7px; border-radius: 999px; background: var(--surface); color: var(--ink-2); border: 1px solid var(--line); vertical-align: 1px; }
+details.lista { border: 1px solid var(--line); border-radius: 14px; }
+details.lista > summary { cursor: pointer; padding: 14px 18px; font-weight: 600; list-style: none; display: flex; justify-content: space-between; gap: 12px; }
+details.lista > summary::after { content: "Ver"; color: var(--ink-3); font-weight: 500; }
+details.lista[open] > summary::after { content: "Ocultar"; }
+details.lista > summary:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; border-radius: 14px; }
+.tabla-wrap { overflow-x: auto; border-top: 1px solid var(--line); }
+table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 720px; }
+th, td { text-align: left; padding: 9px 14px; border-bottom: 1px solid var(--line-2); vertical-align: top; }
+th { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); font-weight: 700; }
+td.n { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.quien { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.quien i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+footer { font-size: 12px; color: var(--ink-3); }
+@media (prefers-reduced-motion: no-preference) { .barra, .rombo { transition: transform .15s ease; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Dale Contacto · Plan de construcción · propuesta del 16-nov-2026</span>
+    <h1>Qué falta construir para que la app quede operativa</h1>
+    <p class="lead">Cada barra es un bloque de trabajo y su color dice quién lo hace. El borde negro marca la ruta crítica: si una de esas barras se atrasa, se atrasa el lanzamiento. Las fechas son estimaciones, no compromisos.</p>
+  </header>
+
+  <section class="hitos" aria-label="Hitos">
+    <div class="hito">
+      <span class="marca">Hito 1</span>
+      <span class="fecha">~16 dic</span>
+      <span class="que">Abrir a conductores reales</span>
+      <span class="detalle">Pueden registrarse completos, con documentos revisados, códigos reales por WhatsApp y los textos del abogado.</span>
+    </div>
+    <div class="hito principal">
+      <span class="marca">Hito 2</span>
+      <span class="fecha">~1 feb 2027</span>
+      <span class="que">Lanzamiento: la app opera y se vende</span>
+      <span class="detalle">Titulares que buscan, hacen match, ven conductores verificados y pagan su plan por la web.</span>
+    </div>
+    <div class="hito">
+      <span class="marca">Después</span>
+      <span class="fecha">feb – mar</span>
+      <span class="que">Mejoras y tiendas</span>
+      <span class="detalle">Revisión con IA, Google Maps, entrar con clave, bolsa de trabajo, App Store y Google Play.</span>
+    </div>
+  </section>
+
+  <div class="leyenda" aria-label="Leyenda">
+    <span><i class="sw claude"></i>Construye Claude</span>
+    <span><i class="sw tu"></i>Decides o tramitas tú</span>
+    <span><i class="sw terceros"></i>Terceros (abogado, proveedores)</span>
+    <span><i class="sw hecho"></i>Ya hecho</span>
+    <span><i class="sw despues"></i>Después del lanzamiento</span>
+    <span><i class="sw critica"></i>Ruta crítica</span>
+    <span><i class="dia"></i>Hito</span>
+    <span><i class="sw hoy"></i>Hoy</span>
+  </div>
+
+  <section class="carta" aria-label="Carta Gantt">
+    <div class="scroll" id="scroll">
+      <div class="gantt" id="gantt" role="list"></div>
+    </div>
+    <div class="pie-carta">
+      <span>Semanas desde el lunes. Las franjas grises son feriados (8 dic, 25 dic y 1 ene).</span>
+      <span>Toca o pasa sobre una barra para ver de qué depende.</span>
+    </div>
+  </section>
+
+  <section class="dos">
+    <div class="panel">
+      <h2>Atajos para llegar antes</h2>
+      <p class="lead" style="font-size:14px">Propuestas mías. Ninguna está decidida: cada una adelanta el lanzamiento y la decides tú.</p>
+      <ol>
+        <li><b>Lanzar sin mensajes.</b> El titular ya ve el contacto del conductor (decisión P10), así que el match funciona sin chat. Los mensajes llegarían 2 o 3 semanas después. Ahorra tus decisiones de mensajes, que hoy están en pausa. <span class="tag">ahorra ~1 semana</span></li>
+        <li><b>Cobro manual el primer mes</b> si la cuenta de pago web se atrasa: transferencia y yo activo el plan en la base. <span class="tag">evita esperar al proveedor</span></li>
+        <li><b>Documentos revisados solo por personas</b> al inicio. La IA se suma después del abogado. <span class="tag">ya está así en la carta</span></li>
+        <li><b>Piloto de una semana</b> en vez de dos, con pocos titulares conocidos. <span class="tag">ahorra ~1 semana</span></li>
+      </ol>
+    </div>
+    <div class="panel">
+      <h2>Lo que más puede atrasar</h2>
+      <ul>
+        <li><b>El abogado.</b> Sin términos, privacidad y la revisión de la Hoja de Vida y los antecedentes no se abre a personas reales.</li>
+        <li><b>La aprobación de WhatsApp.</b> Meta revisa la cuenta y los mensajes de la empresa; los plazos de Twilio y Meta están sin verificar.</li>
+        <li><b>La cuenta de pago web.</b> El proveedor (Flow, Mercado Pago o Webpay) puede pedir datos de empresa y tardar en aprobarla. Plazo sin verificar.</li>
+        <li><b>El prototipo del titular.</b> Todo lo que se vende depende de que lo apruebes; es la primera barra de la ruta crítica.</li>
+        <li><b>Diciembre y enero.</b> Feriados y vacaciones de abogados, proveedores y de las personas del piloto.</li>
+      </ul>
+    </div>
+  </section>
+
+  <details class="lista">
+    <summary>Ver la carta como lista</summary>
+    <div class="tabla-wrap">
+      <table>
+        <thead><tr><th>Bloque</th><th>Quién</th><th>Desde</th><th>Hasta</th><th>Depende de</th></tr></thead>
+        <tbody id="tabla"></tbody>
+      </table>
+    </div>
+  </details>
+
+  <section class="panel">
+    <h2>Supuestos</h2>
+    <ul>
+      <li>Se parte hoy, 16 de noviembre, con la construcción en pausa hasta que apruebes este plan.</li>
+      <li>Respondes las preguntas y apruebas las maquetas en 1 o 2 días. Cada semana de espera corre toda la ruta crítica.</li>
+      <li>Los bloques de Claude incluyen revisión independiente y pruebas, como en la app del conductor. Varios pueden avanzar a la vez.</li>
+      <li>Los plazos del abogado, de Twilio y Meta y del proveedor de pago son estimaciones sin confirmar.</li>
+      <li>"Operativa" es el MVP decidido: conductores verificados, titulares que buscan y pagan, match automático y contacto del conductor para el titular.</li>
+    </ul>
+  </section>
+
+  <footer>Fuente: CLAUDE.md, docs/plan.md y el estado de la base al 16-nov-2026. Archivo en el repositorio: docs/carta-gantt.html.</footer>
+</div>
+
+<div class="tip" id="tip" hidden></div>
+
+<script>
+(() => {
+  const INICIO = '2026-11-09', FIN = '2027-03-14';
+  const HOY = '2026-11-16';
+  const FERIADOS = ['2026-12-08', '2026-12-25', '2027-01-01'];
+  const QUIEN = { claude: 'Construye Claude', tu: 'Tú', terceros: 'Terceros', hecho: 'Ya hecho', despues: 'Después del lanzamiento' };
+
+  // Bloques: id, nombre, nota, quien, ini, fin, dep, critica, despues
+  const GRUPOS = [
+    { nombre: 'Ya hecho', filas: [
+      { id: 'H1', n: 'App del conductor, pasos 1 a 4', s: 'Base, ingreso por celular, publicada y probada', q: 'hecho', i: '2026-11-09', f: '2026-11-16' },
+    ]},
+    { nombre: 'Conductores con perfil completo', filas: [
+      { id: 'D1', n: 'Aprobar las mejoras del probador y simplificador', s: 'Maquetas de antes y después', q: 'tu', i: '2026-11-17', f: '2026-11-18' },
+      { id: 'C1', n: 'Aplicar las mejoras aprobadas', q: 'claude', i: '2026-11-19', f: '2026-11-20', dep: ['D1'] },
+      { id: 'D2', n: 'Decisiones de documentos y del panel', s: 'Quién revisa, qué se pide, cuánto se guarda, quién entra', q: 'tu', i: '2026-11-17', f: '2026-11-21' },
+      { id: 'C2', n: 'Base de datos: documentos', s: 'Fotos y PDF guardados en privado, estados', q: 'claude', i: '2026-11-23', f: '2026-11-26', dep: ['D2'] },
+      { id: 'C3', n: 'Paso 5: subir documentos y ver su estado', q: 'claude', i: '2026-11-25', f: '2026-11-28', dep: ['C2'] },
+      { id: 'C4', n: 'Panel real: entrar como equipo y revisar documentos', s: 'También encender y apagar negocios', q: 'claude', i: '2026-11-26', f: '2026-12-04', dep: ['C2'] },
+      { id: 'T1', n: 'WhatsApp y SMS reales', s: 'Cuenta de Twilio y aprobación de Meta [verificar plazo]', q: 'terceros', i: '2026-11-18', f: '2026-12-04' },
+      { id: 'C5', n: 'Conectar los códigos reales', s: 'Y quitar los números de prueba', q: 'claude', i: '2026-12-07', f: '2026-12-09', dep: ['T1'] },
+    ]},
+    { nombre: 'Legal', filas: [
+      { id: 'T2', n: 'Abogado', s: 'Términos, privacidad, autorizaciones y documentos', q: 'terceros', i: '2026-11-18', f: '2026-12-11' },
+      { id: 'C6', n: 'Cargar los textos legales definitivos', q: 'claude', i: '2026-12-14', f: '2026-12-15', dep: ['T2'] },
+      { id: 'C7', n: 'Eliminar mi cuenta y derechos sobre los datos', q: 'claude', i: '2026-12-14', f: '2026-12-16', dep: ['T2'] },
+      { id: 'M1', n: 'Abrir a conductores reales', hito: true, i: '2026-12-16', dep: ['C3', 'C4', 'C5', 'C6', 'C7'] },
+    ]},
+    { nombre: 'Titulares y match (lo que se vende)', filas: [
+      { id: 'C8', n: 'Prototipo del titular', s: 'Maquetas navegables, como las del conductor', q: 'claude', i: '2026-11-19', f: '2026-11-26', critica: true },
+      { id: 'D3', n: 'Revisar y aprobar el prototipo del titular', q: 'tu', i: '2026-11-27', f: '2026-12-02', dep: ['C8'], critica: true },
+      { id: 'D4', n: 'Precios de los planes', q: 'tu', i: '2026-11-23', f: '2026-12-04' },
+      { id: 'C9', n: 'Base de datos: titulares, búsquedas y match', s: 'Filtros, % de coincidencia y adelanto anónimo', q: 'claude', i: '2026-12-03', f: '2026-12-10', dep: ['D3'], critica: true },
+      { id: 'C10', n: 'App del titular', s: 'Registro, búsquedas, resultados y contacto del conductor', q: 'claude', i: '2026-12-09', f: '2026-12-22', dep: ['C9'], critica: true },
+      { id: 'T3', n: 'Medio de pago web', s: 'Elegir proveedor y abrir la cuenta de comercio [verificar plazo]', q: 'terceros', i: '2026-11-23', f: '2026-12-11' },
+      { id: 'C11', n: 'Planes y cobro web', q: 'claude', i: '2026-12-21', f: '2027-01-06', dep: ['C10', 'T3', 'D4'], critica: true },
+      { id: 'D5', n: 'Decisiones de mensajes', s: 'Hoy en pausa', q: 'tu', i: '2026-12-01', f: '2026-12-11' },
+      { id: 'C12', n: 'Mensajes, reportar y bloquear', q: 'claude', i: '2026-12-28', f: '2027-01-08', dep: ['C10', 'D5'] },
+      { id: 'C13', n: 'Avisos por WhatsApp y correo', s: 'Nuevo match, documento revisado, recordatorios', q: 'claude', i: '2027-01-04', f: '2027-01-08', dep: ['C5'] },
+    ]},
+    { nombre: 'Puesta en marcha', filas: [
+      { id: 'D6', n: 'Registros DNS de app y panel', s: 'En tu hosting, una vez', q: 'tu', i: '2026-11-17', f: '2026-11-20' },
+      { id: 'C14', n: 'Revisión completa', s: 'Pruebas de punta a punta y seguridad', q: 'claude', i: '2027-01-11', f: '2027-01-15', dep: ['C11', 'C12', 'C13'], critica: true },
+      { id: 'D7', n: 'Piloto con conductores y titulares reales', q: 'tu', i: '2027-01-18', f: '2027-01-29', dep: ['C14', 'M1'], critica: true },
+      { id: 'C15', n: 'Ajustes del piloto', q: 'claude', i: '2027-01-25', f: '2027-01-29', dep: ['D7'] },
+      { id: 'M2', n: 'Lanzamiento', hito: true, i: '2027-02-01', dep: ['D7', 'C15'], critica: true },
+    ]},
+    { nombre: 'Después del lanzamiento', filas: [
+      { id: 'P1', n: 'Revisión de documentos con IA', s: 'Después del abogado', q: 'despues', i: '2027-02-02', f: '2027-02-12' },
+      { id: 'P2', n: 'Dirección con Google Maps', s: 'Necesita tu cuenta de Google Cloud', q: 'despues', i: '2027-02-08', f: '2027-02-12' },
+      { id: 'P3', n: 'Entrar con clave', s: 'Pendiente pedido el 16-nov', q: 'despues', i: '2027-02-15', f: '2027-02-19' },
+      { id: 'P4', n: 'Bolsa de trabajo', s: 'Si decides que sale', q: 'despues', i: '2027-02-15', f: '2027-02-26' },
+      { id: 'P5', n: 'App Store y Google Play', s: 'Cuentas y prueba cerrada de 14 días', q: 'despues', i: '2027-02-15', f: '2027-03-12' },
+    ]},
+  ];
+
+  const MS = 86400000;
+  const d = (s) => Date.UTC(+s.slice(0, 4), +s.slice(5, 7) - 1, +s.slice(8, 10));
+  const t0 = d(INICIO), dias = Math.round((d(FIN) - t0) / MS) + 1;
+  const angosto = window.matchMedia('(max-width: 640px)').matches;
+  const PX = angosto ? 6 : 8;
+  const COL = angosto ? 190 : 300;
+  const x = (s) => Math.round((d(s) - t0) / MS) * PX;
+  const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+  const fmt = (s) => `${+s.slice(8, 10)} ${MESES[+s.slice(5, 7) - 1]}`;
+  const porId = {};
+  GRUPOS.forEach((g) => g.filas.forEach((r) => (porId[r.id] = r)));
+
+  const g = document.getElementById('gantt');
+  g.style.setProperty('--col-etiqueta', COL + 'px');
+  g.style.setProperty('--ancho-tiempo', dias * PX + 'px');
+
+  const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+
+  function fondo() {
+    const f = el('div', 'fondo');
+    for (let k = 0; k < dias; k++) {
+      const t = new Date(t0 + k * MS);
+      if (t.getUTCDay() === 1) { const l = el('div', 'lsem'); l.style.left = k * PX + 'px'; f.appendChild(l); }
+    }
+    FERIADOS.forEach((s) => { const h = el('div', 'fer'); h.style.left = x(s) + 'px'; h.style.width = PX + 'px'; f.appendChild(h); });
+    const hoy = el('div', 'hoy'); hoy.style.left = x(HOY) + 'px'; f.appendChild(hoy);
+    return f;
+  }
+
+  // Cabecera
+  g.appendChild(el('div', 'esq'));
+  const cab = el('div', 'cab');
+  let mesPrevio = -1;
+  for (let k = 0; k < dias; k++) {
+    const t = new Date(t0 + k * MS);
+    if (t.getUTCMonth() !== mesPrevio) {
+      mesPrevio = t.getUTCMonth();
+      const m = el('div', 'mes', MESES[mesPrevio] + (mesPrevio === 0 || k === 0 ? ' ' + t.getUTCFullYear() : ''));
+      m.style.left = k * PX + 'px'; cab.appendChild(m);
+    }
+    if (t.getUTCDay() === 1) { const s = el('div', 'sem', String(t.getUTCDate())); s.style.left = k * PX + 'px'; cab.appendChild(s); }
+  }
+  g.appendChild(cab);
+
+  const tip = document.getElementById('tip');
+  function mostrar(r, ev) {
+    const deps = (r.dep || []).map((id) => porId[id]?.n).filter(Boolean);
+    tip.innerHTML = '';
+    tip.appendChild(el('b', null, r.n));
+    const lineas = r.hito ? [`Fecha estimada: ${fmt(r.i)}`] : [`${fmt(r.i)} → ${fmt(r.f)} · ${QUIEN[r.q]}`];
+    if (r.s) lineas.push(r.s);
+    if (deps.length) lineas.push('Depende de: ' + deps.join(', '));
+    if (r.critica) lineas.push('Ruta crítica');
+    lineas.forEach((t, i) => tip.appendChild(el('div', i ? 'q' : null, t)));
+    tip.hidden = false;
+    const b = (ev.currentTarget || ev.target).getBoundingClientRect();
+    const w = tip.offsetWidth, h = tip.offsetHeight;
+    let left = Math.min(Math.max(8, b.left + b.width / 2 - w / 2), window.innerWidth - w - 8);
+    let top = b.top - h - 10; if (top < 8) top = b.bottom + 10;
+    tip.style.left = left + 'px'; tip.style.top = top + 'px';
+  }
+  const ocultar = () => (tip.hidden = true);
+  document.getElementById('scroll').addEventListener('scroll', ocultar, { passive: true });
+  window.addEventListener('scroll', ocultar, { passive: true });
+
+  const tabla = document.getElementById('tabla');
+  GRUPOS.forEach((gr) => {
+    g.appendChild(el('div', 'etq grupo-etq', gr.nombre));
+    const gp = el('div', 'grupo-pista'); gp.appendChild(fondo()); g.appendChild(gp);
+    gr.filas.forEach((r) => {
+      const etq = el('div', 'etq'); etq.setAttribute('role', 'listitem');
+      const tx = el('div', 'txt'); tx.appendChild(document.createTextNode(r.n));
+      if (r.s && !angosto) tx.appendChild(el('small', null, r.s));
+      etq.appendChild(tx); g.appendChild(etq);
+      const p = el('div', 'pista'); p.appendChild(fondo());
+      let marca;
+      if (r.hito) {
+        marca = el('button', 'rombo'); marca.style.left = x(r.i) + PX / 2 + 'px';
+        const rot = el('div', 'rotulo', fmt(r.i)); rot.style.left = x(r.i) + PX / 2 + 14 + 'px'; p.appendChild(rot);
+        marca.setAttribute('aria-label', `${r.n}: ${fmt(r.i)}`);
+      } else {
+        marca = el('button', 'barra ' + r.q + (r.critica ? ' critica' : ''));
+        marca.style.left = x(r.i) + 'px';
+        marca.style.width = Math.max(PX, x(r.f) - x(r.i) + PX) + 'px';
+        marca.setAttribute('aria-label', `${r.n}: ${fmt(r.i)} a ${fmt(r.f)}, ${QUIEN[r.q]}${r.critica ? ', ruta crítica' : ''}`);
+      }
+      marca.type = 'button';
+      marca.addEventListener('mouseenter', (e) => mostrar(r, e));
+      marca.addEventListener('focus', (e) => mostrar(r, e));
+      marca.addEventListener('click', (e) => mostrar(r, e));
+      marca.addEventListener('mouseleave', ocultar);
+      marca.addEventListener('blur', ocultar);
+      p.appendChild(marca); g.appendChild(p);
+
+      const tr = document.createElement('tr');
+      const c1 = el('td'); c1.appendChild(el('div', null, r.n)); if (r.s) { const sm = el('div', null, r.s); sm.style.color = 'var(--ink-3)'; sm.style.fontSize = '12px'; c1.appendChild(sm); }
+      const c2 = el('td');
+      if (r.hito) c2.textContent = 'Hito';
+      else { const qq = el('span', 'quien'); const ic = el('i'); ic.style.background = `var(--${r.q === 'despues' ? 'ink-3' : r.q})`; qq.appendChild(ic); qq.appendChild(document.createTextNode(QUIEN[r.q])); c2.appendChild(qq); }
+      const c3 = el('td', 'n', fmt(r.i)); const c4 = el('td', 'n', r.hito ? '—' : fmt(r.f));
+      const c5 = el('td', null, (r.dep || []).map((id) => porId[id]?.n).filter(Boolean).join(' · ') || '—');
+      [c1, c2, c3, c4, c5].forEach((c) => tr.appendChild(c));
+      tabla.appendChild(tr);
+    });
+  });
+
+  // En el celular, que la carta abra mostrando hoy y no el pasado.
+  if (angosto) requestAnimationFrame(() => { const s = document.getElementById('scroll'); s.scrollLeft = Math.max(0, x(HOY) - 3 * PX); });
+})();
+</script>
