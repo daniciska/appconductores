@@ -27,3 +27,9 @@ Quiénes trabajan en el proyecto: **Daniela** y **Mario**, socios. Cada entrada 
 - Por qué: para que ninguno quede esperando al otro para avanzar.
 - Impacto: CLAUDE.md (reglas de trabajo, decisión "Dueños", ciclo de ramas, sección de trabajo en equipo y "la dueña" → "Daniela" en lo ya decidido).
 - Pendiente: nada.
+
+## 2026-11-16 — Mario
+- Decisión: para este proyecto se usa solo el tablero de Trello "Dale Contacto" (https://trello.com/b/57FyTrFN/dale-contacto), conectado a Claude con el conector de Trello. Los demás tableros de la cuenta no se deben usar en este proyecto: no se leen ni se tocan.
+- Por qué: la cuenta de Trello tiene tableros de otros negocios; así se mantienen separados, igual que en Supabase.
+- Impacto: CLAUDE.md (decisión "Trello").
+- Pendiente: definir para qué se usa el tablero (por ejemplo, revisarlo al empezar la sesión o pasar ahí las decisiones pendientes). Daniela debe conectar Trello en su propia cuenta de Claude si quiere usarlo.
