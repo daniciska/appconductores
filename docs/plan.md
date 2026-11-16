@@ -34,7 +34,7 @@ Construcción **en pausa** hasta que la dueña apruebe el plan (pedido del 16-no
    - [x] Quién puede verlo (9-nov): sitio público con una clave dentro de la demo (la misma para /panel). La clave la tiene la dueña.
    - [x] **Demo del panel** en /panel del mismo sitio, conectada con la demo del conductor y entrando por rol (publicada el 9-nov). Dirección corta: panel-mockup.dalecontacto.cl (falta el DNS).
    - [ ] Revisar las reglas que el mockup tuvo que inventar: qué pasa al bajar de plan, textos de rechazo de los PDF, si el equipo ve la dirección del conductor y el pie "Sugerencias de Google Maps".
-   - Para actualizarlo: `npm run export:demo` en `panel/` y subir la carpeta `dist-demo/` completa a ese proyecto.
+   - Para actualizarlo: **siempre desde `main`**, `npm run export:demo` en `panel/` y subir la carpeta `dist-demo/` completa a ese proyecto.
 6. [ ] **Bolsa de trabajo** (pedida el 2-nov): maqueta del conductor y del titular, y modelo de datos. Después, decidir si sale en el lanzamiento y qué incluye cada plan (`docs/propuesta-bolsa-trabajo.md`).
 
 ## Para empezar a construir (revisado el 2-nov)
@@ -69,7 +69,7 @@ Antes de construir la parte del titular: su prototipo, las reglas de mensajes (e
    - [ ] **Pendiente (pedido 16-nov): entrar con clave.** Celular + clave para entrar; código por WhatsApp solo para registrarse, recuperar la clave y cambiar de teléfono. Antes de construir: reglas de la clave, si aplica a titulares y empresas, y SMS de respaldo (ver CLAUDE.md, Decisiones pendientes).
    - [ ] Por confirmar: que "Volver" en "Antes de empezar" ofrezca cerrar sesión cuando no hay otra salida; textos nuevos ("Se guardó, pero se cortó la conexión. Inténtalo de nuevo.", "Tu sesión se cerró. Vuelve a entrar." y "Marca la autorización para continuar." si la base tuviera un solo texto); que al pedir de nuevo una versión, las casillas ya aceptadas se vean marcadas.
    - [ ] Propuestas de base (sin aplicar): que cada persona pueda leer los textos que aceptó; guardar cada paso en una sola transacción; rechazar comunas, tamaños y clases inactivas.
-   - Para actualizarla: `npm run export:web` en `app-real/` y subir la carpeta `app-real/dist/` completa al proyecto de Netlify `dale-contacto-app`.
+   - Para actualizarla: **siempre desde `main`**, `npm run export:web` en `app-real/` y subir la carpeta `app-real/dist/` completa al proyecto de Netlify `dale-contacto-app`.
 8. [ ] App del titular y cobro.
 9. [ ] Panel de administración: **app web aparte** (Expo, mismo repositorio, comparte diseño, tipos y reglas del match; su propia dirección y su propio sitio de Netlify). Se construye junto con la Etapa 3 de la base (documentos). Antes: las decisiones abiertas de `docs/propuesta-panel-administracion.md`.
 10. [ ] **Lanzamiento como app web** (decidido el 2-nov): dominio propio, alojamiento y pago web.
