@@ -147,3 +147,31 @@ Lo marcado **[verificar]** en esos documentos no está confirmado y no debe trat
 ## Estado del repositorio
 
 Documentación, propuestas, la **Etapa 1 de la base de datos** en `supabase/` (aplicada en Supabase) y el **mockup funcional** en `aplicacion/` (Expo, datos de ejemplo).
+
+---
+
+# Trabajo compartido en equipo
+
+Este proyecto lo trabajan dos personas, **Daniela** y **Mario**, socios, cada una con su propia instancia de Claude Code sobre el mismo repositorio. La coordinación es por git y las decisiones y su porqué viven en `docs/decisiones.md`. La sección "Decisiones tomadas" de este archivo sigue siendo la foto de lo que está decidido hoy; `docs/decisiones.md` es el diario con fecha y el porqué de cada cambio. Cada decisión nueva va a los dos lugares.
+
+## Rutina de inicio de sesión
+El `git pull` ya corre automáticamente al abrir (hook SessionStart). Cuando el usuario salude al empezar (por ejemplo "hola"), haz esto en orden:
+1. Lee `docs/decisiones.md` completo para cargar el contexto de decisiones.
+2. Revisa los últimos commits traídos por el pull (`git log` reciente).
+3. Dame un resumen corto: qué cambió desde la última vez, las 2 o 3 decisiones más recientes, y si quedó algo "Pendiente".
+No empieces ninguna tarea nueva hasta terminar esto. Si el pull falló (ramas divergidas o conflictos), avísame primero y ayúdame a resolverlo.
+
+## Registro de decisiones durante el trabajo
+Cada vez que hagamos un cambio relevante, propón una entrada nueva para `docs/decisiones.md` antes de terminar la tarea.
+Relevante (tiene un porqué): decisión de diseño o arquitectura, cambiar algo ya definido, algo que la otra persona necesita saber para no romperlo, o dejar algo pendiente.
+NO registrar: arreglos triviales, typos, formato, renombrar variables.
+Cómo: redacta la entrada (Decisión / Por qué / Impacto / Pendiente) con fecha de hoy y nombre de quien trabaja (Daniela o Mario; si no está claro, pregúntalo), muéstramela y pide confirmación, y solo con mi OK agrégala AL FINAL de `docs/decisiones.md` (nunca reescribas lo anterior) e inclúyela en el commit.
+
+## Rutina de fin de sesión
+Cuando el usuario indique que termina ("hasta aquí por hoy", "ciérrate sésamo" o "terminamos"):
+1. Revisa si quedó algún cambio relevante sin registrar en `docs/decisiones.md`; si falta, propón la entrada y pide confirmación.
+2. Muéstrame `git status` y un resumen de `git diff`.
+3. Propón un mensaje de commit que explique el PORQUÉ, no solo el qué. Muéstramelo y espera confirmación.
+4. Con mi OK: `git add`, `git commit` con ese mensaje y `git push`.
+5. Confirma que el push salió bien. Si falló por cambios en remoto, avísame para hacer `git pull --ff-only` y reintentar.
+Nunca hagas commit ni push sin mostrarme antes qué se va a subir.
