@@ -3470,7 +3470,7 @@
      "tipo": "si_no",
      "referencia": "",
      "obligatorio": true,
-     "descripcion": "Lo activa o desactiva un administrador desde el panel (decidido el 2-nov). Si una industria se apaga, se ocultan de una vez todos sus negocios en la app y salen del match (por ejemplo, lanzar solo con pasajeros). Un negocio se muestra solo si él y su industria están activos. Apagar no borra nada de lo que ya marcaron conductores y titulares. En el lanzamiento: Transporte de pasajeros activa (solo con Taxi y Taxi ejecutivo) y Transporte de carga apagada.",
+     "descripcion": "Lo activa o desactiva un administrador desde el panel (decidido el 2-nov). Si una industria se apaga, se ocultan de una vez todos sus negocios en la app y salen del match (por ejemplo, lanzar solo con pasajeros). Un negocio se muestra solo si él y su industria están activos. Apagar no borra nada de lo que ya marcaron conductores y titulares. En el lanzamiento: Transporte de pasajeros activa (Taxi, Taxi ejecutivo y, desde el 16-nov, Transporte por aplicación) y, desde el 16-nov, Transporte de carga activa solo con Moto delivery.",
      "quien_ve": "Solo el equipo",
      "codigo": "",
      "estado": "decidido",
@@ -5614,6 +5614,17 @@
   }
  ],
  "cambios": [
+  {
+   "n": 41,
+   "fecha": "2026-11-16",
+   "cambio": "Negocios para quien no tiene licencia profesional: se encienden Transporte por aplicación (pide B) y Moto delivery (pide C). La industria Transporte de carga se enciende solo con Moto delivery; sus otros negocios siguen apagados. No cambian las tablas: solo qué negocios están activos. Aplicado en Supabase con una migración y 9 pruebas nuevas (322 en total, en verde).",
+   "porque": "La dueña vio que quien marca solo licencia B (o solo C) no podía elegir ningún negocio en el Paso 4 y no terminaba su registro, porque Taxi y Taxi ejecutivo piden licencia profesional. La Ley 21.553 podría exigir licencia profesional también para las apps [verificar con abogado, A40].",
+   "origen": "Decisión",
+   "entidades": [
+    "negocios",
+    "industrias"
+   ]
+  },
   {
    "n": 40,
    "fecha": "2026-11-09",

@@ -4,6 +4,12 @@ Cada vez que cambia una pantalla de la maqueta o una decisión, se anota aquí *
 
 Origen: **Comentario** = comentario de la dueña en la maqueta · **Decisión** = decisión registrada en `CLAUDE.md` · **Construcción** = algo que apareció al construir y revisar la base de datos.
 
+## 2026-11-16
+
+| # | Cambio en los datos | Por qué | Origen |
+|---|---|---|---|
+| 41 | **Negocios para quien no tiene licencia profesional:** se encienden **Transporte por aplicación** (pide B) y **Moto delivery** (pide C). La industria **Transporte de carga** se enciende **solo con Moto delivery**; sus otros negocios siguen apagados. No cambian las tablas: solo qué negocios están activos. Aplicado en Supabase con una migración y 9 pruebas nuevas (322 en total, en verde). | La dueña vio que quien marca solo licencia B (o solo C) no podía elegir ningún negocio en el Paso 4 y no terminaba su registro, porque Taxi y Taxi ejecutivo piden licencia profesional. La Ley 21.553 podría exigir licencia profesional también para las apps [verificar con abogado, A40]. | Decisión |
+
 ## 2026-11-09
 
 | # | Cambio en los datos | Por qué | Origen |
