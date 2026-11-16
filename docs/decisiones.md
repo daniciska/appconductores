@@ -21,3 +21,9 @@ Quiénes trabajan en el proyecto: **Daniela** y **Mario**, socios. Cada entrada 
 - Por qué: main es siempre lo que está funcionando; lo nuevo se prueba aparte antes de llegar a la app real. Los negocios B y C evitan que quien no tiene licencia profesional quede sin poder terminar su registro.
 - Impacto: CLAUDE.md, docs/plan.md, docs/carta-gantt.html, la base en Supabase (negocios activos) y los dos sitios de Netlify.
 - Pendiente: aprobar la carta Gantt; preguntar al abogado por la Ley 21.553 (A40); definir las reglas de "entrar con clave".
+
+## 2026-11-16 — Daniela
+- Decisión: Daniela y Mario son dueños y socios. Cualquiera de los dos puede hacer y aprobar todos los cambios (decidir, aprobar maquetas, mergear a main y publicar), de forma independiente del otro.
+- Por qué: para que ninguno quede esperando al otro para avanzar.
+- Impacto: CLAUDE.md (reglas de trabajo, decisión "Dueños", ciclo de ramas, sección de trabajo en equipo y "la dueña" → "Daniela" en lo ya decidido).
+- Pendiente: nada.
