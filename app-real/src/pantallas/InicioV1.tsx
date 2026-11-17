@@ -26,7 +26,8 @@ export default function InicioV1() {
         insignia={{ texto: 'Perfil incompleto', tono: 'amarilla', icono: Clock }}
         onAvatar={() => navigation.dispatch({ type: 'NAVIGATE', payload: { name: 'perfil' } })}
       />
-      <VistaIncompleta documentos={{ modo: 'proximamente' }} nota="Mientras tu perfil esté incompleto, no apareces en los matches." />
+      {/* S09: sin la nota de la campana (ya lo dicen la insignia y la tarjeta). */}
+      <VistaIncompleta documentos={{ modo: 'proximamente' }} />
     </Pantalla>
   );
 }

@@ -5,18 +5,34 @@
 // licencia declarada no permite aparecen en gris con "Pide licencia X". Turno y días: filtro M3 y
 // variable M7 del match. A dónde lleva "Continuar" lo decide la ruta (`alTerminar`): en la demo, al
 // Paso 5; en la app real v1, a Inicio. Lo guardado de un negocio que hoy no se muestra no se toca.
+// Propuestas (maqueta): S02 botón "¿Tienes otra clase de licencia? Agrégala" (abre "Tus datos" y vuelve
+// aquí con lo marcado), aviso sin "Paso 1" y sin rojo en lo que no se puede marcar (si no se puede
+// marcar ninguno, el aviso de la licencia es el único mensaje sobre los negocios); S04 "Guardar y
+// terminar después"; S11 avisa antes de salir sin guardar (modo edición).
 import { useRef, useState, type ComponentRef } from 'react';
-import { ScrollView, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
+import { router } from 'expo-router';
 
 import { textoPideLicencia } from '@/datos/match';
 import { useAcciones, useVista, useVistaDerivada } from '@/datos/puerto/contexto';
 import { negocioPermitidoPorDeclaradas, negociosPorIndustria } from '@/datos/puerto/derivados';
 import type { Dia, Turno } from '@/datos/tipos';
-import { Aviso, Boton, Chip, Encabezado, FilaCheck, OpcionIcono, Pantalla, Texto, color, type LucideIcon } from '@/ui';
+import { Aviso, Boton, Chip, Encabezado, FilaCheck, OpcionIcono, Pantalla, Texto, color, fuente, tipo, type LucideIcon } from '@/ui';
 import { Moon, Sun } from '@/ui/iconos';
 
-import { terminarEdicion, useGuardando, useModoEdicion, usePantallaAbierta, useVolverDesdePaso } from './acciones';
-import { AlertaObligatorios, CabeceraFormulario, EtiquetaGrupo, irAlPrimerError, useBorradorPaso, useRecordarBorrador, useValidarObligatorios } from './comunes';
+import { irAInicioConductor, terminarEdicion, useGuardando, useModoEdicion, usePantallaAbierta, useVolverDesdePaso, useVolverTrasEditar } from './acciones';
+import {
+  AlertaObligatorios,
+  BotonTerminarDespues,
+  BotonTexto,
+  CabeceraFormulario,
+  EtiquetaGrupo,
+  irAlPrimerError,
+  useBorradorPaso,
+  useRecordarBorrador,
+  useSalirSinGuardar,
+  useValidarObligatorios,
+} from './comunes';
 
 const ICONO_TURNO: Record<string, LucideIcon> = { dia: Sun, noche: Moon };
 
@@ -32,7 +48,9 @@ export default function Paso4({ alTerminar }: { /** Después de guardar (sin edi
   const permitidos = useVistaDerivada((v) => v.catalogos.negocios.filter((n) => negocioPermitidoPorDeclaradas(v, n.id)).map((n) => n.id));
   const validar = useValidarObligatorios();
   const volverA = useVolverDesdePaso(4);
+  const volverTrasEditar = useVolverTrasEditar();
   const { guardando, ejecutar } = useGuardando();
+  const [pulsado, setPulsado] = useState<'continuar' | 'despues'>('continuar');
   const pantalla = usePantallaAbierta();
   const [errorGuardar, setErrorGuardar] = useState<string | null>(null);
 
@@ -50,6 +68,8 @@ export default function Paso4({ alTerminar }: { /** Después de guardar (sin edi
   useRecordarBorrador(borrador, { negocios, turnos, dias });
 
   const marcadosVisibles = negocios.filter((id) => visibles.includes(id) && permitidos.includes(id));
+  const hayBloqueados = visibles.some((id) => !permitidos.includes(id));
+  const todosBloqueados = visibles.length > 0 && visibles.every((id) => !permitidos.includes(id));
   const errores = {
     negocios: marcadosVisibles.length === 0 ? 'Marca al menos un negocio.' : null,
     turnos: turnos.length === 0 ? 'Marca al menos un turno.' : null,
@@ -57,19 +77,39 @@ export default function Paso4({ alTerminar }: { /** Después de guardar (sin edi
   };
   const ver = intento && validar;
   const hayErrores = Object.values(errores).some(Boolean);
+  // S02: si la licencia no permite ningún negocio, no se pide "Marca al menos un negocio" (no se puede):
+  // el aviso de la licencia pasa a rojo y es el único mensaje sobre los negocios.
+  const errorNegocios = todosBloqueados ? null : errores.negocios;
+  const otrosErrores = !!(errorNegocios || errores.turnos || errores.dias);
 
   const alternar = <T,>(lista: T[], valor: T): T[] => (lista.includes(valor) ? lista.filter((x) => x !== valor) : [...lista, valor]);
 
-  const continuar = () =>
+  const ordenar = (l: string[]) => [...l].sort();
+  const cambiado =
+    JSON.stringify([ordenar(negocios.filter((id) => permitidos.includes(id))), ordenar(turnos), ordenar(dias)]) !==
+    JSON.stringify([ordenar(borrador.inicial.negocios), ordenar(borrador.inicial.turnos), ordenar(borrador.inicial.dias)]);
+  const salir = useSalirSinGuardar(editar && cambiado, () => continuar('continuar'), volverTrasEditar);
+
+  /** S02: abre "Tus datos" para agregar una clase y, al guardar, vuelve aquí con lo ya marcado. */
+  const agregarClase = () => router.push({ pathname: '/conductor/registro/1', params: { editar: '1', volver: '4' } });
+
+  const continuar = (siguiente: 'continuar' | 'despues') =>
     ejecutar(async () => {
-      if (validar && hayErrores) {
+      setPulsado(siguiente);
+      // "Guardar y terminar después" guarda lo que haya, sin alerta (S04).
+      if (siguiente === 'continuar' && validar && hayErrores) {
         setIntento(true);
         irAlPrimerError(scrollRef);
         return;
       }
       setErrorGuardar(null);
       // Se guardan los marcados que la licencia permite (los negocios apagados en el catálogo no se tocan).
-      const r = await acciones.guardarPaso4({ negocios: negocios.filter((id) => permitidos.includes(id)), turnos, dias });
+      const r = await acciones.guardarPaso4({
+        negocios: negocios.filter((id) => permitidos.includes(id)),
+        turnos,
+        dias,
+        parcial: siguiente === 'despues',
+      });
       if (pantalla.salio()) {
         // Salió mientras se guardaba: lo guardado queda, pero no se la lleva a otra pantalla.
         if (r.ok) borrador.olvidar();
@@ -80,7 +120,8 @@ export default function Paso4({ alTerminar }: { /** Después de guardar (sin edi
         return;
       }
       borrador.olvidar();
-      if (editar) terminarEdicion();
+      if (editar) terminarEdicion(volverTrasEditar);
+      else if (siguiente === 'despues') irAInicioConductor();
       else alTerminar();
     });
 
@@ -88,15 +129,15 @@ export default function Paso4({ alTerminar }: { /** Después de guardar (sin edi
 
   return (
     <Pantalla scrollRef={scrollRef}>
-      <Encabezado paso={editar ? undefined : 4} volverA={editar ? '/conductor/perfil' : volverA} />
+      <Encabezado paso={editar ? undefined : 4} volverA={editar ? volverTrasEditar : volverA} onVolver={salir.onVolver} />
       <CabeceraFormulario equilibrar titulo="¿Qué trabajo buscas?" subtitulo="Solo verás vehículos que calcen con lo que marques aquí." />
 
       <View style={{ marginTop: 8, gap: 12 }}>
         <EtiquetaGrupo
           titulo="¿En qué negocio te gustaría trabajar?"
           obligatorio
-          ayuda="Puedes marcar varios. Los que tu licencia no permite aparecen en gris."
-          error={ver && errores.negocios}
+          ayuda="Puedes marcar varios."
+          error={ver && errorNegocios}
         />
         {grupos.length === 0 ? (
           <Aviso icono="info" texto="Por ahora no hay negocios abiertos. Te avisaremos cuando haya." />
@@ -118,15 +159,22 @@ export default function Paso4({ alTerminar }: { /** Después de guardar (sin edi
                       deshabilitada={!permitido}
                       nota={permitido ? undefined : textoPideLicencia(n)}
                       onPress={() => setNegocios((l) => alternar(l, n.id))}
-                      style={ver && errores.negocios ? { borderColor: color.error } : undefined}
+                      // El rojo solo en los que se pueden marcar (S02).
+                      style={ver && errores.negocios && permitido ? { borderColor: color.error } : undefined}
                     />
                   );
                 })}
               </View>
             ))}
-            {visibles.length > 0 && visibles.every((id) => !permitidos.includes(id)) ? (
-              <Aviso icono="info" texto="Con las clases que marcaste en el Paso 1 no puedes trabajar en estos negocios." style={{ marginTop: 4 }} />
+            {todosBloqueados ? (
+              <Aviso icono={ver ? 'alerta' : 'info'} tono={ver ? 'error' : 'neutro'} style={{ marginTop: 4 }}>
+                {/* S13: a 15 px, como los demás mensajes bajo un campo. */}
+                <Text style={[tipo.mensajeCampo, ver ? fuente(600) : null, { color: ver ? color.error : color.textoSuave }]}>
+                  Con tu licencia no puedes trabajar en estos negocios.
+                </Text>
+              </Aviso>
             ) : null}
+            {hayBloqueados ? <BotonTexto titulo="¿Tienes otra clase de licencia? Agrégala" onPress={agregarClase} /> : null}
           </View>
         )}
       </View>
@@ -170,9 +218,11 @@ export default function Paso4({ alTerminar }: { /** Después de guardar (sin edi
       </View>
 
       <View style={{ marginTop: 'auto', paddingTop: 16, gap: 10 }}>
-        {ver && hayErrores ? <AlertaObligatorios /> : errorGuardar ? <AlertaObligatorios texto={errorGuardar} /> : null}
-        <Boton titulo={editar ? 'Guardar cambios' : 'Continuar'} onPress={continuar} cargando={guardando} />
+        {ver && otrosErrores ? <AlertaObligatorios /> : errorGuardar ? <AlertaObligatorios texto={errorGuardar} /> : null}
+        <Boton titulo={editar ? 'Guardar cambios' : 'Continuar'} onPress={() => continuar('continuar')} cargando={guardando && pulsado === 'continuar'} />
+        {editar ? null : <BotonTerminarDespues onPress={() => continuar('despues')} cargando={guardando && pulsado === 'despues'} />}
       </View>
+      {salir.dialogo}
     </Pantalla>
   );
 }

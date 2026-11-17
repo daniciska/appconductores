@@ -121,6 +121,31 @@ export function mascaraFecha(texto: string): string {
   return `${n.slice(0, 2)}/${n.slice(2, 4)}/${n.slice(4)}`;
 }
 
+/**
+ * S05 · Fecha escrita como en papel: una barra después de un solo número se completa con 0
+ * ("5/3/1968" → "05/03/1968"). Sin barras funciona igual que mascaraFecha ("05031968" → "05/03/1968").
+ * Si lo último que se escribió fue la barra de un día o mes completo, la barra se deja ("05/").
+ */
+export function mascaraFechaEscrita(texto: string): string {
+  const grupos: string[] = [];
+  let actual = '';
+  for (const ch of texto) {
+    if (/\d/.test(ch)) {
+      actual += ch;
+      if (grupos.length < 2 && actual.length === 2) {
+        grupos.push(actual);
+        actual = '';
+      }
+    } else if (ch === '/' && grupos.length < 2 && actual.length === 1) {
+      grupos.push('0' + actual);
+      actual = '';
+    }
+  }
+  const digitos = (grupos.join('') + actual).slice(0, 8);
+  const r = mascaraFecha(digitos);
+  return texto.endsWith('/') && (digitos.length === 2 || digitos.length === 4) ? `${r}/` : r;
+}
+
 /** Formatea los 8 dígitos del celular: "55550123" → "5555 0123". */
 export function mascaraCelular(texto: string): string {
   const n = texto.replace(/\D/g, '').slice(0, 8);

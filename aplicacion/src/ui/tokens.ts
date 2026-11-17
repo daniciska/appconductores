@@ -76,6 +76,8 @@ export const tipo = {
   etiqueta: { ...fuente(700), fontSize: 14, lineHeight: 19 },
   secundario: { ...fuente(400), fontSize: 14, lineHeight: 20 },
   ayuda: { ...fuente(400), fontSize: 13, lineHeight: 18 },
+  /** Errores y ayudas bajo un campo o grupo (S13: igual que el texto normal, para que se lean sin lentes). */
+  mensajeCampo: { ...fuente(400), fontSize: 15, lineHeight: 21 },
   pequeno: { ...fuente(500), fontSize: 12, lineHeight: 16 },
   seccion: { ...fuente(700), fontSize: 12, lineHeight: 16, letterSpacing: 0.4, textTransform: 'uppercase' as const },
   boton: { ...fuente(700), fontSize: 16, lineHeight: 20 },

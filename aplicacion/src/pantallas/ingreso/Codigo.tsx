@@ -4,6 +4,9 @@
 // La nota sobre "Verificar" la da el entorno (demo: "cualquier código de 6 dígitos"). La espera para
 // pedir otro código también (demo 30 s; app real 60 s, contados desde que se pidió el último). Si la
 // persona vuelve atrás mientras se verifica, se queda donde fue.
+// S08: al completar el sexto número se verifica solo ("Verificar" queda por si acaso). Si el código no
+// sirve, se borran las casillas y el cursor vuelve a la primera. Mientras corre la espera solo se ve
+// "¿No te llegó? Pide otro en 0:57"; al llegar a 0:00 aparecen "Reenviar por WhatsApp" y el SMS.
 import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import { Platform, Text, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
@@ -35,6 +38,7 @@ export default function Codigo() {
     ingreso ? Math.max(0, espera - Math.floor((Date.now() - ingreso.pedidoEn) / 1000)) : espera,
   );
   const [verificando, setVerificando] = useState(false);
+  const enCurso = useRef(false);
   const reenviando = useRef(false);
   const entrada = useRef<ComponentRef<typeof TextInput>>(null);
   const pantalla = usePantallaAbierta();
@@ -47,19 +51,23 @@ export default function Codigo() {
   }, [segundos]);
   const numero = celular.replace(/\D/g, '') ? celularCompleto(celular) : null;
 
-  const verificar = async () => {
-    if (verificando) return;
-    if (codigo.length < LARGO) {
+  const verificar = async (escrito: string = codigo) => {
+    if (enCurso.current) return;
+    if (escrito.length < LARGO) {
       setError(`Ingresa los ${LARGO} dígitos del código.`);
       entrada.current?.focus();
       return;
     }
+    enCurso.current = true;
     setVerificando(true);
     const senal = pantalla.senal();
-    const r = await acciones.verificarCodigo(codigo, { senal });
+    const r = await acciones.verificarCodigo(escrito, { senal });
+    enCurso.current = false;
     if (senal.aborted) return;
     setVerificando(false);
     if (!r.ok) {
+      // Se borra el código malo: se escribe el nuevo desde la primera casilla.
+      setCodigo('');
       setError(r.error);
       entrada.current?.focus();
       return;
@@ -92,6 +100,8 @@ export default function Codigo() {
     const limpio = t.replace(/\D/g, '').slice(0, LARGO);
     setCodigo(limpio);
     if (error) setError(null);
+    // Con el sexto número, se verifica solo.
+    if (limpio.length === LARGO && limpio !== codigo) void verificar(limpio);
   };
 
   const activa = Math.min(codigo.length, LARGO - 1);
@@ -151,7 +161,7 @@ export default function Codigo() {
           aria-invalid={!!error}
           onFocus={() => setFoco(true)}
           onBlur={() => setFoco(false)}
-          onSubmitEditing={verificar}
+          onSubmitEditing={() => void verificar()}
           style={[
             // 16 px: evita que Safari en iPhone haga zoom al enfocar.
             { position: 'absolute', top: 0, left: 0, right: 0, height: 56, opacity: 0, color: 'transparent', fontSize: 16 },
@@ -159,25 +169,35 @@ export default function Codigo() {
           ]}
         />
         {error ? (
-          <Text role="alert" style={[tipo.ayuda, fuente(600), { color: color.error }]}>
+          <Text role="alert" style={[tipo.mensajeCampo, fuente(600), { color: color.error }]}>
             {error}
           </Text>
         ) : null}
       </View>
 
-      <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
-        <Text style={[tipo.secundario, { color: color.textoSecundario }]}>¿No te llegó?</Text>
-        {segundos > 0 ? (
-          <BotonTexto titulo={`Reenviar por WhatsApp en ${mm}:${ss}`} icono={Clock} deshabilitado />
-        ) : (
-          <BotonTexto titulo="Reenviar por WhatsApp" onPress={() => reenviar('whatsapp')} />
-        )}
-      </View>
-      <BotonTexto titulo="Recibir el código por SMS" icono={MessageSquare} onPress={() => reenviar('sms')} />
+      {segundos > 0 ? (
+        <View style={{ minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <Clock size={16} color={color.textoSecundario} strokeWidth={2} />
+          <Text style={[tipo.secundario, { color: color.textoSecundario }]}>
+            ¿No te llegó? Pide otro en{' '}
+            <Text style={[fuente(700), { color: color.texto, fontVariant: ['tabular-nums'] }]}>
+              {mm}:{ss}
+            </Text>
+          </Text>
+        </View>
+      ) : (
+        <View style={{ gap: 0 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
+            <Text style={[tipo.secundario, { color: color.textoSecundario }]}>¿No te llegó?</Text>
+            <BotonTexto titulo="Reenviar por WhatsApp" onPress={() => reenviar('whatsapp')} />
+          </View>
+          <BotonTexto titulo="Recibir el código por SMS" icono={MessageSquare} onPress={() => reenviar('sms')} />
+        </View>
+      )}
 
       <View style={{ marginTop: 'auto', paddingTop: 16, gap: 8 }}>
         {notaCodigo ? <NotaDemo texto={notaCodigo} centrada /> : null}
-        <Boton titulo="Verificar" onPress={verificar} cargando={verificando} />
+        <Boton titulo="Verificar" onPress={() => void verificar()} cargando={verificando} />
       </View>
     </Pantalla>
   );

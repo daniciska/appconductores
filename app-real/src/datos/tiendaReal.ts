@@ -26,6 +26,7 @@ export interface EstadoReal {
   aceptados: number[];
   autorizacionesCompletas: boolean;
   diasReconfirmar: number;
+  diasAvisoReconfirmar: number;
   /**
    * La sesión terminó o cambió de persona fuera del ingreso y del "Cerrar sesión" de esta pestaña
    * (en otra pestaña, o la base ya no la acepta). El layout del conductor lleva a la entrada que
@@ -96,6 +97,7 @@ function estadoInicial(): EstadoReal {
     aceptados: [],
     autorizacionesCompletas: false,
     diasReconfirmar: c.diasReconfirmar,
+    diasAvisoReconfirmar: c.diasAvisoReconfirmar,
     cambioDeSesion: { n: 0, texto: null },
   };
 }

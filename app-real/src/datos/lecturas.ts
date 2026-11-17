@@ -17,7 +17,7 @@ function fallo(r: { error: ErrorSupabase | null; status?: number }): ErrorSupaba
 
 /** Los 9 catálogos en paralelo (≈ 350 comunas: bajo el límite de 1.000 filas de la API). */
 export async function leerCatalogos(cliente: Cliente): Promise<Lectura<FilasCatalogo>> {
-  const [regiones, zonas, comunas, clases, industrias, tamanos, negocios, listas, textos, ajuste] = await Promise.all([
+  const [regiones, zonas, comunas, clases, industrias, tamanos, negocios, listas, textos, ajustes] = await Promise.all([
     cliente.from('regiones').select('id,nombre,orden').order('orden'),
     cliente.from('zonas').select('id,region_id,nombre,orden,activa'),
     cliente.from('comunas').select('id,nombre,nombres_alternativos,region_id,zona_id,activa'),
@@ -35,7 +35,8 @@ export async function leerCatalogos(cliente: Cliente): Promise<Lectura<FilasCata
       .eq('vigente', true)
       .in('para_quien', ['conductor', 'todos'])
       .order('orden'),
-    cliente.from('ajustes').select('id,valor').eq('id', 'dias_reconfirmar_disponibilidad').maybeSingle(),
+    // S14 (propuesta): también el margen para volver a mostrar "Confirmar ahora" (si no existe, 5 días).
+    cliente.from('ajustes').select('id,valor').in('id', ['dias_reconfirmar_disponibilidad', 'dias_aviso_reconfirmar']),
   ]);
   for (const r of [regiones, zonas, comunas, clases, industrias, tamanos, negocios, listas, textos]) {
     const e = fallo(r);
@@ -52,8 +53,9 @@ export async function leerCatalogos(cliente: Cliente): Promise<Lectura<FilasCata
       negocios: (negocios.data ?? []) as FilasCatalogo['negocios'],
       listas: (listas.data ?? []) as FilasCatalogo['listas'],
       textos: textos.data ?? [],
-      // Si el ajuste no se puede leer, la app usa 30 días (no corta la entrada por esto).
-      diasReconfirmar: ajuste.error ? null : (ajuste.data?.valor ?? null),
+      // Si un ajuste no se puede leer, la app usa 30 y 5 días (no corta la entrada por esto).
+      diasReconfirmar: ajustes.error ? null : (ajustes.data?.find((a) => a.id === 'dias_reconfirmar_disponibilidad')?.valor ?? null),
+      diasAvisoReconfirmar: ajustes.error ? null : (ajustes.data?.find((a) => a.id === 'dias_aviso_reconfirmar')?.valor ?? null),
     },
     error: null,
   };

@@ -12,7 +12,7 @@
 // Teclado: Tab llega a cada casilla y a cada enlace; Espacio o Enter marcan la casilla y Enter abre
 // el enlace (sin marcar la casilla).
 import { useState, type ReactNode } from 'react';
-import { Text, View } from 'react-native';
+import { Platform, Text, View, type TextStyle } from 'react-native';
 import { router } from 'expo-router';
 
 import { useAcciones, useEntorno, useVista } from '@/datos/puerto/contexto';
@@ -82,10 +82,22 @@ function FilaAutorizacion({
       <View style={{ marginTop: 1 }}>
         <Casilla marcada={marcada} />
       </View>
-      <Text style={[tipo.cuerpo, fuente(500), { flex: 1, lineHeight: 22, color: color.texto }]}>{children}</Text>
+      <Text style={[tipo.cuerpo, fuente(500), { flex: 1, lineHeight: LINEA_AUTORIZACION, color: color.texto }]}>{children}</Text>
     </Presionable>
   );
 }
+
+/**
+ * S13: alto de línea del texto de cada autorización. Con 24 px, el enlace puede medir 24 px de alto
+ * (el mínimo de WCAG 2.2 para tocar) sin salirse de su línea.
+ */
+const LINEA_AUTORIZACION = 24;
+/**
+ * S13: en la web, un relleno vertical agranda la zona que se puede tocar del enlace (19 px de letra)
+ * hasta llenar su línea, y no más: si pasara a la línea de arriba o de abajo, tocar ese texto abriría
+ * el enlace en vez de marcar la casilla (en un texto en línea, el relleno no mueve el texto).
+ */
+const AREA_ENLACE = (Platform.OS === 'web' ? { paddingTop: 2.5, paddingBottom: 2.5 } : {}) as TextStyle;
 
 /** Enlace en negrita subrayado dentro del texto de una autorización (no marca la casilla). */
 function EnlaceTexto({ titulo, onPress }: { titulo: string; onPress: () => void }) {
@@ -106,7 +118,7 @@ function EnlaceTexto({ titulo, onPress }: { titulo: string; onPress: () => void 
           onPress();
         },
       } as object)}
-      style={[fuente(700), { color: color.texto, textDecorationLine: 'underline' }]}>
+      style={[fuente(700), { color: color.texto, textDecorationLine: 'underline' }, AREA_ENLACE]}>
       {titulo}
     </Text>
   );
@@ -220,7 +232,7 @@ export default function Autorizaciones() {
       ) : (
         <Encabezado volverA="/conductor/codigo" />
       )}
-      <CabeceraFormulario titulo="Antes de empezar" subtitulo="Necesitamos tu autorización para cada uno de estos puntos." />
+      <CabeceraFormulario titulo="Antes de empezar" />
 
       <View role="group" aria-label="Autorizaciones" style={{ marginTop: 8, gap: 10 }}>
         {casillas.map((c) => (

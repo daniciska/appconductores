@@ -2,10 +2,11 @@
 // Copian el estilo exacto de las maquetas (docs/maqueta/Cond*.dc.html).
 import { useEffect, useRef, useState, type ComponentRef, type ReactNode, type RefObject } from 'react';
 import { Platform, ScrollView, Text, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
+import type { Href } from 'expo-router';
 
 import { borrarBorrador, guardarBorrador, leerBorrador } from '@/datos/borradores';
 import { useEntorno } from '@/datos/puerto/contexto';
-import { Presionable, Texto, Titulo, color, fuente, radio, tipo, type LucideIcon } from '@/ui';
+import { Boton, Dialogo, Presionable, Texto, Titulo, color, fuente, radio, tipo, volver, type LucideIcon } from '@/ui';
 import { CircleAlert, Info, Sparkles } from '@/ui/iconos';
 
 /** En web, reparte las líneas de un texto corto de forma pareja (como `text-wrap: balance` de las maquetas). */
@@ -131,14 +132,52 @@ export function EtiquetaGrupo({
           </Text>
         ) : null}
       </Text>
-      {ayuda ? <Texto variante="ayuda">{ayuda}</Texto> : null}
+      {ayuda ? <Text style={[tipo.mensajeCampo, { color: color.textoSecundario }]}>{ayuda}</Text> : null}
       {error ? (
-        <Text role="alert" style={[tipo.ayuda, fuente(600), { color: color.error }]}>
+        <Text role="alert" style={[tipo.mensajeCampo, fuente(600), { color: color.error }]}>
           {error}
         </Text>
       ) : null}
     </View>
   );
+}
+
+/**
+ * S11 · Modo edición (desde Perfil o Inicio): si hay cambios sin guardar, "Volver" pregunta antes de
+ * salir. Devuelve el onVolver para el Encabezado (undefined si no hay cambios) y el diálogo.
+ * Tocar fuera del diálogo solo lo cierra (no sale ni guarda).
+ */
+export function useSalirSinGuardar(cambiado: boolean, guardar: () => void, volverA: Href) {
+  const [abierto, setAbierto] = useState(false);
+  const onVolver = cambiado ? () => setAbierto(true) : undefined;
+  const dialogo = (
+    <Dialogo
+      visible={abierto}
+      titulo="¿Salir sin guardar?"
+      texto="Los cambios se perderán."
+      confirmar={{
+        titulo: 'Guardar',
+        onPress: () => {
+          setAbierto(false);
+          guardar();
+        },
+      }}
+      cancelar={{
+        titulo: 'Salir sin guardar',
+        onPress: () => {
+          setAbierto(false);
+          volver(volverA);
+        },
+      }}
+      alCerrar={() => setAbierto(false)}
+    />
+  );
+  return { onVolver, dialogo };
+}
+
+/** S04 · "Guardar y terminar después" de los pasos 2 a 4 (el mismo botón secundario del Paso 1). */
+export function BotonTerminarDespues({ onPress, cargando }: { onPress: () => void; cargando?: boolean }) {
+  return <Boton titulo="Guardar y terminar después" variante="contorno" onPress={onPress} cargando={cargando} />;
 }
 
 /** Alerta roja de la maqueta: "Completa los campos marcados con * para guardar." */

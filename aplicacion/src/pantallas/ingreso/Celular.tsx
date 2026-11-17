@@ -29,7 +29,8 @@ export default function Celular() {
   const error =
     intento && validar && !valido
       ? valor.trim()
-        ? 'Revisa tu número: son 9 dígitos y empieza con 9.'
+        ? // Espacios que no se cortan: el ejemplo "9 1234 5678" queda entero en una línea.
+          'Escribe solo tu número, por ejemplo 9\u00A01234\u00A05678.'
         : 'Ingresa tu número de celular.'
       : (errorEnvio ?? undefined);
 
@@ -88,7 +89,8 @@ export default function Celular() {
             textContentType="telephoneNumber"
             aria-label="Número de celular, después de +56"
             error={error}
-            maxLength={11}
+            // Deja pegar el número como sale en WhatsApp ("+56 9 9000 0001"): la máscara lo deja en 9 dígitos.
+            maxLength={16}
             returnKeyType="send"
             onSubmitEditing={enviar}
             autoFocus
