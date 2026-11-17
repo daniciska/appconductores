@@ -27,3 +27,9 @@ Quiénes trabajan en el proyecto: **Daniela** y **Mario**, socios. Cada entrada 
 - Por qué: para que ninguno quede esperando al otro para avanzar.
 - Impacto: CLAUDE.md (reglas de trabajo, decisión "Dueños", ciclo de ramas, sección de trabajo en equipo y "la dueña" → "Daniela" en lo ya decidido).
 - Pendiente: nada.
+
+## 2026-11-17 — Daniela
+- Decisión: un probador (dos conductores ficticios, Don Luis y Camila) y un simplificador recorrieron la app real del conductor. Salieron 14 propuestas de mejora con maquetas de antes y después, para decidir en https://claude.ai/artifact/KtNuX518aQZmU9YXjg4183 (Aprobar / Ajustar / No).
+- Por qué: encontrar dónde se traban los conductores antes de abrir la app a personas reales; Don Luis necesitó 56 toques para llegar a Inicio.
+- Impacto: ninguno en main ni en lo publicado. El código de las 14 queda en la rama mejoras-probador-simplificador.
+- Pendiente: que Daniela o Mario decidan cada propuesta (S07 y S12 cambian decisiones; S05 tiene un problema en el teclado del celular). Después: dejar en la rama solo lo aprobado, probar de nuevo, mergear a main y publicar.

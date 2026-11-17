@@ -155,7 +155,7 @@ Documentación, propuestas, la **Etapa 1 de la base de datos** en `supabase/` (a
 
 Este proyecto lo trabajan dos personas, **Daniela** y **Mario**, dueños y socios, cada una con su propia instancia de Claude Code sobre el mismo repositorio. La coordinación es por git y las decisiones y su porqué viven en `docs/decisiones.md`. La sección "Decisiones tomadas" de este archivo sigue siendo la foto de lo que está decidido hoy; `docs/decisiones.md` es el diario con fecha y el porqué de cada cambio. Cada decisión nueva va a los dos lugares.
 
-**Los dos pueden hacer y aprobar todo.** Cualquiera de los dos puede decidir, aprobar maquetas y cambios, mergear a `main` y publicar, de forma independiente del otro y sin esperar su visto bueno. Cuando una regla dice "pide confirmación" o "con mi OK", la confirmación la da quien está trabajando en esa sesión. En los documentos anteriores al 16-nov, "Daniela" es Daniela.
+**Los dos pueden hacer y aprobar todo.** Cualquiera de los dos puede decidir, aprobar maquetas y cambios, mergear a `main` y publicar, de forma independiente del otro y sin esperar su visto bueno. Cuando una regla dice "pide confirmación" o "con mi OK", la confirmación la da quien está trabajando en esa sesión. En los documentos anteriores al 16-nov, "la dueña" es Daniela.
 
 ## Rutina de inicio de sesión
 El `git pull` ya corre automáticamente al abrir (hook SessionStart). Cuando el usuario salude al empezar (por ejemplo "hola"), haz esto en orden:
