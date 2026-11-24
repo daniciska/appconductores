@@ -192,8 +192,22 @@ begin
                              and not ('image/gif' = any (allowed_mime_types))
                         from storage.buckets where id = 'documentos'),
     '[DC1] espacio documentos privado, hasta 10 MB, solo fotos y PDF');
-  perform pruebas.ok(exists (select 1 from public.textos_autorizacion where clave = 'revision_documentos' and vigente),
-    '[DC1] hay un texto vigente de "Revisión de mis documentos"');
+  perform pruebas.ok((select array_agg(version || ':' || obligatoria::text) from public.textos_autorizacion
+                       where clave = 'revision_documentos' and vigente) = array['prueba-2:false'],
+    '[DC1] "Revisión de mis documentos": vigente solo la prueba-2, que no es obligatoria al entrar');
+  perform pruebas.ok((select not vigente from public.textos_autorizacion where clave = 'revision_documentos' and version = 'prueba-1'),
+    '[DC1] la prueba-1 (decía que una persona decide y que se puede pedir otra revisión) ya no se ofrece');
+  perform pruebas.ok((select texto !~* 'persona|otra revisión|sistema automático' from public.textos_autorizacion
+                       where clave = 'revision_documentos' and vigente),
+    '[DC1] el texto vigente no promete una revisión que hoy no existe');
+  perform pruebas.ok((select array_agg(clave order by orden) from public.textos_autorizacion where vigente and obligatoria)
+                     = array['terminos_privacidad', 'compartir_ficha', 'normas_mensajes'],
+    '[DC1] "Antes de empezar" queda con 3 obligatorios (sin S12); la revisión se pide en el Paso 5');
+  perform pruebas.ok((select valor from public.ajustes where id = 'maximo_archivos_documentos') = '12'::jsonb
+                 and not (select publico from public.ajustes where id = 'maximo_archivos_documentos'),
+    '[DC1] tope de 12 archivos por persona (ajuste del equipo)');
+  perform pruebas.ok((select etiqueta_fecha from public.tipos_documento where clave = 'licencia') = 'Fecha de vencimiento (próximo control)',
+    '[DC1] la licencia habla de vencimiento, como sus avisos');
 end $$;
 
 
@@ -312,7 +326,7 @@ begin
   perform pruebas.ok(d.vence_en = pruebas.hoy() + 900 and d.emitido_en is null and d.fechas_anotadas_por = 'persona'
                  and d.archivo_tipo = 'image/jpeg' and d.archivo_bytes = 34567,
     '[DC4] queda su vencimiento, anotado por la persona, y el tipo y tamaño que dice Storage');
-  perform pruebas.ok(pruebas.perfil('a') = 'incompleto/sin_documentos', '[DC4] con 1 de 4: el perfil sigue incompleto');
+  perform pruebas.ok(pruebas.perfil('a') = 'incompleto/faltan_documentos', '[DC4] con 1 de 4: el perfil sigue incompleto y faltan documentos (no "sin documentos")');
   perform pruebas.ok((select count(*) from public.revisiones_documento) = 0, '[DC4] la persona no ve las revisiones');
 
   perform pruebas.falla(format($f$update public.documentos set estado = 'aprobado' where id = %s$f$, v_id), 'permission denied',
@@ -332,7 +346,7 @@ begin
 
   perform pruebas.subir('a', 'licencia', pruebas.hoy() + 400);
   perform pruebas.subir('a', 'hoja_vida', null, pruebas.hoy() - 30);
-  perform pruebas.ok(pruebas.perfil('a') = 'incompleto/sin_documentos', '[DC4] con 3 de 4: incompleto');
+  perform pruebas.ok(pruebas.perfil('a') = 'incompleto/faltan_documentos', '[DC4] con 3 de 4: incompleto, faltan documentos');
   v_id := pruebas.subir('a', 'antecedentes', null, pruebas.hoy());
   perform pruebas.ok(pruebas.perfil('a') = 'completo/verificado', '[DC4] con los 4 aprobados y los pasos listos: completo y verificado');
   perform pruebas.como('a');
@@ -375,22 +389,44 @@ end $$;
 
 
 -- =====================================================================
--- DC6. Otro método: los documentos quedan en revisión, sin tocar la app
+-- DC6. El método de validación: solo uno que existe; uno futuro que deja
+-- documentos en revisión se agrega reemplazando la función, sin tocar la app
 -- =====================================================================
 do $$
 declare
   v_lic_vieja bigint;
   v_nueva     bigint;
+  v_hv        bigint;
+  n           integer;
 begin
+  -- El ajuste solo acepta métodos que existen (hoy, aprobar_todo) y no se borra.
+  perform pruebas.como('m');
+  perform pruebas.falla($f$update public.ajustes set valor = '"equipo"' where id = 'metodo_validacion_documentos'$f$,
+    'no existe', '[DC6] un administrador no elige un método que no existe ("equipo")');
+  perform pruebas.falla($f$update public.ajustes set valor = '"Aprobar_todo"' where id = 'metodo_validacion_documentos'$f$,
+    'no existe', '[DC6] ni uno mal escrito');
+  perform pruebas.falla($f$update public.ajustes set valor = '1' where id = 'metodo_validacion_documentos'$f$,
+    'no existe', '[DC6] ni algo que no es un nombre');
+  perform pruebas.falla($f$delete from public.ajustes where id = 'metodo_validacion_documentos'$f$,
+    'no se puede borrar', '[DC6] el ajuste no se borra');
   perform pruebas.como('postgres');
-  select id into v_lic_vieja from public.documentos where cuenta_id = pruebas.id('a') and tipo_documento_id = pruebas.tipo('licencia') and estado = 'aprobado';
-  update public.ajustes set valor = '"equipo"' where id = 'metodo_validacion_documentos';
+  perform pruebas.falla($f$update public.ajustes set valor = '"equipo"' where id = 'metodo_validacion_documentos'$f$,
+    'no existe', '[DC6] tampoco con SQL directo');
+  perform pruebas.ok((select valor from public.ajustes where id = 'metodo_validacion_documentos') = '"aprobar_todo"'::jsonb,
+    '[DC6] el método sigue en aprobar_todo');
 
+  -- Un método futuro que deja los documentos en revisión (como sería la revisión por el equipo):
+  -- se agrega con una migración que reemplaza la función. Aquí se reemplaza y después se devuelve.
+  perform pruebas.guardar('def_validar', pg_get_functiondef('privado.validar_documento(bigint)'::regprocedure));
+  create or replace function privado.validar_documento(p_documento bigint) returns void
+  language plpgsql security definer set search_path = '' as $f$ begin return; end; $f$;
+
+  select id into v_lic_vieja from public.documentos where cuenta_id = pruebas.id('a') and tipo_documento_id = pruebas.tipo('licencia') and estado = 'aprobado';
   v_nueva := pruebas.subir('a', 'licencia', pruebas.hoy() + 1500);
   perform pruebas.como('a');
   perform pruebas.ok((select estado from public.documentos where id = v_nueva) = 'en_revision'
                  and (select estado from public.documentos where id = v_lic_vieja) = 'aprobado',
-    '[DC6] con método "equipo" queda en revisión y la licencia anterior sigue valiendo');
+    '[DC6] con un método que deja en revisión, la licencia nueva espera y la anterior sigue valiendo');
   perform pruebas.ok(pruebas.perfil('a') = 'completo/verificado', '[DC6] mientras tanto el perfil sigue completo');
   perform pruebas.como('e');
   perform pruebas.ok(not exists (select 1 from public.revisiones_documento where documento_id = v_nueva), '[DC6] sin revisión automática');
@@ -404,15 +440,29 @@ begin
   update public.documentos set estado = 'no_aprobado'
    where cuenta_id = pruebas.id('a') and tipo_documento_id = pruebas.tipo('hoja_vida') and estado = 'aprobado';
   perform pruebas.ok(pruebas.perfil('a') = 'incompleto/con_observaciones', '[DC6] un documento no aprobado: con observaciones e incompleto');
-  perform pruebas.subir('a', 'hoja_vida', null, pruebas.hoy());
+  v_hv := pruebas.subir('a', 'hoja_vida', null, pruebas.hoy());
   perform pruebas.ok(pruebas.perfil('a') = 'incompleto/en_revision', '[DC6] al subirlo de nuevo: en revisión (el no aprobado queda reemplazado)');
   perform pruebas.como('postgres');
   perform pruebas.ok((select count(*) from public.documentos where cuenta_id = pruebas.id('a') and tipo_documento_id = pruebas.tipo('hoja_vida') and estado = 'no_aprobado') = 0,
     '[DC6] el no aprobado quedó reemplazado');
 
+  -- Se vuelve al método provisorio: al cambiar el ajuste, lo que esperaba pasa por el método.
+  execute pruebas.leer('def_validar');
   update public.ajustes set valor = '"aprobar_todo"' where id = 'metodo_validacion_documentos';
-  perform pruebas.subir('a', 'hoja_vida', null, pruebas.hoy());
+  perform pruebas.ok((select estado from public.documentos where id = v_hv) = 'aprobado',
+    '[DC6] al cambiar el método, los documentos que esperaban se revisan (no quedan en revisión para siempre)');
   perform pruebas.ok(pruebas.perfil('a') = 'completo/verificado', '[DC6] de vuelta en aprobar_todo: aprobado y completo');
+
+  -- Si igual llegara un método desconocido (ajuste cambiado saltándose la regla), la subida falla a la vista.
+  alter table public.ajustes disable trigger metodo_validacion_proteger;
+  update public.ajustes set valor = '"otro"' where id = 'metodo_validacion_documentos';
+  perform pruebas.falla($f$select pruebas.subir('a', 'hoja_vida', null, pruebas.hoy())$f$,
+    'no podemos recibir documentos', '[DC6] con un método desconocido no se sube (nada queda esperando sin que nadie lo revise)');
+  perform pruebas.como('postgres');
+  update public.ajustes set valor = '"aprobar_todo"' where id = 'metodo_validacion_documentos';
+  alter table public.ajustes enable trigger metodo_validacion_proteger;
+  select count(*) into n from public.documentos where estado = 'en_revision';
+  perform pruebas.ok(n = 0, '[DC6] no quedó ningún documento en revisión');
 end $$;
 
 
@@ -499,51 +549,54 @@ begin
   -- b sin documentos: si se agrega un 5.º obligatorio, a queda incompleto; si se quita, vuelve.
   perform pruebas.como('m');
   insert into public.tipos_documento (clave, nombre, corto, para_quien, formato, orden) values ('certificado_extra', 'Certificado extra', 'Extra', 'conductor', 'pdf', 5);
-  perform pruebas.ok(pruebas.perfil('a') = 'incompleto/sin_documentos', '[DC9] un documento obligatorio nuevo deja incompletos a todos (se recalcula)');
+  perform pruebas.ok(pruebas.perfil('a') = 'incompleto/faltan_documentos', '[DC9] un documento obligatorio nuevo deja incompletos a todos (se recalcula)');
   update public.tipos_documento set activo = false where clave = 'certificado_extra';
   perform pruebas.ok(pruebas.perfil('a') = 'completo/verificado', '[DC9] al desactivarlo, vuelven a estar completos');
 end $$;
 
 
 -- =====================================================================
--- DC10. "Revisión de mis documentos" con "Antes de empezar" de 2 textos
--- (como quedaría con la mejora S12) y versión prueba-2 pedida en el Paso 5
+-- DC10. "Revisión de mis documentos": se pide la prueba-2 (también a quien
+-- aceptó la prueba-1) y, sin texto vigente, no se recibe nada. Con
+-- "Antes de empezar" de 2 textos (como quedaría con la mejora S12).
 -- =====================================================================
 do $$
 declare
   v_texto bigint;
 begin
   perform pruebas.como('postgres');
-  update public.textos_autorizacion set vigente = false where clave in ('revision_documentos', 'normas_mensajes') and vigente;
-  -- Sin ningún texto vigente de documentos, la base NO recibe documentos (nunca sin la autorización).
+  select id into v_texto from public.textos_autorizacion where clave = 'revision_documentos' and vigente;
+  -- t aceptó solo la prueba-1 (antes de esta migración).
   perform pruebas.registrar('t', false);
+  insert into public.consentimientos (cuenta_id, texto_autorizacion_id)
+  select pruebas.id('t'), id from public.textos_autorizacion where clave = 'revision_documentos' and version = 'prueba-1';
+  perform pruebas.falla($f$select pruebas.subir('t', 'licencia', pruebas.hoy() + 500)$f$,
+    'Primero acepta la revisión', '[DC10] quien aceptó la prueba-1 acepta la prueba-2 antes de subir');
+
+  -- Como con S12: "Antes de empezar" con 2 y ningún texto vigente de documentos.
+  perform pruebas.como('postgres');
+  update public.textos_autorizacion set vigente = false where clave in ('revision_documentos', 'normas_mensajes') and vigente;
+  perform pruebas.ok((select array_agg(clave order by orden) from public.textos_autorizacion where vigente and obligatoria)
+                     = array['terminos_privacidad', 'compartir_ficha'],
+    '[DC10] "Antes de empezar" con 2 obligatorios');
   perform pruebas.falla($f$select pruebas.subir('t', 'cedula', pruebas.hoy() + 500)$f$,
     'no podemos recibir documentos', '[DC10] sin texto vigente de documentos, no se sube nada');
   perform pruebas.falla($f$select pruebas.subir('a', 'antecedentes', null, pruebas.hoy() - 2)$f$,
-    'no podemos recibir documentos', '[DC10] tampoco quien había aceptado la versión anterior');
+    'no podemos recibir documentos', '[DC10] tampoco quien había aceptado la versión vigente antes');
   perform pruebas.como('postgres');
   perform pruebas.ok(not exists (select 1 from public.documentos where cuenta_id = pruebas.id('t')),
     '[DC10] sin texto vigente, no quedó ningún documento');
 
-  -- El bloque 7 de la migración agrega la versión prueba-2, no obligatoria al entrar.
-  perform pruebas.como('postgres');
+  -- Volver a correr el bloque 7 de la migración la deja vigente otra vez (sin duplicar).
+  update public.textos_autorizacion set vigente = false where clave = 'revision_documentos' and vigente and version <> 'prueba-2';
   insert into public.textos_autorizacion
     (clave, nombre, texto, enlace, version, para_quien, obligatoria, exige_aceptar_de_nuevo, vigente, vigente_desde, orden)
-  select 'revision_documentos', 'Revisión de documentos',
-         'Revisión de mis documentos: autorizo que mis documentos se guarden mientras mi cuenta esté activa y se revisen para verificar mi identidad, mi licencia y mis antecedentes.',
-         null, 'prueba-2', 'conductor', false, false, true, now(), 3
-   where not exists (select 1 from public.textos_autorizacion where clave = 'revision_documentos' and vigente)
+  values ('revision_documentos', 'Revisión de documentos', 'x', null, 'prueba-2', 'conductor', false, false, true, now(), 3)
   on conflict (clave, version) do update set vigente = true, vigente_desde = now();
-  select id into v_texto from public.textos_autorizacion where clave = 'revision_documentos' and vigente;
-  perform pruebas.ok((select version = 'prueba-2' and not obligatoria from public.textos_autorizacion where id = v_texto),
-    '[DC10] prueba-2 vigente y no obligatoria al entrar');
-  perform pruebas.ok((select array_agg(clave order by orden) from public.textos_autorizacion where vigente and obligatoria)
-                     = array['terminos_privacidad', 'compartir_ficha'],
-    '[DC10] "Antes de empezar" sigue con 2 obligatorios');
-  perform pruebas.falla($f$select pruebas.subir('t', 'licencia', pruebas.hoy() + 500)$f$,
-    'Primero acepta la revisión', '[DC10] con prueba-2 vigente, hay que aceptarla antes de subir');
-  perform pruebas.falla($f$select pruebas.subir('a', 'licencia', pruebas.hoy() + 500)$f$,
-    'Primero acepta la revisión', '[DC10] también quien aceptó la prueba-1 (es otra versión)');
+  perform pruebas.ok((select count(*) from public.textos_autorizacion where clave = 'revision_documentos' and vigente) = 1
+                 and (select id from public.textos_autorizacion where clave = 'revision_documentos' and vigente) = v_texto,
+    '[DC10] el bloque 7 se puede volver a correr: la misma prueba-2, una sola vigente');
+  perform pruebas.ok((select texto <> 'x' from public.textos_autorizacion where id = v_texto), '[DC10] y no cambia su texto');
 
   perform pruebas.como('t');
   insert into public.consentimientos (cuenta_id, texto_autorizacion_id) values (pruebas.id('t'), v_texto);
@@ -551,6 +604,76 @@ begin
   perform pruebas.subir('t', 'licencia', pruebas.hoy() + 500);
   perform pruebas.como('t');
   perform pruebas.ok((select count(*) from public.documentos where estado = 'aprobado') = 2, '[DC10] aceptada, se sube y se aprueba');
+  perform pruebas.ok(pruebas.perfil('t') = 'incompleto/faltan_documentos', '[DC10] con 2 de 4: faltan documentos');
+end $$;
+
+
+-- =====================================================================
+-- DC12. Retirar la autorización: los documentos dejan de usarse
+-- =====================================================================
+do $$
+declare
+  v_ruta text;
+  n      integer;
+begin
+  perform pruebas.como('t');
+  select archivo_ruta into v_ruta from public.documentos where cuenta_id = pruebas.id('t') and tipo_documento_id = pruebas.tipo('cedula');
+  update public.consentimientos set revocado_en = now()
+   where cuenta_id = pruebas.id('t') and revocado_en is null
+     and texto_autorizacion_id in (select id from public.textos_autorizacion where clave = 'revision_documentos');
+  perform pruebas.ok((select array_agg(distinct estado) from public.documentos where cuenta_id = pruebas.id('t')) = array['retirado'],
+    '[DC12] al retirar la autorización, sus documentos quedan retirados (ya no se usan)');
+  perform pruebas.ok(pruebas.perfil('t') = 'incompleto/sin_documentos', '[DC12] y su perfil vuelve a no tener documentos');
+  perform pruebas.falla($f$select pruebas.subir('t', 'cedula', pruebas.hoy() + 500)$f$,
+    'Primero acepta la revisión', '[DC12] no sube nada nuevo sin aceptar otra vez');
+  perform pruebas.como('t');
+  delete from storage.objects where name = v_ruta;
+  get diagnostics n = row_count;
+  perform pruebas.ok(n = 1, '[DC12] el archivo de un documento retirado se puede borrar');
+  perform pruebas.falla($f$update public.documentos set estado = 'aprobado' where cuenta_id = pruebas.id('t')$f$, 'permission denied',
+    '[DC12] la persona no los vuelve a aprobar');
+
+  -- Retirar otra autorización no toca los documentos.
+  perform pruebas.como('a');
+  update public.consentimientos set revocado_en = now()
+   where cuenta_id = pruebas.id('a') and revocado_en is null
+     and texto_autorizacion_id in (select id from public.textos_autorizacion where clave = 'normas_mensajes');
+  perform pruebas.ok(pruebas.perfil('a') = 'completo/verificado', '[DC12] retirar otra autorización no cambia los documentos');
+
+  -- Acepta otra vez y sube de nuevo.
+  perform pruebas.como('t');
+  insert into public.consentimientos (cuenta_id, texto_autorizacion_id)
+  select pruebas.id('t'), id from public.textos_autorizacion where clave = 'revision_documentos' and vigente;
+  perform pruebas.subir('t', 'cedula', pruebas.hoy() + 500);
+  perform pruebas.ok(pruebas.perfil('t') = 'incompleto/faltan_documentos', '[DC12] al aceptar otra vez, vuelve a subir');
+end $$;
+
+
+-- =====================================================================
+-- DC13. Tope de archivos por persona en Storage
+-- =====================================================================
+do $$
+declare
+  i integer;
+begin
+  perform pruebas.como('postgres');
+  update public.ajustes set valor = '3' where id = 'maximo_archivos_documentos';
+  delete from storage.objects where owner_id = pruebas.id('b')::text;
+  for i in 1..3 loop
+    perform pruebas.archivo('b', 'jpg', 'image/jpeg');
+  end loop;
+  perform pruebas.falla($f$select pruebas.archivo('b', 'jpg', 'image/jpeg')$f$,
+    'row-level security', '[DC13] con el tope lleno no se suben más archivos sin documento');
+  perform pruebas.como('postgres');
+  perform pruebas.ok((select count(*) from storage.objects where owner_id = pruebas.id('t')::text) < 3, '[DC13] t tiene menos de 3');
+  perform pruebas.ok(pruebas.archivo('t', 'jpg', 'image/jpeg') is not null, '[DC13] el tope es por persona: t sí sube');
+  perform pruebas.como('postgres');
+  perform pruebas.ok((select count(*) from storage.objects where owner_id = pruebas.id('b')::text) = 3, '[DC13] b quedó con 3');
+  perform pruebas.como('b');
+  delete from storage.objects where name = (select name from storage.objects where owner_id = pruebas.id('b')::text limit 1);
+  perform pruebas.ok(pruebas.archivo('b', 'jpg', 'image/jpeg') is not null, '[DC13] al borrar uno que sobra, puede subir otra vez');
+  perform pruebas.como('postgres');
+  update public.ajustes set valor = '12' where id = 'maximo_archivos_documentos';
 end $$;
 
 
@@ -569,8 +692,9 @@ begin
     select array_agg(p.proname::text order by p.proname)
       from pg_proc p join pg_namespace n on n.oid = p.pronamespace
      where n.nspname = 'privado' and has_function_privilege('authenticated', p.oid, 'EXECUTE'))
-    = array['columnas_cambiadas', 'columnas_cambiadas_salvo', 'es_admin', 'es_equipo', 'es_sistema', 'licencia_habilita_negocio'],
-    '[DC11] authenticated no ejecuta ninguna función nueva');
+    = array['columnas_cambiadas', 'columnas_cambiadas_salvo', 'es_admin', 'es_equipo', 'es_sistema', 'licencia_habilita_negocio',
+            'puede_subir_archivo_documento'],
+    '[DC11] authenticated solo ejecuta la del tope de archivos (la usa la política de Storage)');
   perform pruebas.ok(has_function_privilege('service_role', 'privado.documentos_por_avisar()', 'EXECUTE')
                  and not has_function_privilege('service_role', 'privado.validar_documento(bigint)', 'EXECUTE'),
     '[DC11] la clave de servicio solo corre la tarea diaria y los avisos');

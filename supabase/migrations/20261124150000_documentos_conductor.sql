@@ -6,12 +6,16 @@
 --     Conductor y certificado de antecedentes para fines especiales.
 --   * Los revisa un "método de validación" que corre en la base. Su detalle
 --     (IA, persona del equipo…) se define después; POR AHORA aprueba todo lo
---     que se sube. Es una pieza aparte: se cambia con el ajuste
---     metodo_validacion_documentos o reemplazando la función
---     privado.validar_documento, sin tocar la app.
+--     que se sube. Es una pieza aparte: cuando exista el método real, una
+--     migración reemplaza privado.validar_documento y agrega su nombre a
+--     privado.metodos_validacion_documentos(); el ajuste
+--     metodo_validacion_documentos elige cuál corre. La app no cambia.
 --   * Los archivos se guardan en un espacio PRIVADO de Storage mientras la
 --     cuenta esté activa; cuando un documento vence, se sube uno nuevo y el
---     anterior queda "reemplazado" (su archivo se puede borrar).
+--     anterior queda "reemplazado" (su archivo se puede borrar). OJO: borrar
+--     los archivos de Storage (los reemplazados y los de una cuenta que se
+--     borra) hoy lo hace la app; la base no tiene una tarea que lo garantice
+--     (Storage no se borra con SQL). Ver docs/terminos-y-privacidad.md.
 --   * La fecha de vencimiento (cédula, licencia) y la de emisión (Hoja de
 --     Vida, antecedentes) quedan guardadas para avisar 3 meses antes
 --     (meses_aviso_vencimiento_documentos). Hoy las anota la persona al
@@ -22,11 +26,15 @@
 -- QUÉ CREA:
 --   1. tipos_documento (catálogo configurable, con los 4 del conductor).
 --   2. documentos y revisiones_documento.
---   3. Ajustes: metodo_validacion_documentos = 'aprobar_todo' (solo equipo)
---      y meses_aviso_vencimiento_documentos = 3 (lo lee la app).
+--   3. Ajustes: metodo_validacion_documentos = 'aprobar_todo' (solo equipo;
+--      solo acepta métodos que existen), meses_aviso_vencimiento_documentos
+--      = 3 (lo lee la app) y maximo_archivos_documentos = 12 (tope de
+--      archivos por persona en Storage).
 --   4. El método de validación, los estados del perfil y los vencimientos.
 --   5. El espacio privado 'documentos' de Storage y sus políticas.
---   6. La autorización "Revisión de mis documentos" vigente (si no hay).
+--   6. La autorización "Revisión de mis documentos": la versión prueba-2,
+--      que describe lo que pasa hoy, reemplaza a la prueba-1. Si la persona
+--      retira la autorización, sus documentos quedan "retirados".
 --   7. La tarea diaria que marca los documentos vencidos (si hay pg_cron).
 --
 -- [verificar con abogado, P1]: guardar los documentos mientras la cuenta
@@ -67,7 +75,7 @@ values
   ('cedula', 'Cédula de identidad', 'Cédula', 'Foto del frente',
    'conductor', true, 'foto', 'vencimiento', 'Fecha de vencimiento', null, null, null, 1),
   ('licencia', 'Licencia de conducir', 'Licencia', 'Foto donde se vean las clases',
-   'conductor', true, 'foto', 'vencimiento', 'Fecha del próximo control', null, null, null, 2),
+   'conductor', true, 'foto', 'vencimiento', 'Fecha de vencimiento (próximo control)', null, null, null, 2),
   ('hoja_vida', 'Hoja de Vida del Conductor', 'Hoja de Vida', 'PDF del Registro Civil, de 30 días o menos',
    'conductor', true, 'pdf', 'emision', 'Fecha de emisión', 30, null, 'https://www.registrocivil.cl', 3),
   ('antecedentes', 'Certificado de antecedentes', 'Antecedentes', 'Para fines especiales, PDF de 30 días o menos',
@@ -86,7 +94,7 @@ create table public.documentos (
   archivo_tipo             text not null,
   archivo_bytes            integer check (archivo_bytes > 0),
   estado                   text not null default 'en_revision'
-                           check (estado in ('en_revision', 'aprobado', 'no_aprobado', 'vencido', 'reemplazado')),
+                           check (estado in ('en_revision', 'aprobado', 'no_aprobado', 'vencido', 'reemplazado', 'retirado')),
   subido_en                timestamptz not null default now(),
   emitido_en               date,
   vence_en                 date,
@@ -98,7 +106,7 @@ create table public.documentos (
 );
 comment on table public.documentos is 'Cada documento que sube una persona y su estado. Cada subida es una fila nueva; la anterior del mismo tipo queda reemplazada.';
 comment on column public.documentos.archivo_ruta is 'Ruta en el espacio privado documentos de Storage: <id de la cuenta>/<uuid>.<ext>. Solo la persona y (después, desde el panel) el equipo lo abren.';
-comment on column public.documentos.estado is 'en_revision (esperando al método de validación), aprobado, no_aprobado, vencido (pasó vence_en) o reemplazado (hay uno más nuevo). Lo cambian solo el sistema y el método.';
+comment on column public.documentos.estado is 'en_revision (esperando al método de validación), aprobado, no_aprobado, vencido (pasó vence_en) reemplazado (hay uno más nuevo) o retirado (la persona retiró la autorización de revisión: ya no se usa y su archivo se puede borrar). Lo cambian solo el sistema y el método.';
 comment on column public.documentos.vence_en is 'Vencimiento de la cédula, próximo control de la licencia, o emisión + renovar_cada_meses. El titular no lo ve.';
 comment on column public.documentos.fechas_anotadas_por is 'Quién anotó emitido_en y vence_en: hoy la persona al subirlo; después, el método que lee el documento.';
 comment on column public.documentos.aviso_vencimiento_en is 'Cuándo se le avisó por WhatsApp o correo que vence (lo anota quien envíe el aviso; dentro de la app el aviso se calcula solo).';
@@ -126,17 +134,27 @@ create index revisiones_documento_documento_id_idx on public.revisiones_document
 create index revisiones_documento_motivo_id_idx on public.revisiones_documento (motivo_id);
 create index revisiones_documento_revisor_id_idx on public.revisiones_documento (revisor_id);
 
+-- Estado de la verificación del conductor: se agrega faltan_documentos (subió
+-- algunos y están bien, pero faltan otros). sin_documentos queda solo para
+-- quien no subió ninguno.
+alter table public.conductores drop constraint conductores_estado_verificacion_check;
+alter table public.conductores add constraint conductores_estado_verificacion_check
+  check (estado_verificacion in ('sin_documentos', 'faltan_documentos', 'en_revision', 'verificado', 'con_observaciones'));
+
 
 -- ---------------------------------------------------------------------
 -- 3. Ajustes
 -- ---------------------------------------------------------------------
 insert into public.ajustes (id, valor, descripcion, publico) values
   ('metodo_validacion_documentos', '"aprobar_todo"'::jsonb,
-   'Cómo se revisan los documentos que se suben: aprobar_todo (provisorio, decidido el 24-nov: aprueba todo) o equipo (quedan en revisión para el equipo).',
+   'Cómo se revisan los documentos que se suben. Hoy hay un solo método: aprobar_todo (provisorio, decidido el 24-nov: aprueba todo). El método real (IA, persona del equipo) se agrega con una migración.',
    false),
   ('meses_aviso_vencimiento_documentos', '3'::jsonb,
    'Cuántos meses antes de que venza un documento (cédula, licencia…) se le avisa al conductor (decidido el 24-nov).',
-   true);
+   true),
+  ('maximo_archivos_documentos', '12'::jsonb,
+   'Cuántos archivos puede tener a la vez cada persona en el espacio de documentos (los 4 vigentes, los reemplazados y las subidas que no terminaron; la app borra los que sobran).',
+   false);
 
 
 -- ---------------------------------------------------------------------
@@ -267,10 +285,28 @@ $$;
 -- con un documento recién subido según el ajuste metodo_validacion_documentos.
 --   'aprobar_todo' (provisorio, 24-nov): lo aprueba y deja la revisión como
 --                  "aprobación automática provisoria".
---   cualquier otro valor (por ejemplo 'equipo'): no decide; el documento
---                  queda en revisión para el equipo (o para el método que venga).
--- Para cambiar de método: cambiar el ajuste desde el panel, o reemplazar
--- esta función con una migración. La app solo muestra el estado.
+-- Hoy es el único método. El ajuste solo acepta los nombres de
+-- privado.metodos_validacion_documentos() y no se puede borrar (trigger
+-- 4.2 c): así nadie deja los documentos "en revisión" sin que nadie los
+-- revise. Si aun así llega un método desconocido, la subida falla a la
+-- vista en vez de quedar en espera para siempre.
+-- Para agregar el método real (IA, persona del equipo): una migración
+-- reemplaza esta función, agrega el nombre a la lista y, si deja documentos
+-- en revisión, trae también cómo los decide el equipo (panel). Al cambiar
+-- el ajuste, los documentos que estaban en revisión pasan por el método
+-- elegido (4.2 d). La app solo muestra el estado.
+
+-- 4.2 a. Los métodos que existen.
+create or replace function privado.metodos_validacion_documentos()
+returns text[]
+language sql
+immutable
+set search_path = ''
+as $$
+  select array['aprobar_todo']
+$$;
+
+-- 4.2 b. El método.
 create or replace function privado.validar_documento(p_documento bigint)
 returns void
 language plpgsql
@@ -287,14 +323,56 @@ begin
     update public.documentos
        set estado = 'aprobado', revisado_en = now(), aprobado_automaticamente = true
      where id = p_documento and estado = 'en_revision';
+  else
+    raise exception 'Por ahora no podemos recibir documentos. Inténtalo más tarde.'
+      using errcode = '23514', detail = format('Método de validación desconocido: %s', coalesce(v_metodo, '(sin ajuste)'));
   end if;
+end;
+$$;
+
+-- 4.2 c. El ajuste del método: solo un método que existe, y no se borra.
+create or replace function privado.ajuste_metodo_validacion_proteger()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if tg_op = 'DELETE' then
+    raise exception 'El método de validación no se puede borrar: elige otro.' using errcode = '23514';
+  end if;
+  if jsonb_typeof(new.valor) is distinct from 'string'
+     or not ((new.valor #>> '{}') = any (privado.metodos_validacion_documentos())) then
+    raise exception 'Ese método de validación no existe. Los que hay: %.',
+      array_to_string(privado.metodos_validacion_documentos(), ', ') using errcode = '23514';
+  end if;
+  return new;
+end;
+$$;
+
+-- 4.2 d. Al cambiar el método, lo que estaba en revisión pasa por el nuevo.
+create or replace function privado.revalidar_documentos_en_revision()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_id bigint;
+begin
+  for v_id in select d.id from public.documentos d where d.estado = 'en_revision' order by d.subido_en, d.id loop
+    perform privado.validar_documento(v_id);
+  end loop;
+  return null;
 end;
 $$;
 
 -- 4.3 Estado del perfil y de la verificación de un conductor.
 --   estado_verificacion: verificado (todos los obligatorios aprobados y
 --     vigentes), con_observaciones (el último de alguno no fue aprobado o
---     venció), en_revision (alguno espera revisión) o sin_documentos.
+--     venció), en_revision (alguno espera revisión), faltan_documentos
+--     (subió algunos, todos bien, pero faltan otros) o sin_documentos (no
+--     subió ninguno de los que se piden).
 --   estado_perfil: completo con los pasos 1, 2 y 4 listos y verificado
 --     (el Paso 3 es opcional). Mismas reglas que la app (app-real/src/datos/perfil.ts).
 create or replace function privado.recalcular_conductor(p_conductor uuid)
@@ -312,6 +390,7 @@ declare
   v_ok        integer;
   v_obs       integer;
   v_rev       integer;
+  v_subidos   integer;
   v_verif     text;
   v_perfil    text;
 begin
@@ -350,21 +429,23 @@ begin
                 and d.estado = 'aprobado' and (d.vence_en is null or d.vence_en >= v_hoy)
            ) as ok,
            (select d.estado from public.documentos d
-             where d.cuenta_id = p_conductor and d.tipo_documento_id = t.id and d.estado <> 'reemplazado'
+             where d.cuenta_id = p_conductor and d.tipo_documento_id = t.id and d.estado not in ('reemplazado', 'retirado')
              order by d.subido_en desc, d.id desc limit 1) as ultimo
       from tipos t
   )
   select count(*),
          count(*) filter (where ok),
          count(*) filter (where not ok and ultimo in ('no_aprobado', 'vencido', 'aprobado')),
-         count(*) filter (where not ok and ultimo = 'en_revision')
-    into v_total, v_ok, v_obs, v_rev
+         count(*) filter (where not ok and ultimo = 'en_revision'),
+         count(*) filter (where ok or ultimo is not null)
+    into v_total, v_ok, v_obs, v_rev, v_subidos
     from por_tipo;
 
   v_verif := case
     when v_ok = v_total then 'verificado'
     when v_obs > 0 then 'con_observaciones'
     when v_rev > 0 then 'en_revision'
+    when v_subidos > 0 then 'faltan_documentos'
     else 'sin_documentos'
   end;
   v_perfil := case when v_datos and v_direccion and v_trabajo and v_verif = 'verificado' then 'completo' else 'incompleto' end;
@@ -411,7 +492,7 @@ begin
     update public.documentos d
        set estado = 'reemplazado'
      where d.cuenta_id = new.cuenta_id and d.tipo_documento_id = new.tipo_documento_id
-       and d.id <> new.id and d.estado <> 'reemplazado'
+       and d.id <> new.id and d.estado not in ('reemplazado', 'retirado')
        and (d.subido_en, d.id) < (new.subido_en, new.id);
   end if;
   perform privado.recalcular_conductor(new.cuenta_id);
@@ -500,6 +581,50 @@ as $$
    order by d.vence_en, d.id
 $$;
 
+-- 4.10 Si la persona retira la autorización "Revisión de mis documentos" (y
+-- no le queda otra versión aceptada), sus documentos dejan de usarse: quedan
+-- "retirados", el perfil se recalcula (sale de los matches) y sus archivos
+-- se pueden borrar. Para volver, acepta de nuevo y los sube otra vez.
+-- [verificar con abogado: si además hay que borrar los archivos al tiro, A67]
+create or replace function privado.documentos_al_retirar_autorizacion()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if not exists (select 1 from public.textos_autorizacion t
+                  where t.id = new.texto_autorizacion_id and t.clave = 'revision_documentos') then
+    return null;
+  end if;
+  if exists (select 1 from public.consentimientos c
+               join public.textos_autorizacion t on t.id = c.texto_autorizacion_id
+              where c.cuenta_id = new.cuenta_id and t.clave = 'revision_documentos' and c.revocado_en is null) then
+    return null;
+  end if;
+  update public.documentos d
+     set estado = 'retirado'
+   where d.cuenta_id = new.cuenta_id and d.estado not in ('reemplazado', 'retirado');
+  return null;
+end;
+$$;
+
+-- 4.11 Tope de archivos por persona en el espacio documentos (lo usa la
+-- política de subida de Storage): cuenta solo los de quien sube.
+create or replace function privado.puede_subir_archivo_documento()
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select (select count(*) from storage.objects o
+           where o.bucket_id = 'documentos'
+             and (storage.foldername(o.name))[1] = (select auth.uid())::text)
+         < coalesce((select (a.valor #>> '{}')::integer from public.ajustes a
+                      where a.id = 'maximo_archivos_documentos'), 12)
+$$;
+
 create or replace function privado.anotar_aviso_vencimiento(p_documento bigint)
 returns void
 language sql
@@ -530,10 +655,26 @@ create trigger recalcular_perfil after insert or delete on public.conductor_opci
 create trigger recalcular_perfiles after insert or update or delete on public.tipos_documento
   for each statement execute function privado.recalcular_todos_los_conductores();
 
+create trigger documentos_al_retirar after update of revocado_en on public.consentimientos
+  for each row when (old.revocado_en is null and new.revocado_en is not null)
+  execute function privado.documentos_al_retirar_autorizacion();
+
+create trigger metodo_validacion_proteger before update or delete on public.ajustes
+  for each row when (old.id = 'metodo_validacion_documentos')
+  execute function privado.ajuste_metodo_validacion_proteger();
+create trigger metodo_validacion_revalidar after update of valor on public.ajustes
+  for each row when (new.id = 'metodo_validacion_documentos')
+  execute function privado.revalidar_documentos_en_revision();
+
 -- Permisos de funciones (README: cada función nueva se cierra a mano).
 revoke all on function
   privado.documentos_proteger(),
+  privado.metodos_validacion_documentos(),
   privado.validar_documento(bigint),
+  privado.ajuste_metodo_validacion_proteger(),
+  privado.revalidar_documentos_en_revision(),
+  privado.documentos_al_retirar_autorizacion(),
+  privado.puede_subir_archivo_documento(),
   privado.recalcular_conductor(uuid),
   privado.documentos_al_subir(),
   privado.documentos_al_cambiar_estado(),
@@ -549,6 +690,8 @@ grant execute on function
   privado.documentos_por_avisar(),
   privado.anotar_aviso_vencimiento(bigint)
   to service_role;
+-- La política de subida de Storage corre con el rol de quien sube.
+grant execute on function privado.puede_subir_archivo_documento() to authenticated;
 
 
 -- ---------------------------------------------------------------------
@@ -608,9 +751,11 @@ $$;
 -- 6. Espacio privado de Storage para los archivos
 -- ---------------------------------------------------------------------
 -- Privado (public = false): no hay enlaces públicos. Hasta 10 MB, solo
--- fotos y PDF. Cada persona sube y lee solo su carpeta (<su id>/). Un
--- archivo solo se puede borrar si ningún documento vigente lo usa (los
--- reemplazados sí: así no quedan archivos viejos). Nadie los cambia
+-- fotos y PDF. Cada persona sube y lee solo su carpeta (<su id>/), con un
+-- tope de archivos (maximo_archivos_documentos), para que nadie llene el
+-- espacio. Un archivo solo se puede borrar si ningún documento vigente lo
+-- usa (los reemplazados y retirados sí: así no quedan archivos viejos;
+-- hoy los borra la app). Nadie los cambia
 -- (no hay UPDATE). El equipo los leerá desde el panel con su propia
 -- política, cuando se construya (con registro de cada apertura, R26).
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
@@ -626,6 +771,7 @@ create policy documentos_subir_propio on storage.objects for insert to authentic
     bucket_id = 'documentos'
     and (storage.foldername(name))[1] = (select auth.uid())::text
     and name ~ '^[0-9a-f-]{36}/[0-9a-f-]{36}\.(jpg|jpeg|png|webp|heic|heif|pdf)$'
+    and (select privado.puede_subir_archivo_documento())
   );
 create policy documentos_leer_propio on storage.objects for select to authenticated
   using (
@@ -638,7 +784,7 @@ create policy documentos_borrar_sin_uso on storage.objects for delete to authent
     and (storage.foldername(name))[1] = (select auth.uid())::text
     and not exists (
       select 1 from public.documentos d
-       where d.archivo_ruta = storage.objects.name and d.estado <> 'reemplazado')
+       where d.archivo_ruta = storage.objects.name and d.estado not in ('reemplazado', 'retirado'))
   );
 
 
@@ -646,22 +792,32 @@ create policy documentos_borrar_sin_uso on storage.objects for delete to authent
 -- 7. "Revisión de mis documentos"
 -- ---------------------------------------------------------------------
 -- La app la pide antes de subir el primer documento si la persona no la
--- aceptó (y la base lo exige, 4.1). Si hoy la pide "Antes de empezar"
--- (versión prueba-1, obligatoria), no cambia nada. Si no hay ninguna
--- vigente (porque "Antes de empezar" quedó solo con 2, mejora S12), se
--- agrega la versión prueba-2, NO obligatoria al entrar: se pide en el
--- Paso 5. Texto de prueba que no describe un método de revisión en
--- particular (hoy el método aprueba todo), hasta el definitivo del abogado.
--- OJO al integrar: si la migración de S12 (autorizaciones_solo_dos) se
--- aplica DESPUÉS que esta, hay que volver a correr este bloque (no
--- duplica nada). Si se olvida, la base NO recibe documentos (4.1): falla
--- a la vista, nunca deja subirlos sin la autorización.
+-- aceptó (y la base lo exige, 4.1).
+-- La versión prueba-1 (de "Antes de empezar", 9-nov) dice que "un sistema
+-- automático los revisa primero; las dudas y los rechazos los decide una
+-- persona" y que "puedo pedir otra revisión". Hoy no es así: el método
+-- aprueba todo y la app no tiene cómo pedir otra revisión. Un consentimiento
+-- tiene que describir lo que de verdad se hace (Ley 21.719), así que la
+-- prueba-1 deja de ofrecerse (vigente = false; no se borra, hay aceptaciones
+-- que la apuntan) y queda vigente la prueba-2, NO obligatoria al entrar: se
+-- pide en el Paso 5, antes del primer documento. Quien aceptó la prueba-1
+-- la acepta otra vez ahí (en la base de verdad no hay documentos todavía).
+-- Texto de prueba, hasta el definitivo del abogado (A66).
+-- OJO al integrar con la mejora S12 (autorizaciones_solo_dos, rama
+-- mejoras-probador-simplificador): si S12 se aplica DESPUÉS que esta,
+-- apaga la prueba-2 y la base deja de recibir documentos (4.1: falla a la
+-- vista, nunca los recibe sin autorización). En ese caso hay que volver a
+-- correr este bloque (no duplica nada) o ajustar S12 para que solo apague
+-- normas_mensajes.
+update public.textos_autorizacion
+   set vigente = false
+ where clave = 'revision_documentos' and vigente and version <> 'prueba-2';
+
 insert into public.textos_autorizacion
   (clave, nombre, texto, enlace, version, para_quien, obligatoria, exige_aceptar_de_nuevo, vigente, vigente_desde, orden)
-select 'revision_documentos', 'Revisión de documentos',
+values ('revision_documentos', 'Revisión de documentos',
        'Revisión de mis documentos: autorizo que mis documentos se guarden mientras mi cuenta esté activa y se revisen para verificar mi identidad, mi licencia y mis antecedentes.',
-       null, 'prueba-2', 'conductor', false, false, true, now(), 3
- where not exists (select 1 from public.textos_autorizacion where clave = 'revision_documentos' and vigente)
+       null, 'prueba-2', 'conductor', false, false, true, now(), 3)
 on conflict (clave, version) do update set vigente = true, vigente_desde = now();
 
 

@@ -292,14 +292,14 @@ export function crearSupabaseSimulado(opciones = {}) {
     return salida;
   }
 
-  /** Filtros de la URL (eq, neq, in, is). */
+  /** Filtros de la URL (eq, neq, in, not.in, is). */
   function filtros(query) {
     const lista = [];
     for (const [col, val] of query.entries()) {
       if (['select', 'order', 'on_conflict', 'columns', 'limit', 'offset'].includes(col)) continue;
-      const m = /^(eq|neq|in|is)\.(.*)$/s.exec(val);
-      if (!m) throw new ErrorPg('PGRST100', `filtro no simulado: ${col}=${val}`, 400);
-      lista.push({ col, op: m[1], valor: m[2] });
+      const m = /^(not\.)?(eq|neq|in|is)\.(.*)$/s.exec(val);
+      if (!m || (m[1] && m[2] !== 'in')) throw new ErrorPg('PGRST100', `filtro no simulado: ${col}=${val}`, 400);
+      lista.push({ col, op: m[1] ? 'not.in' : m[2], valor: m[3] });
     }
     return (fila) =>
       lista.every(({ col, op, valor }) => {
@@ -311,7 +311,7 @@ export function crearSupabaseSimulado(opciones = {}) {
           .replace(/^\(|\)$/g, '')
           .split(',')
           .map((x) => x.replace(/^"|"$/g, ''));
-        return valores.includes(String(v));
+        return op === 'not.in' ? !valores.includes(String(v)) : valores.includes(String(v));
       });
   }
 
@@ -459,6 +459,8 @@ export function crearSupabaseSimulado(opciones = {}) {
       revisiones.push({ documento_id: nuevo.id, etapa: 'automatica', resultado: 'aprobar', metodo: 'aprobacion_automatica_provisoria' });
       cambiarEstadoDocumento(nuevo, 'aprobado');
     }
+    // Otro valor: como un método futuro (reemplazo de privado.validar_documento) que deja el documento
+    // en revisión. En la base de verdad, el ajuste solo acepta métodos que existen.
     recalcular(nuevo.cuenta_id);
   }
 
@@ -468,7 +470,7 @@ export function crearSupabaseSimulado(opciones = {}) {
       doc.revisado_en = iso();
       doc.aprobado_automaticamente = metodo === 'aprobar_todo';
       for (const d of datos.documentos) {
-        if (d.id !== doc.id && d.cuenta_id === doc.cuenta_id && d.tipo_documento_id === doc.tipo_documento_id && d.estado !== 'reemplazado' && d.id < doc.id) d.estado = 'reemplazado';
+        if (d.id !== doc.id && d.cuenta_id === doc.cuenta_id && d.tipo_documento_id === doc.tipo_documento_id && !['reemplazado', 'retirado'].includes(d.estado) && d.id < doc.id) d.estado = 'reemplazado';
       }
     }
     recalcular(doc.cuenta_id);
@@ -490,15 +492,18 @@ export function crearSupabaseSimulado(opciones = {}) {
     let ok = 0;
     let obs = 0;
     let rev = 0;
+    let subidos = 0;
     for (const t of tipos) {
       const propios = datos.documentos.filter((d) => d.cuenta_id === uid && d.tipo_documento_id === t.id);
       const listo = propios.some((d) => d.estado === 'aprobado' && (d.vence_en == null || d.vence_en >= hoy));
-      const ultimo = propios.filter((d) => d.estado !== 'reemplazado').sort((a, b) => b.id - a.id)[0];
+      const ultimo = propios.filter((d) => !['reemplazado', 'retirado'].includes(d.estado)).sort((a, b) => b.id - a.id)[0];
+      if (listo || ultimo) subidos++;
       if (listo) ok++;
       else if (ultimo && ['no_aprobado', 'vencido', 'aprobado'].includes(ultimo.estado)) obs++;
       else if (ultimo?.estado === 'en_revision') rev++;
     }
-    const verif = ok === tipos.length ? 'verificado' : obs > 0 ? 'con_observaciones' : rev > 0 ? 'en_revision' : 'sin_documentos';
+    const verif =
+      ok === tipos.length ? 'verificado' : obs > 0 ? 'con_observaciones' : rev > 0 ? 'en_revision' : subidos > 0 ? 'faltan_documentos' : 'sin_documentos';
     const perfil = datosOk && direccionOk && trabajoOk && verif === 'verificado' ? 'completo' : 'incompleto';
     c.estado_verificacion = verif;
     c.perfil_completo_en = perfil === 'completo' ? (c.estado_perfil === 'completo' ? c.perfil_completo_en : iso()) : null;
@@ -526,8 +531,12 @@ export function crearSupabaseSimulado(opciones = {}) {
       const tamano = bytes ? bytes.length : 0;
       if (tamano > LIMITE_ESPACIO) return errorStorage(413, 413, 'Payload too large', 'The object exceeded the maximum allowed size');
       if (archivos.some((a) => a.name === nombre)) return errorStorage(400, 409, 'Duplicate', 'The resource already exists');
+      // Tope de archivos por persona (privado.puede_subir_archivo_documento, ajuste maximo_archivos_documentos).
+      const tope = Number(ajustes.find((a) => a.id === 'maximo_archivos_documentos')?.valor ?? 12);
+      if (archivos.filter((a) => a.name.split('/')[0] === uid).length >= tope)
+        return errorStorage(400, 403, 'Unauthorized', 'new row violates row-level security policy');
       const id = nuevoId();
-      archivos.push({ id, name: nombre, owner_id: uid, metadata: { mimetype: tipo, size: tamano }, created_at: iso() });
+      archivos.push({ id, name: nombre, owner_id: uid, metadata: { mimetype: tipo, size: tamano }, created_at: new Date(ahora()).toISOString() });
       return jsonOk({ Key: `documentos/${nombre}`, Id: id });
     }
     if (p.method === 'POST' && mListar) {
@@ -544,7 +553,7 @@ export function crearSupabaseSimulado(opciones = {}) {
       for (const nombre of cuerpo.prefixes ?? []) {
         const i = archivos.findIndex((a) => a.name === nombre && a.owner_id === uid && nombre.split('/')[0] === uid);
         if (i < 0) continue;
-        if (datos.documentos.some((d) => d.archivo_ruta === nombre && d.estado !== 'reemplazado')) continue;
+        if (datos.documentos.some((d) => d.archivo_ruta === nombre && !['reemplazado', 'retirado'].includes(d.estado))) continue;
         borrados.push(archivos.splice(i, 1)[0]);
       }
       return jsonOk(borrados.map((a) => ({ name: a.name, id: a.id, bucket_id: 'documentos', metadata: a.metadata })));
