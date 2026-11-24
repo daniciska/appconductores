@@ -6,25 +6,27 @@
 // demo) se puede continuar igual; en la app real hay que marcarlas todas.
 // Casillas y textos (./textosAutorizacion.ts): la demo muestra las 4 de la maqueta ('prueba-1'); la app
 // real, una por cada texto obligatorio vigente de la base (en su orden), y registra la aceptación de esos
-// mismos. Un texto igual al de la maqueta se dibuja con el JSX aprobado; cualquier otro, con partesTexto.
+// mismos. Todas se dibujan igual (partesTexto y enlacesDeLaCasilla): la frase, con su título en negrita,
+// marca la casilla al tocarla en cualquier parte; los documentos que nombra ("Términos", "Política de
+// privacidad") se abren desde una línea aparte bajo la frase, con 44 px para tocar (S13, 24-nov).
 // "Volver": en la demo, al código (A3); en la app real, a Inicio solo si la guardia la deja salir de A4;
 // si no, ofrece cerrar sesión (la sesión ya está abierta y no hay otra salida).
 // Teclado: Tab llega a cada casilla y a cada enlace; Espacio o Enter marcan la casilla y Enter abre
-// el enlace (sin marcar la casilla).
-import { useState, type ReactNode } from 'react';
+// el enlace.
+import { useState } from 'react';
 import { Text, View } from 'react-native';
 import { router } from 'expo-router';
 
 import { useAcciones, useEntorno, useVista } from '@/datos/puerto/contexto';
-import type { CasillaAutorizacion, MarcasAutorizacion } from '@/datos/puerto/tipos';
+import type { MarcasAutorizacion } from '@/datos/puerto/tipos';
 import { Boton, Casilla, Dialogo, Encabezado, HojaInferior, Pantalla, Presionable, Texto, color, fuente, radio, tipo } from '@/ui';
 
 import { RUTA_PASO, irABienvenidaTrasCerrarSesion, irAInicioConductor, useGuardando, usePantallaAbierta } from './acciones';
 import { AlertaObligatorios, CabeceraFormulario, useValidarObligatorios } from './comunes';
 import {
   TEXTOS_AUTORIZACION,
-  casillaDeLaMaqueta,
   casillasA4,
+  enlacesDeLaCasilla,
   faltanEnA4,
   marcasIniciales,
   partesTexto,
@@ -36,133 +38,100 @@ import {
 export { TEXTOS_AUTORIZACION };
 
 /** Tecla del teclado en la web (react-native-web entrega el evento del navegador). */
-type EventoTecla = { key?: string; repeat?: boolean; target?: unknown; currentTarget?: unknown; preventDefault?: () => void; stopPropagation?: () => void };
+type EventoTecla = { key?: string; repeat?: boolean; target?: unknown; currentTarget?: unknown; preventDefault?: () => void };
 
+/**
+ * Una casilla: la frase entera marca o desmarca la casilla (tocarla en cualquier parte), y debajo, si la
+ * frase nombra documentos, la línea de sus enlaces (S13, 24-nov). Los enlaces quedan fuera de la casilla:
+ * cada uno mide al menos 44 px de alto y no se tocan por error al marcar.
+ */
 function FilaAutorizacion({
+  texto,
   marcada,
   error,
   onPress,
-  etiqueta,
-  children,
+  abrir,
 }: {
+  texto: string;
   marcada: boolean;
   error: boolean;
   onPress: () => void;
-  etiqueta: string;
-  children: ReactNode;
+  abrir: (d: DocumentoLegal) => void;
 }) {
+  const enlaces = enlacesDeLaCasilla(texto);
   return (
-    <Presionable
-      role="checkbox"
-      aria-checked={marcada}
-      aria-invalid={error}
-      aria-label={etiqueta}
-      onPress={onPress}
-      // Espacio marca la casilla, como en una casilla del navegador (Enter ya lo hace Presionable).
-      {...({
-        onKeyDown: (e: EventoTecla) => {
-          if (e.key !== ' ' || e.target !== e.currentTarget) return;
-          e.preventDefault?.();
-          if (!e.repeat) onPress();
-        },
-      } as object)}
-      efecto="ninguno"
-      style={({ pressed }) => ({
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        gap: 12,
+    <View
+      style={{
         backgroundColor: color.superficie,
         borderWidth: marcada || error ? 1.5 : 1,
         borderColor: error ? color.error : marcada ? color.bordeFuerte : color.bordeCampo,
         borderRadius: radio.campo,
-        paddingVertical: 14,
-        paddingHorizontal: 16,
-        opacity: pressed ? 0.85 : 1,
-      })}>
-      <View style={{ marginTop: 1 }}>
-        <Casilla marcada={marcada} />
-      </View>
-      <Text style={[tipo.cuerpo, fuente(500), { flex: 1, lineHeight: 22, color: color.texto }]}>{children}</Text>
-    </Presionable>
-  );
-}
-
-/** Enlace en negrita subrayado dentro del texto de una autorización (no marca la casilla). */
-function EnlaceTexto({ titulo, onPress }: { titulo: string; onPress: () => void }) {
-  return (
-    <Text
-      role="link"
-      onPress={(e) => {
-        e?.stopPropagation?.();
-        e?.preventDefault?.();
-        onPress();
-      }}
-      {...({
-        // Enter abre la ventana (y no llega a la casilla de alrededor).
-        onKeyDown: (e: EventoTecla) => {
-          if (e.key !== 'Enter') return;
-          e.preventDefault?.();
-          e.stopPropagation?.();
-          onPress();
-        },
-      } as object)}
-      style={[fuente(700), { color: color.texto, textDecorationLine: 'underline' }]}>
-      {titulo}
-    </Text>
-  );
-}
-
-/** Los 4 textos aprobados, tal como en la maqueta (la demo y la app real mientras la base tenga 'prueba-1'). */
-function contenidoMaqueta(c: CasillaAutorizacion, abrir: (d: DocumentoLegal) => void): ReactNode {
-  switch (c) {
-    case 'terminos':
-      return (
-        <>
-          Acepto los <EnlaceTexto titulo="Términos" onPress={() => abrir('terminos')} /> y la{' '}
-          <EnlaceTexto titulo="Política de privacidad" onPress={() => abrir('privacidad')} />, y declaro ser mayor de 18 años.
-        </>
-      );
-    case 'compartir':
-      return <>Autorizo que, cuando haga match, se compartan mi ficha y mi contacto (teléfono y email) con ese titular.</>;
-    case 'revision':
-      return (
-        <>
-          <Text style={fuente(700)}>Revisión de mis documentos:</Text> un sistema automático los revisa primero; las dudas y los
-          rechazos los decide una persona de nuestro equipo. Puedo pedir otra revisión.
-        </>
-      );
-    case 'mensajes':
-      return (
-        <>
-          <Text style={fuente(700)}>Mensajes:</Text> me comprometo a un trato respetuoso. Las conversaciones se pueden reportar y
-          bloquear.
-        </>
-      );
-  }
-}
-
-/**
- * El texto de una casilla: uno aprobado (igual a una casilla de la maqueta) se dibuja igual que en la
- * maqueta; cualquier otro que llegue de la base (por ejemplo, el del abogado o una autorización nueva)
- * se dibuja con las mismas reglas (título en negrita y enlaces a Términos y Política, ver partesTexto).
- */
-function ContenidoTexto({ texto, abrir }: { texto: string; abrir: (d: DocumentoLegal) => void }) {
-  const deLaMaqueta = casillaDeLaMaqueta(texto);
-  if (deLaMaqueta) return <>{contenidoMaqueta(deLaMaqueta, abrir)}</>;
-  return (
-    <>
-      {partesTexto(texto).map((p, i) =>
-        p.tipo === 'negrita' ? (
-          <Text key={i} style={fuente(700)}>
-            {p.texto}
-          </Text>
-        ) : p.tipo === 'enlace' ? (
-          <EnlaceTexto key={i} titulo={p.texto} onPress={() => abrir(p.documento)} />
-        ) : (
-          p.texto
-        ),
-      )}
-    </>
+        overflow: 'hidden',
+      }}>
+      <Presionable
+        role="checkbox"
+        aria-checked={marcada}
+        aria-invalid={error}
+        aria-label={texto}
+        onPress={onPress}
+        // Espacio marca la casilla, como en una casilla del navegador (Enter ya lo hace Presionable).
+        {...({
+          onKeyDown: (e: EventoTecla) => {
+            if (e.key !== ' ' || e.target !== e.currentTarget) return;
+            e.preventDefault?.();
+            if (!e.repeat) onPress();
+          },
+        } as object)}
+        efecto="ninguno"
+        style={({ pressed }) => ({
+          flexDirection: 'row',
+          alignItems: 'flex-start',
+          gap: 12,
+          paddingTop: 14,
+          paddingBottom: enlaces.length ? 4 : 14,
+          paddingHorizontal: 16,
+          opacity: pressed ? 0.85 : 1,
+        })}>
+        <View style={{ marginTop: 1 }}>
+          <Casilla marcada={marcada} />
+        </View>
+        <Text style={[tipo.cuerpo, fuente(500), { flex: 1, color: color.texto }]}>
+          {partesTexto(texto).map((p, i) =>
+            p.tipo === 'negrita' ? (
+              <Text key={i} style={fuente(700)}>
+                {p.texto}
+              </Text>
+            ) : (
+              p.texto
+            ),
+          )}
+        </Text>
+      </Presionable>
+      {enlaces.length ? (
+        // Bajo la frase y alineados con ella (16 de margen + 20 de casilla + 12 de espacio), uno bajo el
+        // otro: en un celular no caben los dos en una línea con 44 px cada uno para tocar.
+        <View style={{ alignItems: 'flex-start', paddingLeft: 48, paddingRight: 16, paddingBottom: 4 }}>
+          {enlaces.map((e) => (
+            <Presionable
+              key={e.documento}
+              role="link"
+              aria-label={e.titulo}
+              onPress={() => abrir(e.documento)}
+              // Enter abre el documento (en la web, un enlace sin dirección no lo hace solo).
+              {...({
+                onKeyDown: (k: EventoTecla) => {
+                  if (k.key !== 'Enter' || k.target !== k.currentTarget) return;
+                  k.preventDefault?.();
+                  abrir(e.documento);
+                },
+              } as object)}
+              style={{ minHeight: 44, justifyContent: 'center' }}>
+              <Text style={[tipo.cuerpo, fuente(700), { color: color.texto, textDecorationLine: 'underline' }]}>{e.titulo}</Text>
+            </Presionable>
+          ))}
+        </View>
+      ) : null}
+    </View>
   );
 }
 
@@ -220,13 +189,18 @@ export default function Autorizaciones() {
       ) : (
         <Encabezado volverA="/conductor/codigo" />
       )}
-      <CabeceraFormulario titulo="Antes de empezar" subtitulo="Necesitamos tu autorización para cada uno de estos puntos." />
+      <CabeceraFormulario titulo="Antes de empezar" />
 
       <View role="group" aria-label="Autorizaciones" style={{ marginTop: 8, gap: 10 }}>
         {casillas.map((c) => (
-          <FilaAutorizacion key={c.id} marcada={!!marcas[c.id]} error={mostrarErrores && !marcas[c.id]} onPress={() => alternar(c.id)} etiqueta={c.texto}>
-            <ContenidoTexto texto={c.texto} abrir={setDocumento} />
-          </FilaAutorizacion>
+          <FilaAutorizacion
+            key={c.id}
+            texto={c.texto}
+            marcada={!!marcas[c.id]}
+            error={mostrarErrores && !marcas[c.id]}
+            onPress={() => alternar(c.id)}
+            abrir={setDocumento}
+          />
         ))}
       </View>
 

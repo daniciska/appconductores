@@ -2,7 +2,7 @@
 // Los 4 textos de "Antes de empezar": los de la pantalla (TEXTOS_AUTORIZACION, los que muestra la demo)
 // son los mismos que guarda la base como versión 'prueba-1' (la migración aplicada en Supabase el 9-nov).
 // La app real muestra una casilla por cada texto obligatorio vigente de la base (textosParaA4) y registra
-// esos mismos; la pantalla los dibuja con partesTexto (negrita y enlaces), igual que la maqueta.
+// esos mismos; la pantalla los dibuja con partesTexto (negrita) y pone los enlaces en una línea aparte (enlacesDeLaCasilla).
 // Versiones nuevas, una 5.ª autorización y "Volver": tests/a4-versiones.test.ts.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -10,7 +10,7 @@ import { describe, it } from 'node:test';
 
 import { textosParaAceptar } from '../src/datos/escrituras.ts';
 import { textosParaA4 } from '../src/datos/perfil.ts';
-import { TEXTOS_AUTORIZACION, casillaDeLaMaqueta, partesTexto } from '../../aplicacion/src/pantallas/ingreso/textosAutorizacion.ts';
+import { TEXTOS_AUTORIZACION, casillaDeLaMaqueta, enlacesDeLaCasilla, partesTexto } from '../../aplicacion/src/pantallas/ingreso/textosAutorizacion.ts';
 
 import { BASE } from './base.ts';
 
@@ -55,20 +55,14 @@ describe('textos de "Antes de empezar"', () => {
     const r2 = textosParaAceptar({ ...todas, '9': true }, nueva);
     assert.ok(r2.ok && r2.valor.map((t) => t.id).join() === '1,9,3,4');
     // Sin textos en la base (migración no aplicada) no se registra nada.
-    assert.deepEqual(textosParaAceptar(todas, []), { ok: false, error: 'Faltan los textos de autorización. Avísale al equipo.' });
+    assert.deepEqual(textosParaAceptar(todas, []), { ok: false, error: 'No pudimos cargar las autorizaciones. Inténtalo más tarde.' });
     // Lo que la base tiene es lo que se pide: sin uno, A4 muestra 3 casillas y bastan esas 3.
     const sinUno = vigentes.filter((t: { clave: string }) => t.clave !== 'normas_mensajes');
     assert.equal(textosParaA4(sinUno, []).length, 3);
     assert.ok(textosParaAceptar({ '1': true, '2': true, '3': true }, sinUno).ok);
   });
-  it('se dibujan como en la maqueta: título en negrita y enlaces a Términos y Política', () => {
-    assert.deepEqual(partesTexto(TEXTOS_AUTORIZACION.terminos), [
-      { tipo: 'texto', texto: 'Acepto los ' },
-      { tipo: 'enlace', texto: 'Términos', documento: 'terminos' },
-      { tipo: 'texto', texto: ' y la ' },
-      { tipo: 'enlace', texto: 'Política de privacidad', documento: 'privacidad' },
-      { tipo: 'texto', texto: ', y declaro ser mayor de 18 años.' },
-    ]);
+  it('se dibujan como en la maqueta: título en negrita y la frase como texto normal', () => {
+    assert.deepEqual(partesTexto(TEXTOS_AUTORIZACION.terminos), [{ tipo: 'texto', texto: TEXTOS_AUTORIZACION.terminos }]);
     assert.deepEqual(partesTexto(TEXTOS_AUTORIZACION.compartir), [{ tipo: 'texto', texto: TEXTOS_AUTORIZACION.compartir }]);
     assert.deepEqual(partesTexto(TEXTOS_AUTORIZACION.revision), [
       { tipo: 'negrita', texto: 'Revisión de mis documentos:' },
@@ -81,12 +75,25 @@ describe('textos de "Antes de empezar"', () => {
       { tipo: 'negrita', texto: 'Mensajes:' },
       { tipo: 'texto', texto: ' me comprometo a un trato respetuoso. Las conversaciones se pueden reportar y bloquear.' },
     ]);
-    // Cada enlace, solo la primera vez; las partes juntas son el texto completo.
-    const otro = 'Leí los Términos y Condiciones y la Política de privacidad. Los Términos pueden cambiar.';
-    const partes = partesTexto(otro);
-    assert.equal(partes.filter((p) => p.tipo === 'enlace').length, 2);
-    assert.equal(partes.map((p) => p.texto).join(''), otro);
-    for (const t of Object.values(TEXTOS_AUTORIZACION)) assert.equal(partesTexto(t).map((p) => p.texto).join(''), t);
+    // Las partes juntas son el texto completo, y ninguna es un enlace (S13: los enlaces van aparte).
+    for (const t of Object.values(TEXTOS_AUTORIZACION)) {
+      assert.equal(partesTexto(t).map((p) => p.texto).join(''), t);
+      assert.ok(partesTexto(t).every((p) => p.tipo === 'texto' || p.tipo === 'negrita'));
+    }
+  });
+  it('S13: los Términos y la Política se abren desde una línea aparte, bajo la frase', () => {
+    assert.deepEqual(enlacesDeLaCasilla(TEXTOS_AUTORIZACION.terminos), [
+      { documento: 'terminos', titulo: 'Leer Términos' },
+      { documento: 'privacidad', titulo: 'Leer Política de privacidad' },
+    ]);
+    for (const c of ['compartir', 'revision', 'mensajes'] as const) assert.deepEqual(enlacesDeLaCasilla(TEXTOS_AUTORIZACION[c]), [], c);
+    // Un texto de la base: en el orden en que aparecen y una vez cada uno.
+    const otro = 'Avisos: leí la Política de privacidad y los Términos y Condiciones. Los Términos pueden cambiar.';
+    assert.deepEqual(enlacesDeLaCasilla(otro), [
+      { documento: 'privacidad', titulo: 'Leer Política de privacidad' },
+      { documento: 'terminos', titulo: 'Leer Términos' },
+    ]);
+    assert.deepEqual(partesTexto(otro)[0], { tipo: 'negrita', texto: 'Avisos:' });
   });
   it('y a lo que tiene la base (catálogo de las pruebas, sacado de las migraciones)', () => {
     for (const [casilla, clave] of Object.entries(CLAVE_TEXTO)) {

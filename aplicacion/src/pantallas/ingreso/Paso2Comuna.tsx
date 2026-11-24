@@ -5,6 +5,10 @@
 // aprobado salvo: campo "Tu comuna" con sugerencias de comunas (no de direcciones), sin "Depto, casa o
 // block", sin insignia "Verificada" y sin la nota de dirección privada. El estacionamiento parte apagado
 // o con lo guardado. La zona y la región salen de la comuna.
+// Mejoras aprobadas (24-nov): S10 una sola "Tu comuna" (la zona y la región, en gris bajo el campo), se elige
+// sola si lo escrito es el nombre completo de una sola comuna y ninguna otra sigue así, un solo error a
+// la vez y estacionamiento más claro;
+// S04 "Guardar y terminar después"; S11 avisa antes de salir sin guardar (modo edición).
 import { useMemo, useRef, useState, type ComponentRef } from 'react';
 import { ScrollView, Text, View, type TextInputKeyPressEvent } from 'react-native';
 import { router } from 'expo-router';
@@ -14,16 +18,27 @@ import type { Comuna } from '@/datos/tipos';
 import { Boton, Campo, Encabezado, Pantalla, Presionable, color, fuente, radio, sombra, tipo, ZonaInterruptor } from '@/ui';
 import { MapPin } from '@/ui/iconos';
 
-import { RUTA_PASO, terminarEdicion, useGuardando, useModoEdicion, usePantallaAbierta, useVolverDesdePaso } from './acciones';
-import { buscarComunas, MINIMO_LETRAS } from './buscarComuna';
+import {
+  RUTA_PASO,
+  irAInicioConductor,
+  terminarEdicion,
+  useGuardando,
+  useModoEdicion,
+  usePantallaAbierta,
+  useVolverDesdePaso,
+  useVolverTrasEditar,
+} from './acciones';
+import { buscarComunas, comunaQueCalzaSola, MINIMO_LETRAS } from './buscarComuna';
 import {
   AlertaObligatorios,
+  BotonTerminarDespues,
   CabeceraFormulario,
   equilibrado,
   irAlPrimerError,
   textoRegion,
   useBorradorPaso,
   useRecordarBorrador,
+  useSalirSinGuardar,
   useValidarObligatorios,
 } from './comunes';
 
@@ -34,7 +49,9 @@ export default function Paso2Comuna() {
   const editar = useModoEdicion();
   const validar = useValidarObligatorios();
   const volverA = useVolverDesdePaso(2);
+  const volverTrasEditar = useVolverTrasEditar();
   const { guardando, ejecutar } = useGuardando();
+  const [pulsado, setPulsado] = useState<'continuar' | 'despues'>('continuar');
   const pantalla = usePantallaAbierta();
   const [errorGuardar, setErrorGuardar] = useState<string | null>(null);
 
@@ -60,19 +77,37 @@ export default function Paso2Comuna() {
   const region = comuna ? catalogos.regiones.find((r) => r.id === comuna.regionId) : undefined;
 
   const abierta = editando && texto.trim().length >= MINIMO_LETRAS;
-  const error = intento && validar && !comunaId ? (texto.trim() ? 'Elige tu comuna de la lista.' : 'Ingresa tu comuna.') : undefined;
-
-  const escribir = (t: string) => {
-    setTexto(t);
-    setComunaId(null);
-    setEditando(true);
-    setResaltada(0);
-  };
+  // Un solo error a la vez (S10): el del campo. Si lo escrito no calza con ninguna comuna, la lista (que
+  // diría lo mismo) no se muestra; si calza con varias, la lista sigue abierta para elegir.
+  const encontradas = texto.trim() ? buscarComunas(texto, catalogos.comunas) : [];
+  const error =
+    intento && validar && !comunaId
+      ? !texto.trim()
+        ? 'Ingresa tu comuna.'
+        : encontradas.length === 0
+          ? 'No encontramos esa comuna. Revisa cómo la escribiste.'
+          : 'Elige tu comuna de la lista.'
+      : undefined;
 
   const elegir = (c: Comuna) => {
     setTexto(c.nombre);
     setComunaId(c.id);
     setEditando(false);
+  };
+
+  const escribir = (t: string) => {
+    setTexto(t);
+    setIntento(false);
+    setResaltada(0);
+    // Si lo escrito es el nombre de una sola comuna y ninguna otra sigue así ("nunoa" → Ñuñoa), se
+    // elige sola. "San Pedro" no: puede seguir "de la Paz" (ver comunaQueCalzaSola).
+    const sola = comunaQueCalzaSola(t, catalogos.comunas);
+    if (sola) {
+      elegir(sola);
+      return;
+    }
+    setComunaId(null);
+    setEditando(true);
   };
 
   const teclas = (e: TextInputKeyPressEvent) => {
@@ -89,9 +124,24 @@ export default function Paso2Comuna() {
     }
   };
 
-  const continuar = () =>
+  const salir = useSalirSinGuardar(
+    editar && JSON.stringify({ comunaId, estacionamiento }) !== JSON.stringify({ comunaId: borrador.inicial.comunaId, estacionamiento: borrador.inicial.estacionamiento }),
+    () => continuar('continuar'),
+    volverTrasEditar,
+  );
+
+  const continuar = (siguiente: 'continuar' | 'despues') =>
     ejecutar(async () => {
-      if (!comunaId) {
+      setPulsado(siguiente);
+      // Solo se guarda una comuna elegida (de la lista o porque se eligió sola al escribir).
+      const id = comunaId;
+      if (!id) {
+        if (siguiente === 'despues') {
+          // Sin comuna, la base no puede guardar el paso (S04): se sale igual, pero el borrador se
+          // conserva para que al volver sigan lo escrito en el buscador y el lugar seguro.
+          irAInicioConductor();
+          return;
+        }
         if (validar) {
           setIntento(true);
           irAlPrimerError(scrollRef);
@@ -99,7 +149,7 @@ export default function Paso2Comuna() {
         return;
       }
       setErrorGuardar(null);
-      const r = await acciones.guardarPaso2({ comunaId, tieneEstacionamiento: estacionamiento });
+      const r = await acciones.guardarPaso2({ comunaId: id, tieneEstacionamiento: estacionamiento });
       if (pantalla.salio()) {
         // Salió mientras se guardaba: lo guardado queda, pero no se la lleva a otra pantalla.
         if (r.ok) borrador.olvidar();
@@ -110,13 +160,16 @@ export default function Paso2Comuna() {
         return;
       }
       borrador.olvidar();
-      if (editar) terminarEdicion();
+      if (editar) {
+        salir.soltar();
+        terminarEdicion(volverTrasEditar);
+      } else if (siguiente === 'despues') irAInicioConductor();
       else router.push(RUTA_PASO[3]);
     });
 
   return (
     <Pantalla scrollRef={scrollRef}>
-      <Encabezado paso={editar ? undefined : 2} volverA={editar ? '/conductor/perfil' : volverA} />
+      <Encabezado paso={editar ? undefined : 2} volverA={editar ? volverTrasEditar : volverA} onVolver={salir.onVolver} />
       <CabeceraFormulario equilibrar titulo="¿Dónde vives?" subtitulo="Con tu comuna te mostramos vehículos cerca." />
 
       <View style={{ marginTop: 8, gap: 8 }}>
@@ -139,9 +192,10 @@ export default function Paso2Comuna() {
           aria-expanded={abierta}
           aria-controls="comuna-sugerencias"
           error={error}
+          ayuda={comuna && !abierta ? [zona?.nombre, textoRegion(region?.nombre)].filter(Boolean).join(' · ') : undefined}
         />
 
-        {abierta ? (
+        {abierta && !(error && sugerencias.length === 0) ? (
           <View
             nativeID="comuna-sugerencias"
             // 'listbox' no está en los tipos de React Native, pero react-native-web lo pasa tal cual al HTML.
@@ -190,38 +244,12 @@ export default function Paso2Comuna() {
           </View>
         ) : null}
 
-        {!error ? <Text style={[tipo.ayuda, { color: color.textoSecundario }]}>Escribe tu comuna y elígela de la lista.</Text> : null}
-      </View>
-
-      <View
-        style={{
-          backgroundColor: color.superficie,
-          borderWidth: 1,
-          borderColor: color.borde,
-          borderRadius: radio.tarjeta,
-          paddingVertical: 14,
-          paddingHorizontal: 16,
-          gap: 2,
-        }}>
-        <Text style={[tipo.ayuda, { color: color.textoSecundario }]}>Tu comuna</Text>
-        {comuna ? (
-          <>
-            <Text style={[tipo.cuerpo, fuente(600), { color: color.texto }]}>
-              {comuna.nombre}
-              {zona ? ` · ${zona.nombre}` : ''}
-            </Text>
-            <Text style={[tipo.ayuda, { color: color.textoSecundario }]}>{textoRegion(region?.nombre)}</Text>
-          </>
-        ) : (
-          // Gris de ayuda (contraste 5,3:1 sobre blanco): el gris claro de la maqueta no se lee bien.
-          <Text style={[tipo.cuerpo, fuente(500), { color: color.textoSecundario }]}>Elige tu comuna para verla</Text>
-        )}
       </View>
 
       <ZonaInterruptor
         valor={estacionamiento}
         onCambiar={setEstacionamiento}
-        etiquetaAccesible="Tengo estacionamiento seguro para el vehículo"
+        etiquetaAccesible="Tengo un lugar seguro para guardar el vehículo"
         style={{
           backgroundColor: color.superficie,
           borderWidth: 1,
@@ -231,15 +259,18 @@ export default function Paso2Comuna() {
           paddingHorizontal: 18,
           gap: 16,
         }}>
-        <Text style={[tipo.fuerte, { flex: 1, minWidth: 0, lineHeight: 20, color: color.texto }, equilibrado]}>
-          Tengo estacionamiento seguro para el vehículo
-        </Text>
+        <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
+          <Text style={[tipo.fuerte, { lineHeight: 20, color: color.texto }, equilibrado]}>Tengo un lugar seguro para guardar el vehículo</Text>
+          <Text style={[tipo.mensajeCampo, { color: color.textoSecundario }]}>garaje o estacionamiento cerrado</Text>
+        </View>
       </ZonaInterruptor>
 
       <View style={{ marginTop: 'auto', paddingTop: 16, gap: 10 }}>
         {error ? <AlertaObligatorios /> : errorGuardar ? <AlertaObligatorios texto={errorGuardar} /> : null}
-        <Boton titulo={editar ? 'Guardar cambios' : 'Continuar'} onPress={continuar} cargando={guardando} />
+        <Boton titulo={editar ? 'Guardar cambios' : 'Continuar'} onPress={() => continuar('continuar')} cargando={guardando && pulsado === 'continuar'} />
+        {editar ? null : <BotonTerminarDespues onPress={() => continuar('despues')} cargando={guardando && pulsado === 'despues'} />}
       </View>
+      {salir.dialogo}
     </Pantalla>
   );
 }

@@ -37,7 +37,7 @@ export const INDUSTRIAS: Industria[] = [
 
 export const TAMANOS_VEHICULO: TamanoVehiculo[] = [
   { id: 'moto', nombre: 'Moto', ayuda: 'moto, scooter', orden: 1 },
-  { id: 'liviano', nombre: 'Vehículo liviano', ayuda: 'auto, SUV, camioneta', orden: 2 },
+  { id: 'liviano', nombre: 'Vehículo liviano', ayuda: 'auto, taxi, SUV, camioneta', orden: 2 },
   { id: 'van', nombre: 'Van o minibús', ayuda: 'van, furgón, minibús', orden: 3 },
   { id: 'bus', nombre: 'Bus', ayuda: 'bus o micro', orden: 4 },
   { id: 'camion', nombre: 'Camión', ayuda: '3/4, camión simple, grúa de autos', orden: 5 },

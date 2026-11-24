@@ -92,40 +92,43 @@ export function volverDeA4(
 // Cómo se dibuja un texto
 // ---------------------------------------------------------------------------
 
-/** Las ventanas que abren los enlaces del texto. */
+/** Las ventanas que abren los enlaces de una casilla. */
 export type DocumentoLegal = 'terminos' | 'privacidad';
 
-export type ParteTexto =
-  | { tipo: 'texto'; texto: string }
-  | { tipo: 'negrita'; texto: string }
-  | { tipo: 'enlace'; texto: string; documento: DocumentoLegal };
-
-const ENLACES: Record<string, DocumentoLegal> = { Términos: 'terminos', 'Política de privacidad': 'privacidad' };
+export type ParteTexto = { tipo: 'texto'; texto: string } | { tipo: 'negrita'; texto: string };
 
 /**
- * Cómo se dibuja un texto de A4, como en la maqueta: lo que va antes de ":" al comienzo, en negrita
- * ("Mensajes:"), y la primera vez que aparecen "Términos" y "Política de privacidad", como enlaces a sus
- * ventanas. Sirve para cualquier texto que llegue de la base.
+ * Cómo se dibuja la frase de una casilla, como en la maqueta: lo que va antes de ":" al comienzo, en
+ * negrita ("Mensajes:"), y el resto como texto normal. Los nombres de los documentos quedan como texto
+ * normal: sus enlaces van en una línea aparte (enlacesDeLaCasilla). Sirve para cualquier texto de la base.
  */
 export function partesTexto(texto: string): ParteTexto[] {
-  const partes: ParteTexto[] = [];
-  let resto = texto;
-  const titulo = /^([^:.\n]{1,60}:)(?=\s)/.exec(resto);
-  if (titulo) {
-    partes.push({ tipo: 'negrita', texto: titulo[1] });
-    resto = resto.slice(titulo[1].length);
+  const titulo = /^([^:.\n]{1,60}:)(?=\s)/.exec(texto);
+  if (!titulo) return [{ tipo: 'texto', texto }];
+  const resto = texto.slice(titulo[1].length);
+  return resto ? [{ tipo: 'negrita', texto: titulo[1] }, { tipo: 'texto', texto: resto }] : [{ tipo: 'negrita', texto: titulo[1] }];
+}
+
+/** Un enlace de la línea bajo la frase de una casilla. */
+export interface EnlaceCasilla {
+  documento: DocumentoLegal;
+  /** Lo que dice el enlace. */
+  titulo: string;
+}
+
+const NOMBRE_DOCUMENTO: Record<string, DocumentoLegal> = { Términos: 'terminos', 'Política de privacidad': 'privacidad' };
+
+/**
+ * S13 (decidido el 24-nov): los enlaces a los documentos que nombra la frase ("Términos", "Política de
+ * privacidad"), en el orden en que aparecen y una vez cada uno. Van aparte, bajo la frase ("Leer
+ * Términos" y "Leer Política de privacidad", uno bajo el otro), para que cada uno tenga 44 px para tocar
+ * y tocar la frase siempre marque la casilla. Sirve para cualquier texto que llegue de la base.
+ */
+export function enlacesDeLaCasilla(texto: string): EnlaceCasilla[] {
+  const enlaces: EnlaceCasilla[] = [];
+  for (const m of texto.matchAll(/Términos|Política de privacidad/g)) {
+    const documento = NOMBRE_DOCUMENTO[m[0]];
+    if (!enlaces.some((e) => e.documento === documento)) enlaces.push({ documento, titulo: `Leer ${m[0]}` });
   }
-  const usados = new Set<DocumentoLegal>();
-  const patron = /Términos|Política de privacidad/g;
-  let desde = 0;
-  for (let m = patron.exec(resto); m; m = patron.exec(resto)) {
-    const documento = ENLACES[m[0]];
-    if (usados.has(documento)) continue;
-    usados.add(documento);
-    if (m.index > desde) partes.push({ tipo: 'texto', texto: resto.slice(desde, m.index) });
-    partes.push({ tipo: 'enlace', texto: m[0], documento });
-    desde = m.index + m[0].length;
-  }
-  if (desde < resto.length) partes.push({ tipo: 'texto', texto: resto.slice(desde) });
-  return partes;
+  return enlaces;
 }

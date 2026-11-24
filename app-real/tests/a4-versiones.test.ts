@@ -117,7 +117,7 @@ describe('A4 · persona nueva', () => {
     const { c, p } = await yo.leer();
     const a4 = pantalla(p);
     assert.deepEqual(a4.casillas.map((x) => x.id), ['1', '2', '3', '4']);
-    assert.deepEqual(a4.casillas.map((x) => casillaDeLaMaqueta(x.texto)), ['terminos', 'compartir', 'revision', 'mensajes'], 'se dibujan con el JSX de la maqueta');
+    assert.deepEqual(a4.casillas.map((x) => casillaDeLaMaqueta(x.texto)), ['terminos', 'compartir', 'revision', 'mensajes'], 'son los textos de la maqueta');
     assert.deepEqual(a4.marcadas, [false, false, false, false]);
     assert.equal(faltanEnA4(a4.casillas, a4.marcas).length, 4);
     assert.equal(textoMarcaTodas(a4.casillas.length), 'Marca las 4 autorizaciones para continuar.');
@@ -156,7 +156,7 @@ describe('A4 · versión nueva de un texto (persona registrada)', () => {
       const a4 = pantalla(p);
       assert.deepEqual(a4.casillas.map((x) => x.id), ['1', '2', '3', '4'].map((x, k) => (k === i ? String(id) : x)));
       assert.equal(a4.casillas[i].texto, nuevo);
-      assert.equal(casillaDeLaMaqueta(nuevo), null, 'se dibuja con partesTexto');
+      assert.equal(casillaDeLaMaqueta(nuevo), null, 'es un texto nuevo de la base');
       assert.deepEqual(a4.marcadas, [0, 1, 2, 3].map((k) => k !== i));
       assert.deepEqual(faltanEnA4(a4.casillas, a4.marcas).map((x) => x.id), [String(id)]);
       // "Volver": la guardia no la deja salir de A4, así que ofrece cerrar sesión (no da vueltas).
@@ -236,7 +236,7 @@ describe('A4 · una autorización nueva (5.ª clave)', () => {
     assert.equal(a4.casillas.length, 0);
     assert.equal(alDiaEnA4(a4.casillas), false);
     assert.equal(p.autorizacionesCompletas, false);
-    assert.deepEqual(textosParaAceptar(a4.marcas, c.textos), { ok: false, error: 'Faltan los textos de autorización. Avísale al equipo.' });
+    assert.deepEqual(textosParaAceptar(a4.marcas, c.textos), { ok: false, error: 'No pudimos cargar las autorizaciones. Inténtalo más tarde.' });
     assert.equal(a4.volver, 'cerrarSesion');
   });
 });

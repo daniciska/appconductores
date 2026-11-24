@@ -84,6 +84,11 @@ export interface DatosPaso3 {
   experiencia: Record<string, number>;
   /** Claves de idioma ('es', 'en'…). */
   idiomas: string[];
+  /**
+   * S04: guardado con "Guardar y terminar después" (puede faltar algo). La app real calcula si el paso
+   * quedó listo por lo guardado; la demo, que no exige los campos con *, lo usa para no darlo por listo.
+   */
+  parcial?: boolean;
 }
 
 export interface DatosPaso4 {
@@ -91,6 +96,8 @@ export interface DatosPaso4 {
   negocios: string[];
   turnos: Turno[];
   dias: Dia[];
+  /** S04: guardado con "Guardar y terminar después" (ver DatosPaso3.parcial). */
+  parcial?: boolean;
 }
 
 /** Las 4 casillas de "Antes de empezar" (A4) de la maqueta (las de la demo). */
@@ -160,6 +167,8 @@ export interface Entorno {
   validarObligatorios: boolean;
   /** Cada cuántos días se pide confirmar "Disponible para trabajar". */
   diasReconfirmar: number;
+  /** S14: cuántos días antes de cumplir ese plazo vuelve "Confirmar ahora" en Perfil (ajuste de la base). */
+  diasAvisoReconfirmar: number;
   /** Segundos entre dos códigos (demo 30, real 60). */
   esperaReenvioSegundos: number;
   /** Nota sobre "Verificar" en A3 (o null). */

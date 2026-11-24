@@ -91,13 +91,16 @@ export interface PropsDialogo {
   confirmar: { titulo: string; onPress: () => void; peligro?: boolean };
   /** Por defecto "Cancelar". */
   cancelar?: { titulo?: string; onPress: () => void };
+  /** Tocar fuera o Escape (por defecto, lo mismo que cancelar). Sirve cuando "cancelar" es una acción, como "Salir sin guardar". */
+  alCerrar?: () => void;
 }
 
 /** Diálogo de confirmación centrado (ej. "¿Compartir tu dirección? No se puede deshacer"). */
-export function Dialogo({ visible, titulo, texto, children, confirmar, cancelar }: PropsDialogo) {
+export function Dialogo({ visible, titulo, texto, children, confirmar, cancelar, alCerrar }: PropsDialogo) {
   const { montado, valor } = useAparicion(visible);
   if (!montado) return null;
-  const cerrar = cancelar?.onPress ?? (() => undefined);
+  const cerrar = alCerrar ?? cancelar?.onPress ?? (() => undefined);
+  const tocarCancelar = cancelar?.onPress ?? cerrar;
   return (
     <Modal visible transparent animationType="none" onRequestClose={cerrar} statusBarTranslucent>
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>
@@ -127,7 +130,7 @@ export function Dialogo({ visible, titulo, texto, children, confirmar, cancelar 
           {children}
           <View style={{ gap: 10, marginTop: 4 }}>
             <Boton titulo={confirmar.titulo} onPress={confirmar.onPress} variante={confirmar.peligro ? 'peligro' : 'oscuro'} />
-            <Boton titulo={cancelar?.titulo ?? 'Cancelar'} onPress={cerrar} variante="contorno" />
+            <Boton titulo={cancelar?.titulo ?? 'Cancelar'} onPress={tocarCancelar} variante="contorno" />
           </View>
         </Animated.View>
       </View>

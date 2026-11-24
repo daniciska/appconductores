@@ -334,11 +334,11 @@ export function Campo({
         {derecha}
       </View>
       {typeof error === 'string' && error ? (
-        <Text role="alert" style={[tipo.ayuda, fuente(600), { color: color.error }]}>
+        <Text role="alert" style={[tipo.mensajeCampo, fuente(600), { color: color.error }]}>
           {error}
         </Text>
       ) : null}
-      {ayuda && !(typeof error === 'string' && error) ? <Texto variante="ayuda">{ayuda}</Texto> : null}
+      {ayuda && !(typeof error === 'string' && error) ? <Text style={[tipo.mensajeCampo, { color: color.textoSecundario }]}>{ayuda}</Text> : null}
       {contador && maxLength ? (
         <Texto variante="pequeno" style={{ textAlign: 'right' }}>
           {valor.length}/{maxLength}
@@ -405,7 +405,12 @@ export function Chip({
         },
         style,
       ]}>
-      {seleccionado && !cuadrado ? <Check size={14} color={color.blanco} strokeWidth={2.8} /> : null}
+      {seleccionado && !cuadrado ? (
+        // Sin encogerse: en un chip angosto con texto largo, el check se achicaba.
+        <View style={{ flexShrink: 0 }}>
+          <Check size={14} color={color.blanco} strokeWidth={2.8} />
+        </View>
+      ) : null}
       <View style={{ minWidth: 0, flexShrink: 1 }}>
         <Text
           style={[
@@ -454,7 +459,7 @@ export interface PropsFilaCheck {
   marcada: boolean;
   onPress?: () => void;
   deshabilitada?: boolean;
-  /** Pastilla gris a la derecha cuando está deshabilitada, ej. "Pide licencia A3". */
+  /** Pastilla gris bajo el nombre cuando está deshabilitada, ej. "Pide licencia A3". */
   nota?: string;
   style?: StyleProp<ViewStyle>;
 }
@@ -489,23 +494,34 @@ export function FilaCheck({ titulo, ejemplo, descripcion, marcada, onPress, desh
           style={[
             tipo.cuerpo,
             fuente(marcada ? 600 : 500),
-            { color: deshabilitada ? color.textoDeshabilitado : color.texto },
+            // Bloqueada: gris oscuro que se lee (5:1 sobre el fondo gris); la fila igual se ve apagada.
+            { color: deshabilitada ? color.textoSecundario : color.texto },
           ]}>
           {titulo}
           {ejemplo ? (
-            <Text style={[fuente(500), { color: deshabilitada ? color.textoDeshabilitadoSuave : color.textoSecundario }]}>
+            <Text style={[fuente(deshabilitada ? 400 : 500), { color: color.textoSecundario }]}>
               {' '}
               ({ejemplo})
             </Text>
           ) : null}
         </Text>
         {descripcion ? <Texto variante="ayuda">{descripcion}</Texto> : null}
+        {nota ? (
+          // S13: a 14 px y bajo el nombre (no a su lado), para que el nombre use todo el ancho y no se
+          // corte a mitad de palabra en celulares angostos. Mismo gris de antes (4,6:1 sobre la pastilla).
+          <View
+            style={{
+              alignSelf: 'flex-start',
+              marginTop: 4,
+              backgroundColor: color.superficieHundida,
+              borderRadius: radio.insignia,
+              paddingHorizontal: 8,
+              paddingVertical: 3,
+            }}>
+            <Text style={[fuente(700), { fontSize: 14, lineHeight: 18, color: color.textoSecundario }]}>{nota}</Text>
+          </View>
+        ) : null}
       </View>
-      {nota ? (
-        <View style={{ backgroundColor: color.superficieHundida, borderRadius: radio.insignia, paddingHorizontal: 8, paddingVertical: 4 }}>
-          <Text style={[tipo.pequeno, fuente(700), { color: color.textoSecundario }]}>{nota}</Text>
-        </View>
-      ) : null}
     </Presionable>
   );
 }
@@ -773,7 +789,8 @@ export function FilaInterruptor({
       ]}>
       <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
         <Text style={[tipo.fuerte, { color: color.texto }]}>{titulo}</Text>
-        {ayuda ? <Texto variante="ayuda">{ayuda}</Texto> : null}
+        {/* S13: la ayuda bajo un campo, a 15 px como las demás. */}
+        {ayuda ? <Text style={[tipo.mensajeCampo, { color: color.textoSecundario }]}>{ayuda}</Text> : null}
       </View>
     </ZonaInterruptor>
   );

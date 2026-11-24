@@ -31,3 +31,19 @@ export function buscarComunas(texto: string, comunas: Comuna[], maximo = MAXIMO_
   );
   return [...exactas.sort(alfabetico), ...empiezan.sort(alfabetico), ...contienen.sort(alfabetico)].slice(0, maximo);
 }
+
+/**
+ * S10 (aprobada el 24-nov) · La comuna que se elige sola mientras se escribe: lo escrito es el nombre completo de
+ * UNA sola comuna (sin tildes; también sus nombres alternativos) y ninguna otra comuna empieza así.
+ * Por eso "nunoa" elige Ñuñoa, pero "San Pedro" no se elige solo: puede seguir "de la Paz" o
+ * "de Atacama" (lo mismo con Calera, Talca y Chillán). Esas se eligen de la lista.
+ */
+export function comunaQueCalzaSola(texto: string, comunas: Comuna[]): Comuna | null {
+  const buscado = sinTildes(texto);
+  if (buscado.length < MINIMO_LETRAS) return null;
+  const nombres = (c: Comuna) => [c.nombre, ...c.alternativos].map(sinTildes);
+  const exactas = comunas.filter((c) => nombres(c).includes(buscado));
+  if (exactas.length !== 1) return null;
+  const sigueOtra = comunas.some((c) => c !== exactas[0] && nombres(c).some((n) => n.startsWith(buscado)));
+  return sigueOtra ? null : exactas[0];
+}

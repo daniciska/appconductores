@@ -132,7 +132,9 @@ export function mapearPerfil(f: FilasPerfil, mapas: MapasCatalogo, textos: Texto
   const datos = !!d && !!texto(c?.nombres) && !!texto(c?.primer_apellido) && !!texto(c?.email) && clasesDeclaradas.length > 0;
   const direccion = !!d && d.comuna_id !== null && d.tiene_estacionamiento !== null;
   const trabajo = !!d && negocios.length > 0 && turnos.length > 0 && dias.length > 0;
-  const experienciaLista = !!d && (Object.keys(experiencia).length > 0 || idiomas.length > 0 || trabajo);
+  // S07 (aprobada el 24-nov): "Tu experiencia" queda lista solo con al menos un vehículo marcado (los años
+  // cuentan en el % del match, M4). Responde MD36.
+  const experienciaLista = !!d && Object.keys(experiencia).length > 0;
   const pasosListos = { datos, direccion, experiencia: experienciaLista, trabajo, documentos: false };
   const orden = [datos, direccion, experienciaLista, trabajo];
   const primero = orden.findIndex((x) => !x);

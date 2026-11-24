@@ -17,7 +17,6 @@ import type {
   VistaConductor,
 } from '@/datos/puerto/tipos';
 
-import { CONFIG } from '../config';
 import { almacenSesion, supabase } from '../supabase';
 
 import { mapearCatalogos } from './catalogos';
@@ -65,6 +64,8 @@ const ESPERA_REENVIO_S = 60;
 
 /** Mientras se verifica un código: el aviso SIGNED_IN de Auth lo maneja verificarCodigo. */
 let verificando = false;
+/** Último número al que no se pudo enviar el código (S03: si insiste, se repite el mismo mensaje). */
+let sinEnvio: string | null = null;
 /** Mientras esta pestaña cierra la sesión: el aviso SIGNED_OUT lo maneja quien la cierra. */
 let cerrandoAqui = false;
 let escuchando = false;
@@ -180,6 +181,7 @@ export async function iniciarAppReal(): Promise<void> {
     mapas: c.mapas,
     textos: c.textos,
     diasReconfirmar: c.diasReconfirmar,
+    diasAvisoReconfirmar: c.diasAvisoReconfirmar,
     vista: { ...e.vista, catalogos: c.catalogos, textosAutorizacion: textosParaA4(c.textos, e.aceptados) },
   });
   const sesion = primera.vencida ? null : ses.data.session;
@@ -252,7 +254,14 @@ const acciones: AccionesConductor = {
       if (sesion && digitos(sesion.user.phone ?? '').endsWith('569' + ocho)) return OK;
     }
     const { error } = await supabase.auth.signInWithOtp({ phone: celularParaAuth(celular8), options: { channel: canal } });
-    if (error) return fallo(textoErrorPedirCodigo(error, CONFIG.codigosDePrueba));
+    if (error) {
+      let texto = textoErrorPedirCodigo(error);
+      // S03: si a un número no se le pudo enviar el código e insiste, recibe el mismo mensaje, no la
+      // cuenta de segundos (esperar no le serviría).
+      if (texto === TEXTO.noLlega) sinEnvio = ocho;
+      else if (error.code === 'over_sms_send_rate_limit' && sinEnvio === ocho) texto = TEXTO.noLlega;
+      return fallo(texto);
+    }
     guardarIngreso({ celular: `${ocho.slice(0, 4)} ${ocho.slice(4)}`, canal, pedidoEn: Date.now() });
     return OK;
   },
@@ -346,20 +355,23 @@ const TEXTO_LEGAL_PRUEBA =
 
 function useEntornoReal(): Entorno {
   const diasReconfirmar = useTiendaReal((s) => s.diasReconfirmar);
+  const diasAvisoReconfirmar = useTiendaReal((s) => s.diasAvisoReconfirmar);
   return useMemo<Entorno>(
     () => ({
       esDemo: false,
       validarObligatorios: true,
       diasReconfirmar,
+      diasAvisoReconfirmar,
       esperaReenvioSegundos: ESPERA_REENVIO_S,
-      notaCodigo: CONFIG.codigosDePrueba ? 'Versión de prueba: usa el código que te dio el equipo.' : null,
+      // Sin nota bajo "Verificar": la app real no muestra textos de prueba (S03, regla "listo para lanzar").
+      notaCodigo: null,
       pestanas: 2,
       ejemplo: null,
       textosLegales: { terminos: TEXTO_LEGAL_PRUEBA, privacidad: TEXTO_LEGAL_PRUEBA, nota: null, perfil: TEXTO_LEGAL_PRUEBA },
       textoCerrarSesion: 'Para volver a entrar usarás tu celular y un código.',
       volverDesdeAutorizaciones: 'cerrarSesion',
     }),
-    [diasReconfirmar],
+    [diasReconfirmar, diasAvisoReconfirmar],
   );
 }
 

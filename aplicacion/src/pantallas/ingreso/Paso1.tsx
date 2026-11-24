@@ -6,15 +6,28 @@
 // campos con *, fecha real, no futura y de 18 años o más (propuesta), correo con formato y al menos una
 // clase de licencia. Si el guardado falla (app real), el mensaje sale arriba de los botones y lo escrito
 // sigue en pantalla.
+// Mejoras aprobadas (24-nov): S05 fecha "como en papel" (cualquier separador, teclado con separador)
+// y errores con ejemplo; S02 abierto desde el Paso 4 (?editar=1&volver=4) vuelve al Paso 4 al guardar;
+// S11 avisa antes de quitar un negocio elegido al quitar una clase, y antes de salir sin guardar.
 import { useRef, useState, type ComponentRef } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { router } from 'expo-router';
 
-import { celularCompleto, edad, mascaraFecha } from '@/datos/formato';
+import { celularCompleto, edad, mascaraFechaEscrita } from '@/datos/formato';
+import { habilitaNegocio } from '@/datos/match';
 import { useAcciones, useEntorno, useVista } from '@/datos/puerto/contexto';
-import { Boton, Campo, Chip, Encabezado, FilaInterruptor, Insignia, Pantalla, color, fuente, mostrarToast, radio, tipo } from '@/ui';
+import { Boton, Campo, Chip, Dialogo, Encabezado, FilaInterruptor, Insignia, Pantalla, color, fuente, mostrarToast, radio, tipo } from '@/ui';
 
-import { RUTA_PASO, irAInicioConductor, terminarEdicion, useGuardando, useModoEdicion, usePantallaAbierta, useVolverDesdePaso } from './acciones';
+import {
+  RUTA_PASO,
+  irAInicioConductor,
+  terminarEdicion,
+  useGuardando,
+  useModoEdicion,
+  usePantallaAbierta,
+  useVolverDesdePaso,
+  useVolverTrasEditar,
+} from './acciones';
 import {
   AlertaObligatorios,
   CabeceraFormulario,
@@ -24,6 +37,7 @@ import {
   irAlPrimerError,
   useBorradorPaso,
   useRecordarBorrador,
+  useSalirSinGuardar,
   useValidarObligatorios,
 } from './comunes';
 
@@ -34,7 +48,9 @@ function errorFecha(texto: string): string | null {
   const t = texto.trim();
   if (!t) return 'Ingresa tu fecha de nacimiento.';
   const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(t);
-  if (!m) return 'Escríbela como dd/mm/aaaa.';
+  // S05: si el día y el mes están, pero el año va corto ("05/03/68"), se dice qué falta.
+  if (!m && /^\d{2}\/\d{2}\/\d{1,3}$/.test(t)) return 'Escribe el año con 4 números. Ejemplo: 1968.';
+  if (!m) return 'Escribe día, mes y año. Ejemplo: 05/03/1968.';
   const [d, mes, a] = [Number(m[1]), Number(m[2]), Number(m[3])];
   const fecha = new Date(a, mes - 1, d);
   if (fecha.getFullYear() !== a || fecha.getMonth() !== mes - 1 || fecha.getDate() !== d || a < 1900) return 'Revisa la fecha.';
@@ -48,6 +64,8 @@ export default function Paso1() {
   const cuenta = useVista((v) => v.cuenta);
   const conductor = useVista((v) => v.conductor);
   const clasesCatalogo = useVista((v) => v.catalogos.clases);
+  const negociosCatalogo = useVista((v) => v.catalogos.negocios);
+  const volverTrasEditar = useVolverTrasEditar();
   const { diasReconfirmar, ejemplo } = useEntorno();
   const acciones = useAcciones();
   const editar = useModoEdicion();
@@ -82,7 +100,11 @@ export default function Paso1() {
     nombres: !nombres.trim() ? 'Ingresa tus nombres.' : null,
     apellido1: !apellido1.trim() ? 'Ingresa tu primer apellido.' : null,
     fecha: errorFecha(fecha),
-    correo: !correo.trim() ? 'Ingresa tu correo electrónico.' : !RE_CORREO.test(correo.trim()) ? 'Revisa tu correo.' : null,
+    correo: !correo.trim()
+      ? 'Ingresa tu correo electrónico.'
+      : !RE_CORREO.test(correo.trim())
+        ? 'A tu correo le falta algo. Ejemplo: nombre@correo.cl'
+        : null,
     clases: clases.length === 0 ? 'Marca al menos una clase.' : null,
   };
   const hayErrores = Object.values(errores).some(Boolean);
@@ -103,12 +125,32 @@ export default function Paso1() {
     setCorreo(ejemplo.usuario.correo);
   };
 
-  const guardar = (siguiente: 'continuar' | 'despues') =>
+  // S11: negocios elegidos que se quitarían al quitar una clase (la base los quita sola).
+  const quitadas = conductor.clasesDeclaradas.filter((c) => !clases.includes(c));
+  const negociosQueSeQuitan = quitadas.length
+    ? negociosCatalogo.filter(
+        (n) =>
+          conductor.negocios.includes(n.id) &&
+          habilitaNegocio(conductor.clasesDeclaradas, n, null, clasesCatalogo) &&
+          !habilitaNegocio(clases, n, null, clasesCatalogo),
+      )
+    : [];
+  const [confirmarQuitar, setConfirmarQuitar] = useState<'continuar' | 'despues' | null>(null);
+
+  const valores = { nombres, apellido1, apellido2, fecha, correo, clases: [...clases].sort(), disponible };
+  const iniciales = { ...borrador.inicial, clases: [...borrador.inicial.clases].sort() };
+  const salir = useSalirSinGuardar(editar && JSON.stringify(valores) !== JSON.stringify(iniciales), () => guardar('continuar'), volverTrasEditar);
+
+  const guardar = (siguiente: 'continuar' | 'despues', confirmado = false) =>
     ejecutar(async () => {
       setPulsado(siguiente);
       if (validar && hayErrores) {
         setIntento(true);
         irAlPrimerError(scrollRef);
+        return;
+      }
+      if (negociosQueSeQuitan.length > 0 && !confirmado) {
+        setConfirmarQuitar(siguiente);
         return;
       }
       setErrorGuardar(null);
@@ -126,7 +168,8 @@ export default function Paso1() {
       }
       borrador.olvidar();
       if (editar) {
-        terminarEdicion();
+        salir.soltar();
+        terminarEdicion(volverTrasEditar);
       } else if (siguiente === 'continuar') {
         router.push(RUTA_PASO[2]);
       } else {
@@ -140,7 +183,7 @@ export default function Paso1() {
 
   return (
     <Pantalla scrollRef={scrollRef}>
-      <Encabezado paso={editar ? undefined : 1} volverA={editar ? '/conductor/perfil' : volverA} />
+      <Encabezado paso={editar ? undefined : 1} volverA={editar ? volverTrasEditar : volverA} onVolver={salir.onVolver} />
       <CabeceraFormulario
         titulo="Tus datos"
         subtitulo={editar ? 'Mantén tus datos al día.' : 'Con estos datos ya quedas registrado. El resto lo puedes completar ahora o después.'}>
@@ -187,10 +230,12 @@ export default function Paso1() {
           etiqueta="Fecha de nacimiento"
           obligatorio
           valor={fecha}
-          onCambiar={(t) => setFecha(mascaraFecha(t))}
-          placeholder="dd/mm/aaaa"
-          keyboardType="number-pad"
-          inputMode="numeric"
+          onCambiar={(t) => setFecha(mascaraFechaEscrita(t))}
+          placeholder="día/mes/año"
+          // Teclado de números CON separador ("." o ","): en el iPhone el teclado "numeric" no trae "/" ni
+          // ningún separador. La máscara acepta cualquier separador o solo números (S05).
+          keyboardType="decimal-pad"
+          inputMode="decimal"
           autoComplete="birthdate-full"
           maxLength={10}
           ayuda="Los titulares solo ven tu edad."
@@ -280,6 +325,27 @@ export default function Paso1() {
         )}
         <NotaObligatorio />
       </View>
+
+      {salir.dialogo}
+      <Dialogo
+        visible={confirmarQuitar !== null}
+        titulo={quitadas.length > 1 ? `¿Quitar las clases ${unir(quitadas)}?` : `¿Quitar la clase ${quitadas[0] ?? ''}?`}
+        texto={`También se ${negociosQueSeQuitan.length > 1 ? 'quitarán' : 'quitará'} ${unir(negociosQueSeQuitan.map((n) => n.nombre))} de lo que buscas.`}
+        confirmar={{
+          titulo: 'Quitar',
+          onPress: () => {
+            const siguiente = confirmarQuitar ?? 'continuar';
+            setConfirmarQuitar(null);
+            void guardar(siguiente, true);
+          },
+        }}
+        cancelar={{ onPress: () => setConfirmarQuitar(null) }}
+      />
     </Pantalla>
   );
+}
+
+/** "A2", "A2 y A3", "Taxi, Taxi colectivo y Taxi ejecutivo". */
+function unir(lista: string[]): string {
+  return lista.length <= 1 ? (lista[0] ?? '') : `${lista.slice(0, -1).join(', ')} y ${lista[lista.length - 1]}`;
 }
