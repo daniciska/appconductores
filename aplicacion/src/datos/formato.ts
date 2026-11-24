@@ -113,12 +113,31 @@ export function edad(fechaNacimiento: string, ahora = Date.now()): number | null
   return e >= 0 && e < 120 ? e : null;
 }
 
-/** Pone barras mientras se escribe una fecha: "1403198" → "14/03/198". */
+/**
+ * Pone barras mientras se escribe una fecha: "1403198" → "14/03/198". Un punto, guion, barra o espacio
+ * (el teclado numérico de Android trae "." y "-") cierra el día o el mes y le pone el cero:
+ * "15.1.2030" → "15/01/2030". Nunca deja una barra al final (así borrar no se traba).
+ */
 export function mascaraFecha(texto: string): string {
-  const n = texto.replace(/\D/g, '').slice(0, 8);
-  if (n.length <= 2) return n;
-  if (n.length <= 4) return `${n.slice(0, 2)}/${n.slice(2)}`;
-  return `${n.slice(0, 2)}/${n.slice(2, 4)}/${n.slice(4)}`;
+  const partes: string[] = [];
+  let actual = '';
+  for (const ch of texto) {
+    if (partes.length === 2) {
+      if (/\d/.test(ch) && actual.length < 4) actual += ch;
+      continue;
+    }
+    if (/\d/.test(ch)) {
+      actual += ch;
+      if (actual.length === 2) {
+        partes.push(actual);
+        actual = '';
+      }
+    } else if (/[./\- ]/.test(ch) && actual.length === 1) {
+      partes.push(`0${actual}`);
+      actual = '';
+    }
+  }
+  return [...partes, actual].filter((x) => x !== '').join('/');
 }
 
 /**

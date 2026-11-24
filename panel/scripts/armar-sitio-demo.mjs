@@ -26,9 +26,12 @@ function correr(titulo, comando, args, cwd) {
 }
 
 const npx = process.platform === 'win32' ? 'npx.cmd' : 'npx';
-correr('Export de la demo del conductor (aplicacion/dist)', npx, ['expo', 'export', '-p', 'web'], app);
+// --clear: las 3 apps comparten node_modules (enlace a aplicacion/node_modules) y Metro guarda en caché
+// lo que compiló de ahí, incluida la carpeta de rutas de expo-router. Sin limpiar, un export de la demo
+// hecho después de uno de la app real (o del panel) podía tomar las rutas de la otra app.
+correr('Export de la demo del conductor (aplicacion/dist)', npx, ['expo', 'export', '-p', 'web', '--clear'], app);
 correr('Revisión: el export del conductor no lleva nada del panel', process.execPath, ['scripts/revisar-export-sin-panel.mjs', 'dist'], app);
-correr('Export del panel (panel/dist, base /panel)', npx, ['expo', 'export', '-p', 'web'], panel);
+correr('Export del panel (panel/dist, base /panel)', npx, ['expo', 'export', '-p', 'web', '--clear'], panel);
 
 const distApp = join(app, 'dist');
 const distPanel = join(panel, 'dist');

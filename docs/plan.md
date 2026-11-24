@@ -6,7 +6,7 @@ Actualizado: 10-nov-2026. Se actualiza a medida que avanzamos.
 
 Construcción **en pausa** hasta que la dueña apruebe el plan (pedido del 16-nov). Carta: https://claude.ai/artifact/BLfWkckPMSF45LDes2eEHt (fuente: `docs/carta-gantt.html`). Fechas estimadas:
 
-- **Hito 1 · ~16 dic:** abrir a conductores reales (documentos con revisión de una persona, panel real para revisar, códigos reales por WhatsApp y textos del abogado).
+- **Hito 1 · ~16 dic:** abrir a conductores reales (documentos con el método de validación real en vez del provisorio que aprueba todo, panel real para revisar, códigos reales por WhatsApp y textos del abogado).
 - **Hito 2 · ~1 feb 2027:** lanzamiento operativo y vendible (prototipo y app del titular, match, planes y cobro web, mensajes, avisos, revisión completa y piloto).
 - **Ruta crítica:** prototipo del titular → su aprobación → base de titulares y match → app del titular → cobro web → revisión completa → piloto → lanzamiento.
 - **Atajos por decidir:** lanzar sin mensajes; cobro manual el primer mes; piloto de una semana.
@@ -57,7 +57,7 @@ Antes de construir la parte del titular: su prototipo, las reglas de mensajes (e
    - [x] Para la app real del conductor v1 (9-nov): textos de prueba de "Antes de empezar", ajustes que la app puede leer y borrado de la tabla ajena `etmday_leads`. 298 pruebas locales en verde; asesor de seguridad sin avisos.
    - [ ] Etapa 2: titulares, búsquedas y match. Etapa 3: documentos, mensajes, reportes y bloqueos. Etapa 4: planes y cobro. (Bolsa de trabajo: cuando se decida.)
    - [ ] Crear el primer administrador (a mano, después de que la dueña entre una vez con su celular; ver `supabase/README.md`).
-7. [ ] **App del conductor** (en curso desde el 9-nov): conectada a Supabase, primera versión con los pasos 1 a 4; al inicio solo celulares de prueba de la dueña y su equipo; comuna de una lista hasta tener Google Maps. Documentos (paso 5) después, con la Etapa 3 y el abogado.
+7. [ ] **App del conductor** (en curso desde el 9-nov): conectada a Supabase, primera versión con los pasos 1 a 4; al inicio solo celulares de prueba de la dueña y su equipo; comuna de una lista hasta tener Google Maps. **Documentos (paso 5) construidos el 24-nov en la rama `documentos`** (sin integrar): se suben los 4 a un espacio privado de Storage, un método de validación provisorio los aprueba todos, se anota la fecha de vencimiento o emisión y se avisa dentro de la app 3 meses antes. Falta: aprobar e integrar la rama, aplicar la migración en Supabase, el abogado (A63–A67), el método real y, con el panel, una tarea del servidor que borre los archivos sin uso y los de una cuenta borrada.
    - [x] **v1 construida** (10-nov) en `app-real/`: mismas pantallas del mockup (una sola copia, compartida con la demo), pasos 1 a 4 guardando en la base, Inicio, Perfil reducido y "¿Sigues buscando trabajo?". Revisada por agentes y corregida (12 problemas). Probada con un Supabase simulado y con la base local; la demo quedó idéntica.
    - [x] La dueña encendió el ingreso por celular en Supabase con los números de prueba (16-nov).
    - [x] **Prueba de punta a punta contra la base real** (16-nov), en la app publicada, con el número ficticio de prueba: código, "Antes de empezar", pasos 1 a 4, Inicio "4 de 5", recargar, cerrar sesión, volver a entrar directo a Inicio y número fuera de la lista ("Por ahora solo pueden entrar los celulares del equipo."). Todo quedó bien guardado en la base.

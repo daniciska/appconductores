@@ -98,7 +98,7 @@ describe('lecturas', () => {
     const antes = sim.pedidos.length;
     const p = await perfil();
     const lecturas = sim.pedidos.slice(antes);
-    assert.equal(lecturas.length, 7);
+    assert.equal(lecturas.length, 8, '7 del perfil y los documentos');
     for (const l of lecturas) assert.ok(Object.values(l.query).includes(`eq.${uid}`), `${l.ruta} filtra por el propio id`);
     assert.equal(p.cuenta.celular, '9000 0001');
     assert.equal(p.conductor.registrado, false);

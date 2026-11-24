@@ -7,6 +7,8 @@
 import type { CatalogosRegistro } from '@/datos/puerto/tipos';
 import type { Negocio, OpcionLista, PreguntaVehiculo } from '@/datos/tipos';
 
+import { mapearTiposDocumento, mesesAviso, type FilaTipoDocumento, type TipoDocumentoReal } from './documentos.ts';
+
 export interface FilasCatalogo {
   regiones: { id: number; nombre: string; orden: number }[];
   zonas: { id: number; region_id: number; nombre: string; orden: number; activa: boolean }[];
@@ -35,6 +37,10 @@ export interface FilasCatalogo {
   diasReconfirmar: unknown;
   /** S14: valor de ajustes.dias_aviso_reconfirmar (null o ausente si no existe o no se pudo leer). */
   diasAvisoReconfirmar?: unknown;
+  /** Documentos que se piden (Paso 5). */
+  tiposDocumento: FilaTipoDocumento[];
+  /** Valor de ajustes.meses_aviso_vencimiento_documentos (null si no se pudo leer). */
+  mesesAvisoDocumentos: unknown;
 }
 
 /** Listas de opciones que usa el conductor (turnos, días, idiomas). */
@@ -78,6 +84,10 @@ export interface CatalogosLeidos {
   diasReconfirmar: number;
   /** S14: cuántos días antes de cumplir el plazo vuelve "Confirmar ahora" en Perfil. */
   diasAvisoReconfirmar: number;
+  /** Los documentos que pide el conductor (activos, en orden). */
+  tiposDocumento: TipoDocumentoReal[];
+  /** Cuántos meses antes de vencer se avisa (dentro de la app). */
+  mesesAvisoDocumentos: number;
 }
 
 /** Días entre confirmaciones si el ajuste no se puede leer. */
@@ -162,6 +172,8 @@ export function mapearCatalogos(f: FilasCatalogo): CatalogosLeidos {
     textos: f.textos.map((t) => ({ id: t.id, clave: t.clave, version: t.version, obligatoria: t.obligatoria, texto: t.texto })),
     diasReconfirmar: diasOk,
     diasAvisoReconfirmar: Number.isInteger(aviso) && aviso >= 0 && aviso < diasOk ? aviso : Math.min(DIAS_AVISO_RECONFIRMAR_POR_DEFECTO, diasOk - 1),
+    tiposDocumento: mapearTiposDocumento(f.tiposDocumento ?? []),
+    mesesAvisoDocumentos: mesesAviso(f.mesesAvisoDocumentos),
   };
 }
 
@@ -178,5 +190,7 @@ export function catalogosVacios(): CatalogosLeidos {
     listas: [],
     textos: [],
     diasReconfirmar: null,
+    tiposDocumento: [],
+    mesesAvisoDocumentos: null,
   });
 }

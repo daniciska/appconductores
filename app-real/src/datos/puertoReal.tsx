@@ -20,6 +20,16 @@ import type {
 import { almacenSesion, supabase } from '../supabase';
 
 import { mapearCatalogos } from './catalogos';
+import {
+  errorArchivo,
+  errorFechaDocumento,
+  fechaDeTexto,
+  hoyEnChile,
+  hayTextoRevision,
+  TEXTO_SIN_REVISION,
+  textoRevisionPendiente,
+  type EstadoDocumentoBase,
+} from './documentos';
 import { TEXTO, esErrorDeRed, textoErrorPedirCodigo, textoErrorVerificar } from './errores';
 import {
   ejecutarPlan,
@@ -38,6 +48,7 @@ import { guardarAlDia } from './guardado';
 import { leerCatalogos, leerPerfil } from './lecturas';
 import { celularParaAuth, mapearPerfil, textosParaA4 } from './perfil';
 import { cerrarSesionEnEsteEquipo, leerConSesion } from './sesion';
+import { limpiarArchivosSobrantes, nuevoUuid, subirDocumento } from './subida';
 import {
   asegurarDuenoBorradores,
   avisarCambioDeSesion,
@@ -117,12 +128,13 @@ async function cargarPerfil(uid: string): Promise<ConSesion<{ hayCuenta: boolean
   // Si los borradores de esta pestaña son de otra persona, se borran antes de mostrar nada.
   asegurarDuenoBorradores(uid);
   const e = useTiendaReal.getState();
-  const p = mapearPerfil(r.datos, e.mapas, e.textos);
+  const p = mapearPerfil(r.datos, e.mapas, e.textos, '', { tipos: e.tiposDocumento, meses: e.mesesAvisoDocumentos });
   useTiendaReal.setState({
     uid,
     vista: { ...e.vista, cuenta: p.cuenta, conductor: p.conductor, ingreso: null, textosAutorizacion: p.textosAutorizacion },
     aceptados: p.aceptados,
     autorizacionesCompletas: p.autorizacionesCompletas,
+    documentos: p.documentos,
   });
   perfilAlDia = true;
   return { ok: true, valor: { hayCuenta: !!r.datos.cuenta } };
@@ -182,6 +194,8 @@ export async function iniciarAppReal(): Promise<void> {
     textos: c.textos,
     diasReconfirmar: c.diasReconfirmar,
     diasAvisoReconfirmar: c.diasAvisoReconfirmar,
+    tiposDocumento: c.tiposDocumento,
+    mesesAvisoDocumentos: c.mesesAvisoDocumentos,
     vista: { ...e.vista, catalogos: c.catalogos, textosAutorizacion: textosParaA4(c.textos, e.aceptados) },
   });
   const sesion = primera.vencida ? null : ses.data.session;
@@ -343,6 +357,72 @@ const acciones: AccionesConductor = {
     // Solo en este equipo, también sin conexión (./sesion.ts). Se borran el celular pendiente y los borradores.
     guardarIngreso(null);
     await cerrarEnEsteEquipo();
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Documentos (Paso 5): solo la app real. Las pantallas están en src/pantallas/documentos/.
+// ---------------------------------------------------------------------------
+
+export interface PedidoDocumento {
+  tipoId: number;
+  archivo: Blob;
+  /** Tipo del archivo ya revisado (image/jpeg, application/pdf…). */
+  mime: string;
+  /** La fecha que anotó la persona ('dd/mm/aaaa'), si el tipo la pide. */
+  fecha: string;
+}
+
+export const accionesDocumentos = {
+  /** "Revisión de mis documentos": se acepta la versión vigente (si falta). */
+  async aceptarRevision(): Promise<Resultado> {
+    const e = useTiendaReal.getState();
+    const texto = textoRevisionPendiente(e.textos, e.aceptados);
+    if (!texto) return OK;
+    return guardar((x) => planAutorizaciones(x.uid ?? '', [texto], x.aceptados));
+  },
+
+  /**
+   * Sube el archivo y guarda el documento. La base decide su estado (método de validación); después
+   * se vuelve a leer el perfil y se borran los archivos que ya no usa ningún documento.
+   */
+  async subir(p: PedidoDocumento): Promise<Resultado<{ estado: EstadoDocumentoBase | null }>> {
+    const e = useTiendaReal.getState();
+    const uid = e.uid;
+    if (!uid) return fallo(TEXTO.sesionVencida);
+    const tipo = e.tiposDocumento.find((t) => t.id === p.tipoId);
+    if (!tipo) return fallo('Ese documento ya no se pide. Vuelve a abrir la pantalla.');
+    if (!hayTextoRevision(e.textos)) return fallo(TEXTO_SIN_REVISION);
+    if (textoRevisionPendiente(e.textos, e.aceptados)) return fallo('Primero acepta la revisión de tus documentos.');
+    const errArchivo = errorArchivo(p.mime, p.archivo.size, tipo.formato);
+    if (errArchivo) return fallo(errArchivo);
+    const errFecha = errorFechaDocumento(p.fecha, tipo, hoyEnChile());
+    if (errFecha) return fallo(errFecha);
+    const fecha = tipo.fechaPedida === 'ninguna' ? null : fechaDeTexto(p.fecha);
+    // Los archivos de este tipo antes de subir: los que dejen de estar vigentes se borran al tiro.
+    const antes = e.documentos.filter((d) => d.tipoId === tipo.id).map((d) => d.ruta);
+    const r = await subirDocumento(supabase, {
+      uid,
+      tipoId: tipo.id,
+      archivo: p.archivo,
+      mime: p.mime,
+      uuid: nuevoUuid(),
+      emitidoEn: tipo.fechaPedida === 'emision' ? fecha : null,
+      venceEn: tipo.fechaPedida === 'vencimiento' ? fecha : null,
+    });
+    if (!r.ok) {
+      if (r.vencida) await expulsar();
+      return fallo(r.error);
+    }
+    const leido = await cargarPerfil(uid);
+    if (!leido.ok) {
+      // El documento quedó guardado; la próxima lectura lo mostrará.
+      return { ok: true, valor: { estado: null } };
+    }
+    const despues = useTiendaReal.getState();
+    const vigentes = new Set(despues.documentos.map((d) => d.ruta));
+    void limpiarArchivosSobrantes(supabase, uid, despues.documentos, antes.filter((ruta) => !vigentes.has(ruta)));
+    return { ok: true, valor: { estado: despues.documentos.find((d) => d.id === r.valor.id)?.estado ?? null } };
   },
 };
 

@@ -2,8 +2,8 @@
 
 App web real del conductor, conectada a **Supabase** (proyecto `dale-contacto`), para que la dueña y su equipo empiecen a llenar la base con **celulares de prueba**. Especificación aprobada el 9-nov: `docs/especificacion-app-conductor-v1.md` (incluidas las adaptaciones de su sección 18). Se publicará en **app.dalecontacto.cl** (sitio de Netlify aparte, `dale-contacto-app`); este repositorio solo la arma, no la publica.
 
-- **Qué trae:** ingreso con celular y código (A1 sin "Tengo vehículos", A2, A3 con 60 s entre códigos, A4 "Antes de empezar" con una casilla por cada texto obligatorio vigente de la base), pasos 1 a 4 guardando en la base campo por campo (Paso 2 temporal: la comuna elegida de una lista), Inicio "perfil incompleto" con los documentos como "Próximamente", Perfil reducido, "¿Sigues buscando trabajo?" (E4) y editar cada paso desde Perfil.
-- **Qué no trae:** titular, matches, mensajes, bolsa, documentos (Paso 5), quién recibió mis datos, bloqueos, eliminar cuenta, recordatorios ni Google Maps. Tampoco la clave de la demo, datos de ejemplo, el menú de la demo, la simulación ni nada del panel (`npm run revisar` lo comprueba).
+- **Qué trae:** ingreso con celular y código (A1 sin "Tengo vehículos", A2, A3 con 60 s entre códigos, A4 "Antes de empezar" con una casilla por cada texto obligatorio vigente de la base), pasos 1 a 4 guardando en la base campo por campo (Paso 2 temporal: la comuna elegida de una lista), Paso 5 "Tus documentos" (desde el 24-nov: subir foto o PDF al espacio privado de Storage, con su fecha de vencimiento o emisión; la base los revisa con el método de validación, que hoy aprueba todo), Inicio con el estado real (incompleto, o completo con "Perfil verificado"), avisos de vencimiento desde 3 meses antes, "Mis documentos" en Perfil, "¿Sigues buscando trabajo?" (E4) y editar cada paso desde Perfil.
+- **Qué no trae:** titular, matches, mensajes, bolsa, quién recibió mis datos, bloqueos, eliminar cuenta, recordatorios ni Google Maps. Tampoco la clave de la demo, datos de ejemplo, el menú de la demo, la simulación ni nada del panel (`npm run revisar` lo comprueba).
 
 ## Cómo está armada
 
@@ -44,7 +44,10 @@ app-real/
       errores.ts           errores de Auth, PostgREST y red → textos cortos (puro)
       tiendaReal.ts        estado en memoria (sin guardar datos en el navegador)
       puertoReal.tsx       acciones, entorno y proveedor
-    pantallas/             Puerta (carga y sin conexión), InicioV1
+      documentos.ts        documentos (puro): estado de cada tipo, avisos de vencimiento, fechas, archivos
+      subida.ts            subir un documento: archivo a Storage y fila en documentos; limpiar archivos sobrantes
+      archivoWeb.ts        elegir el archivo en el navegador y achicar las fotos grandes antes de subirlas
+    pantallas/             Puerta (carga y sin conexión), InicioV1 (Inicio real) y documentos/ (Paso 5, Subir, Mis documentos)
     app/                   rutas de la v1 (envoltorios delgados de las pantallas compartidas)
   tests/                   pruebas (node --test) y simulador/ (Supabase simulado para las pruebas)
 ```

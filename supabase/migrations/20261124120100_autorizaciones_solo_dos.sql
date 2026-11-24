@@ -19,7 +19,12 @@
 -- y quedan como registro. Quien ya aceptó las 4 no tiene que hacer nada.
 --
 -- CUANDO SE CONSTRUYAN DOCUMENTOS O MENSAJES: se agrega para esa clave una
--- versión nueva con vigente = true (y la app la pide en ese momento).
+-- versión nueva con vigente = true (y la app la pide en ese momento). La
+-- de documentos ya existe: la migración 20261124150000_documentos_conductor
+-- agrega la 'prueba-2', vigente y NO obligatoria al entrar (se pide en el
+-- Paso 5). Por eso aquí solo se apagan las versiones 'prueba-1': si por
+-- error esta migración corriera después de la de documentos, no apaga la
+-- 'prueba-2' (sin texto vigente, la base no recibe documentos).
 -- =====================================================================
 
 do $$
@@ -27,10 +32,10 @@ declare
   n int;
 begin
   update public.textos_autorizacion set vigente = false
-   where clave in ('revision_documentos', 'normas_mensajes') and vigente;
+   where clave in ('revision_documentos', 'normas_mensajes') and version = 'prueba-1' and vigente;
   get diagnostics n = row_count;
-  if n <> 2 then
-    raise exception 'Se esperaba dejar de ofrecer 2 textos y se cambiaron %', n;
+  if n not between 1 and 2 then
+    raise exception 'Se esperaba dejar de ofrecer 1 o 2 textos prueba-1 y se cambiaron %', n;
   end if;
 
   if (select array_agg(clave order by orden) from public.textos_autorizacion
