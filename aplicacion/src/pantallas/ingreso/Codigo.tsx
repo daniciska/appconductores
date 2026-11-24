@@ -6,10 +6,10 @@
 // persona vuelve atrás mientras se verifica, se queda donde fue.
 import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import { Platform, View } from 'react-native';
-import { Text, TextInput, useGrande } from '@/ui/escala';
+import { Text, TextInput, useGrande, useMedidas } from '@/ui/escala';
 import { router } from 'expo-router';
 
-import { celularCompleto } from '@/datos/formato';
+import { celularEnUnaLinea } from '@/datos/formato';
 import { useAcciones, useEntorno, useVista } from '@/datos/puerto/contexto';
 import type { CanalCodigo } from '@/datos/puerto/tipos';
 import { Boton, Encabezado, Pantalla, color, fuente, mostrarToast, radio, tipo } from '@/ui';
@@ -46,9 +46,9 @@ export default function Codigo() {
     const id = setTimeout(() => setSegundos((n) => n - 1), 1000);
     return () => clearTimeout(id);
   }, [segundos]);
-  // Espacios que no se cortan: el número se lee entero en una línea (con letra grande se partía en dos).
-  const numero = celular.replace(/\D/g, '') ? celularCompleto(celular).replace(/ /g, '\u00A0') : null;
+  const numero = celular.replace(/\D/g, '') ? celularEnUnaLinea(celular) : null;
   const grande = useGrande();
+  const m = useMedidas();
 
   const verificar = async () => {
     if (verificando) return;
@@ -101,13 +101,16 @@ export default function Codigo() {
   const mm = Math.floor(segundos / 60);
   const ss = String(segundos % 60).padStart(2, '0');
 
+  // Con letra grande van uno debajo del otro: sin margen a los lados, para que el borde izquierdo de la
+  // pregunta y de los íconos quede parejo.
+  const alBorde = grande ? { paddingHorizontal: 0 } : undefined;
   const reenviarWhatsApp =
     segundos > 0 ? (
-      <BotonTexto titulo={`Reenviar por WhatsApp en ${mm}:${ss}`} icono={Clock} deshabilitado />
+      <BotonTexto titulo={`Reenviar por WhatsApp en ${mm}:${ss}`} icono={Clock} deshabilitado style={alBorde} />
     ) : (
-      <BotonTexto titulo="Reenviar por WhatsApp" onPress={() => reenviar('whatsapp')} />
+      <BotonTexto titulo="Reenviar por WhatsApp" onPress={() => reenviar('whatsapp')} style={alBorde} />
     );
-  const recibirSms = <BotonTexto titulo="Recibir el código por SMS" icono={MessageSquare} onPress={() => reenviar('sms')} />;
+  const recibirSms = <BotonTexto titulo="Recibir el código por SMS" icono={MessageSquare} onPress={() => reenviar('sms')} style={alBorde} />;
 
   return (
     <Pantalla>
@@ -177,9 +180,12 @@ export default function Codigo() {
       </View>
 
       {grande ? (
-        // Con letra grande no caben en una fila: la pregunta y sus dos respuestas, juntas en un bloque.
-        <View role="group" aria-label="¿No te llegó?" style={{ gap: 0 }}>
-          <Text style={[tipo.secundario, { color: color.textoSecundario, marginBottom: 2 }]}>¿No te llegó?</Text>
+        // Con letra grande no caben en una fila: la pregunta y sus dos respuestas, juntas en un bloque y
+        // con el mismo paso entre las tres líneas (cada una en una fila del alto de un toque).
+        <View role="group" aria-label="¿No te llegó?">
+          <View style={{ minHeight: m.tactil, justifyContent: 'center' }}>
+            <Text style={[tipo.secundario, { color: color.textoSecundario }]}>¿No te llegó?</Text>
+          </View>
           {reenviarWhatsApp}
           {recibirSms}
         </View>

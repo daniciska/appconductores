@@ -5,6 +5,7 @@ import { describe, it } from 'node:test';
 
 import {
   GRIS_MAS_OSCURO,
+  MARCADOR_GRANDE,
   MEDIDAS_GRANDES,
   MEDIDAS_NORMALES,
   altoLineaGrande,
@@ -84,6 +85,16 @@ describe('escalarEstiloTexto', () => {
         assert.ok(contraste(gris, fondo) >= 4.5, `${gris} sobre ${fondo}: ${contraste(gris, fondo).toFixed(2)}`);
       }
     }
+  });
+});
+
+describe('texto de ejemplo de los campos con letra grande', () => {
+  it('cumple AA sobre el blanco de los campos, más claro que las ayudas y lejos del texto escrito', () => {
+    const sobreBlanco = contraste(MARCADOR_GRANDE, '#FFFFFF');
+    assert.ok(sobreBlanco >= 4.5, `${MARCADOR_GRANDE} sobre blanco: ${sobreBlanco.toFixed(2)}`);
+    assert.ok(sobreBlanco > contraste('#9A9A9A', '#FFFFFF'), 'más oscuro que con letra normal');
+    assert.ok(sobreBlanco < contraste('#6B6B6B', '#FFFFFF'), 'más claro que las ayudas');
+    assert.ok(contraste('#111111', '#FFFFFF') / sobreBlanco > 3, 'muy distinto del texto escrito');
   });
 });
 

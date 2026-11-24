@@ -11,7 +11,7 @@ import { ScrollView, View } from 'react-native';
 import { Text, useGrande } from '@/ui/escala';
 import { router } from 'expo-router';
 
-import { celularCompleto, edad, mascaraFecha } from '@/datos/formato';
+import { celularEnUnaLinea, edad, mascaraFecha } from '@/datos/formato';
 import { useAcciones, useEntorno, useVista } from '@/datos/puerto/contexto';
 import { Boton, Campo, Chip, Encabezado, FilaInterruptor, Insignia, Pantalla, color, fuente, mostrarToast, radio, tipo } from '@/ui';
 
@@ -255,12 +255,14 @@ export default function Paso1() {
             flexDirection: 'row',
             alignItems: 'center',
             gap: 12,
+            // Con letra grande, si el número y la insignia no caben juntos (320 px), la insignia baja.
+            ...(grande ? { flexWrap: 'wrap' as const, rowGap: 6 } : null),
           }}>
-          <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
+          <View style={grande ? { flexGrow: 1, gap: 2 } : { flex: 1, minWidth: 0, gap: 2 }}>
             <Text style={[tipo.ayuda, { color: color.textoSecundario }]}>
               {cuenta.celularVerificado ? 'Celular verificado' : 'Celular'}
             </Text>
-            <Text style={[tipo.cuerpo, fuente(600), { color: color.texto }]}>{celularCompleto(cuenta.celular)}</Text>
+            <Text style={[tipo.cuerpo, fuente(600), { color: color.texto }]}>{celularEnUnaLinea(cuenta.celular)}</Text>
           </View>
           {cuenta.celularVerificado ? <Insignia texto="Verificado" /> : <Insignia texto="Sin verificar" tono="gris" />}
         </View>

@@ -133,6 +133,11 @@ export function celularCompleto(celular: string): string {
   return limpio ? `+56 9 ${limpio}` : '+56 9';
 }
 
+/** El mismo número con espacios que no se cortan: se lee entero en una línea (con letra grande se partía en dos). */
+export function celularEnUnaLinea(celular: string): string {
+  return celularCompleto(celular).replace(/ /g, '\u00A0');
+}
+
 /** Iniciales para avatares: "Transportes Los Aromos SpA" → "TL"; "Daniel" → "D". */
 export function iniciales(nombre: string): string {
   const partes = nombre

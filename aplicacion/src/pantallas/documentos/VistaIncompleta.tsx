@@ -4,7 +4,7 @@
 // documentos: en la demo lleva al Paso 5 ("N de 4 subidos"); en la app real v1 todavía no se pueden
 // subir ("Próximamente", sin enlace) y, si solo faltan ellos, la tarjeta lo dice y no muestra botón.
 import { View } from 'react-native';
-import { Text } from '@/ui/escala';
+import { Text, useMedidas } from '@/ui/escala';
 import type { Href } from 'expo-router';
 
 import { avancePerfil } from '@/datos/puerto/derivados';
@@ -30,6 +30,7 @@ export type DocumentosInicio =
   | { modo: 'proximamente' };
 
 export function VistaIncompleta({ documentos, nota }: { documentos: DocumentosInicio; nota: string }) {
+  const m = useMedidas();
   const avance = useVistaDerivada(avancePerfil);
   const registrado = useVista((v) => v.conductor.registrado);
   const pasos = useVista((v) => v.conductor.pasosListos);
@@ -108,7 +109,7 @@ export function VistaIncompleta({ documentos, nota }: { documentos: DocumentosIn
                     {f.estado}
                   </Text>
                 </View>
-                {f.listo || f.ruta === null ? null : <ChevronRight size={18} color={color.texto} strokeWidth={2} />}
+                {f.listo || f.ruta === null ? null : <ChevronRight size={m.icono(18)} color={color.texto} strokeWidth={2} />}
               </>
             );
             const estilo = { minHeight: 56, flexDirection: 'row' as const, alignItems: 'center' as const, gap: 12, paddingVertical: 6 };

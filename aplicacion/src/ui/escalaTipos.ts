@@ -33,6 +33,13 @@ export const GRIS_MAS_OSCURO: Readonly<Record<string, string>> = {
   '#ABABAB': '#6B6B6B',
 };
 
+/**
+ * Texto de ejemplo dentro de los campos (placeholder) con letra grande: el gris más claro que todavía
+ * cumple AA (4,5:1) sobre el blanco de los campos. Se lee, pero queda más claro que las ayudas (#6B6B6B)
+ * y muy lejos del texto escrito (#111111), para que no parezca un dato ya escrito.
+ */
+export const MARCADOR_GRANDE = '#767676';
+
 export interface EstiloTextoPlano {
   fontSize?: number;
   lineHeight?: number;

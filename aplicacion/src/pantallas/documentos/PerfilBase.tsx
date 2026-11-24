@@ -5,7 +5,7 @@
 // bloques extra; la app real v1 no los muestra.
 import { useState, type ReactNode } from 'react';
 import { View } from 'react-native';
-import { Text, useGrande } from '@/ui/escala';
+import { Text, useGrande, useMedidas } from '@/ui/escala';
 
 import { fechaCorta, iniciales } from '@/datos/formato';
 import { useAcciones, useEntorno, useVista } from '@/datos/puerto/contexto';
@@ -70,6 +70,7 @@ export function PerfilBase({ seccionSeguridad, filaEliminar, alCerrarSesion }: P
   const [hoja, setHoja] = useState<'ayuda' | 'terminos' | null>(null);
   const [salir, setSalir] = useState(false);
   const grande = useGrande();
+  const m = useMedidas();
 
   const primer = cuenta.nombres.trim().split(/\s+/)[0] ?? '';
   const nombre = [primer, cuenta.apellido1.trim()].filter(Boolean).join(' ') || 'Tu perfil';
@@ -123,7 +124,7 @@ export function PerfilBase({ seccionSeguridad, filaEliminar, alCerrarSesion }: P
                 {conductor.disponibilidadConfirmadaEn && !grande ? (
                   <Texto variante="ayuda">Última vez el {fechaCorta(conductor.disponibilidadConfirmadaEn)}</Texto>
                 ) : null}
-                <ChevronRight size={18} color={color.texto} strokeWidth={2} />
+                <ChevronRight size={m.icono(18)} color={color.texto} strokeWidth={2} />
               </View>
             </Presionable>
           </>

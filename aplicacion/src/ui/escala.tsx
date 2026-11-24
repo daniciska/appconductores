@@ -11,7 +11,7 @@ import { Platform, StyleSheet, Text as TextoRN, TextInput as CampoRN, type Style
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 
-import { CLAVE_LETRA_GRANDE, MEDIDAS_GRANDES, MEDIDAS_NORMALES, escalarEstiloTexto, type Medidas } from './escalaTipos';
+import { CLAVE_LETRA_GRANDE, MARCADOR_GRANDE, MEDIDAS_GRANDES, MEDIDAS_NORMALES, escalarEstiloTexto, type Medidas } from './escalaTipos';
 import { color } from './tokens';
 
 export { CLAVE_LETRA_GRANDE, MEDIDAS_GRANDES, MEDIDAS_NORMALES, type Medidas } from './escalaTipos';
@@ -113,7 +113,7 @@ export function Text(props: ComponentProps<typeof TextoRN>) {
   return <TextoRN {...props} style={estiloTextoGrande(props.style)} />;
 }
 
-/** TextInput de React Native que respeta "Letra grande" (texto y placeholder más legibles). */
+/** TextInput de React Native que respeta "Letra grande" (texto más grande y placeholder más legible, sin parecer un dato). */
 export function TextInput(props: ComponentProps<typeof CampoRN>) {
   const grande = useGrande();
   if (!grande) return <CampoRN {...props} />;
@@ -121,7 +121,7 @@ export function TextInput(props: ComponentProps<typeof CampoRN>) {
     <CampoRN
       {...props}
       style={estiloTextoGrande(props.style)}
-      placeholderTextColor={props.placeholderTextColor === color.textoDeshabilitado || !props.placeholderTextColor ? color.textoSecundario : props.placeholderTextColor}
+      placeholderTextColor={props.placeholderTextColor === color.textoDeshabilitado || !props.placeholderTextColor ? MARCADOR_GRANDE : props.placeholderTextColor}
     />
   );
 }

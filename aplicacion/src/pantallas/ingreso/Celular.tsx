@@ -5,7 +5,7 @@
 // persona vuelve atrás mientras se envía, se queda donde fue (no se la lleva a A3).
 import { useState } from 'react';
 import { View } from 'react-native';
-import { Text } from '@/ui/escala';
+import { Text, useMedidas } from '@/ui/escala';
 import { router } from 'expo-router';
 
 import { useAcciones, useEntorno, useVista } from '@/datos/puerto/contexto';
@@ -21,6 +21,7 @@ export default function Celular() {
   const validar = useValidarObligatorios();
   const pantalla = usePantallaAbierta();
 
+  const m = useMedidas();
   const [valor, setValor] = useState(() => celularParaCampo(guardado));
   const [intento, setIntento] = useState(false);
   const [enviando, setEnviando] = useState(false);
@@ -65,7 +66,8 @@ export default function Celular() {
         <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
           <View
             style={{
-              minHeight: 52,
+              // Mismo alto que el campo del número (52, o 60 con letra grande).
+              minHeight: m.campo,
               paddingHorizontal: 16,
               borderRadius: radio.campo,
               backgroundColor: color.superficieHundida,

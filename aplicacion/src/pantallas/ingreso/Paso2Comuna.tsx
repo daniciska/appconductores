@@ -7,7 +7,7 @@
 // o con lo guardado. La zona y la región salen de la comuna.
 import { useMemo, useRef, useState, type ComponentRef } from 'react';
 import { ScrollView, View, type TextInputKeyPressEvent } from 'react-native';
-import { Text, useGrande } from '@/ui/escala';
+import { Text, useGrande, useMedidas } from '@/ui/escala';
 import { router } from 'expo-router';
 
 import { useAcciones, useVista } from '@/datos/puerto/contexto';
@@ -30,6 +30,7 @@ import {
 
 export default function Paso2Comuna() {
   const grande = useGrande();
+  const m = useMedidas();
   const conductor = useVista((v) => v.conductor);
   const catalogos = useVista((v) => v.catalogos);
   const acciones = useAcciones();
@@ -169,7 +170,8 @@ export default function Paso2Comuna() {
                   style={{
                     minHeight: 56,
                     paddingVertical: 10,
-                    paddingHorizontal: 14,
+                    // Con letra grande, el pin queda alineado con el del campo y del mismo tamaño.
+                    paddingHorizontal: grande ? 16 : 14,
                     flexDirection: 'row',
                     alignItems: 'center',
                     gap: 12,
@@ -177,7 +179,7 @@ export default function Paso2Comuna() {
                     borderTopWidth: i > 0 ? 1 : 0,
                     borderTopColor: color.separador,
                   }}>
-                  <MapPin size={18} color={color.textoSecundario} strokeWidth={2} />
+                  <MapPin size={grande ? m.icono(20) : 18} color={color.textoSecundario} strokeWidth={2} />
                   <View style={{ flex: 1, minWidth: 0, gap: 1 }}>
                     <Text numberOfLines={1} style={[tipo.cuerpo, fuente(600), { color: color.texto }]}>
                       {c.nombre}

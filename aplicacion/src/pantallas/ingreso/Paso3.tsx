@@ -119,19 +119,17 @@ export default function Paso3() {
                     style={{ paddingHorizontal: 16 }}
                   />
                   {sel ? (
-                    // La etiqueta nunca se parte: si no cabe al lado del contador (pantallas angostas), el
-                    // contador baja a la línea siguiente, a la derecha.
-                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', columnGap: 8, rowGap: 4, paddingLeft: 16, paddingBottom: 4 }}>
-                      <Text style={[tipo.secundario, fuente(600), { flexGrow: 1, flexShrink: 0, color: color.textoSecundario }]}>Años manejando</Text>
-                      <View style={{ marginLeft: 'auto' }}>
-                        <Stepper
-                          valor={anios[t.id] ?? 1}
-                          onCambiar={(n) => setAnios((a) => ({ ...a, [t.id]: n }))}
-                          min={1}
-                          max={50}
-                          etiquetaAccesible={`años manejando ${t.nombre}`}
-                        />
-                      </View>
+                    // Con letra grande la etiqueta y el contador no caben en una fila (ni a 390 px): el
+                    // contador va justo debajo de su etiqueta, los dos alineados a la izquierda.
+                    <View style={{ alignItems: 'flex-start', gap: 6, paddingLeft: 16, paddingBottom: 4 }}>
+                      <Text style={[tipo.secundario, fuente(600), { color: color.textoSecundario }]}>Años de experiencia</Text>
+                      <Stepper
+                        valor={anios[t.id] ?? 1}
+                        onCambiar={(n) => setAnios((a) => ({ ...a, [t.id]: n }))}
+                        min={1}
+                        max={50}
+                        etiquetaAccesible={`años manejando ${t.nombre}`}
+                      />
                     </View>
                   ) : null}
                 </View>
