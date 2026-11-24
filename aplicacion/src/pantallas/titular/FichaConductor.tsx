@@ -5,7 +5,8 @@
 // Sin plan: no ve perfiles ni contactos (P11). Al abrirla, el conductor de la demo lo ve en "Quién recibió
 // mis datos".
 import { useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { router, useLocalSearchParams } from 'expo-router';
 
 import { useDerivado } from '@/datos/hooks';

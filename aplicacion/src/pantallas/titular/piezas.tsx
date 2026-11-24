@@ -1,7 +1,8 @@
 // Piezas de las pantallas del titular (prototipo del 24-nov): buscador de comuna, adelanto anónimo,
 // tarjeta y ficha del conductor, filas de contacto y la guarda del registro.
 import { useMemo, useState, type ReactNode } from 'react';
-import { Text, View, type TextInputKeyPressEvent } from 'react-native';
+import { View, type TextInputKeyPressEvent } from 'react-native';
+import { Text } from '@/ui/escala';
 import { Redirect, router } from 'expo-router';
 
 import { iniciales, plural, textoDias, textoTurnos } from '@/datos/formato';

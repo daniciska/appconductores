@@ -10,7 +10,7 @@ export interface Configuracion {
   url: string;
   /** Clave publicable (sb_publishable_…) o, si no hay otra, la anon antigua (JWT con rol anon). */
   clavePublica: string;
-  /** Mientras solo entren los números de prueba del equipo (cambia dos textos de ingreso). */
+  /** Mientras solo entren los números de prueba del equipo (cambia un mensaje de error del ingreso). */
   codigosDePrueba: boolean;
   /** Referencia del proyecto (zflalaqimacsnlvurzeb): nombre de la sesión guardada en el navegador. */
   ref: string;

@@ -35,7 +35,7 @@ export interface VistaConductor {
   /**
    * Textos de "Antes de empezar" (app real): uno por cada texto obligatorio vigente de la base, en su
    * orden. A4 muestra una casilla por cada uno y la app registra la aceptación de estos mismos. La demo
-   * no los tiene (usa las 4 casillas de la pantalla).
+   * no los tiene (usa las casillas de la pantalla: CASILLAS_DEMO).
    */
   textosAutorizacion?: TextoAutorizacion[] | null;
 }
@@ -84,6 +84,11 @@ export interface DatosPaso3 {
   experiencia: Record<string, number>;
   /** Claves de idioma ('es', 'en'…). */
   idiomas: string[];
+  /**
+   * S04: guardado con "Guardar y terminar después" (puede faltar algo). La app real calcula si el paso
+   * quedó listo por lo guardado; la demo, que no exige los campos con *, lo usa para no darlo por listo.
+   */
+  parcial?: boolean;
 }
 
 export interface DatosPaso4 {
@@ -91,12 +96,14 @@ export interface DatosPaso4 {
   negocios: string[];
   turnos: Turno[];
   dias: Dia[];
+  /** S04: guardado con "Guardar y terminar después" (ver DatosPaso3.parcial). */
+  parcial?: boolean;
 }
 
-/** Las 4 casillas de "Antes de empezar" (A4) de la maqueta (las de la demo). */
+/** Las 4 casillas de "Antes de empezar" (A4) de la maqueta (la demo muestra 3: sin mensajes desde el 24-nov). */
 export type CasillaAutorizacion = 'terminos' | 'compartir' | 'revision' | 'mensajes';
 /**
- * Lo marcado en A4, por casilla: en la demo, las 4 de la maqueta ('terminos'…); en la app real, el id
+ * Lo marcado en A4, por casilla: en la demo, sus casillas ('terminos'…); en la app real, el id
  * de cada texto (TextoAutorizacion.id).
  */
 export type MarcasAutorizacion = Record<string, boolean>;
@@ -160,6 +167,8 @@ export interface Entorno {
   validarObligatorios: boolean;
   /** Cada cuántos días se pide confirmar "Disponible para trabajar". */
   diasReconfirmar: number;
+  /** S14: cuántos días antes de cumplir ese plazo vuelve "Confirmar ahora" en Perfil (ajuste de la base). */
+  diasAvisoReconfirmar: number;
   /** Segundos entre dos códigos (demo 30, real 60). */
   esperaReenvioSegundos: number;
   /** Nota sobre "Verificar" en A3 (o null). */

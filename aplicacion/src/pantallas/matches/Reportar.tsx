@@ -3,7 +3,8 @@
 // El titular reporta a un conductor desde /titular/conductor/[id]/reportar con el mismo FormularioReporte.
 // El reporte queda abierto hasta que lo resuelva el equipo en el panel.
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { useLocalSearchParams, type Href } from 'expo-router';
 
 import { fechaConMes } from '@/datos/formato';

@@ -1,7 +1,8 @@
 // Titular · Pago del plan (pago web, P14). En la demo no se cobra nada ni se piden datos de pago: el botón
 // activa el plan. En la app real, el pago se hace en la página del proveedor de pagos (por definir).
 // Ruta: /titular/pago?plan=basico
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { useLocalSearchParams } from 'expo-router';
 
 import { pesos } from '@/datos/formato';

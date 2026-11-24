@@ -1,19 +1,7 @@
 // Controles: botones, campos, chips, casillas, radios, interruptor, stepper y control segmentado.
 import { useEffect, useRef, useState, type ComponentRef, type ReactNode, type Ref } from 'react';
-import {
-  ActivityIndicator,
-  Animated,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-  type PressableProps,
-  type PressableStateCallbackType,
-  type StyleProp,
-  type TextInputProps,
-  type ViewStyle,
-} from 'react-native';
+import { ActivityIndicator, Animated, Pressable, StyleSheet, View, type PressableProps, type PressableStateCallbackType, type StyleProp, type TextInputProps, type ViewStyle } from 'react-native';
+import { Text, TextInput, useMedidas } from './escala';
 import { router, type Href } from 'expo-router';
 
 import { Check, Minus, Plus, type LucideIcon } from './iconos';
@@ -36,6 +24,7 @@ export interface PropsPresionable extends Omit<PressableProps, 'style' | 'childr
 }
 
 export function Presionable({ style, children, efecto = 'opacidad', disabled, href, onPress, ...resto }: PropsPresionable) {
+  const m = useMedidas();
   return (
     <Pressable
       {...resto}
@@ -46,6 +35,7 @@ export function Presionable({ style, children, efecto = 'opacidad', disabled, hr
         const activo = !disabled && efecto !== 'ninguno';
         return [
           propio,
+          m.grande && alturaTactil(propio, m.tactil),
           activo && estado.hovered && !estado.pressed && { opacity: 0.92 },
           activo && estado.pressed && (efecto === 'escala' ? { transform: [{ scale: 0.98 }], opacity: 0.9 } : { opacity: 0.7 }),
         ];
@@ -53,6 +43,13 @@ export function Presionable({ style, children, efecto = 'opacidad', disabled, hr
       {children as PressableProps['children']}
     </Pressable>
   );
+}
+
+/** Con letra grande, toda zona para tocar mide al menos `minimo` de alto (sin achicar las más altas). */
+function alturaTactil(propio: StyleProp<ViewStyle>, minimo: number): ViewStyle {
+  const plano = StyleSheet.flatten(propio) ?? {};
+  const actual = typeof plano.minHeight === 'number' ? plano.minHeight : 0;
+  return { minHeight: Math.max(actual, minimo) };
 }
 
 // ---------------------------------------------------------------------------
@@ -105,6 +102,7 @@ export function Boton({
   etiquetaAccesible,
   style,
 }: PropsBoton) {
+  const m = useMedidas();
   const e = ESTILO_BOTON[variante];
   const grande = tamano === 'grande';
   const apagado = deshabilitado || cargando;
@@ -122,7 +120,7 @@ export function Boton({
       style={[
         estilos.boton,
         {
-          minHeight: grande ? alto.boton : alto.tactil,
+          minHeight: grande ? m.boton : m.tactil,
           borderRadius: grande ? radio.boton : radio.boton44,
           paddingHorizontal: grande ? 20 : 18,
           backgroundColor: deshabilitado && variante !== 'texto' ? color.superficieHundida : e.fondo,
@@ -136,17 +134,18 @@ export function Boton({
         <ActivityIndicator color={colorTexto} />
       ) : (
         <>
-          {Icono && <Icono size={grande ? 18 : 16} color={colorTexto} strokeWidth={2.2} />}
+          {Icono && <Icono size={m.icono(grande ? 18 : 16)} color={colorTexto} strokeWidth={2.2} />}
           <Text
-            numberOfLines={1}
+            numberOfLines={m.grande ? 2 : 1}
             style={[
               grande ? tipo.boton : tipo.botonChico,
               { color: colorTexto },
+              m.grande && { textAlign: 'center', flexShrink: 1, paddingVertical: 8 },
               variante === 'texto' && { textDecorationLine: 'underline' },
             ]}>
             {titulo}
           </Text>
-          {IconoDerecha && <IconoDerecha size={grande ? 18 : 16} color={colorTexto} strokeWidth={2.2} />}
+          {IconoDerecha && <IconoDerecha size={m.icono(grande ? 18 : 16)} color={colorTexto} strokeWidth={2.2} />}
         </>
       )}
     </Presionable>
@@ -182,6 +181,8 @@ export function BotonIcono({
   tamano = 44,
   style,
 }: PropsBotonIcono) {
+  const m = useMedidas();
+  const lado = m.grande ? Math.max(tamano, m.tactil) : tamano;
   const fondo =
     variante === 'borde'
       ? color.superficie
@@ -202,8 +203,8 @@ export function BotonIcono({
       href={href}
       style={[
         {
-          width: tamano,
-          height: tamano,
+          width: lado,
+          height: lado,
           borderRadius: radio.boton44,
           backgroundColor: fondo,
           borderWidth: variante === 'borde' ? 1 : 0,
@@ -213,7 +214,7 @@ export function BotonIcono({
         },
         style,
       ]}>
-      <Icono size={20} color={trazo} strokeWidth={relleno ? 1.6 : 2} fill={relleno ? color.acento : 'none'} />
+      <Icono size={m.icono(20)} color={trazo} strokeWidth={relleno ? 1.6 : 2} fill={relleno ? color.acento : 'none'} />
     </Presionable>
   );
 }
@@ -268,6 +269,7 @@ export function Campo({
   onBlur,
   ...resto
 }: PropsCampo) {
+  const m = useMedidas();
   const [foco, setFoco] = useState(false);
   const hayError = !!error;
   const borde = hayError
@@ -292,11 +294,12 @@ export function Campo({
       <View
         style={[
           estilos.campo,
+          m.grande && { minHeight: m.campo },
           borde,
           multilinea && { minHeight: 112, alignItems: 'flex-start', paddingVertical: 12 },
           deshabilitado && { backgroundColor: color.fondo },
         ]}>
-        {Icono ? <Icono size={20} color={color.texto} strokeWidth={2} /> : null}
+        {Icono ? <Icono size={m.icono(20)} color={color.texto} strokeWidth={2} /> : null}
         {prefijo ? <Text style={[tipo.cuerpo, fuente(600), { color: color.texto }]}>{prefijo}</Text> : null}
         <TextInput
           ref={inputRef}
@@ -325,7 +328,7 @@ export function Campo({
               minWidth: 0,
               color: deshabilitado ? color.textoSecundario : color.texto,
               paddingVertical: 0,
-              minHeight: multilinea ? 88 : 48,
+              minHeight: multilinea ? 88 : m.grande ? m.tactil : 48,
               textAlignVertical: multilinea ? 'top' : 'center',
             },
             { outlineStyle: 'none' } as object,
@@ -334,11 +337,11 @@ export function Campo({
         {derecha}
       </View>
       {typeof error === 'string' && error ? (
-        <Text role="alert" style={[tipo.ayuda, fuente(600), { color: color.error }]}>
+        <Text role="alert" style={[tipo.mensajeCampo, fuente(600), { color: color.error }]}>
           {error}
         </Text>
       ) : null}
-      {ayuda && !(typeof error === 'string' && error) ? <Texto variante="ayuda">{ayuda}</Texto> : null}
+      {ayuda && !(typeof error === 'string' && error) ? <Text style={[tipo.mensajeCampo, { color: color.textoSecundario }]}>{ayuda}</Text> : null}
       {contador && maxLength ? (
         <Texto variante="pequeno" style={{ textAlign: 'right' }}>
           {valor.length}/{maxLength}
@@ -378,6 +381,7 @@ export function Chip({
   etiquetaAccesible,
   style,
 }: PropsChip) {
+  const m = useMedidas();
   const cuadrado = forma === 'cuadrado';
   return (
     <Presionable
@@ -390,9 +394,9 @@ export function Chip({
       onPress={onPress}
       style={[
         {
-          minHeight: cuadrado ? 48 : subtitulo ? 52 : alto.tactil,
+          minHeight: cuadrado ? m.chipCuadrado : subtitulo ? m.chipConSubtitulo : m.tactil,
           minWidth: cuadrado ? 0 : 52,
-          borderRadius: cuadrado ? radio.campo : subtitulo ? 26 : radio.pastilla,
+          borderRadius: cuadrado ? radio.campo : subtitulo ? m.chipConSubtitulo / 2 : m.grande ? m.tactil / 2 : radio.pastilla,
           paddingHorizontal: cuadrado ? 0 : seleccionado ? 14 : 16,
           paddingVertical: subtitulo ? 7 : 0,
           flexDirection: 'row',
@@ -405,7 +409,12 @@ export function Chip({
         },
         style,
       ]}>
-      {seleccionado && !cuadrado ? <Check size={14} color={color.blanco} strokeWidth={2.8} /> : null}
+      {seleccionado && !cuadrado ? (
+        // Sin encogerse: en un chip angosto con texto largo, el check se achicaba.
+        <View style={{ flexShrink: 0 }}>
+          <Check size={m.icono(14)} color={color.blanco} strokeWidth={2.8} />
+        </View>
+      ) : null}
       <View style={{ minWidth: 0, flexShrink: 1 }}>
         <Text
           style={[
@@ -428,20 +437,21 @@ export function Chip({
 // ---------------------------------------------------------------------------
 
 export function Casilla({ marcada, deshabilitada }: { marcada: boolean; deshabilitada?: boolean }) {
+  const m = useMedidas();
   return (
     <View
       aria-hidden
       style={{
-        width: 20,
-        height: 20,
-        borderRadius: 5,
+        width: m.casilla,
+        height: m.casilla,
+        borderRadius: m.grande ? 7 : 5,
         borderWidth: marcada ? 0 : 1.5,
         borderColor: deshabilitada ? color.bordeCampo : '#8A8A8A',
         backgroundColor: marcada ? color.oscuro : deshabilitada ? color.fondo : color.superficie,
         alignItems: 'center',
         justifyContent: 'center',
       }}>
-      {marcada ? <Check size={14} color={color.blanco} strokeWidth={3} /> : null}
+      {marcada ? <Check size={m.icono(14)} color={color.blanco} strokeWidth={3} /> : null}
     </View>
   );
 }
@@ -454,12 +464,13 @@ export interface PropsFilaCheck {
   marcada: boolean;
   onPress?: () => void;
   deshabilitada?: boolean;
-  /** Pastilla gris a la derecha cuando está deshabilitada, ej. "Pide licencia A3". */
+  /** Pastilla gris bajo el nombre cuando está deshabilitada, ej. "Pide licencia A3". */
   nota?: string;
   style?: StyleProp<ViewStyle>;
 }
 
 export function FilaCheck({ titulo, ejemplo, descripcion, marcada, onPress, deshabilitada, nota, style }: PropsFilaCheck) {
+  const m = useMedidas();
   return (
     <Presionable
       role="checkbox"
@@ -473,7 +484,7 @@ export function FilaCheck({ titulo, ejemplo, descripcion, marcada, onPress, desh
           flexDirection: 'row',
           alignItems: 'center',
           gap: 12,
-          minHeight: alto.campo,
+          minHeight: m.grande ? m.boton : alto.campo,
           paddingHorizontal: 16,
           paddingVertical: 14,
           borderRadius: radio.campo,
@@ -489,23 +500,34 @@ export function FilaCheck({ titulo, ejemplo, descripcion, marcada, onPress, desh
           style={[
             tipo.cuerpo,
             fuente(marcada ? 600 : 500),
-            { color: deshabilitada ? color.textoDeshabilitado : color.texto },
+            // Bloqueada: gris oscuro que se lee (5:1 sobre el fondo gris); la fila igual se ve apagada.
+            { color: deshabilitada ? color.textoSecundario : color.texto },
           ]}>
           {titulo}
           {ejemplo ? (
-            <Text style={[fuente(500), { color: deshabilitada ? color.textoDeshabilitadoSuave : color.textoSecundario }]}>
+            <Text style={[fuente(deshabilitada ? 400 : 500), { color: color.textoSecundario }]}>
               {' '}
               ({ejemplo})
             </Text>
           ) : null}
         </Text>
         {descripcion ? <Texto variante="ayuda">{descripcion}</Texto> : null}
+        {nota ? (
+          // S13: a 14 px y bajo el nombre (no a su lado), para que el nombre use todo el ancho y no se
+          // corte a mitad de palabra en celulares angostos. Mismo gris de antes (4,6:1 sobre la pastilla).
+          <View
+            style={{
+              alignSelf: 'flex-start',
+              marginTop: 4,
+              backgroundColor: color.superficieHundida,
+              borderRadius: radio.insignia,
+              paddingHorizontal: 8,
+              paddingVertical: 3,
+            }}>
+            <Text style={[fuente(700), { fontSize: 14, lineHeight: 18, color: color.textoSecundario }]}>{nota}</Text>
+          </View>
+        ) : null}
       </View>
-      {nota ? (
-        <View style={{ backgroundColor: color.superficieHundida, borderRadius: radio.insignia, paddingHorizontal: 8, paddingVertical: 4 }}>
-          <Text style={[tipo.pequeno, fuente(700), { color: color.textoSecundario }]}>{nota}</Text>
-        </View>
-      ) : null}
     </Presionable>
   );
 }
@@ -528,6 +550,8 @@ export interface PropsFilaRadio {
 }
 
 export function FilaRadio({ titulo, descripcion, seleccionada, onPress, deshabilitada, extra, children, style }: PropsFilaRadio) {
+  const m = useMedidas();
+  const punto = m.grande ? 12 : 10;
   return (
     <View
       style={[
@@ -550,16 +574,16 @@ export function FilaRadio({ titulo, descripcion, seleccionada, onPress, deshabil
         <View
           aria-hidden
           style={{
-            width: 22,
-            height: 22,
+            width: m.radioOpcion,
+            height: m.radioOpcion,
             marginTop: 1,
-            borderRadius: 11,
+            borderRadius: m.radioOpcion / 2,
             borderWidth: 2,
             borderColor: seleccionada ? color.oscuro : color.interruptorApagado,
             alignItems: 'center',
             justifyContent: 'center',
           }}>
-          <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: seleccionada ? color.oscuro : 'transparent' }} />
+          <View style={{ width: punto, height: punto, borderRadius: punto / 2, backgroundColor: seleccionada ? color.oscuro : 'transparent' }} />
         </View>
         <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
           <Text
@@ -593,6 +617,8 @@ export interface PropsOpcionIcono {
 }
 
 export function OpcionIcono({ titulo, icono: Icono, seleccionada, onPress, subtitulo, style }: PropsOpcionIcono) {
+  const m = useMedidas();
+  const cuadro = m.grande ? 44 : 36;
   return (
     <Presionable
       role="checkbox"
@@ -602,7 +628,7 @@ export function OpcionIcono({ titulo, icono: Icono, seleccionada, onPress, subti
       style={[
         {
           flex: 1,
-          minHeight: 64,
+          minHeight: m.opcion,
           borderRadius: radio.campo,
           paddingHorizontal: 14,
           paddingVertical: 12,
@@ -618,20 +644,20 @@ export function OpcionIcono({ titulo, icono: Icono, seleccionada, onPress, subti
       <View
         aria-hidden
         style={{
-          width: 36,
-          height: 36,
+          width: cuadro,
+          height: cuadro,
           borderRadius: radio.icono,
           alignItems: 'center',
           justifyContent: 'center',
           backgroundColor: seleccionada ? color.oscuro : color.fondo,
         }}>
-        <Icono size={20} color={seleccionada ? color.acento : color.textoSecundario} strokeWidth={2} />
+        <Icono size={m.icono(20)} color={seleccionada ? color.acento : color.textoSecundario} strokeWidth={2} />
       </View>
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text style={[tipo.cuerpo, fuente(seleccionada ? 700 : 500), { color: color.texto }]}>{titulo}</Text>
         {subtitulo ? <Texto variante="pequeno">{subtitulo}</Texto> : null}
       </View>
-      {seleccionada ? <Check size={18} color={color.texto} strokeWidth={2.6} /> : null}
+      {seleccionada ? <Check size={m.icono(18)} color={color.texto} strokeWidth={2.6} /> : null}
     </Presionable>
   );
 }
@@ -650,6 +676,8 @@ export interface PropsInterruptor {
 }
 
 function DibujoInterruptor({ valor, deshabilitado }: { valor: boolean; deshabilitado?: boolean }) {
+  const { ancho, alto: altoI, bola } = useMedidas().interruptor;
+  const margen = (altoI - bola) / 2;
   const pos = useRef(new Animated.Value(valor ? 1 : 0)).current;
   useEffect(() => {
     Animated.timing(pos, { toValue: valor ? 1 : 0, duration: duracion.rapida, useNativeDriver: false }).start();
@@ -657,20 +685,20 @@ function DibujoInterruptor({ valor, deshabilitado }: { valor: boolean; deshabili
   return (
     <Animated.View
       style={{
-        width: 52,
-        height: 32,
-        borderRadius: 16,
+        width: ancho,
+        height: altoI,
+        borderRadius: altoI / 2,
         opacity: deshabilitado ? 0.5 : 1,
         backgroundColor: pos.interpolate({ inputRange: [0, 1], outputRange: [color.interruptorApagado, color.exito] }),
       }}>
       <Animated.View
         style={{
           position: 'absolute',
-          top: 3,
-          left: pos.interpolate({ inputRange: [0, 1], outputRange: [3, 23] }),
-          width: 26,
-          height: 26,
-          borderRadius: 13,
+          top: margen,
+          left: pos.interpolate({ inputRange: [0, 1], outputRange: [margen, ancho - bola - margen] }),
+          width: bola,
+          height: bola,
+          borderRadius: bola / 2,
           backgroundColor: color.blanco,
         }}
       />
@@ -678,8 +706,11 @@ function DibujoInterruptor({ valor, deshabilitado }: { valor: boolean; deshabili
   );
 }
 
-/** Interruptor de 52 × 32 con zona táctil de 52 × 44 (sin cambiar el espacio que ocupa). */
+/** Interruptor de 52 × 32 con zona táctil de 52 × 44 (con letra grande, 60 × 36 y 60 × 56), sin cambiar el espacio que ocupa. */
 export function Interruptor({ valor, onCambiar, etiquetaAccesible, deshabilitado, soloVisual }: PropsInterruptor) {
+  const m = useMedidas();
+  // Zona para tocar: el dibujo más un margen arriba y abajo que no cambia el espacio que ocupa.
+  const margen = Math.max(6, (m.tactil - m.interruptor.alto) / 2);
   if (soloVisual) {
     return (
       <View aria-hidden>
@@ -695,7 +726,7 @@ export function Interruptor({ valor, onCambiar, etiquetaAccesible, deshabilitado
       aria-disabled={deshabilitado}
       disabled={deshabilitado}
       onPress={() => onCambiar(!valor)}
-      style={{ paddingVertical: 6, marginVertical: -6 }}>
+      style={{ paddingVertical: margen, marginVertical: -margen }}>
       <DibujoInterruptor valor={valor} deshabilitado={deshabilitado} />
     </Pressable>
   );
@@ -720,6 +751,7 @@ export function ZonaInterruptor({
   style?: StyleProp<ViewStyle>;
   children: ReactNode;
 }) {
+  const m = useMedidas();
   return (
     <Presionable
       role="switch"
@@ -729,7 +761,7 @@ export function ZonaInterruptor({
       disabled={deshabilitado}
       efecto="ninguno"
       onPress={() => onCambiar(!valor)}
-      style={[{ flexDirection: 'row', alignItems: 'center', minHeight: 44 }, style]}>
+      style={[{ flexDirection: 'row', alignItems: 'center', minHeight: m.tactil }, style]}>
       {children}
       <Interruptor soloVisual valor={valor} onCambiar={onCambiar} etiquetaAccesible={etiquetaAccesible} deshabilitado={deshabilitado} />
     </Presionable>
@@ -752,6 +784,7 @@ export function FilaInterruptor({
   deshabilitado?: boolean;
   style?: StyleProp<ViewStyle>;
 }) {
+  const m = useMedidas();
   return (
     <ZonaInterruptor
       valor={valor}
@@ -764,7 +797,7 @@ export function FilaInterruptor({
           borderWidth: 1,
           borderColor: color.borde,
           borderRadius: radio.campo,
-          minHeight: 64,
+          minHeight: m.opcion,
           paddingHorizontal: 16,
           paddingVertical: 12,
           gap: 12,
@@ -773,7 +806,8 @@ export function FilaInterruptor({
       ]}>
       <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
         <Text style={[tipo.fuerte, { color: color.texto }]}>{titulo}</Text>
-        {ayuda ? <Texto variante="ayuda">{ayuda}</Texto> : null}
+        {/* S13: la ayuda bajo un campo, a 15 px como las demás. */}
+        {ayuda ? <Text style={[tipo.mensajeCampo, { color: color.textoSecundario }]}>{ayuda}</Text> : null}
       </View>
     </ZonaInterruptor>
   );
@@ -795,6 +829,7 @@ export interface PropsStepper {
 }
 
 export function Stepper({ valor, onCambiar, min = 0, max = 50, deshabilitado, etiquetaAccesible, sufijo }: PropsStepper) {
+  const m = useMedidas();
   const boton = (signo: 'menos' | 'mas') => {
     const bloqueado = deshabilitado || (signo === 'menos' ? valor <= min : valor >= max);
     const Icono = signo === 'menos' ? Minus : Plus;
@@ -806,8 +841,8 @@ export function Stepper({ valor, onCambiar, min = 0, max = 50, deshabilitado, et
         disabled={bloqueado}
         onPress={() => onCambiar(Math.min(max, Math.max(min, valor + (signo === 'menos' ? -1 : 1))))}
         style={{
-          width: 44,
-          height: 44,
+          width: m.tactil,
+          height: m.tactil,
           borderRadius: radio.boton44,
           borderWidth: 1,
           // Como en las maquetas B3 y BT2: activo gris claro con borde #DDDDDD; bloqueado aún más claro.
@@ -816,12 +851,12 @@ export function Stepper({ valor, onCambiar, min = 0, max = 50, deshabilitado, et
           alignItems: 'center',
           justifyContent: 'center',
         }}>
-        <Icono size={18} color={bloqueado ? color.iconoDeshabilitado : color.texto} strokeWidth={2} />
+        <Icono size={m.icono(18)} color={bloqueado ? color.iconoDeshabilitado : color.texto} strokeWidth={2} />
       </Presionable>
     );
   };
   return (
-    <View style={{ width: sufijo ? 156 : 132, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+    <View style={{ width: sufijo ? m.stepper.con : m.stepper.sin, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
       {boton('menos')}
       <Text
         aria-live="polite"

@@ -7,7 +7,8 @@
 // lado del titular). "Compartir mi dirección" y "Reportar" viven aquí.
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { router, useLocalSearchParams } from 'expo-router';
 
 import { iniciales, textoDias, textoTurnos } from '@/datos/formato';

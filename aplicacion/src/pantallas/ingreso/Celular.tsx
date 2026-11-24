@@ -3,12 +3,17 @@
 // Maqueta: docs/maqueta/CondCelular.dc.html
 // "Enviar código" pide el código (en la demo no se envía nada: guarda el número) y pasa a A3. Si la
 // persona vuelve atrás mientras se envía, se queda donde fue (no se la lleva a A3).
+// "Letra grande" (pedido de Daniela, 24-nov): también aquí, la primera pantalla del registro, con el mismo
+// interruptor que la Bienvenida y Perfil (tono claro, como en Perfil), para quien llega directo o no lo vio.
+// Va en la cabecera, al lado de "Volver" (versión de una línea): el campo del número se activa solo al
+// entrar y el teclado tapaba el interruptor si iba abajo; además así no baja "Enviar código".
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text, useMedidas } from '@/ui/escala';
 import { router, type Href } from 'expo-router';
 
 import { useAcciones, useEntorno, useVista } from '@/datos/puerto/contexto';
-import { Boton, Campo, Encabezado, Pantalla, color, fuente, radio, tipo } from '@/ui';
+import { Boton, Campo, Encabezado, InterruptorLetraGrande, Pantalla, color, fuente, radio, tipo } from '@/ui';
 
 import { celularParaCampo, celularParaGuardar, celularValido, mascaraCampoCelular, usePantallaAbierta } from './acciones';
 import { CabeceraFormulario, NotaDemo, TarjetaInfo, useValidarObligatorios } from './comunes';
@@ -28,6 +33,7 @@ export default function Celular({
   const validar = useValidarObligatorios();
   const pantalla = usePantallaAbierta();
 
+  const m = useMedidas();
   const [valor, setValor] = useState(() => celularParaCampo(guardado));
   const [intento, setIntento] = useState(false);
   const [enviando, setEnviando] = useState(false);
@@ -37,7 +43,8 @@ export default function Celular({
   const error =
     intento && validar && !valido
       ? valor.trim()
-        ? 'Revisa tu número: son 9 dígitos y empieza con 9.'
+        ? // Espacios que no se cortan: el ejemplo "9 1234 5678" queda entero en una línea.
+          'Escribe solo tu número, por ejemplo 9\u00A01234\u00A05678.'
         : 'Ingresa tu número de celular.'
       : (errorEnvio ?? undefined);
 
@@ -63,7 +70,7 @@ export default function Celular({
 
   return (
     <Pantalla>
-      <Encabezado volverA={volverA} />
+      <Encabezado volverA={volverA} derecha={<InterruptorLetraGrande compacto />} />
       <CabeceraFormulario titulo="Ingresa tu celular" subtitulo="Te enviaremos un código por WhatsApp. Si no te llega, te lo mandamos por SMS." />
 
       <View style={{ marginTop: 8, gap: 8 }}>
@@ -73,7 +80,8 @@ export default function Celular({
         <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
           <View
             style={{
-              minHeight: 52,
+              // Mismo alto que el campo del número (52, o 60 con letra grande).
+              minHeight: m.campo,
               paddingHorizontal: 16,
               borderRadius: radio.campo,
               backgroundColor: color.superficieHundida,
@@ -97,7 +105,9 @@ export default function Celular({
             textContentType="telephoneNumber"
             aria-label="Número de celular, después de +56"
             error={error}
-            maxLength={11}
+            // Deja pegar el número como venga ("+56 (9) 9000-0001", "0056 9 9000 0001"): la máscara lo deja en
+            // 9 dígitos. El tope es holgado para que el navegador no corte lo pegado antes de la máscara.
+            maxLength={24}
             returnKeyType="send"
             onSubmitEditing={enviar}
             autoFocus

@@ -6,7 +6,8 @@
 // La dirección es privada. Este es el Paso 2 de la demo; la app real v1 usa Paso2Comuna (la comuna de
 // una lista) mientras no exista la cuenta de Google Cloud.
 import { useMemo, useRef, useState, type ComponentRef } from 'react';
-import { ScrollView, Text, View, type TextInputKeyPressEvent } from 'react-native';
+import { ScrollView, View, type TextInputKeyPressEvent } from 'react-native';
+import { Text, useMedidas } from '@/ui/escala';
 import { router } from 'expo-router';
 
 import { useAcciones, useEntorno, useVista } from '@/datos/puerto/contexto';
@@ -28,6 +29,7 @@ import {
 import { sugerirDireccionesDemo, type Sugerencia } from './sugerencias';
 
 export default function Paso2() {
+  const m = useMedidas();
   const conductor = useVista((v) => v.conductor);
   const catalogos = useVista((v) => v.catalogos);
   const acciones = useAcciones();
@@ -180,7 +182,8 @@ export default function Paso2() {
                   style={{
                     minHeight: 56,
                     paddingVertical: 15,
-                    paddingHorizontal: 14,
+                    // Con letra grande, el pin queda alineado con el del campo y del mismo tamaño.
+                    paddingHorizontal: m.grande ? 16 : 14,
                     flexDirection: 'row',
                     alignItems: 'center',
                     gap: 12,
@@ -188,7 +191,7 @@ export default function Paso2() {
                     borderBottomWidth: 1,
                     borderBottomColor: color.separador,
                   }}>
-                  <MapPin size={18} color={color.textoSecundario} strokeWidth={2} />
+                  <MapPin size={m.grande ? m.icono(20) : 18} color={color.textoSecundario} strokeWidth={2} />
                   <View style={{ flex: 1, minWidth: 0, gap: 1 }}>
                     <Text numberOfLines={1} style={[tipo.cuerpo, fuente(600), { color: color.texto }]}>
                       {s.direccion}

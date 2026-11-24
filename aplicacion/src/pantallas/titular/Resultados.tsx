@@ -4,7 +4,8 @@
 // conductores que hacen match (con su %), y al tocar uno, su ficha con el contacto. Desde aquí se pausa,
 // se marca como cubierta, se edita y, si la bolsa está activa, se publica en la bolsa.
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { router, useLocalSearchParams } from 'expo-router';
 
 import { plural } from '@/datos/formato';

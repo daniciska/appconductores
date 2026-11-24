@@ -1,6 +1,7 @@
 // Piezas visuales propias del grupo "matches" (D1–D3), con las medidas de las maquetas.
 import { useEffect, useRef, type ReactNode } from 'react';
-import { Animated, Linking, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Animated, Linking, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Text } from '@/ui/escala';
 
 import { useDemo } from '@/datos/tienda';
 import { BotonIcono, Presionable, Titulo, color, duracion, fuente, mostrarToast, radio, tipo } from '@/ui';

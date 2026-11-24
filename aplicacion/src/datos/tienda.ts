@@ -654,7 +654,9 @@ export const useDemo = create<EstadoDemo>()(
             ...s.conductor,
             experiencia,
             idiomas: d.idiomas,
-            pasosListos: { ...s.conductor.pasosListos, experiencia: true },
+            // S04/S07: con "Guardar y terminar después", el paso queda listo solo si hay al menos un
+            // vehículo (con "Continuar", como siempre en la demo, que no exige los campos con *).
+            pasosListos: { ...s.conductor.pasosListos, experiencia: !d.parcial || Object.keys(experiencia).length > 0 },
             pasoActual: Math.max(s.conductor.pasoActual, 4),
           };
           set(recalcularUsuario({ ...s, conductor }));
@@ -667,7 +669,11 @@ export const useDemo = create<EstadoDemo>()(
             negocios: d.negocios,
             turnos: d.turnos,
             dias: d.dias,
-            pasosListos: { ...s.conductor.pasosListos, trabajo: true },
+            // S04: con "Guardar y terminar después", listo solo si hay negocio, turno y día.
+            pasosListos: {
+              ...s.conductor.pasosListos,
+              trabajo: !d.parcial || (d.negocios.length > 0 && d.turnos.length > 0 && d.dias.length > 0),
+            },
             pasoActual: Math.max(s.conductor.pasoActual, 5),
           };
           set(recalcularUsuario({ ...s, conductor }));

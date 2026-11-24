@@ -76,6 +76,8 @@ const acciones: AccionesConductor = {
 
 const TEXTOS_FIJOS = {
   esDemo: true,
+  // S14: margen de "Confirmar ahora" (en la app real es un ajuste de la base).
+  diasAvisoReconfirmar: 5,
   esperaReenvioSegundos: 30,
   notaCodigo: 'Demo: cualquier código de 6 dígitos',
   ejemplo: {

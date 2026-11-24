@@ -2,7 +2,8 @@
 // - Sesión: en la web, localStorage (clave sb-<ref>-auth-token); en el celular (etapa de tiendas),
 //   AsyncStorage. El token dura 1 hora y se renueva solo.
 // - El ingreso por celular no usa enlaces: detectSessionInUrl apagado.
-// - Cada llamada tiene un tiempo máximo de 15 s: sin red, la app avisa en vez de quedarse esperando.
+// - Cada llamada tiene un tiempo máximo de 15 s (subir un documento, 2 min): sin red, la app avisa en
+//   vez de quedarse esperando.
 // - Solo la clave publicable (ver config.ts). Nunca la service_role.
 import { AppState, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -14,6 +15,11 @@ import type { Database } from './tiposBd';
 
 /** Tiempo máximo de cada llamada a Supabase. */
 export const TIEMPO_MAXIMO_MS = 15_000;
+/** Subir un archivo (hasta 10 MB con datos móviles) puede tardar más. */
+export const TIEMPO_MAXIMO_SUBIDA_MS = 120_000;
+
+const esSubida = (url: Parameters<typeof fetch>[0], metodo?: string) =>
+  (metodo ?? 'GET').toUpperCase() === 'POST' && /\/storage\/v1\/object\/(?!list\/)/.test(typeof url === 'string' ? url : url instanceof URL ? url.href : url.url);
 
 const fetchConTiempo: typeof fetch = (url, opciones) => {
   const control = new AbortController();
@@ -22,7 +28,7 @@ const fetchConTiempo: typeof fetch = (url, opciones) => {
     if (externo.aborted) control.abort();
     else externo.addEventListener('abort', () => control.abort(), { once: true });
   }
-  const t = setTimeout(() => control.abort(), TIEMPO_MAXIMO_MS);
+  const t = setTimeout(() => control.abort(), esSubida(url, opciones?.method) ? TIEMPO_MAXIMO_SUBIDA_MS : TIEMPO_MAXIMO_MS);
   return fetch(url, { ...opciones, signal: control.signal }).finally(() => clearTimeout(t));
 };
 

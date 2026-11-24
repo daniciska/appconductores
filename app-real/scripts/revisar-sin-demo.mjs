@@ -25,9 +25,10 @@ export const MODULOS_PROHIBIDOS = [
   /^aplicacion\/src\/datos\/(tienda|estado|hooks|selectores|simulacion|migracion|almacenamiento|revisionManual|revisionEquipo|avisosEntrePestanas|claveDemo|direcciones)\.tsx?$/,
   /^aplicacion\/src\/datos\/semilla\//,
   /^aplicacion\/src\/datos\/demo\//,
-  // Pantallas que la v1 no trae (o que son solo de la demo).
+  // Pantallas que la app real no trae (o que son solo de la demo). Los documentos de la app real tienen
+  // sus propias pantallas (src/pantallas/documentos): de la demo solo usan las guías (textos.ts) y las piezas.
   /^aplicacion\/src\/pantallas\/(matches|bolsa)\//,
-  /^aplicacion\/src\/pantallas\/documentos\/(Inicio|Perfil|MisDocumentos|SubirDocumento|Enviado|NoAprobado|QuienRecibio|EliminarCuenta|textos|rutas|acciones)\.tsx?$/,
+  /^aplicacion\/src\/pantallas\/documentos\/(Inicio|Perfil|MisDocumentos|SubirDocumento|Enviado|NoAprobado|QuienRecibio|EliminarCuenta|rutas|acciones)\.tsx?$/,
   /^aplicacion\/src\/pantallas\/ingreso\/(SelectorDemo|PuertaClave|Paso2|Paso5|sugerencias)\.tsx?$/,
   /^aplicacion\/src\/ui\/demo\.tsx?$/,
   /^aplicacion\/src\/app\//,

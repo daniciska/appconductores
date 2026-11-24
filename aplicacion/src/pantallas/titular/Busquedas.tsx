@@ -2,7 +2,8 @@
 // Ruta: /titular/busquedas
 // Cada búsqueda muestra cuántos conductores hacen match. Sin plan, el adelanto anónimo invita a elegir un
 // plan; con plan, al tocar la búsqueda se ven los matches y sus contactos.
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { router } from 'expo-router';
 
 import { plural } from '@/datos/formato';

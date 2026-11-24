@@ -1,11 +1,13 @@
 // Sistema de diseño de Dale Contacto. Importa todo desde '@/ui'.
 export * from './tokens';
 export * from './texto';
+export { useGrande, useLetraGrande, useMedidas, estiloTextoGrande, CLAVE_LETRA_GRANDE, type Medidas } from './escala';
 export * from './controles';
 export * from './estructura';
 export * from './info';
 export * from './navegacion';
 export * from './capas';
+export { InterruptorLetraGrande } from './letraGrande';
 export { HostAvisos, mostrarToast } from './Toast';
 export * as Iconos from './iconos';
 export type { LucideIcon, LucideProps } from './iconos';

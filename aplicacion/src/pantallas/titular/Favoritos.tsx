@@ -1,6 +1,7 @@
 // Titular · Favoritos: los conductores que marcó con la estrella, con la búsqueda suya donde mejor calzan.
 // Ruta: /titular/favoritos
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { router } from 'expo-router';
 
 import { useDerivado } from '@/datos/hooks';

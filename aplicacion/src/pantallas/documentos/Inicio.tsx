@@ -2,7 +2,8 @@
 // Ruta: /conductor/inicio
 // Maqueta: docs/maqueta/CondInicioIncompleto.dc.html, CondInicioRevision.dc.html, CondInicioActivo.dc.html, CondSinMatches.dc.html
 // Refleja el estado en vivo: cuando el equipo (simulado en la demo) aprueba un documento, o cambia "Disponible", la pantalla cambia.
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { router, useNavigation } from 'expo-router';
 
 import { iniciales, plural } from '@/datos/formato';

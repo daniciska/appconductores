@@ -113,12 +113,77 @@ export function edad(fechaNacimiento: string, ahora = Date.now()): number | null
   return e >= 0 && e < 120 ? e : null;
 }
 
-/** Pone barras mientras se escribe una fecha: "1403198" → "14/03/198". */
+/**
+ * Pone barras mientras se escribe una fecha: "1403198" → "14/03/198". Un punto, guion, barra o espacio
+ * (el teclado numérico de Android trae "." y "-") cierra el día o el mes y le pone el cero:
+ * "15.1.2030" → "15/01/2030". Nunca deja una barra al final (así borrar no se traba).
+ */
 export function mascaraFecha(texto: string): string {
-  const n = texto.replace(/\D/g, '').slice(0, 8);
-  if (n.length <= 2) return n;
-  if (n.length <= 4) return `${n.slice(0, 2)}/${n.slice(2)}`;
-  return `${n.slice(0, 2)}/${n.slice(2, 4)}/${n.slice(4)}`;
+  const partes: string[] = [];
+  let actual = '';
+  for (const ch of texto) {
+    if (partes.length === 2) {
+      if (/\d/.test(ch) && actual.length < 4) actual += ch;
+      continue;
+    }
+    if (/\d/.test(ch)) {
+      actual += ch;
+      if (actual.length === 2) {
+        partes.push(actual);
+        actual = '';
+      }
+    } else if (/[./\- ]/.test(ch) && actual.length === 1) {
+      partes.push(`0${actual}`);
+      actual = '';
+    }
+  }
+  return [...partes, actual].filter((x) => x !== '').join('/');
+}
+
+/**
+ * S05 · Fecha escrita como en papel, cómoda en el teclado del celular. Cualquier signo que no sea un
+ * número sirve de separador ("/", ".", "-", "," o un espacio: el teclado de números del iPhone y de
+ * Android trae "." o ","), y un día o mes de un solo número se completa con 0:
+ * "5.3.1968", "5-3-1968", "5 3 1968" y "5/3/1968" → "05/03/1968". Escribir solo números funciona igual
+ * que mascaraFecha ("05031968" → "05/03/1968"). Si lo último que se escribió fue el separador de un día
+ * o mes completo, se deja la barra ("05." → "05/").
+ */
+export function mascaraFechaEscrita(texto: string): string {
+  // Fecha completa con el año primero, como la puede rellenar el navegador ("1968-03-05").
+  const iso = /^\s*(\d{4})-(\d{1,2})-(\d{1,2})\s*$/.exec(texto);
+  if (iso) return `${iso[3].padStart(2, '0')}/${iso[2].padStart(2, '0')}/${iso[1]}`;
+  const grupos: string[] = [];
+  let actual = '';
+  for (const ch of texto) {
+    if (/\d/.test(ch)) {
+      actual += ch;
+      if (grupos.length < 2 && actual.length === 2) {
+        grupos.push(actual);
+        actual = '';
+      }
+    } else if (grupos.length < 2 && actual.length === 1) {
+      grupos.push('0' + actual);
+      actual = '';
+    }
+  }
+  const digitos = (grupos.join('') + actual).slice(0, 8);
+  const r = mascaraFecha(digitos);
+  return /\D$/.test(texto) && (digitos.length === 2 || digitos.length === 4) ? `${r}/` : r;
+}
+
+/**
+ * S03 · Campo de celular mientras se escribe: "912345678" → "9 1234 5678". Acepta el número como venga:
+ * si lo escrito o pegado empieza con +56, 0056, 56 o 0 ("+56 9 9000 0001", "09 9000 0001"), eso se quita solo.
+ */
+export function mascaraCampoCelular(texto: string): string {
+  let d = texto.replace(/\D/g, '');
+  if (d.startsWith('00569')) d = d.slice(2); // prefijo internacional escrito con 00
+  if (d.startsWith('569')) d = d.slice(2);
+  else d = d.replace(/^0+(?=9)/, '');
+  d = d.slice(0, 9);
+  if (d.length <= 1) return d;
+  if (d.length <= 5) return `${d.slice(0, 1)} ${d.slice(1)}`;
+  return `${d.slice(0, 1)} ${d.slice(1, 5)} ${d.slice(5)}`;
 }
 
 /** Formatea los 8 dígitos del celular: "55550123" → "5555 0123". */
@@ -131,6 +196,11 @@ export function mascaraCelular(texto: string): string {
 export function celularCompleto(celular: string): string {
   const limpio = mascaraCelular(celular);
   return limpio ? `+56 9 ${limpio}` : '+56 9';
+}
+
+/** El mismo número con espacios que no se cortan: se lee entero en una línea (con letra grande se partía en dos). */
+export function celularEnUnaLinea(celular: string): string {
+  return celularCompleto(celular).replace(/ /g, '\u00A0');
 }
 
 /** Iniciales para avatares: "Transportes Los Aromos SpA" → "TL"; "Daniel" → "D". */

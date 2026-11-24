@@ -1,7 +1,8 @@
 // Lista desplegable (marca, modelo, color, año de la flota): un campo que abre una hoja con las opciones.
 // Con más de 8 opciones agrega un buscador.
 import { useMemo, useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
+import { Text } from '@/ui/escala';
 
 import { Campo, FilaRadio, HojaInferior, Presionable, color, fuente, radio, tipo } from '@/ui';
 import { ChevronDown, Search } from '@/ui/iconos';

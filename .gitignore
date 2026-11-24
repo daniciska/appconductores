@@ -1,5 +1,5 @@
 # Dependencias y salidas de compilación
-node_modules/
+node_modules
 dist/
 # Sitio armado para Netlify (demo del conductor + demo del panel en /panel): panel/scripts/armar-sitio-demo.mjs
 dist-demo/

@@ -4,7 +4,8 @@
 // Los pasos de "Qué pasa ahora" se marcan en vivo: la pre-revisión automática termina a los ~3 s y
 // la Hoja de Vida y los antecedentes esperan a una persona del equipo (simulada: ~12 s más).
 import { useEffect, useRef } from 'react';
-import { Animated, Text, View } from 'react-native';
+import { Animated, View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { router, useLocalSearchParams } from 'expo-router';
 
 import { TIPOS_DOC_ORDEN } from '@/datos/selectores';

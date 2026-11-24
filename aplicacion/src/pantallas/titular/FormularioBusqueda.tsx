@@ -5,7 +5,8 @@
 // eso se calcula la licencia exigida (no la llena él). Sin garantía ni modo de contrato (crecimiento futuro).
 // Flota (24-nov): la búsqueda elige uno o más vehículos de la flota; sin vehículos no se puede publicar.
 import { useRef, useState, type ComponentRef } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { router, useLocalSearchParams } from 'expo-router';
 
 import { useDerivado } from '@/datos/hooks';

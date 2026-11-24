@@ -1,7 +1,8 @@
 // Piezas visuales propias del grupo "documentos" (Inicio, Perfil y pantallas de documentos).
 // Replican medidas de las maquetas que el sistema de diseño no trae tal cual.
 import { useEffect, useRef, type ReactNode } from 'react';
-import { ActivityIndicator, Animated, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { ActivityIndicator, Animated, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Text, useMedidas } from '@/ui/escala';
 
 import {
   Avatar,
@@ -288,10 +289,11 @@ export function Nota({
   style?: StyleProp<ViewStyle>;
 }) {
   const tinta = tono === 'suave' ? color.textoSuave : color.textoSecundario;
+  const m = useMedidas();
   return (
     <View style={[{ flexDirection: 'row', alignItems: 'flex-start', gap: 10, paddingHorizontal: 4 }, centrada && { justifyContent: 'center' }, style]}>
-      <View style={{ paddingTop: 1 }}>
-        <Icono size={16} color={tono === 'suave' ? color.textoSuave : color.textoSecundario} strokeWidth={2} />
+      <View style={{ paddingTop: m.grande ? 2 : 1 }}>
+        <Icono size={m.icono(16)} color={tono === 'suave' ? color.textoSuave : color.textoSecundario} strokeWidth={2} />
       </View>
       <Text style={[tipo.ayuda, { lineHeight: 19, color: tinta, flexShrink: 1 }]}>{children}</Text>
     </View>
@@ -300,9 +302,10 @@ export function Nota({
 
 /** Caja amarilla clara con ícono (requisito del documento: "Debe tener 30 días o menos…"). */
 export function AvisoAmarillo({ icono: Icono, texto }: { icono: LucideIcon; texto: string }) {
+  const m = useMedidas();
   return (
     <View style={{ backgroundColor: color.amarilloFondo, borderRadius: radio.campo, paddingVertical: 12, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-      <Icono size={20} color={color.amarilloTexto} strokeWidth={2} />
+      <Icono size={m.icono(20)} color={color.amarilloTexto} strokeWidth={2} />
       <Text style={[fuente(600), { flex: 1, fontSize: 14, lineHeight: 20, color: color.amarilloTexto }]}>{texto}</Text>
     </View>
   );

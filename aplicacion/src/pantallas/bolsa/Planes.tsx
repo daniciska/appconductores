@@ -4,7 +4,8 @@
 // Los planes salen del catálogo (en la app real, editable desde el panel). Precios por definir. Con plan, el
 // titular ve los matches y sus contactos (24-nov); las filas de la bolsa salen solo si la bolsa está activa.
 // "Elegir" lleva al pago web (/titular/pago, simulado en la demo); "Quedarme sin plan" cambia al instante.
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { router } from 'expo-router';
 
 import { pesos } from '@/datos/formato';

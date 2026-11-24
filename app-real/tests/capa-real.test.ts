@@ -56,7 +56,7 @@ describe('ingreso con celular y código', () => {
   it('un número que no está en la lista de prueba no entra', async () => {
     const { error } = await cliente.auth.signInWithOtp({ phone: '+56990000099', options: { channel: 'whatsapp' } });
     assert.equal(error?.code, 'sms_send_failed');
-    assert.equal(textoErrorPedirCodigo(error!, true), 'Por ahora solo pueden entrar los celulares del equipo.');
+    assert.equal(textoErrorPedirCodigo(error!), 'No pudimos enviar el código. Revisa tu número e inténtalo de nuevo.');
     const p = ultimos(1)[0];
     assert.equal(p.ruta, '/auth/v1/otp');
     assert.deepEqual([p.body.phone, p.body.channel], ['+56990000099', 'whatsapp']);
@@ -66,12 +66,12 @@ describe('ingreso con celular y código', () => {
     assert.equal(r.error, null);
     const otra = await cliente.auth.signInWithOtp({ phone: '+' + NUMERO, options: { channel: 'sms' } });
     assert.equal(otra.error?.code, 'over_sms_send_rate_limit');
-    assert.match(textoErrorPedirCodigo(otra.error!, true), /^Espera (59|60) segundos para pedir otro código\.$/);
+    assert.match(textoErrorPedirCodigo(otra.error!), /^Espera (59|60) segundos para pedir otro código\.$/);
     assert.equal(sim.datos.cuentas.length, 0, 'pedir el código no crea la cuenta');
   });
   it('un código malo no entra', async () => {
     const { error } = await cliente.auth.verifyOtp({ phone: '+' + NUMERO, token: '000000', type: 'sms' });
-    assert.equal(textoErrorVerificar(error!), 'El código no es correcto o ya venció.');
+    assert.equal(textoErrorVerificar(error!), 'Ese código no es correcto. Revisa el último mensaje que te enviamos o pide otro.');
   });
   it('el código correcto crea la sesión y la cuenta (+569…)', async () => {
     const { data, error } = await cliente.auth.verifyOtp({ phone: '+' + NUMERO, token: CODIGO, type: 'sms' });
@@ -82,12 +82,13 @@ describe('ingreso con celular y código', () => {
 });
 
 describe('lecturas', () => {
-  it('catálogos (también sin filtrar por persona) con el ajuste de 30 días y los 4 textos vigentes', async () => {
+  it('catálogos (también sin filtrar por persona) con el ajuste de 30 días y los 3 textos vigentes (2 obligatorios y la revisión del Paso 5)', async () => {
     const r = await leerCatalogos(cliente);
     assert.equal(r.error, null);
     c = mapearCatalogos(r.datos!);
     assert.equal(c.catalogos.comunas.length, 346);
-    assert.equal(c.textos.length, 4);
+    assert.deepEqual(c.textos.map((t) => t.clave), ['terminos_privacidad', 'compartir_ficha', 'revision_documentos']);
+    assert.deepEqual(c.textos.filter((t) => t.obligatoria).map((t) => t.clave), ['terminos_privacidad', 'compartir_ficha']);
     assert.equal(c.diasReconfirmar, 30);
     const negocios = sim.pedidos.find((p: { ruta: string }) => p.ruta === '/rest/v1/negocios');
     assert.match(negocios.query.select, /negocio_clases_licencia\(clase_licencia_id\),negocio_tamanos\(tamano_vehiculo_id\)/);
@@ -98,7 +99,7 @@ describe('lecturas', () => {
     const antes = sim.pedidos.length;
     const p = await perfil();
     const lecturas = sim.pedidos.slice(antes);
-    assert.equal(lecturas.length, 7);
+    assert.equal(lecturas.length, 8, '7 del perfil y los documentos');
     for (const l of lecturas) assert.ok(Object.values(l.query).includes(`eq.${uid}`), `${l.ruta} filtra por el propio id`);
     assert.equal(p.cuenta.celular, '9000 0001');
     assert.equal(p.conductor.registrado, false);
@@ -107,14 +108,14 @@ describe('lecturas', () => {
 });
 
 describe('guardar cada pantalla', () => {
-  it('A4: se aceptan las 4 (sin id; la fecha la pone el servidor) y repetir no duplica', async () => {
+  it('A4: se aceptan las vigentes (sin id; la fecha la pone el servidor) y repetir no duplica', async () => {
     assert.deepEqual(await ejecutarPlan(cliente, planAutorizaciones(uid, c.textos, [])), { ok: true, valor: undefined });
     const p = ultimos(1)[0];
     assert.deepEqual([p.method, p.ruta], ['POST', '/rest/v1/consentimientos']);
     for (const f of p.body) assert.deepEqual(Object.keys(f).sort(), ['cuenta_id', 'texto_autorizacion_id']);
     // Otra vez (como si la pantalla no supiera que ya estaban): el 23505 se ignora.
     assert.equal((await ejecutarPlan(cliente, planAutorizaciones(uid, c.textos, []))).ok, true);
-    assert.equal(sim.datos.consentimientos.length, 4);
+    assert.equal(sim.datos.consentimientos.length, 3);
     assert.equal((await perfil()).autorizacionesCompletas, true);
   });
   it('Paso 1 con menos de 18 años: el mensaje de la base, tal cual', async () => {

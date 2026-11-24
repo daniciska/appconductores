@@ -4,7 +4,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 
-import { mascaraCelular } from '@/datos/formato';
+import { mascaraCampoCelular, mascaraCelular } from '@/datos/formato';
 import { useVista } from '@/datos/puerto/contexto';
 import { mostrarToast, volver } from '@/ui';
 
@@ -25,10 +25,19 @@ export function useModoEdicion(): boolean {
   return editar === '1';
 }
 
-/** Después de guardar en modo edición: aviso y vuelta a Perfil. */
-export function terminarEdicion() {
+/**
+ * A dónde vuelve un paso abierto en modo edición: a Perfil, o al Paso 4 si se abrió desde su botón
+ * "¿Tienes otra clase de licencia? Agrégala" (?volver=4, S02). Con historial, "volver" es atrás.
+ */
+export function useVolverTrasEditar(): Href {
+  const { volver: a } = useLocalSearchParams<{ volver?: string }>();
+  return a === '4' ? RUTA_PASO[4] : '/conductor/perfil';
+}
+
+/** Después de guardar en modo edición: aviso y vuelta a donde se abrió (Perfil, Inicio o el Paso 4). */
+export function terminarEdicion(volverA: Href = '/conductor/perfil') {
   mostrarToast('Cambios guardados.', 'exito');
-  volver('/conductor/perfil');
+  volver(volverA);
 }
 
 /** Ruta de respaldo del botón volver de cada paso (si se abrió el enlace directo). */
@@ -51,13 +60,8 @@ export function celularParaCampo(guardado: string): string {
   return d ? mascaraCampoCelular('9' + d) : '';
 }
 
-/** Máscara mientras se escribe: "912345678" → "9 1234 5678". */
-export function mascaraCampoCelular(texto: string): string {
-  const d = texto.replace(/\D/g, '').slice(0, 9);
-  if (d.length <= 1) return d;
-  if (d.length <= 5) return `${d.slice(0, 1)} ${d.slice(1)}`;
-  return `${d.slice(0, 1)} ${d.slice(1, 5)} ${d.slice(5)}`;
-}
+/** Máscara del campo de celular (está en datos/formato.ts para poder probarla con Node). */
+export { mascaraCampoCelular };
 
 /** ¿El celular escrito es válido? 9 dígitos que empiezan con 9. */
 export function celularValido(escrito: string): boolean {

@@ -896,7 +896,7 @@
      "tipo": "lista",
      "referencia": "",
      "obligatorio": true,
-     "descripcion": "Se calcula solo con sus documentos (lo escribe el sistema). Opciones fijas: Sin documentos; En revisión; Verificado (los 4 aprobados y vigentes); Con un documento no aprobado o vencido. Solo 'Verificado' entra al match.",
+     "descripcion": "Se calcula solo con sus documentos (lo escribe el sistema). Opciones fijas: Sin documentos (no subió ninguno); Faltan documentos (subió algunos, todos bien, pero faltan otros; desde el 24-nov); En revisión; Verificado (los 4 aprobados y vigentes); Con un documento no aprobado o vencido. Solo 'Verificado' entra al match.",
      "quien_ve": "El conductor y el equipo; el titular solo ve las insignias",
      "codigo": "C16–C19, P8",
      "estado": "propuesta",
@@ -2071,6 +2071,66 @@
      "configurable": false
     },
     {
+     "id": "clave",
+     "nombre": "Clave",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Identifica el tipo (cedula, licencia, hoja_vida, antecedentes); con ella la app elige la guía.",
+     "quien_ve": "Nadie (uso interno)",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "corto",
+     "nombre": "Nombre corto",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "\"Cédula\", \"Licencia\"…: listas y avisos.",
+     "quien_ve": "Todos",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "ayuda",
+     "nombre": "Ayuda",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Texto bajo el nombre en el Paso 5 (\"Foto del frente\").",
+     "quien_ve": "La persona que lo sube",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "fecha_pedida",
+     "nombre": "Fecha que se anota",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: vencimiento (cédula, próximo control de la licencia), emisión (PDF del Registro Civil) o ninguna. Se usa para avisar antes de que venza (24-nov).",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": true
+    },
+    {
+     "id": "etiqueta_fecha",
+     "nombre": "Nombre de la fecha",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "\"Fecha de vencimiento\", \"Fecha de vencimiento (próximo control)\" (licencia: la misma palabra que sus avisos), \"Fecha de emisión\".",
+     "quien_ve": "La persona que lo sube",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": true
+    },
+    {
      "id": "nombre",
      "nombre": "Nombre",
      "tipo": "texto",
@@ -2268,7 +2328,7 @@
    "id": "documentos",
    "nombre": "Documento subido",
    "grupo": "documentos",
-   "descripcion": "Cada documento que sube una persona y su estado actual. El archivo se borra después de decidir; quedan solo el estado, las fechas y el motivo. El detalle de cada revisión está en 'Revisión de documento'.",
+   "descripcion": "Cada documento que sube una persona y su estado actual. Cada subida es una fila nueva; la anterior del mismo tipo queda reemplazada. El archivo se guarda mientras la cuenta esté activa y se borra al reemplazarse (decidido el 24-nov). El detalle de cada revisión está en 'Revisión de documento'.",
    "para_que": "Venta y ley: las insignias 'revisado' son lo que se vende, y queda registro de cada decisión (revisión con IA + persona).",
    "estado": "decidido",
    "campos": [
@@ -2314,10 +2374,10 @@
      "tipo": "archivo",
      "referencia": "",
      "obligatorio": false,
-     "descripcion": "Foto o PDF en un espacio privado; el equipo lo abre solo con enlaces que duran pocos minutos y cada apertura queda en 'Acción del equipo'. Se borra tras la decisión, al reemplazarse, o si nunca se envió a revisión (R14). Vacío en documentos sin archivo (RUT en el SII).",
+     "descripcion": "Foto o PDF en el espacio privado 'documentos' de Storage (<id de la cuenta>/<uuid>.<ext>). Se guarda mientras la cuenta esté activa y se borra al reemplazarse (24-nov). El equipo lo abrirá desde el panel con enlaces que duran pocos minutos y cada apertura quedará en 'Acción del equipo'.",
      "quien_ve": "Solo el equipo de revisión y el sistema automático. Nunca la contraparte",
      "codigo": "C16–C19, T18, P1",
-     "estado": "propuesta",
+     "estado": "decidido",
      "configurable": false
     },
     {
@@ -2326,7 +2386,7 @@
      "tipo": "lista",
      "referencia": "",
      "obligatorio": true,
-     "descripcion": "Opciones fijas: Subido (aún no enviado a revisión); En revisión automática; En revisión del equipo; Aprobado; No aprobado; Vencido; Reemplazado. 'Vence pronto' se calcula con la fecha de vencimiento. Lo cambian solo la revisión y el sistema: la persona solo sube y envía.",
+     "descripcion": "Opciones fijas: En revisión; Aprobado; No aprobado; Vencido; Reemplazado; Retirado (la persona retiró la autorización 'Revisión de mis documentos': ya no se usa y su archivo se puede borrar). Se envía a revisión al subirlo. Lo cambian solo el método de validación, el sistema y (después) el equipo. 'Vence pronto' se calcula con la fecha de vencimiento y el ajuste de meses de aviso.",
      "quien_ve": "La persona y el equipo; la contraparte solo ve la insignia si está aprobado",
      "codigo": "",
      "estado": "decidido",
@@ -2350,10 +2410,10 @@
      "tipo": "fecha_hora",
      "referencia": "",
      "obligatorio": false,
-     "descripcion": "Cuándo tocó 'Enviar a revisión'. Ordena la cola por antigüedad. Si queda vacío, el archivo se borra tras el plazo de Ajustes (con aviso previo).",
+     "descripcion": "Ya no se usa (24-nov): cada documento se envía a revisión al subirlo (subido_en).",
      "quien_ve": "La persona y el equipo",
      "codigo": "",
-     "estado": "propuesta",
+     "estado": "descartado",
      "configurable": false
     },
     {
@@ -2362,10 +2422,10 @@
      "tipo": "fecha",
      "referencia": "",
      "obligatorio": false,
-     "descripcion": "La anota la revisión. Para revisar que el PDF tenga N días o menos.",
+     "descripcion": "La anota la revisión. Para revisar que el PDF tenga N días o menos. Hoy la anota la persona al subirlo; después podrá leerla el método de validación (24-nov).",
      "quien_ve": "La persona y el equipo",
      "codigo": "P16",
-     "estado": "propuesta",
+     "estado": "decidido",
      "configurable": false
     },
     {
@@ -2374,10 +2434,10 @@
      "tipo": "fecha",
      "referencia": "",
      "obligatorio": false,
-     "descripcion": "Vencimiento de la cédula, próximo control de la licencia o fecha de renovación (Hoja de Vida, antecedentes). La anota la revisión. El titular no lo ve: un control más corto de lo normal podría dejar ver un dato de salud.",
+     "descripcion": "Vencimiento de la cédula, próximo control de la licencia o fecha de renovación (Hoja de Vida, antecedentes). La anota la revisión. El titular no lo ve: un control más corto de lo normal podría dejar ver un dato de salud. Hoy la anota la persona al subirlo; después podrá leerla el método de validación (24-nov).",
      "quien_ve": "La persona y el equipo",
      "codigo": "D1, D2",
-     "estado": "propuesta",
+     "estado": "decidido",
      "configurable": false
     },
     {
@@ -2389,7 +2449,7 @@
      "descripcion": "Sí si lo aprobó solo el sistema automático. Lo escribe el sistema; sirve para explicar la decisión si la persona lo pide (decisiones automatizadas).",
      "quien_ve": "La persona y el equipo",
      "codigo": "P8",
-     "estado": "propuesta",
+     "estado": "decidido",
      "configurable": false
     },
     {
@@ -2451,6 +2511,30 @@
      "codigo": "P1",
      "estado": "propuesta",
      "configurable": false
+    },
+    {
+     "id": "fechas_anotadas_por",
+     "nombre": "Quién anotó las fechas",
+     "tipo": "lista",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Opciones fijas: persona (hoy), método, equipo.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "aviso_vencimiento_en",
+     "nombre": "Aviso de vencimiento enviado",
+     "tipo": "fecha_hora",
+     "referencia": "",
+     "obligatorio": false,
+     "descripcion": "Cuándo se avisó por WhatsApp o correo que vence. Dentro de la app el aviso se calcula solo.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
+     "estado": "decidido",
+     "configurable": false
     }
    ]
   },
@@ -2460,7 +2544,7 @@
    "grupo": "documentos",
    "descripcion": "Cada revisión de cada documento, en orden: la pre-revisión automática, la decisión de una persona y, si se pide, la segunda revisión. Nunca se sobrescribe ni se modifica.",
    "para_que": "Ley: prueba que la revisión humana es real y permite explicar una decisión automatizada si la persona lo pide (art. 8° bis, Ley 21.719) [verificar con abogado].",
-   "estado": "propuesta",
+   "estado": "decidido",
    "campos": [
     {
      "id": "id",
@@ -2495,6 +2579,18 @@
      "descripcion": "Opciones fijas: Pre-revisión automática; Revisión de una persona; Segunda revisión (la hace otra persona del equipo).",
      "quien_ve": "Solo el equipo",
      "codigo": "P8",
+     "estado": "decidido",
+     "configurable": false
+    },
+    {
+     "id": "metodo",
+     "nombre": "Método",
+     "tipo": "texto",
+     "referencia": "",
+     "obligatorio": true,
+     "descripcion": "Qué método revisó: 'aprobacion_automatica_provisoria' (hoy: aprueba todo, 24-nov), después IA o equipo.",
+     "quien_ve": "Solo el equipo",
+     "codigo": "",
      "estado": "decidido",
      "configurable": false
     },
@@ -4272,7 +4368,7 @@
    "id": "ajustes",
    "nombre": "Ajuste general",
    "grupo": "configuracion",
-   "descripcion": "Números y reglas generales que se cambian desde el panel: umbral del match (66, decidido), forma de comparar con el umbral, plazos de disponibilidad, avisos, recordatorios, revisión, conservación y borrado de datos, búsquedas sin plan, límites contra la recolección masiva y si el conductor ve su lista de matches.",
+   "descripcion": "Números y reglas generales que se cambian desde el panel: umbral del match (66, decidido), forma de comparar con el umbral, plazos de disponibilidad, avisos, recordatorios, revisión, conservación y borrado de datos, búsquedas sin plan, límites contra la recolección masiva y si el conductor ve su lista de matches. Desde el 24-nov: metodo_validacion_documentos ('aprobar_todo'; solo acepta métodos que existen y no se borra), meses_aviso_vencimiento_documentos (3) y maximo_archivos_documentos (12).",
    "para_que": "Configuración: cambiar el umbral y los plazos sin reprogramar (decidido).",
    "estado": "decidido",
    "campos": [
@@ -4282,7 +4378,7 @@
      "tipo": "id",
      "referencia": "",
      "obligatorio": true,
-     "descripcion": "Ej.: umbral_match (66, decidido); forma_umbral ('igual o mayor', propuesta, MD28); dias_reconfirmar_disponibilidad (30, propuesta; cargado y público desde el 9-nov); dias_aviso_vencimiento (7, propuesta); recordatorio_perfil_cada_dias, recordatorio_perfil_maximo y recordatorio_perfil_primer_canal (pendientes, MD6); horas_plazo_revision (pendiente, MD21); dias_borrar_archivos_no_enviados (pendiente, abogado); busquedas_sin_plan (pendiente, MD10); meses_conservar_mensajes (MD13), meses_conservar_matches_no_vigentes, dias_conservar_conversacion_reportada, meses_conservar_reportes, meses_conservar_avisos y meses_borrar_cuenta_incompleta (pendientes, abogado, MD38); dias_responder_solicitudes [verificar con abogado]; max_conductores_nuevos_por_titular_mes y max_cambios_por_busqueda (pendientes, MD34); conductor_ve_lista_matches (sí, propuesta); bolsa_activa (no, hasta que se decida si sale en el lanzamiento); max_postulaciones_por_dia (pendiente, MD49).",
+     "descripcion": "Ej.: umbral_match (66, decidido); forma_umbral ('igual o mayor', propuesta, MD28); dias_reconfirmar_disponibilidad (30, propuesta; cargado y público desde el 9-nov); meses_aviso_vencimiento_documentos (3, decidido el 24-nov; reemplaza a dias_aviso_vencimiento); metodo_validacion_documentos ('aprobar_todo', provisorio desde el 24-nov); recordatorio_perfil_cada_dias, recordatorio_perfil_maximo y recordatorio_perfil_primer_canal (pendientes, MD6); horas_plazo_revision (pendiente, MD21); busquedas_sin_plan (pendiente, MD10); meses_conservar_mensajes (MD13), meses_conservar_matches_no_vigentes, dias_conservar_conversacion_reportada, meses_conservar_reportes, meses_conservar_avisos y meses_borrar_cuenta_incompleta (pendientes, abogado, MD38); dias_responder_solicitudes [verificar con abogado]; max_conductores_nuevos_por_titular_mes y max_cambios_por_busqueda (pendientes, MD34); conductor_ve_lista_matches (sí, propuesta); bolsa_activa (no, hasta que se decida si sale en el lanzamiento); max_postulaciones_por_dia (pendiente, MD49).",
      "quien_ve": "Solo el equipo",
      "codigo": "P5, P16",
      "estado": "propuesta",
@@ -4920,8 +5016,8 @@
   },
   {
    "id": "R14",
-   "nombre": "Borrado de archivos tras la revisión",
-   "descripcion": "Un proceso diario borra el archivo: (a) N días después de decidir, según el tipo de documento (plazo del abogado, MD20); (b) apenas se sube un reemplazo; (c) si se subió y nunca se envió a revisión, tras el plazo de Ajustes y con aviso previo. Anota 'archivo borrado el'. Las filas de documentos reemplazados o no aprobados se borran tras 'meses para conservar' del tipo de documento; queda la fila aprobada vigente. Los archivos van en un espacio privado y el equipo los abre con enlaces de pocos minutos (cada apertura queda en 'Acción del equipo'). Las copias de respaldo se borran en su propio plazo, que se informa en la Política de privacidad. Propuesta técnica a evaluar: cifrar cada archivo con su propia clave y destruirla al borrar.",
+   "nombre": "Archivos guardados mientras la cuenta esté activa",
+   "descripcion": "Decidido el 24-nov: el archivo de un documento se guarda mientras la cuenta esté activa (no se borra después de decidir) y se puede borrar (a) apenas se sube un reemplazo o se retira la autorización (hoy lo borra la app desde el celular: el reemplazado al tiro y las subidas que no terminaron después de 10 minutos) y (b) al borrar la cuenta (proceso a definir con el panel). OJO: hoy no hay una tarea del servidor que lo garantice (Storage no se borra con SQL); si la app no alcanza a limpiar, el archivo queda hasta la próxima subida. Cada persona tiene un tope de archivos (ajuste maximo_archivos_documentos, 12). Ya no existe 'enviar a revisión': cada documento se envía al subirlo. Si el abogado fija un plazo menor (MD20, consulta A31 y A63), se agrega un proceso diario. Las filas de documentos reemplazados o no aprobados se borran tras 'meses para conservar' del tipo de documento; queda la fila aprobada vigente. Los archivos van en un espacio privado y el equipo los abre con enlaces de pocos minutos (cada apertura queda en 'Acción del equipo'). Las copias de respaldo se borran en su propio plazo, que se informa en la Política de privacidad. Propuesta técnica a evaluar: cifrar cada archivo con su propia clave y destruirla al borrar.",
    "entidades": [
     "documentos",
     "tipos_documento",
@@ -5351,8 +5447,8 @@
   },
   {
    "id": "MD20",
-   "pregunta": "¿Cuánto tiempo después de decidir se borra el archivo? (abogado, P1)",
-   "opciones": "a) Apenas se decide. b) Unos días (ej. 7), para atender una segunda revisión. c) El plazo que indique el abogado, que puede ser distinto por documento.",
+   "pregunta": "Decidido el 24-nov: el archivo se guarda mientras la cuenta esté activa. Falta que el abogado confirme que ese plazo es proporcional, sobre todo para el certificado de antecedentes (consulta A31 y A63).",
+   "opciones": "a) Se mantiene: mientras la cuenta esté activa (decisión actual). b) El abogado fija un plazo menor por documento y se agrega un proceso diario que borra el archivo.",
    "entidades": [
     "tipos_documento",
     "documentos",
@@ -6083,6 +6179,45 @@
    "porque": "Base para construir en Supabase.",
    "origen": "Decisión",
    "entidades": []
+  },
+  {
+   "n": 42,
+   "fecha": "2026-11-24",
+   "cambio": "Documentos del conductor construidos: tipos de documento con la fecha que se anota, documentos con estados en revisión/aprobado/no aprobado/vencido/reemplazado, archivo guardado mientras la cuenta esté activa, revisión con método ('aprobación automática provisoria'), ajustes de método de validación y meses de aviso (3), estado del perfil calculado por la base.",
+   "porque": "Decisión de Daniela (24-nov): pedir los 4 documentos, aprobar todo con un método provisorio reemplazable, guardarlos mientras la cuenta esté activa y avisar 3 meses antes de que venzan.",
+   "origen": "Decisión",
+   "entidades": [
+    "tipos_documento",
+    "documentos",
+    "revisiones_documento",
+    "ajustes",
+    "conductores"
+   ]
+  },
+  {
+   "n": 43,
+   "fecha": "2026-11-24",
+   "cambio": "Sin un texto vigente de 'Revisión de mis documentos' la base no recibe documentos; la prueba-2 del texto ya no describe un método; R14 pasa a 'Archivos guardados mientras la cuenta esté activa'; ajustes de ejemplo con meses_aviso_vencimiento_documentos.",
+   "porque": "Una migración que apagara todas las versiones del texto dejaba subir antecedentes sin autorización (Ley 21.719 art. 25).",
+   "origen": "Construcción",
+   "entidades": [
+    "documentos",
+    "ajustes"
+   ]
+  },
+  {
+   "n": 44,
+   "fecha": "2026-11-24",
+   "cambio": "Documentos, segunda revisión: la prueba-1 de 'Revisión de mis documentos' deja de ofrecerse (prometía una persona y 'pedir otra revisión') y la prueba-2 se pide en el Paso 5; nuevo estado de documento 'retirado' (al retirar la autorización); nuevo estado de verificación 'faltan documentos'; el ajuste del método de validación solo acepta métodos que existen, no se borra y al cambiarlo revisa lo que esperaba; tope de archivos por persona (maximo_archivos_documentos = 12); la etiqueta de la licencia habla de vencimiento.",
+   "porque": "La revisión encontró un consentimiento que no describía lo que se hace, documentos que podían quedar en revisión para siempre, archivos sin límite y nombres que no correspondían.",
+   "origen": "Construcción",
+   "entidades": [
+    "textos_autorizacion",
+    "documentos",
+    "conductores",
+    "ajustes",
+    "tipos_documento"
+   ]
   }
  ]
 }

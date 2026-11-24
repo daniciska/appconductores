@@ -49,9 +49,24 @@ interface Persona {
   aceptados(): number[];
 }
 
-/** Entra con el número de prueba; opcionalmente acepta los 4 textos de hoy y hace el Paso 1. */
-async function persona({ aceptar = false, registrar = false } = {}): Promise<Persona> {
+/**
+ * La base con los 4 textos obligatorios de la maqueta (como estaba hasta el 24-nov): la prueba-1 de
+ * "Revisión de mis documentos" vigente y obligatoria, y "Normas de los mensajes" vigente. Desde el 24-nov
+ * la base apaga las normas de los mensajes (S12) y pide la revisión en el Paso 5 (prueba-2, no obligatoria
+ * al entrar), y "Antes de empezar" queda con 2 (el simulador parte así); las reglas de A4 son las mismas
+ * con 2, 3, 4 o 5 textos, y aquí se prueban con 4.
+ */
+function conCuatroObligatorios(sim: Sim) {
+  for (const t of sim.catalogos.textos_autorizacion) {
+    if (t.clave === 'revision_documentos') t.vigente = t.version === 'prueba-1';
+    if (t.clave === 'normas_mensajes') t.vigente = true;
+  }
+}
+
+/** Entra con el número de prueba; opcionalmente acepta los textos de hoy y hace el Paso 1. */
+async function persona({ aceptar = false, registrar = false, baseDeHoy = false } = {}): Promise<Persona> {
   const sim = crearSupabaseSimulado({ numerosDePrueba: { [NUMERO]: CODIGO } });
+  if (!baseDeHoy) conCuatroObligatorios(sim);
   const cliente = createClient(URL_SB, 'sb_publishable_prueba', {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     global: { fetch: sim.fetch },
@@ -117,7 +132,7 @@ describe('A4 · persona nueva', () => {
     const { c, p } = await yo.leer();
     const a4 = pantalla(p);
     assert.deepEqual(a4.casillas.map((x) => x.id), ['1', '2', '3', '4']);
-    assert.deepEqual(a4.casillas.map((x) => casillaDeLaMaqueta(x.texto)), ['terminos', 'compartir', 'revision', 'mensajes'], 'se dibujan con el JSX de la maqueta');
+    assert.deepEqual(a4.casillas.map((x) => casillaDeLaMaqueta(x.texto)), ['terminos', 'compartir', 'revision', 'mensajes'], 'son los textos de la maqueta');
     assert.deepEqual(a4.marcadas, [false, false, false, false]);
     assert.equal(faltanEnA4(a4.casillas, a4.marcas).length, 4);
     assert.equal(textoMarcaTodas(a4.casillas.length), 'Marca las 4 autorizaciones para continuar.');
@@ -133,6 +148,25 @@ describe('A4 · persona nueva', () => {
     assert.equal(despues.autorizacionesCompletas, true);
     assert.equal(guardiaInicio(despues), '/conductor/registro/1');
     assert.equal(pantalla(despues).volver, 'cerrarSesion', 'sin registrarse, Inicio no la deja pasar: ofrece cerrar sesión');
+  });
+});
+
+describe('A4 · con la base de hoy (24-nov)', () => {
+  it('2 casillas: sin "Normas de los mensajes" (S12); "Revisión de mis documentos" no se pide al entrar, se pide en el Paso 5', async () => {
+    const yo = await persona({ baseDeHoy: true });
+    const { c, p } = await yo.leer();
+    const a4 = pantalla(p);
+    assert.deepEqual(a4.casillas.map((x) => casillaDeLaMaqueta(x.texto)), ['terminos', 'compartir']);
+    assert.equal(textoMarcaTodas(a4.casillas.length), 'Marca las 2 autorizaciones para continuar.');
+    assert.equal(c.textos.some((t) => t.clave === 'normas_mensajes'), false, 'la base ya no ofrece las normas de los mensajes');
+    const r = textosParaAceptar(Object.fromEntries(a4.casillas.map((x) => [x.id, true])), c.textos);
+    assert.ok(r.ok);
+    assert.equal((await ejecutarPlan(yo.cliente, planAutorizaciones(yo.uid, r.valor, p.aceptados))).ok, true);
+    const despues = (await yo.leer()).p;
+    assert.equal(despues.autorizacionesCompletas, true);
+    const revision = c.textos.find((t) => t.clave === 'revision_documentos');
+    assert.ok(revision && !revision.obligatoria && revision.version === 'prueba-2');
+    assert.equal(yo.aceptados().includes(revision.id), false, 'la revisión todavía no se aceptó: se pide antes del primer documento');
   });
 });
 
@@ -156,7 +190,7 @@ describe('A4 · versión nueva de un texto (persona registrada)', () => {
       const a4 = pantalla(p);
       assert.deepEqual(a4.casillas.map((x) => x.id), ['1', '2', '3', '4'].map((x, k) => (k === i ? String(id) : x)));
       assert.equal(a4.casillas[i].texto, nuevo);
-      assert.equal(casillaDeLaMaqueta(nuevo), null, 'se dibuja con partesTexto');
+      assert.equal(casillaDeLaMaqueta(nuevo), null, 'es un texto nuevo de la base');
       assert.deepEqual(a4.marcadas, [0, 1, 2, 3].map((k) => k !== i));
       assert.deepEqual(faltanEnA4(a4.casillas, a4.marcas).map((x) => x.id), [String(id)]);
       // "Volver": la guardia no la deja salir de A4, así que ofrece cerrar sesión (no da vueltas).
@@ -236,7 +270,7 @@ describe('A4 · una autorización nueva (5.ª clave)', () => {
     assert.equal(a4.casillas.length, 0);
     assert.equal(alDiaEnA4(a4.casillas), false);
     assert.equal(p.autorizacionesCompletas, false);
-    assert.deepEqual(textosParaAceptar(a4.marcas, c.textos), { ok: false, error: 'Faltan los textos de autorización. Avísale al equipo.' });
+    assert.deepEqual(textosParaAceptar(a4.marcas, c.textos), { ok: false, error: 'No pudimos cargar las autorizaciones. Inténtalo más tarde.' });
     assert.equal(a4.volver, 'cerrarSesion');
   });
 });
@@ -260,12 +294,13 @@ describe('A4 · "Volver" nunca da vueltas', () => {
         assert.equal(volver === 'inicio', guardia === null, `registrado=${registrado} alDia=${alDia}`);
       }
   });
-  it('la demo sigue igual: sus 4 casillas, marcadas solo si ya las aceptó, y "Volver" al código', () => {
+  it('la demo: sus 3 casillas (sin la de mensajes), marcadas solo si ya las aceptó, y "Volver" al código', () => {
     const sinAceptar = casillasA4(null, false);
-    assert.deepEqual(sinAceptar.map((x) => x.id), ['terminos', 'compartir', 'revision', 'mensajes']);
-    assert.deepEqual(sinAceptar.map((x) => x.texto), Object.values(TEXTOS_AUTORIZACION));
-    assert.deepEqual(marcasIniciales(sinAceptar), { terminos: false, compartir: false, revision: false, mensajes: false });
-    assert.deepEqual(marcasIniciales(casillasA4(undefined, true)), { terminos: true, compartir: true, revision: true, mensajes: true });
+    assert.deepEqual(sinAceptar.map((x) => x.id), ['terminos', 'compartir', 'revision']);
+    assert.deepEqual(sinAceptar.map((x) => x.texto), [TEXTOS_AUTORIZACION.terminos, TEXTOS_AUTORIZACION.compartir, TEXTOS_AUTORIZACION.revision]);
+    assert.ok(sinAceptar.every((x) => !x.texto.includes('Mensajes') && !x.texto.includes('bloquear')), 'nada de mensajes ni bloquear');
+    assert.deepEqual(marcasIniciales(sinAceptar), { terminos: false, compartir: false, revision: false });
+    assert.deepEqual(marcasIniciales(casillasA4(undefined, true)), { terminos: true, compartir: true, revision: true });
     for (const registrado of [true, false]) assert.equal(volverDeA4('codigo', registrado, sinAceptar), 'codigo');
   });
 });

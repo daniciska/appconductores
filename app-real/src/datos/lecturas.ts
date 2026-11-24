@@ -5,6 +5,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '../tiposBd.ts';
 
 import { LISTAS, type FilasCatalogo } from './catalogos.ts';
+import type { FilaDocumento } from './documentos.ts';
 import type { ErrorSupabase } from './errores.ts';
 import type { FilasPerfil } from './perfil.ts';
 import type { Lectura } from './sesion.ts';
@@ -15,9 +16,13 @@ function fallo(r: { error: ErrorSupabase | null; status?: number }): ErrorSupaba
   return r.error ? { ...r.error, status: r.status } : null;
 }
 
-/** Los 9 catálogos en paralelo (≈ 350 comunas: bajo el límite de 1.000 filas de la API). */
+/** Ajustes públicos que lee la app. */
+// S14 (aprobada el 24-nov): también el margen para volver a mostrar "Confirmar ahora" (si no existe, 5 días).
+export const AJUSTES_APP = ['dias_reconfirmar_disponibilidad', 'dias_aviso_reconfirmar', 'meses_aviso_vencimiento_documentos'];
+
+/** Los 10 catálogos en paralelo (≈ 350 comunas: bajo el límite de 1.000 filas de la API). */
 export async function leerCatalogos(cliente: Cliente): Promise<Lectura<FilasCatalogo>> {
-  const [regiones, zonas, comunas, clases, industrias, tamanos, negocios, listas, textos, ajuste] = await Promise.all([
+  const [regiones, zonas, comunas, clases, industrias, tamanos, negocios, listas, textos, tiposDocumento, ajustes] = await Promise.all([
     cliente.from('regiones').select('id,nombre,orden').order('orden'),
     cliente.from('zonas').select('id,region_id,nombre,orden,activa'),
     cliente.from('comunas').select('id,nombre,nombres_alternativos,region_id,zona_id,activa'),
@@ -35,9 +40,13 @@ export async function leerCatalogos(cliente: Cliente): Promise<Lectura<FilasCata
       .eq('vigente', true)
       .in('para_quien', ['conductor', 'todos'])
       .order('orden'),
-    cliente.from('ajustes').select('id,valor').eq('id', 'dias_reconfirmar_disponibilidad').maybeSingle(),
+    cliente
+      .from('tipos_documento')
+      .select('id,clave,nombre,corto,ayuda,para_quien,obligatorio,formato,fecha_pedida,etiqueta_fecha,antiguedad_maxima_dias,enlace_obtener,orden,activo')
+      .order('orden'),
+    cliente.from('ajustes').select('id,valor').in('id', AJUSTES_APP),
   ]);
-  for (const r of [regiones, zonas, comunas, clases, industrias, tamanos, negocios, listas, textos]) {
+  for (const r of [regiones, zonas, comunas, clases, industrias, tamanos, negocios, listas, textos, tiposDocumento]) {
     const e = fallo(r);
     if (e) return { datos: null, error: e };
   }
@@ -52,16 +61,26 @@ export async function leerCatalogos(cliente: Cliente): Promise<Lectura<FilasCata
       negocios: (negocios.data ?? []) as FilasCatalogo['negocios'],
       listas: (listas.data ?? []) as FilasCatalogo['listas'],
       textos: textos.data ?? [],
-      // Si el ajuste no se puede leer, la app usa 30 días (no corta la entrada por esto).
-      diasReconfirmar: ajuste.error ? null : (ajuste.data?.valor ?? null),
+      tiposDocumento: tiposDocumento.data ?? [],
+      // Si un ajuste no se puede leer, la app usa su valor por defecto (no corta la entrada por esto).
+      diasReconfirmar: ajuste(ajustes, 'dias_reconfirmar_disponibilidad'),
+      diasAvisoReconfirmar: ajuste(ajustes, 'dias_aviso_reconfirmar'),
+      mesesAvisoDocumentos: ajuste(ajustes, 'meses_aviso_vencimiento_documentos'),
     },
     error: null,
   };
 }
 
-/** Las 7 lecturas del perfil propio, en paralelo. */
+function ajuste(r: { data: { id: string; valor: unknown }[] | null; error: unknown }, id: string): unknown {
+  return r.error ? null : (r.data?.find((a) => a.id === id)?.valor ?? null);
+}
+
+/** Columnas de los documentos que lee la app (los suyos, sin los reemplazados). */
+export const COLUMNAS_DOCUMENTO = 'id,tipo_documento_id,estado,subido_en,emitido_en,vence_en,revisado_en,archivo_tipo,archivo_ruta';
+
+/** Las 8 lecturas del perfil propio, en paralelo. */
 export async function leerPerfil(cliente: Cliente, uid: string): Promise<Lectura<FilasPerfil>> {
-  const [cuenta, conductor, licencias, experiencia, negocios, opciones, consentimientos] = await Promise.all([
+  const [cuenta, conductor, licencias, experiencia, negocios, opciones, consentimientos, documentos] = await Promise.all([
     cliente
       .from('cuentas')
       .select('id,celular,celular_verificado_en,creado_en,email,nombres,primer_apellido,segundo_apellido,estado')
@@ -77,8 +96,9 @@ export async function leerPerfil(cliente: Cliente, uid: string): Promise<Lectura
     cliente.from('conductor_negocios').select('negocio_id').eq('conductor_id', uid),
     cliente.from('conductor_opciones').select('opcion_id').eq('conductor_id', uid),
     cliente.from('consentimientos').select('texto_autorizacion_id').eq('cuenta_id', uid).is('revocado_en', null),
+    cliente.from('documentos').select(COLUMNAS_DOCUMENTO).eq('cuenta_id', uid).not('estado', 'in', '(reemplazado,retirado)').order('subido_en', { ascending: false }),
   ]);
-  for (const r of [cuenta, conductor, licencias, experiencia, negocios, opciones, consentimientos]) {
+  for (const r of [cuenta, conductor, licencias, experiencia, negocios, opciones, consentimientos, documentos]) {
     const e = fallo(r);
     if (e) return { datos: null, error: e };
   }
@@ -91,6 +111,7 @@ export async function leerPerfil(cliente: Cliente, uid: string): Promise<Lectura
       negocios: negocios.data ?? [],
       opciones: opciones.data ?? [],
       consentimientos: consentimientos.data ?? [],
+      documentos: (documentos.data ?? []) as FilaDocumento[],
     },
     error: null,
   };

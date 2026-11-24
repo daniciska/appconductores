@@ -5,7 +5,8 @@
 // queda "En revisión": el equipo los revisa y consulta la patente en el Registro Nacional de Transporte
 // Público y Escolar (MTT). En la demo esa revisión se simula sola. La patente solo la ven el titular y el equipo.
 import { useRef, useState, type ComponentRef } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { router, useLocalSearchParams } from 'expo-router';
 
 import { fechaLarga, mascaraFecha } from '@/datos/formato';

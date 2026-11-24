@@ -4,7 +4,8 @@
 // "Me interesa" crea una postulación real (el titular ve la ficha, igual que en un match; la
 // dirección sigue privada). Mientras el titular no le muestre su contacto, se puede retirar.
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { router, useLocalSearchParams } from 'expo-router';
 
 import { fechaCorta, iniciales, textoDias, textoTurnos } from '@/datos/formato';

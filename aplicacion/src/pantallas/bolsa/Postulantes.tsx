@@ -6,7 +6,8 @@
 // la demo, se crea el match con origen "Postulación" y lo ve en Matches. Sin plan (BT4): solo cuántos
 // postularon y "Ver planes".
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { router, useLocalSearchParams } from 'expo-router';
 
 import { haceCuanto, iniciales, textoDias, textoTurnos } from '@/datos/formato';

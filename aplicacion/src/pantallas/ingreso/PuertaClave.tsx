@@ -2,7 +2,8 @@
 // conductor y el panel (/panel) la usan en su layout raíz. Se pide una vez por navegador; la lógica y
 // el hash de la clave están en src/datos/claveDemo.ts. Estilo de la Bienvenida y del menú de la demo.
 import { useState, type ReactNode } from 'react';
-import { Text, TextInput, View } from 'react-native';
+import { View } from 'react-native';
+import { Text, TextInput } from '@/ui/escala';
 
 import { accesoRecordado, esClaveCorrecta, recordarAcceso } from '@/datos/claveDemo';
 import { Boton, Insignia, Llave, MarcoCelular, Pantalla, color, fuente, radio, tipo } from '@/ui';

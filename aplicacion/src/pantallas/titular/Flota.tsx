@@ -2,7 +2,8 @@
 // Ruta: /titular/flota
 // El plan limita cuántos vehículos puede tener (configurable; sin plan, 1). Para publicar una búsqueda hace
 // falta al menos un vehículo.
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { router } from 'expo-router';
 
 import { fechaLarga } from '@/datos/formato';

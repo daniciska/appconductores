@@ -14,18 +14,20 @@ export const TEXTO = {
   conexion: 'Revisa tu conexión e inténtalo de nuevo.',
   guardarConexion: 'No pudimos guardar. Revisa tu conexión e inténtalo de nuevo.',
   guardar: 'No pudimos guardar. Inténtalo de nuevo.',
-  soloEquipo: 'Por ahora solo pueden entrar los celulares del equipo.',
+  /** El código no se pudo enviar a ese número (S03: mensaje listo para el lanzamiento, sin textos de prueba). */
+  noLlega: 'No pudimos enviar el código. Revisa tu número e inténtalo de nuevo.',
   noSeEnvio: 'No pudimos enviar el código. Inténtalo de nuevo.',
-  sinCelular: 'El ingreso con celular no está disponible. Avísale al equipo.',
+  /** Errores de configuración: el conductor no puede hacer nada, así que no se le pide avisar a nadie (24-nov). */
+  sinCelular: 'No pudimos enviar el código. Inténtalo más tarde.',
   demasiados: 'Demasiados intentos. Espera unos minutos.',
-  numero: 'Revisa tu número: son 9 dígitos y empieza con 9.',
-  codigo: 'El código no es correcto o ya venció.',
+  numero: 'Escribe solo tu número, por ejemplo 9 1234 5678.',
+  codigo: 'Ese código no es correcto. Revisa el último mensaje que te enviamos o pide otro.',
   noVerifico: 'No pudimos verificar el código. Inténtalo de nuevo.',
-  sinCuenta: 'No pudimos crear tu cuenta. Avísale al equipo.',
+  sinCuenta: 'No pudimos crear tu cuenta. Inténtalo más tarde.',
   cuentaNoEncontrada: 'No encontramos tu cuenta. Vuelve a entrar.',
   sinPermiso: 'No tienes permiso para hacer esto.',
   opcionNoDisponible: 'Esa opción ya no está disponible. Vuelve a abrir la pantalla.',
-  sinTextos: 'Faltan los textos de autorización. Avísale al equipo.',
+  sinTextos: 'No pudimos cargar las autorizaciones. Inténtalo más tarde.',
   /** A4 sin marcar todas (la pantalla ya lo impide; es el resguardo de la acción). */
   marcarTodas: 'Marca todas las autorizaciones para continuar.',
   sesionVencida: 'Tu sesión venció. Vuelve a entrar.',
@@ -55,15 +57,15 @@ export function segundosDeEspera(mensaje: string | undefined): number {
 export const textoEspera = (mensaje: string | undefined) => `Espera ${segundosDeEspera(mensaje)} segundos para pedir otro código.`;
 
 /** Error al pedir el código (A2 y "Reenviar…" de A3). */
-export function textoErrorPedirCodigo(e: ErrorSupabase, codigosDePrueba: boolean): string {
+export function textoErrorPedirCodigo(e: ErrorSupabase): string {
   if (esErrorDeRed(e)) return TEXTO.conexion;
   switch (e.code) {
     case 'sms_send_failed':
-      // Con números de prueba, el proveedor es de relleno: un número que no está en la lista no recibe nada.
-      return codigosDePrueba ? TEXTO.soloEquipo : TEXTO.noSeEnvio;
+    // El proveedor no pudo enviarlo a ese número, o ese número no puede recibir un código (por
+    // ejemplo, si no se aceptan cuentas nuevas). El mismo texto con o sin números de prueba (S03).
     case 'signup_disabled':
     case 'otp_disabled':
-      return codigosDePrueba ? TEXTO.soloEquipo : TEXTO.sinCelular;
+      return TEXTO.noLlega;
     case 'over_sms_send_rate_limit':
       return textoEspera(e.message);
     case 'phone_provider_disabled':

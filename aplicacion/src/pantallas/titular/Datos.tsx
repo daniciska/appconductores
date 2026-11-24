@@ -4,7 +4,8 @@
 // en el conductor. El celular es el verificado. Validación igual que el conductor: con el ajuste
 // validarObligatorios encendido (en la demo parte apagado) se exigen los campos con *.
 import { useRef, useState, type ComponentRef } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { router, useLocalSearchParams } from 'expo-router';
 
 import { celularCompleto } from '@/datos/formato';

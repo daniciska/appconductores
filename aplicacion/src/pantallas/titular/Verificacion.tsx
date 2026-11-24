@@ -3,7 +3,8 @@
 // archivo) y la revisión del equipo se simula sola en unos segundos (SEGUNDOS_REVISION_TITULAR).
 // Ruta: /titular/verificacion (en el registro, después de "Tus datos", y desde Perfil)
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { router } from 'expo-router';
 
 import { fechaLarga } from '@/datos/formato';

@@ -6,7 +6,8 @@
 // llegan "desde" el match ('match' y 'apertura_ficha'), una postulación o una dirección compartida;
 // las de 'conversacion' (guardadas antes, con mensajes) se muestran igual que las del match.
 import { useEffect, useRef, type ReactNode } from 'react';
-import { Animated, Text, View } from 'react-native';
+import { Animated, View } from 'react-native';
+import { Text } from '@/ui/escala';
 
 import { fechaLarga } from '@/datos/formato';
 import { useEntregasDelUsuario } from '@/datos/hooks';

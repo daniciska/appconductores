@@ -1,9 +1,13 @@
 // B6 · Inicio con el perfil incompleto (tarjeta oscura con el avance y la lista de los 5 pasos).
 // Maqueta: docs/maqueta/CondInicioIncompleto.dc.html
-// La comparten el Inicio de la demo y el de la app real v1. Lo único que cambia es la fila de los
-// documentos: en la demo lleva al Paso 5 ("N de 4 subidos"); en la app real v1 todavía no se pueden
-// subir ("Próximamente", sin enlace) y, si solo faltan ellos, la tarjeta lo dice y no muestra botón.
-import { Text, View } from 'react-native';
+// La comparten el Inicio de la demo y el de la app real. Lo único que cambia es la fila de los
+// documentos: en la demo lleva al Paso 5 ("N de 4 subidos"); en la app real también, con el estado
+// real ("N de 4 aprobados", "En revisión"…: textoEstado).
+// S09 (aprobada el 24-nov, ajustada): "Completa tu perfil para aparecer en los matches.", sin la nota de
+// la campana en la app real, y las filas "Listo" de los pasos 1 a 4 también se tocan: abren ese paso
+// para revisarlo o cambiarlo (modo edición).
+import { View } from 'react-native';
+import { Text, useMedidas } from '@/ui/escala';
 import type { Href } from 'expo-router';
 
 import { avancePerfil } from '@/datos/puerto/derivados';
@@ -23,32 +27,29 @@ const NOMBRE_SECCION: Record<string, string> = {
 };
 
 export type DocumentosInicio =
-  /** Demo: la fila lleva al Paso 5 y dice cuántos van subidos. */
-  | { modo: 'activo'; subidos: number; ruta: Href }
-  /** App real v1: los documentos llegan después ("Próximamente", sin enlace). */
-  | { modo: 'proximamente' };
+  /**
+   * La fila lleva al Paso 5. Demo: "N de 4 subidos". App real: `textoEstado` ("2 de 4 aprobados",
+   * "En revisión"…) y `textoListo` ("Aprobados") cuando el paso está listo.
+   */
+  | { modo: 'activo'; subidos: number; ruta: Href; textoEstado?: string; textoListo?: string };
 
-export function VistaIncompleta({ documentos, nota }: { documentos: DocumentosInicio; nota: string }) {
+export function VistaIncompleta({ documentos, nota }: { documentos: DocumentosInicio; nota?: string }) {
+  const m = useMedidas();
   const avance = useVistaDerivada(avancePerfil);
   const registrado = useVista((v) => v.conductor.registrado);
   const pasos = useVista((v) => v.conductor.pasosListos);
   const siguiente = avance.siguientePaso ?? 5;
-  const proximamente = documentos.modo === 'proximamente';
-  /** Solo faltan los documentos y todavía no se pueden subir: no hay nada que continuar. */
-  const soloDocumentos = proximamente && registrado && siguiente === 5;
   const rutaDe = (paso: number): Href | null =>
-    paso <= 4 ? RUTA_PASO[paso as 1 | 2 | 3 | 4] : documentos.modo === 'activo' ? documentos.ruta : null;
+    paso <= 4 ? RUTA_PASO[paso as 1 | 2 | 3 | 4] : documentos.ruta;
 
   const filas = (['datos', 'direccion', 'experiencia', 'trabajo', 'documentos'] as const).map((id, i) => {
     const listo = pasos[id];
     const estado = listo
       ? id === 'documentos'
-        ? 'Enviados'
+        ? (documentos.textoListo ?? 'Enviados')
         : 'Listo'
       : id === 'documentos'
-        ? documentos.modo === 'activo'
-          ? `${documentos.subidos} de 4 subidos`
-          : 'Próximamente'
+        ? (documentos.textoEstado ?? `${documentos.subidos} de 4 subidos`)
         : 'Falta';
     return { id, paso: i + 1, nombre: NOMBRE_SECCION[id], listo, estado, ruta: rutaDe(i + 1) };
   });
@@ -62,11 +63,7 @@ export function VistaIncompleta({ documentos, nota }: { documentos: DocumentosIn
             {registrado ? 'Ya estás registrado' : 'Aún no te registras'}
           </Text>
           <Text style={[tipo.secundario, { lineHeight: 21, color: GRIS_SOBRE_OSCURO }]}>
-            {soloDocumentos
-              ? 'Ya guardaste tus datos. Falta un paso: tus documentos, que pronto podrás subir aquí.'
-              : registrado
-                ? 'Completa tu perfil para empezar a aparecer en los matches.'
-                : 'Crea tu perfil para empezar a aparecer en los matches.'}
+            {registrado ? 'Completa tu perfil para aparecer en los matches.' : 'Crea tu perfil para empezar a aparecer en los matches.'}
           </Text>
         </View>
         <View style={{ gap: 6 }}>
@@ -91,7 +88,13 @@ export function VistaIncompleta({ documentos, nota }: { documentos: DocumentosIn
       <View style={{ backgroundColor: color.superficie, borderWidth: 1, borderColor: color.borde, borderRadius: radio.tarjeta, paddingVertical: 6, paddingHorizontal: 16 }}>
         <Separado>
           {filas.map((f) => {
-            const conEnlace = !f.listo && registrado && f.ruta !== null;
+            // Lo que falta abre el paso del registro; lo listo (pasos 1 a 4), el mismo paso para revisarlo.
+            const editarListo = f.listo && registrado && f.paso <= 4;
+            const enlace: Href | null = editarListo
+              ? { pathname: RUTA_PASO[f.paso as 1 | 2 | 3 | 4] as '/conductor/registro/1', params: { editar: '1' } }
+              : !f.listo && registrado
+                ? f.ruta
+                : null;
             const contenido = (
               <>
                 {f.listo ? (
@@ -107,12 +110,12 @@ export function VistaIncompleta({ documentos, nota }: { documentos: DocumentosIn
                     {f.estado}
                   </Text>
                 </View>
-                {f.listo || f.ruta === null ? null : <ChevronRight size={18} color={color.texto} strokeWidth={2} />}
+                {enlace === null ? null : <ChevronRight size={m.icono(18)} color={color.texto} strokeWidth={2} />}
               </>
             );
             const estilo = { minHeight: 56, flexDirection: 'row' as const, alignItems: 'center' as const, gap: 12, paddingVertical: 6 };
-            return conEnlace && f.ruta ? (
-              <Presionable key={f.id} role="button" aria-label={`${f.nombre}: ${f.estado}`} href={f.ruta} style={estilo}>
+            return enlace ? (
+              <Presionable key={f.id} role="button" aria-label={`${f.nombre}: ${f.estado}`} href={enlace} style={estilo}>
                 {contenido}
               </Presionable>
             ) : (
@@ -124,9 +127,11 @@ export function VistaIncompleta({ documentos, nota }: { documentos: DocumentosIn
         </Separado>
       </View>
 
-      <Nota icono={Bell} tono="suave">
-        {nota}
-      </Nota>
+      {nota ? (
+        <Nota icono={Bell} tono="suave">
+          {nota}
+        </Nota>
+      ) : null}
     </>
   );
 }

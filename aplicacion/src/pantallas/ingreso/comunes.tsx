@@ -1,11 +1,13 @@
 // Piezas compartidas por las pantallas de ingreso y registro (A1–A4, B1–B5).
 // Copian el estilo exacto de las maquetas (docs/maqueta/Cond*.dc.html).
 import { useEffect, useRef, useState, type ComponentRef, type ReactNode, type RefObject } from 'react';
-import { Platform, ScrollView, Text, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
+import { Platform, ScrollView, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
+import { usePreventRemove, type Href } from 'expo-router';
+import { Text, useGrande, useMedidas } from '@/ui/escala';
 
 import { borrarBorrador, guardarBorrador, leerBorrador } from '@/datos/borradores';
 import { useEntorno } from '@/datos/puerto/contexto';
-import { Presionable, Texto, Titulo, color, fuente, radio, tipo, type LucideIcon } from '@/ui';
+import { Boton, Dialogo, Presionable, Texto, Titulo, color, fuente, radio, tipo, volver, type LucideIcon } from '@/ui';
 import { CircleAlert, Info, Sparkles } from '@/ui/iconos';
 
 /** En web, reparte las líneas de un texto corto de forma pareja (como `text-wrap: balance` de las maquetas). */
@@ -90,11 +92,13 @@ export function CabeceraFormulario({
   equilibrar?: boolean;
   children?: ReactNode;
 }) {
+  // Con letra grande no se equilibra: las líneas parejas dejan una columna angosta con mucho blanco.
+  const grande = useGrande();
   return (
     <View style={{ marginTop: 8, gap: 6 }}>
       <Titulo>{titulo}</Titulo>
       {subtitulo ? (
-        <Texto variante="parrafo" tono="secundario" style={equilibrar ? equilibrado : undefined}>
+        <Texto variante="parrafo" tono="secundario" style={equilibrar && !grande ? equilibrado : undefined}>
           {subtitulo}
         </Texto>
       ) : null}
@@ -131,9 +135,9 @@ export function EtiquetaGrupo({
           </Text>
         ) : null}
       </Text>
-      {ayuda ? <Texto variante="ayuda">{ayuda}</Texto> : null}
+      {ayuda ? <Text style={[tipo.mensajeCampo, { color: color.textoSecundario }]}>{ayuda}</Text> : null}
       {error ? (
-        <Text role="alert" style={[tipo.ayuda, fuente(600), { color: color.error }]}>
+        <Text role="alert" style={[tipo.mensajeCampo, fuente(600), { color: color.error }]}>
           {error}
         </Text>
       ) : null}
@@ -141,8 +145,68 @@ export function EtiquetaGrupo({
   );
 }
 
+/**
+ * S11 · Modo edición (desde Perfil o Inicio): si hay cambios sin guardar, salir pregunta antes. Cubre la
+ * flecha "Volver" de la pantalla y también el atrás del teléfono o del navegador (gesto o botón de Android,
+ * deslizar en iPhone): usePreventRemove frena la salida y abre el mismo diálogo. Devuelve el onVolver para
+ * el Encabezado (undefined si no hay cambios), el diálogo y `soltar`, que se llama justo antes de salir tras
+ * guardar bien (si no, la propia salida quedaría frenada). Tocar fuera del diálogo solo lo cierra.
+ */
+export function useSalirSinGuardar(cambiado: boolean, guardar: () => void, volverA: Href) {
+  const [abierto, setAbierto] = useState(false);
+  // La salida que se frenó (atrás del teléfono o del navegador), para repetirla si elige salir.
+  const pendiente = useRef<(() => void) | null>(null);
+  const soltar = usePreventRemove(cambiado, ({ repeat }) => {
+    pendiente.current = repeat;
+    setAbierto(true);
+  });
+  const onVolver = cambiado
+    ? () => {
+        pendiente.current = null;
+        setAbierto(true);
+      }
+    : undefined;
+  const dialogo = (
+    <Dialogo
+      visible={abierto}
+      titulo="¿Salir sin guardar?"
+      texto="Los cambios se perderán."
+      confirmar={{
+        titulo: 'Guardar',
+        onPress: () => {
+          setAbierto(false);
+          pendiente.current = null;
+          guardar();
+        },
+      }}
+      cancelar={{
+        titulo: 'Salir sin guardar',
+        onPress: () => {
+          setAbierto(false);
+          const repetir = pendiente.current;
+          pendiente.current = null;
+          soltar();
+          if (repetir) repetir();
+          else volver(volverA);
+        },
+      }}
+      alCerrar={() => {
+        setAbierto(false);
+        pendiente.current = null;
+      }}
+    />
+  );
+  return { onVolver, dialogo, soltar };
+}
+
+/** S04 · "Guardar y terminar después" de los pasos 2 a 4 (el mismo botón secundario del Paso 1). */
+export function BotonTerminarDespues({ onPress, cargando }: { onPress: () => void; cargando?: boolean }) {
+  return <Boton titulo="Guardar y terminar después" variante="contorno" onPress={onPress} cargando={cargando} />;
+}
+
 /** Alerta roja de la maqueta: "Completa los campos marcados con * para guardar." */
 export function AlertaObligatorios({ texto = 'Completa los campos marcados con * para guardar.' }: { texto?: string }) {
+  const m = useMedidas();
   return (
     <View
       role="alert"
@@ -155,7 +219,7 @@ export function AlertaObligatorios({ texto = 'Completa los campos marcados con *
         paddingVertical: 12,
         paddingHorizontal: 14,
       }}>
-      <CircleAlert size={18} color={color.error} strokeWidth={2} />
+      <CircleAlert size={m.icono(18)} color={color.error} strokeWidth={2} />
       <Text style={[tipo.secundario, fuente(600), { flex: 1, color: color.error }]}>{texto}</Text>
     </View>
   );
@@ -185,9 +249,10 @@ export function NotaDemo({
   centrada?: boolean;
   style?: StyleProp<ViewStyle>;
 }) {
+  const m = useMedidas();
   const contenido = (
     <>
-      <Sparkles size={14} color={color.amarilloTexto} strokeWidth={2.2} />
+      <Sparkles size={m.icono(14)} color={color.amarilloTexto} strokeWidth={2.2} />
       <Text style={[tipo.ayuda, { color: color.textoSecundario }]}>
         {texto}
         {accion ? ' ' : null}
@@ -211,6 +276,7 @@ export function NotaDemo({
 
 /** Tarjeta blanca con ícono de información (A2: "Con este número entrarás a la app…"). */
 export function TarjetaInfo({ texto, icono: Icono = Info }: { texto: string; icono?: LucideIcon }) {
+  const m = useMedidas();
   return (
     <View
       style={{
@@ -224,7 +290,7 @@ export function TarjetaInfo({ texto, icono: Icono = Info }: { texto: string; ico
         paddingVertical: 14,
         paddingHorizontal: 16,
       }}>
-      <Icono size={20} color={color.textoSecundario} strokeWidth={2} />
+      <Icono size={m.icono(20)} color={color.textoSecundario} strokeWidth={2} />
       <Text style={[tipo.secundario, { flex: 1, lineHeight: 20, color: color.textoSuave }]}>{texto}</Text>
     </View>
   );
@@ -247,6 +313,7 @@ export function BotonTexto({
   style?: StyleProp<ViewStyle>;
 }) {
   const tinta = deshabilitado ? color.textoSecundario : color.texto;
+  const m = useMedidas();
   return (
     <Presionable
       role="button"
@@ -254,7 +321,7 @@ export function BotonTexto({
       disabled={deshabilitado}
       onPress={onPress}
       style={[{ minHeight: 44, paddingHorizontal: 4, flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start' }, style]}>
-      {Icono ? <Icono size={16} color={tinta} strokeWidth={2} /> : null}
+      {Icono ? <Icono size={m.icono(16)} color={tinta} strokeWidth={2} /> : null}
       <Text style={[tipo.botonChico, fuente(600), { color: tinta }, subrayado && !deshabilitado && { textDecorationLine: 'underline' }]}>
         {titulo}
       </Text>

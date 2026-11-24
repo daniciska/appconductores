@@ -4,11 +4,15 @@
 // La nota sobre "Verificar" la da el entorno (demo: "cualquier código de 6 dígitos"). La espera para
 // pedir otro código también (demo 30 s; app real 60 s, contados desde que se pidió el último). Si la
 // persona vuelve atrás mientras se verifica, se queda donde fue.
+// S08: al completar el sexto número se verifica solo ("Verificar" queda por si acaso). Si el código no
+// sirve, se borran las casillas y el cursor vuelve a la primera. Mientras corre la espera solo se ve
+// "¿No te llegó? Pide otro en 0:57"; al llegar a 0:00 aparecen "Reenviar por WhatsApp" y el SMS.
 import { useEffect, useRef, useState, type ComponentRef } from 'react';
-import { Platform, Text, TextInput, View } from 'react-native';
+import { Platform, View } from 'react-native';
+import { Text, TextInput, useGrande, useMedidas } from '@/ui/escala';
 import { router, type Href } from 'expo-router';
 
-import { celularCompleto } from '@/datos/formato';
+import { celularEnUnaLinea } from '@/datos/formato';
 import { useAcciones, useEntorno, useVista } from '@/datos/puerto/contexto';
 import type { CanalCodigo } from '@/datos/puerto/tipos';
 import { Boton, Encabezado, Pantalla, color, fuente, mostrarToast, radio, tipo } from '@/ui';
@@ -36,6 +40,7 @@ export default function Codigo({ volverA = '/conductor/celular', alVerificar }: 
     ingreso ? Math.max(0, espera - Math.floor((Date.now() - ingreso.pedidoEn) / 1000)) : espera,
   );
   const [verificando, setVerificando] = useState(false);
+  const enCurso = useRef(false);
   const reenviando = useRef(false);
   const entrada = useRef<ComponentRef<typeof TextInput>>(null);
   const pantalla = usePantallaAbierta();
@@ -46,21 +51,27 @@ export default function Codigo({ volverA = '/conductor/celular', alVerificar }: 
     const id = setTimeout(() => setSegundos((n) => n - 1), 1000);
     return () => clearTimeout(id);
   }, [segundos]);
-  const numero = celular.replace(/\D/g, '') ? celularCompleto(celular) : null;
+  const numero = celular.replace(/\D/g, '') ? celularEnUnaLinea(celular) : null;
+  const grande = useGrande();
+  const m = useMedidas();
 
-  const verificar = async () => {
-    if (verificando) return;
-    if (codigo.length < LARGO) {
+  const verificar = async (escrito: string = codigo) => {
+    if (enCurso.current) return;
+    if (escrito.length < LARGO) {
       setError(`Ingresa los ${LARGO} dígitos del código.`);
       entrada.current?.focus();
       return;
     }
+    enCurso.current = true;
     setVerificando(true);
     const senal = pantalla.senal();
-    const r = await acciones.verificarCodigo(codigo, { senal });
+    const r = await acciones.verificarCodigo(escrito, { senal });
+    enCurso.current = false;
     if (senal.aborted) return;
     setVerificando(false);
     if (!r.ok) {
+      // Se borra el código malo: se escribe el nuevo desde la primera casilla.
+      setCodigo('');
       setError(r.error);
       entrada.current?.focus();
       return;
@@ -94,11 +105,19 @@ export default function Codigo({ volverA = '/conductor/celular', alVerificar }: 
     const limpio = t.replace(/\D/g, '').slice(0, LARGO);
     setCodigo(limpio);
     if (error) setError(null);
+    // Con el sexto número, se verifica solo.
+    if (limpio.length === LARGO && limpio !== codigo) void verificar(limpio);
   };
 
   const activa = Math.min(codigo.length, LARGO - 1);
   const mm = Math.floor(segundos / 60);
   const ss = String(segundos % 60).padStart(2, '0');
+
+  // Con letra grande van uno debajo del otro: sin margen a los lados, para que el borde izquierdo de la
+  // pregunta y de los íconos quede parejo.
+  const alBorde = grande ? { paddingHorizontal: 0 } : undefined;
+  const reenviarWhatsApp = <BotonTexto titulo="Reenviar por WhatsApp" onPress={() => reenviar('whatsapp')} style={alBorde} />;
+  const recibirSms = <BotonTexto titulo="Recibir el código por SMS" icono={MessageSquare} onPress={() => reenviar('sms')} style={alBorde} />;
 
   return (
     <Pantalla>
@@ -146,14 +165,14 @@ export default function Codigo({ volverA = '/conductor/celular', alVerificar }: 
           inputMode="numeric"
           autoComplete="one-time-code"
           textContentType="oneTimeCode"
-          maxLength={LARGO}
+          // Sin tope de largo: así se puede pegar "482 915" o "482-915" (la app se queda con los 6 números).
           autoFocus
           caretHidden
           aria-label="Código de 6 dígitos"
           aria-invalid={!!error}
           onFocus={() => setFoco(true)}
           onBlur={() => setFoco(false)}
-          onSubmitEditing={verificar}
+          onSubmitEditing={() => void verificar()}
           style={[
             // 16 px: evita que Safari en iPhone haga zoom al enfocar.
             { position: 'absolute', top: 0, left: 0, right: 0, height: 56, opacity: 0, color: 'transparent', fontSize: 16 },
@@ -161,25 +180,45 @@ export default function Codigo({ volverA = '/conductor/celular', alVerificar }: 
           ]}
         />
         {error ? (
-          <Text role="alert" style={[tipo.ayuda, fuente(600), { color: color.error }]}>
+          <Text role="alert" style={[tipo.mensajeCampo, fuente(600), { color: color.error }]}>
             {error}
           </Text>
         ) : null}
       </View>
 
-      <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
-        <Text style={[tipo.secundario, { color: color.textoSecundario }]}>¿No te llegó?</Text>
-        {segundos > 0 ? (
-          <BotonTexto titulo={`Reenviar por WhatsApp en ${mm}:${ss}`} icono={Clock} deshabilitado />
-        ) : (
-          <BotonTexto titulo="Reenviar por WhatsApp" onPress={() => reenviar('whatsapp')} />
-        )}
-      </View>
-      <BotonTexto titulo="Recibir el código por SMS" icono={MessageSquare} onPress={() => reenviar('sms')} />
+      {segundos > 0 ? (
+        <View style={{ minHeight: m.tactil, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <Clock size={m.icono(16)} color={color.textoSecundario} strokeWidth={2} />
+          <Text style={[tipo.secundario, { flex: 1, color: color.textoSecundario }]}>
+            ¿No te llegó? Pide otro en{' '}
+            <Text style={[fuente(700), { color: color.texto, fontVariant: ['tabular-nums'] }]}>
+              {mm}:{ss}
+            </Text>
+          </Text>
+        </View>
+      ) : grande ? (
+        // Con letra grande no caben en una fila: la pregunta y sus dos respuestas, juntas en un bloque y
+        // con el mismo paso entre las tres líneas (cada una en una fila del alto de un toque).
+        <View role="group" aria-label="¿No te llegó?">
+          <View style={{ minHeight: m.tactil, justifyContent: 'center' }}>
+            <Text style={[tipo.secundario, { color: color.textoSecundario }]}>¿No te llegó?</Text>
+          </View>
+          {reenviarWhatsApp}
+          {recibirSms}
+        </View>
+      ) : (
+        <View style={{ gap: 0 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
+            <Text style={[tipo.secundario, { color: color.textoSecundario }]}>¿No te llegó?</Text>
+            {reenviarWhatsApp}
+          </View>
+          {recibirSms}
+        </View>
+      )}
 
       <View style={{ marginTop: 'auto', paddingTop: 16, gap: 8 }}>
         {notaCodigo ? <NotaDemo texto={notaCodigo} centrada /> : null}
-        <Boton titulo="Verificar" onPress={verificar} cargando={verificando} />
+        <Boton titulo="Verificar" onPress={() => void verificar()} cargando={verificando} />
       </View>
     </Pantalla>
   );

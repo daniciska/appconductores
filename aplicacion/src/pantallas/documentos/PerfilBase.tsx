@@ -1,10 +1,14 @@
 // E1 · Perfil: lo común de la demo y de la app real (encabezado, "Disponible para trabajar" con
-// "Confirmar ahora", Mi perfil, Ayuda y Cerrar sesión).
+// "Confirmar ahora", Mi perfil, Pantalla ("Letra grande", 24-nov), Ayuda y Cerrar sesión).
 // Maqueta: docs/maqueta/CondPerfil.dc.html
 // Lo que solo tiene la demo (Seguridad y privacidad, Eliminar mi cuenta) llega desde su ruta como
 // bloques extra; la app real v1 no los muestra.
+// S14 (aprobada el 24-nov): "Confirmar ahora" aparece solo cuando faltan 5 días o menos para cumplir el
+// plazo (antes se ve "Confirmado el dd/mm", sin flecha); el Centro de ayuda puede recibir sus preguntas
+// (la app real v1 lleva solo las que calzan con lo que pide).
 import { useState, type ReactNode } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text, useGrande, useMedidas } from '@/ui/escala';
 
 import { fechaCorta, iniciales } from '@/datos/formato';
 import { useAcciones, useEntorno, useVista } from '@/datos/puerto/contexto';
@@ -16,6 +20,7 @@ import {
   GrupoLista,
   HojaInferior,
   Insignia,
+  InterruptorLetraGrande,
   Pantalla,
   Presionable,
   Separador,
@@ -29,12 +34,16 @@ import {
   radio,
   type PropsInsignia,
 } from '@/ui';
-import { BriefcaseBusiness, ChevronRight, CircleHelp, Clock, IdCard, MapPin, Shield } from '@/ui/iconos';
+import { BriefcaseBusiness, Check, ChevronRight, CircleHelp, Clock, IdCard, MapPin, Shield } from '@/ui/iconos';
 import { CerrarSesion } from '@/ui/iconosPropios';
 
 import { FilaDisponible } from './piezas';
 
-const PREGUNTAS: { p: string; r: string }[] = [
+const DIA_MS = 24 * 60 * 60 * 1000;
+
+export type PreguntaAyuda = { p: string; r: string };
+
+const PREGUNTAS: PreguntaAyuda[] = [
   {
     p: '¿Cuándo aparezco en los matches?',
     r: 'Cuando tu perfil está completo, tus 4 documentos están aprobados y estás disponible para trabajar.',
@@ -58,19 +67,27 @@ export interface PropsPerfilBase {
   filaEliminar?: ReactNode;
   /** Después de confirmar "Cerrar sesión". */
   alCerrarSesion: () => void;
+  /** Preguntas del Centro de ayuda (por defecto, las 4 de la maqueta). */
+  preguntasAyuda?: PreguntaAyuda[];
 }
 
-export function PerfilBase({ seccionSeguridad, filaEliminar, alCerrarSesion }: PropsPerfilBase) {
+export function PerfilBase({ seccionSeguridad, filaEliminar, alCerrarSesion, preguntasAyuda = PREGUNTAS }: PropsPerfilBase) {
   const cuenta = useVista((v) => v.cuenta);
   const conductor = useVista((v) => v.conductor);
-  const { diasReconfirmar: dias, textosLegales, textoCerrarSesion } = useEntorno();
+  const { diasReconfirmar: dias, diasAvisoReconfirmar: diasAviso, textosLegales, textoCerrarSesion } = useEntorno();
   const acciones = useAcciones();
   const [hoja, setHoja] = useState<'ayuda' | 'terminos' | null>(null);
   const [salir, setSalir] = useState(false);
+  const grande = useGrande();
+  const m = useMedidas();
 
   const primer = cuenta.nombres.trim().split(/\s+/)[0] ?? '';
   const nombre = [primer, cuenta.apellido1.trim()].filter(Boolean).join(' ') || 'Tu perfil';
   const insignia = insigniaPerfil(conductor.estadoPerfil, conductor.estadoVerificacion, conductor.registrado);
+  const confirmadaEn = conductor.disponibilidadConfirmadaEn;
+  const diasDesde = confirmadaEn ? Math.floor((Date.now() - new Date(confirmadaEn).getTime()) / DIA_MS) : null;
+  // "Confirmar ahora" aparece cuando faltan diasAviso días o menos para cumplir el plazo (ajuste de la base).
+  const tocaConfirmar = diasDesde === null || diasDesde >= dias - diasAviso;
 
   const alternarDisponible = async (v: boolean) => {
     const r = await acciones.cambiarDisponible(v);
@@ -86,7 +103,7 @@ export function PerfilBase({ seccionSeguridad, filaEliminar, alCerrarSesion }: P
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, paddingHorizontal: 4 }}>
         <Avatar texto={iniciales(nombre === 'Tu perfil' ? 'Conductor' : nombre)} tamano={64} forma="circulo" />
         <View style={{ flex: 1, minWidth: 0, alignItems: 'flex-start', gap: 6 }}>
-          <Text role="heading" aria-level={1} numberOfLines={2} style={{ fontFamily: 'Sora_700Bold', fontSize: 26, lineHeight: 31, letterSpacing: -0.4, color: color.texto }}>
+          <Text role="heading" aria-level={1} numberOfLines={3} style={{ fontFamily: 'Sora_700Bold', fontSize: 26, lineHeight: 31, letterSpacing: -0.4, color: color.texto }}>
             {nombre}
           </Text>
           <Insignia {...insignia} />
@@ -100,19 +117,32 @@ export function PerfilBase({ seccionSeguridad, filaEliminar, alCerrarSesion }: P
         {conductor.disponible ? (
           <>
             <Separador />
-            <Presionable
-              role="button"
-              aria-label="Confirmar ahora"
-              href="/conductor/disponibilidad"
-              style={{ minHeight: 48, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-              <Text style={[fuente(700), { fontSize: 14, color: color.texto }]}>Confirmar ahora</Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                {conductor.disponibilidadConfirmadaEn ? (
-                  <Texto variante="ayuda">Última vez el {fechaCorta(conductor.disponibilidadConfirmadaEn)}</Texto>
-                ) : null}
-                <ChevronRight size={18} color={color.texto} strokeWidth={2} />
+            {tocaConfirmar ? (
+              <Presionable
+                role="button"
+                aria-label="Confirmar ahora"
+                href="/conductor/disponibilidad"
+                style={{ minHeight: 48, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                {grande ? (
+                  // Con "Letra grande" no cabe en una fila: la fecha va bajo "Confirmar ahora".
+                  <View style={{ flex: 1, minWidth: 0, gap: 2, paddingVertical: 8 }}>
+                    <Text style={[fuente(700), { fontSize: 14, color: color.texto }]}>Confirmar ahora</Text>
+                    {confirmadaEn ? <Texto variante="ayuda">Última vez el {fechaCorta(confirmadaEn)}</Texto> : null}
+                  </View>
+                ) : (
+                  <Text style={[fuente(700), { fontSize: 14, color: color.texto }]}>Confirmar ahora</Text>
+                )}
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  {confirmadaEn && !grande ? <Texto variante="ayuda">Última vez el {fechaCorta(confirmadaEn)}</Texto> : null}
+                  <ChevronRight size={m.icono(18)} color={color.texto} strokeWidth={2} />
+                </View>
+              </Presionable>
+            ) : (
+              <View style={{ minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Check size={m.icono(16)} color={color.exito} strokeWidth={2.6} />
+                <Text style={[fuente(600), { flex: 1, fontSize: 14, color: color.textoSecundario }]}>Confirmado el {fechaCorta(confirmadaEn!)}</Text>
               </View>
-            </Presionable>
+            )}
           </>
         ) : null}
       </View>
@@ -125,6 +155,11 @@ export function PerfilBase({ seccionSeguridad, filaEliminar, alCerrarSesion }: P
           <FilaLista titulo="Mi experiencia" icono={Volante} href={{ pathname: '/conductor/registro/3', params: { editar: '1' } }} />
           <FilaLista titulo="El trabajo que busco" icono={BriefcaseBusiness} href={{ pathname: '/conductor/registro/4', params: { editar: '1' } }} />
         </GrupoLista>
+      </View>
+
+      <View style={{ gap: 8 }}>
+        <TituloSeccion>Pantalla</TituloSeccion>
+        <InterruptorLetraGrande />
       </View>
 
       {seccionSeguridad}
@@ -144,7 +179,7 @@ export function PerfilBase({ seccionSeguridad, filaEliminar, alCerrarSesion }: P
 
       {/* Centro de ayuda */}
       <HojaInferior visible={hoja === 'ayuda'} onCerrar={() => setHoja(null)} titulo="Centro de ayuda">
-        {PREGUNTAS.map((x, i) => (
+        {preguntasAyuda.map((x, i) => (
           <View key={x.p} style={{ gap: 4 }}>
             {i > 0 ? <Separador style={{ marginBottom: 12 }} /> : null}
             <Text style={[tipo.fuerte, { color: color.texto }]}>{x.p}</Text>

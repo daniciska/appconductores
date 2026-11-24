@@ -1,7 +1,8 @@
 // Titular · Perfil: tus datos, verificación, plan, términos y cerrar sesión.
 // Ruta: /titular/perfil
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { router, useNavigation } from 'expo-router';
 
 import { celularCompleto, iniciales } from '@/datos/formato';

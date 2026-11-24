@@ -1,11 +1,11 @@
 # Consulta al abogado — Dale Contacto
 
-Preparado el 2-nov-2026 con las notas del proyecto (62 preguntas). Versión para compartir: https://claude.ai/artifact/4Zk9iRsYXrAr3nypuKhuMg. Las fuentes son archivos de `docs/` y `docs/investigacion/`, más `CLAUDE.md` (decisiones vigentes). Lo marcado **[verificar]** no está confirmado.
+Preparado el 2-nov-2026 con las notas del proyecto (62 preguntas; 5 más el 24-nov: A63–A67). Versión para compartir: https://claude.ai/artifact/4Zk9iRsYXrAr3nypuKhuMg. Las fuentes son archivos de `docs/` y `docs/investigacion/`, más `CLAUDE.md` (decisiones vigentes). Lo marcado **[verificar]** no está confirmado.
 
 ## Contexto para el abogado
 
 **Dale Contacto** es una app chilena que conecta a **conductores** con **titulares** (dueños de vehículos o empresas) que buscan conductor. Parte como app web para el celular, solo con Taxi y Taxi ejecutivo; después llega a App Store y Google Play. El titular paga una suscripción mensual; el conductor la usa gratis.
-Al conductor se le pide: celular, correo, nombres y apellidos, fecha de nacimiento (el titular ve su edad), dirección (de ella sale su comuna), si tiene estacionamiento seguro, clases de licencia, experiencia, idiomas que habla (opcional), en qué negocio quiere trabajar, turnos y días. El RUN no se pide en el formulario: se lee de la foto de la cédula y solo lo ve el equipo. Y cuatro documentos: cédula, licencia, Hoja de Vida del Conductor y Certificado de Antecedentes para fines especiales. Un agente de IA los pre-revisa y una persona decide las dudas y los rechazos.
+Al conductor se le pide: celular, correo, nombres y apellidos, fecha de nacimiento (el titular ve su edad), dirección (de ella sale su comuna), si tiene estacionamiento seguro, clases de licencia, experiencia, idiomas que habla (opcional), en qué negocio quiere trabajar, turnos y días. El RUN no se pide en el formulario: se lee de la foto de la cédula y solo lo ve el equipo. Y cuatro documentos: cédula, licencia, Hoja de Vida del Conductor y Certificado de Antecedentes para fines especiales. **Desde el 24-nov** los revisa un "método de validación" que corre en la base; **por ahora aprueba todos los documentos sin revisarlos** (aprobación automática provisoria), y más adelante será IA, una persona o ambos (el diseño propuesto: IA que pre-revisa y una persona que decide las dudas y los rechazos). Los archivos se **guardan mientras la cuenta esté activa** y la persona anota la fecha de vencimiento (cédula y licencia) o de emisión (Hoja de Vida y antecedentes) para avisarle 3 meses antes de que venzan.
 Al titular se le pide celular, correo y nombre (razón social y RUT si es empresa). Si también se le pedirá la cédula está por definir.
 Tras un match, el titular con suscripción vigente ve la ficha y el contacto (teléfono y correo) del conductor; sin suscripción solo ve un adelanto anónimo. El conductor no ve el contacto del titular, salvo que este se lo revele, y puede escribirle un mensaje privado dentro de la app. La dirección del conductor solo se entrega si él la comparte. Proveedores fuera de Chile: Supabase (guarda los datos de la app, en São Paulo, Brasil), Google Maps (sugerencias de dirección) y un proveedor de IA.
 
@@ -19,7 +19,8 @@ La Ley 21.719 rige desde el **1-dic-2026**, salvo que se apruebe la postergació
 2. **Revisión con IA + persona (A17–A21):** si cumple el art. 8° bis y qué hay que avisarle al conductor.
 3. **Datos fuera de Chile y proveedores (A22–A24):** qué contrato o cláusulas firmar con Supabase (Brasil), el proveedor de IA, Google Maps y los demás proveedores, y cómo informarlo.
 4. **Autorizaciones (A25–A30):** qué va con casilla de consentimiento y qué por "ejecución del contrato". Sin esto no se cierran las pantallas de registro.
-5. **Términos, Política de privacidad y plazos de borrado (A31–A35 y A48–A56):** textos listos para publicar, con cuánto se guardan las fotos de documentos, los mensajes y las cuentas borradas.
+5. **Documentos guardados y aprobación automática (A63–A67, nuevas del 24-nov):** guardar los archivos mientras la cuenta esté activa, incluido el PDF completo de antecedentes; aprobarlos sin revisión y mostrarle al titular un conductor "verificado".
+6. **Términos, Política de privacidad y plazos de borrado (A31–A35 y A48–A56):** textos listos para publicar, con cuánto se guardan las fotos de documentos, los mensajes y las cuentas borradas.
 
 ## Preguntas
 
@@ -27,11 +28,11 @@ Cada pregunta tiene un número para que el abogado pueda responder, por ejemplo,
 
 ### 1. Certificado de Antecedentes y Hoja de Vida (Ley 21.719, art. 25)
 
-**Cómo funciona hoy** (decidido en `CLAUDE.md`; detalle en el modelo de datos, en revisión):
-- El conductor saca la Hoja de Vida y el certificado él mismo en el Registro Civil y los sube a la app.
-- Un agente de IA lee cada documento y lo compara con lo que declaró el conductor.
-- Los casos claros y favorables se aprueban solos. Las dudas y los rechazos los decide una persona. El conductor puede pedir otra revisión.
-- De estos dos documentos se guarda solo la fecha de emisión, si el folio es válido y el resultado. Nunca las anotaciones ni las condenas. El archivo se borra después (plazo por definir, A31).
+**Cómo funciona hoy** (decidido en `CLAUDE.md`; cambió el 24-nov, ver A63–A67):
+- El conductor saca la Hoja de Vida y el certificado él mismo en el Registro Civil y los sube a la app, con la fecha de emisión.
+- **Hoy (24-nov):** el método de validación provisorio los aprueba todos al momento, sin que nadie ni nada los lea. Queda anotado como "aprobación automática provisoria".
+- **Diseño propuesto para después:** un agente de IA lee cada documento y lo compara con lo declarado; los casos claros y favorables se aprueban solos y las dudas y los rechazos los decide una persona, que puede atender una segunda revisión.
+- **El archivo completo (con las anotaciones, si las hay) se guarda mientras la cuenta esté activa**, en un espacio privado al que solo accede la persona dueña (y, más adelante, el equipo desde el panel). Al reemplazar un documento, el archivo anterior lo borra la app; al borrar la cuenta se borran los datos, pero **hoy no hay una tarea del servidor que garantice que se borren los archivos** (ni los reemplazados ni los de una cuenta borrada): queda por construir con el panel. Antes se proponía guardar solo la fecha, el folio y el resultado y borrar el archivo (opción B); eso queda reemplazado por esta decisión y hay que confirmarlo (A63).
 - El titular nunca ve el archivo: solo una insignia (A12).
 
 - **A1.** Con el art. 25 de la Ley 21.719, ¿puede una empresa privada que solo conecta a las partes pedir, revisar y guardar el Certificado de Antecedentes para fines especiales? ¿Sirve el consentimiento?
@@ -124,7 +125,7 @@ Cada pregunta tiene un número para que el abogado pueda responder, por ejemplo,
 
 ### 6. Plazos de conservación y borrado
 
-- **A31.** Fotos de documentos: ¿cuánto tiempo después de decidir se borran? Opciones: apenas se decide; unos días (ej. 7) para atender una segunda revisión; un plazo distinto por documento.
+- **A31.** Fotos de documentos: decidido el 24-nov que **se guardan mientras la cuenta esté activa** y se renuevan cuando vencen (ver A63). ¿Es proporcional ese plazo, o la ley obliga a borrarlas antes (por ejemplo, después de decidir)? Si obliga, ¿cuánto?
   *Por qué importa:* las fotos traen foto, firma y RUN. *Fuente:* modelo-datos.json (pendiente MD20); propuesta-campos.md P1 d) y P16; contexto-chile.md §4.
 - **A32.** ¿Qué lados de la cédula y de la licencia podemos pedir? La cédula trae la firma y quizás la huella (dato biométrico) [verificar]; la licencia muestra restricciones (posible dato de salud) y quizás el domicilio [verificar].
   *Por qué importa:* conviene pedir solo lo necesario. *Fuente:* propuesta-campos.md P1 d), D1 y D2.
@@ -212,6 +213,20 @@ Cada pregunta tiene un número para que el abogado pueda responder, por ejemplo,
   *Por qué importa:* el modelo de contrato quedó como crecimiento futuro. *Fuente:* propuesta-catalogos.md pregunta 10; propuesta-campos.md §5.
 - **A62.** Bolsa de trabajo (en diseño; si sale en el lanzamiento se decide después): al tocar "Me interesa", el conductor envía su ficha a un titular con el que quizás no hay match. ¿Basta con que lo haga él mismo, con un aviso en la pantalla y el registro en "Quién recibió mis datos"? ¿Cambia algo si el titular muestra la oferta a "todos los conductores"?
   *Por qué importa:* es una entrega de datos nueva, fuera del match automático. *Fuente:* propuesta-bolsa-trabajo.md ("Impacto legal"); `CLAUDE.md` (Bolsa de trabajo, 2-nov).
+
+
+### 15. Documentos guardados y aprobación automática (decisión del 24-nov)
+
+- **A63.** Se decidió guardar los 4 documentos completos (cédula, licencia, Hoja de Vida y el PDF del certificado de antecedentes) **mientras la cuenta esté activa**. ¿Es compatible con el art. 25 (datos de infracciones penales) y con la proporcionalidad, o debemos guardar solo el resultado y borrar el archivo (A4, opción B)?
+  *Por qué importa:* cambia lo que se proponía antes (borrar el archivo después de decidir) y es el dato más delicado que guarda la app. *Fuente:* `CLAUDE.md` (Documentos, 24-nov); terminos-y-privacidad.md ("Documentos guardados mientras la cuenta esté activa").
+- **A64.** Hoy el método de validación **aprueba todos los documentos sin revisarlos** ("aprobación automática provisoria"), hasta definir el método real. ¿Es una decisión automatizada del art. 8° bis aunque siempre sea favorable al conductor? ¿Qué hay que informarle?
+  *Por qué importa:* el conductor queda aprobado sin que nadie mire el documento. *Fuente:* migración `20261124150000_documentos_conductor.sql` (función `privado.validar_documento`).
+- **A65.** Con esa aprobación automática el conductor queda **"Perfil verificado"** y la app le dice que "los titulares solo ven conductores con sus 4 documentos aprobados". ¿Podemos mostrarle al titular un conductor como verificado (o con una insignia de documentos) si nadie revisó sus documentos? ¿Es publicidad engañosa o un riesgo frente al titular (Ley 19.496) si un documento resulta falso? ¿Qué debe decir la insignia, o hay que esperar el método real antes de mostrarla a los titulares?
+  *Por qué importa:* los titulares todavía no usan la app, pero cuando lleguen la insignia comunicará algo que hoy no se verifica (relacionado con A12 y A15). *Fuente:* pantallas Paso 5 e Inicio de la app real.
+- **A66.** El texto de prueba de la autorización "Revisión de mis documentos" que aceptaron los conductores hasta el 24-nov (versión prueba-1, desde el 10-nov) dice que un sistema automático los revisa, que una persona decide las dudas y que se puede pedir otra revisión. Con la aprobación automática eso no pasa. Por eso, desde el 24-nov la prueba-1 deja de ofrecerse y se pide la prueba-2 en el Paso 5, antes del primer documento (también a quien aceptó la prueba-1): solo dice que los documentos se guardan mientras la cuenta esté activa y se revisan para verificar la identidad, la licencia y los antecedentes. ¿Basta ese texto mientras el método aprueba todo? ¿Qué texto definitivo debe aceptar el conductor cuando exista el método real?
+  *Por qué importa:* un consentimiento debe describir lo que de verdad se hace. *Fuente:* migraciones `20261110120000_app_conductor_v1_textos_prueba.sql` y `20261124150000_documentos_conductor.sql` (bloque 7).
+- **A67.** Si el conductor retira la autorización "Revisión de mis documentos", la base deja sus documentos como "retirados": dejan de usarse y su perfil sale de los matches. Los archivos hoy los borra la app en la próxima limpieza; no hay una tarea del servidor que lo haga al momento. ¿Hay que borrarlos al tiro, o se pueden guardar un tiempo (por ejemplo, por un reclamo)? ¿Y al borrar la cuenta?
+  *Por qué importa:* al retirar el consentimiento se deja de tratar el dato (Ley 21.719). *Fuente:* migración `20261124150000_documentos_conductor.sql` (4.10) y `docs/terminos-y-privacidad.md`.
 
 ## Qué llevar a la reunión
 

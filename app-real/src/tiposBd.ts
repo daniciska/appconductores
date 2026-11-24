@@ -2,6 +2,8 @@
 // GENERADO con generate_typescript_types del conector de Supabase (9-nov-2026, después de la Etapa 1,
 // los textos 'prueba-1' y la columna ajustes.publico). No se edita a mano: si cambia la base, se
 // vuelve a generar y se reemplaza (se omiten los ayudantes de Enums y CompositeTypes: no hay ninguno).
+// 24-nov: se agregaron a mano, con la misma forma, documentos, revisiones_documento y tipos_documento
+// (migración 20261124150000_documentos_conductor, todavía sin aplicar). Al aplicarla, se vuelve a generar.
 /* eslint-disable */
 export type Json =
   | string
@@ -382,6 +384,82 @@ export type Database = {
         }
         Relationships: []
       }
+      documentos: {
+        Row: {
+          aprobado_automaticamente: boolean
+          archivo_bytes: number | null
+          archivo_ruta: string
+          archivo_tipo: string
+          aviso_vencimiento_en: string | null
+          cuenta_id: string
+          emitido_en: string | null
+          estado: string
+          fechas_anotadas_por: string
+          id: number
+          motivo_rechazo_id: number | null
+          revisado_en: string | null
+          subido_en: string
+          tipo_documento_id: number
+          vence_en: string | null
+        }
+        Insert: {
+          aprobado_automaticamente?: boolean
+          archivo_bytes?: number | null
+          archivo_ruta: string
+          archivo_tipo: string
+          aviso_vencimiento_en?: string | null
+          cuenta_id: string
+          emitido_en?: string | null
+          estado?: string
+          fechas_anotadas_por?: string
+          id?: never
+          motivo_rechazo_id?: number | null
+          revisado_en?: string | null
+          subido_en?: string
+          tipo_documento_id: number
+          vence_en?: string | null
+        }
+        Update: {
+          aprobado_automaticamente?: boolean
+          archivo_bytes?: number | null
+          archivo_ruta?: string
+          archivo_tipo?: string
+          aviso_vencimiento_en?: string | null
+          cuenta_id?: string
+          emitido_en?: string | null
+          estado?: string
+          fechas_anotadas_por?: string
+          id?: never
+          motivo_rechazo_id?: number | null
+          revisado_en?: string | null
+          subido_en?: string
+          tipo_documento_id?: number
+          vence_en?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documentos_cuenta_id_fkey"
+            columns: ["cuenta_id"]
+            isOneToOne: false
+            referencedRelation: "cuentas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_motivo_rechazo_id_fkey"
+            columns: ["motivo_rechazo_id"]
+            isOneToOne: false
+            referencedRelation: "opciones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_tipo_documento_id_fkey"
+            columns: ["tipo_documento_id"]
+            isOneToOne: false
+            referencedRelation: "tipos_documento"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       experiencia_conductor: {
         Row: {
           actualizado_en: string
@@ -668,6 +746,67 @@ export type Database = {
         }
         Relationships: []
       }
+      revisiones_documento: {
+        Row: {
+          creado_en: string
+          detalle: string | null
+          documento_id: number
+          etapa: string
+          id: number
+          metodo: string
+          motivo_id: number | null
+          resultado: string
+          revisor_id: string | null
+          version_sistema: string | null
+        }
+        Insert: {
+          creado_en?: string
+          detalle?: string | null
+          documento_id: number
+          etapa: string
+          id?: never
+          metodo: string
+          motivo_id?: number | null
+          resultado: string
+          revisor_id?: string | null
+          version_sistema?: string | null
+        }
+        Update: {
+          creado_en?: string
+          detalle?: string | null
+          documento_id?: number
+          etapa?: string
+          id?: never
+          metodo?: string
+          motivo_id?: number | null
+          resultado?: string
+          revisor_id?: string | null
+          version_sistema?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "revisiones_documento_documento_id_fkey"
+            columns: ["documento_id"]
+            isOneToOne: false
+            referencedRelation: "documentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "revisiones_documento_motivo_id_fkey"
+            columns: ["motivo_id"]
+            isOneToOne: false
+            referencedRelation: "opciones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "revisiones_documento_revisor_id_fkey"
+            columns: ["revisor_id"]
+            isOneToOne: false
+            referencedRelation: "cuentas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tamanos_vehiculo: {
         Row: {
           activo: boolean
@@ -736,6 +875,62 @@ export type Database = {
           vigente_desde?: string | null
         }
         Relationships: []
+      }
+      tipos_documento: {
+        Row: {
+          activo: boolean
+          antiguedad_maxima_dias: number | null
+          ayuda: string | null
+          clave: string
+          corto: string
+          enlace_obtener: string | null
+          etiqueta_fecha: string | null
+          fecha_pedida: string
+          formato: string
+          id: number
+          nombre: string
+          obligatorio: boolean
+          orden: number
+          para_quien: string
+          renovar_cada_meses: number | null
+        }
+        Insert: {
+          activo?: boolean
+          antiguedad_maxima_dias?: number | null
+          ayuda?: string | null
+          clave: string
+          corto: string
+          enlace_obtener?: string | null
+          etiqueta_fecha?: string | null
+          fecha_pedida?: string
+          formato: string
+          id?: never
+          nombre: string
+          obligatorio?: boolean
+          orden?: number
+          para_quien: string
+          renovar_cada_meses?: number | null
+        }
+        Update: {
+          activo?: boolean
+          antiguedad_maxima_dias?: number | null
+          ayuda?: string | null
+          clave?: string
+          corto?: string
+          enlace_obtener?: string | null
+          etiqueta_fecha?: string | null
+          fecha_pedida?: string
+          formato?: string
+          id?: never
+          nombre?: string
+          obligatorio?: boolean
+          orden?: number
+          para_quien?: string
+          renovar_cada_meses?: number | null
+        }
+        Relationships: [
+
+        ]
       }
       zonas: {
         Row: {
