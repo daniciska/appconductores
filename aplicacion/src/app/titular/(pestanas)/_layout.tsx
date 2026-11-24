@@ -1,12 +1,13 @@
-// Pestañas del titular: Búsquedas, Favoritos y Perfil (prototipo del 24-nov).
+// Pestañas del titular: Búsquedas, Flota, Favoritos y Perfil (prototipo del 24-nov).
 import { Tabs, type BottomTabBarProps } from 'expo-router/js-tabs';
 
 import { BarraInferior, color, type PestanaBarra } from '@/ui';
-import { Search, Star, UserRound } from '@/ui/iconos';
+import { CarFront, Search, Star, UserRound } from '@/ui/iconos';
 
 function Barra({ state, navigateToTab }: BottomTabBarProps) {
   const pestanas: PestanaBarra[] = [
     { clave: 'busquedas', etiqueta: 'Búsquedas', icono: Search, href: '/titular/busquedas' },
+    { clave: 'flota', etiqueta: 'Flota', icono: CarFront, href: '/titular/flota' },
     { clave: 'favoritos', etiqueta: 'Favoritos', icono: Star, href: '/titular/favoritos' },
     { clave: 'perfil', etiqueta: 'Perfil', icono: UserRound, href: '/titular/perfil' },
   ];
@@ -22,6 +23,7 @@ export default function LayoutPestanasTitular() {
   return (
     <Tabs tabBar={(props) => <Barra {...props} />} screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: color.fondo } }}>
       <Tabs.Screen name="busquedas" options={{ title: 'Búsquedas' }} />
+      <Tabs.Screen name="flota" options={{ title: 'Flota' }} />
       <Tabs.Screen name="favoritos" options={{ title: 'Favoritos' }} />
       <Tabs.Screen name="perfil" options={{ title: 'Perfil' }} />
     </Tabs>

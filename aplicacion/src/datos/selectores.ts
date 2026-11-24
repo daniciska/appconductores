@@ -14,6 +14,7 @@ import {
 } from './match';
 import type {
   Busqueda,
+  Vehiculo,
   Comuna,
   ConductorFicticio,
   Dia,
@@ -153,6 +154,7 @@ export function resultadoParaUsuario(s: DatosDemo, b: Busqueda): ResultadoMatch 
     reglas: s.reglas,
     bloqueado: s.bloqueos.includes(b.titularId),
     titularSuspendido: titular?.suspendido,
+    vehiculosVencidos: busquedaConVehiculosVencidos(s, b),
   });
 }
 
@@ -549,6 +551,7 @@ export function simularMatch(s: DatosDemo, conductorId: string, busquedaId: stri
     reglas: s.reglas,
     bloqueado: conductorId === ID_USUARIO && s.bloqueos.includes(b.titularId),
     titularSuspendido: titular?.suspendido,
+    vehiculosVencidos: busquedaConVehiculosVencidos(s, b),
   });
 }
 
@@ -690,4 +693,84 @@ export function favoritosDelTitular(s: DatosDemo): { conductor: ConductorVista; 
       }
       return { conductor, mejor };
     });
+}
+
+// ---------------------------------------------------------------------------
+// Flota del titular (24-nov)
+// ---------------------------------------------------------------------------
+
+const DIA_MS = 24 * 60 * 60 * 1000;
+
+export type EstadoVencimiento = 'al_dia' | 'por_vencer' | 'vencido' | 'sin_fecha';
+
+/** Estado de un documento que vence (revisión técnica o SOAP) según los días de aviso del panel. */
+export function estadoVencimiento(venceEl: string | null, diasAviso = 30, ahora = Date.now()): { estado: EstadoVencimiento; dias: number } {
+  if (!venceEl) return { estado: 'sin_fecha', dias: 0 };
+  const dias = Math.ceil((new Date(venceEl).getTime() - ahora) / DIA_MS);
+  return { estado: dias < 0 ? 'vencido' : dias <= diasAviso ? 'por_vencer' : 'al_dia', dias };
+}
+
+export const diasAvisoVehiculo = (s: DatosDemo) => s.ajustes.diasAvisoVehiculo ?? 30;
+
+/** ¿La revisión técnica o el SOAP de este vehículo están vencidos? */
+export function vehiculoVencido(s: DatosDemo, v: Vehiculo, ahora = Date.now()): boolean {
+  const d = diasAvisoVehiculo(s);
+  return estadoVencimiento(v.revisionTecnica.venceEl, d, ahora).estado === 'vencido' || estadoVencimiento(v.soap.venceEl, d, ahora).estado === 'vencido';
+}
+
+export function vehiculosDeBusqueda(s: DatosDemo, b: Busqueda): Vehiculo[] {
+  const ids = b.vehiculoIds ?? [];
+  return (s.vehiculos ?? []).filter((v) => ids.includes(v.id));
+}
+
+/** Una búsqueda sale del match si TODOS sus vehículos tienen la revisión técnica o el SOAP vencidos. */
+export function busquedaConVehiculosVencidos(s: DatosDemo, b: Busqueda, ahora = Date.now()): boolean {
+  const vs = vehiculosDeBusqueda(s, b);
+  return vs.length > 0 && vs.every((v) => vehiculoVencido(s, v, ahora));
+}
+
+export const flotaDelTitularDemo = (s: DatosDemo): Vehiculo[] =>
+  (s.vehiculos ?? []).filter((v) => v.titularId === s.titularDemo.titularId).sort((a, b) => a.creadoEl.localeCompare(b.creadoEl));
+
+/** Vehículos que permite el plan del titular de la demo. Sin plan: 1 (como las búsquedas). */
+export function limiteVehiculos(s: DatosDemo): number {
+  const plan = planDeLaDemo(s);
+  return plan ? (plan.vehiculos ?? plan.busquedasActivas) : 1;
+}
+
+export const marcaPorId = (s: DatosDemo, id: string) => (s.catalogos.marcas ?? []).find((m) => m.id === id);
+export const nombreColor = (s: DatosDemo, clave: string) => (s.catalogos.colores ?? []).find((c) => c.clave === clave)?.nombre ?? clave;
+
+/** "Toyota Yaris 2021" */
+export function nombreVehiculo(s: DatosDemo, v: Vehiculo): string {
+  const marca = marcaPorId(s, v.marcaId);
+  return [marca && marca.id !== 'otra' ? marca.nombre : null, v.modelo !== 'Otro modelo' ? v.modelo : null, String(v.anio)].filter(Boolean).join(' ');
+}
+
+/** "ABCD12" → "AB·CD·12"; "ABC12" → "ABC·12" (motos). */
+export function patenteVisible(p: string): string {
+  const t = p.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+  if (/^[A-Z]{4}\d{2}$/.test(t) || /^[A-Z]{2}\d{4}$/.test(t)) return `${t.slice(0, 2)}·${t.slice(2, 4)}·${t.slice(4)}`;
+  if (/^[A-Z]{3}\d{2,3}$/.test(t)) return `${t.slice(0, 3)}·${t.slice(3)}`;
+  return t;
+}
+
+export interface AvisoVehiculo {
+  vehiculo: Vehiculo;
+  documento: 'revisionTecnica' | 'soap';
+  estado: 'por_vencer' | 'vencido';
+  dias: number;
+}
+
+/** Documentos de la flota del titular de la demo que vencen pronto o ya vencieron. */
+export function avisosFlota(s: DatosDemo, ahora = Date.now()): AvisoVehiculo[] {
+  const d = diasAvisoVehiculo(s);
+  const lista: AvisoVehiculo[] = [];
+  for (const v of flotaDelTitularDemo(s)) {
+    for (const documento of ['revisionTecnica', 'soap'] as const) {
+      const e = estadoVencimiento(v[documento].venceEl, d, ahora);
+      if (e.estado === 'por_vencer' || e.estado === 'vencido') lista.push({ vehiculo: v, documento, estado: e.estado, dias: e.dias });
+    }
+  }
+  return lista.sort((a, b) => a.dias - b.dias);
 }

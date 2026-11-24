@@ -12,6 +12,8 @@ Lista de trabajo para redactar los textos legales con el abogado. Se agrega un p
 - [ ] **Idiomas que habla (conductor, opcional):** se muestran al titular en la ficha.
 - [ ] **RUN:** se obtiene de la cédula al verificarla. Solo lo ve el equipo de verificación.
 
+- [ ] **Flota del titular (24-nov):** patente, marca, modelo, color, año y kilometraje de cada vehículo, y fotos o PDF del padrón, la revisión técnica y el SOAP. Para qué se piden (revisar que el vehículo existe y está al día), quién los ve (el equipo; el conductor solo ve tipo, año, color y "revisado"), que la patente se consulta en registros públicos (MTT) y cuánto tiempo se guardan.
+
 ## Con quién se comparten
 
 - [ ] Tras un match, el titular **con plan** ve la ficha del conductor y su contacto (**teléfono y correo**). Sin plan solo ve cuántos conductores hacen match (24-nov).

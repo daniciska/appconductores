@@ -43,6 +43,7 @@ export default function Pago() {
       <CabeceraFormulario titulo={`Plan ${plan.nombre}`} subtitulo="Se renueva cada mes. Cancela cuando quieras." />
       <View style={{ backgroundColor: color.superficie, borderWidth: 1, borderColor: color.borde, borderRadius: radio.tarjeta, paddingHorizontal: 16, paddingVertical: 2 }}>
         <Separado>
+          <FilaDato etiqueta="Vehículos en tu flota" valor={String(plan.vehiculos ?? plan.busquedasActivas)} />
           <FilaDato etiqueta="Búsquedas activas" valor={String(plan.busquedasActivas)} />
           <FilaDato etiqueta="Matches y contactos" valor="Incluidos" />
           <FilaDato etiqueta="Total mensual" valor={plan.precioMensual !== null ? pesos(plan.precioMensual) : 'Por definir'} />

@@ -75,6 +75,10 @@ Desde el 24-nov **no hay mensajes** (se sacaron D3 Mensajes y D4 Conversación, 
 | titular | `/titular/favoritos` (pestaña) | Favoritos | `src/pantallas/titular/Favoritos.tsx` |
 | titular | `/titular/perfil` (pestaña) | Perfil | `src/pantallas/titular/Perfil.tsx` |
 | titular | `/titular/pago?plan=` | Pago web (simulado: no pide datos de pago) | `src/pantallas/titular/Pago.tsx` |
+| titular | `/titular/flota` (pestaña) | Mi flota: vehículos, revisión y avisos de vencimiento | `src/pantallas/titular/Flota.tsx` |
+| titular | `/titular/vehiculo/nuevo` · `/titular/vehiculo/[id]` | Agregar / editar vehículo (patente, tipo, marca y modelo, color, año, km, padrón, revisión técnica y SOAP) | `src/pantallas/titular/FormularioVehiculo.tsx` (lista desplegable: `CampoLista.tsx`) |
+
+Flota (24-nov): `vehiculos` en el estado (versión 6), `catalogos.marcas` y `catalogos.colores`, `Plan.vehiculos`, `ajustes.diasAvisoVehiculo`, `Busqueda.vehiculoIds`. Acciones `guardarVehiculo` y `quitarVehiculo`; revisión simulada `revision_vehiculo` (~10 s). Selectores `flotaDelTitularDemo`, `limiteVehiculos`, `avisosFlota`, `busquedaConVehiculosVencidos` (condición previa `vehiculo_vencido` del match).
 
 Otras rutas (ya hechas, no se tocan): `/conductor` (redirige a Inicio si ya se registró; si no, a A1), `/componentes` (muestrario del sistema de diseño), `+not-found`.
 

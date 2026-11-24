@@ -85,6 +85,21 @@ function procesarTarea(t: TareaSimulada): void {
       return;
     }
 
+    case 'revision_vehiculo': {
+      const v = (demo.vehiculos ?? []).find((x) => x.id === t.vehiculoId);
+      if (!v || v.revision !== 'en_revision') return;
+      // El equipo revisa los documentos y consulta la patente en el registro del MTT (en la demo, siempre inscrito
+      // si es un vehículo de pasajeros).
+      const pasajeros = ['liviano', 'van', 'bus'].includes(v.tamanoId);
+      useDemo.setState({
+        vehiculos: (demo.vehiculos ?? []).map((x) =>
+          x.id === v.id ? { ...x, revision: 'revisado', revisadoEl: ahoraISO(), registroTransporte: pasajeros ? 'inscrito' : null } : x,
+        ),
+      });
+      if (demo.rol === 'titular') avisarConductor('Revisamos tu vehículo.', 'exito');
+      return;
+    }
+
     case 'abre_ficha': {
       if (demo.fichasAbiertas.includes(t.busquedaId)) return;
       const b = busquedaPorId(demo, t.busquedaId);

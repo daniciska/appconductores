@@ -12,7 +12,7 @@ import { useDerivado } from '@/datos/hooks';
 import * as sel from '@/datos/selectores';
 import { TEXTO_CUENTA_SUSPENDIDA, useDemo } from '@/datos/tienda';
 import type { EstadoBusqueda } from '@/datos/tipos';
-import { Aviso, Boton, ControlSegmentado, Encabezado, EstadoVacio, Insignia, Pantalla, Tarjeta, Titulo, color, mostrarToast, tipo } from '@/ui';
+import { Aviso, Boton, ControlSegmentado, Encabezado, EstadoVacio, Insignia, Pantalla, Tarjeta, Titulo, color, fuente, mostrarToast, tipo } from '@/ui';
 import { Pencil, Search, Users } from '@/ui/iconos';
 
 import { ChipFiltro, Rotulo } from '../bolsa/piezas';
@@ -33,6 +33,8 @@ export default function Resultados() {
       b,
       negocio: sel.negocioPorId(s, b.negocioId)!,
       condiciones: sel.textoCondiciones(s, b),
+      vehiculos: sel.vehiculosDeBusqueda(s, b).map((v) => `${sel.nombreVehiculo(s, v)} · ${sel.patenteVisible(v.patente)}`),
+      vencidos: sel.busquedaConVehiculosVencidos(s, b),
       calzan: sel.conductoresQueCalzan(s, b.id),
       plan: sel.planDeLaDemo(s),
       titular: sel.titularDeLaDemo(s),
@@ -53,7 +55,7 @@ export default function Resultados() {
       </Pantalla>
     );
   }
-  const { b, negocio, condiciones, calzan, plan, titular, favoritos, mostrado, bolsaActiva, postulantes } = datos;
+  const { b, negocio, condiciones, vehiculos, vencidos, calzan, plan, titular, favoritos, mostrado, bolsaActiva, postulantes } = datos;
   const activa = b.estado === 'activa';
   const lista = soloFavoritos ? calzan.filter((x) => favoritos.includes(x.conductor.id)) : calzan;
 
@@ -86,6 +88,7 @@ export default function Resultados() {
         <Text style={[tipo.parrafo, { color: color.textoSecundario }]}>
           {condiciones}
         </Text>
+        {vehiculos.length > 0 ? <Text style={[tipo.secundario, fuente(600), { color: color.texto }]}>{vehiculos.join(' · ')}</Text> : null}
         {b.detalle && !b.detalleOculto ? <Text style={[tipo.secundario, { color: color.textoSuave }]}>{b.detalle}</Text> : null}
       </View>
 
@@ -93,7 +96,9 @@ export default function Resultados() {
 
       {titular.suspendido ? <Aviso tono="error" icono="alerta" texto={TEXTO_CUENTA_SUSPENDIDA} /> : null}
 
-      {!activa ? (
+      {activa && vencidos ? (
+        <Aviso tono="error" icono="alerta" texto="Los documentos de su vehículo vencieron: no sale en los matches. Sube el documento nuevo en tu flota." />
+      ) : !activa ? (
         <Aviso
           icono="info"
           texto={b.estado === 'pausada' ? 'En pausa: los conductores no la ven y no hay matches nuevos.' : 'Cubierta: ya tiene conductor. Actívala si lo vuelves a necesitar.'}

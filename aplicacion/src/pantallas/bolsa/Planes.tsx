@@ -117,6 +117,7 @@ function TarjetaPlan({ plan, actual, onElegir, bolsa }: { plan: Plan; actual: bo
         </View>
       </View>
       <View>
+        <Fila oscuro={oscuro} etiqueta="Vehículos en tu flota" valor={String(plan.vehiculos ?? plan.busquedasActivas)} />
         <Fila oscuro={oscuro} etiqueta="Búsquedas activas" valor={String(plan.busquedasActivas)} />
         <Fila oscuro={oscuro} etiqueta="Ver matches y sus contactos" si />
         {bolsa ? (

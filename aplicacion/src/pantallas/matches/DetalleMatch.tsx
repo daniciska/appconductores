@@ -11,9 +11,9 @@ import { Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 
 import { iniciales, textoDias, textoTurnos } from '@/datos/formato';
-import { useMatchDelUsuario } from '@/datos/hooks';
+import { useDerivado, useMatchDelUsuario } from '@/datos/hooks';
 import { TEXTO_PRECONDICION, aniosEnNegocio } from '@/datos/match';
-import { insigniaTitular, nombreTitular } from '@/datos/selectores';
+import { insigniaTitular, nombreColor, nombreTitular, vehiculosDeBusqueda } from '@/datos/selectores';
 import { useDemo } from '@/datos/tienda';
 import type { CodigoRegla } from '@/datos/tipos';
 import {
@@ -82,6 +82,16 @@ export default function DetalleMatch() {
   const m = useMatchDelUsuario(id ?? '');
   const conductor = useDemo((s) => s.conductor);
   const compartirDireccion = useDemo((s) => s.compartirMiDireccion);
+  // Flota (24-nov): el conductor ve el tipo, el año y el color del vehículo, y si está revisado (no la patente).
+  const textoVehiculos = useDerivado((s) => {
+    const b = s.busquedas.find((x) => x.id === id);
+    if (!b) return null;
+    const vs = vehiculosDeBusqueda(s, b);
+    if (vs.length === 0) return null;
+    const partes = vs.map((v) => `${s.catalogos.tamanos.find((t) => t.id === v.tamanoId)?.nombre ?? 'Vehículo'} ${v.anio}, ${nombreColor(s, v.color).toLowerCase()}`);
+    const revisados = vs.every((v) => v.revision === 'revisado');
+    return { texto: `${partes.join(' · ')}${revisados ? ' · Revisado' : ''}`, varios: vs.length > 1 };
+  });
   const [confirmarDireccion, setConfirmarDireccion] = useState(false);
 
   if (!m) {
@@ -174,6 +184,12 @@ export default function DetalleMatch() {
         <Text role="heading" aria-level={2} style={[tipo.tituloTarjeta, { color: color.texto, paddingBottom: 6 }]}>
           Condiciones
         </Text>
+        {textoVehiculos ? (
+          <>
+            <Fila etiqueta={textoVehiculos.varios ? 'Vehículos' : 'Vehículo'} valor={textoVehiculos.texto} nota={null} />
+            <Separador />
+          </>
+        ) : null}
         <Fila
           etiqueta="Retiro"
           valor={[m.comuna?.nombre, m.zona?.nombre].filter(Boolean).join(' · ') || 'Por definir'}

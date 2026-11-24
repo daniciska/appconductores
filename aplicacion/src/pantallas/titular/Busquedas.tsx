@@ -12,10 +12,11 @@ import type { BusquedaTitular } from '@/datos/selectores';
 import { TEXTO_CUENTA_SUSPENDIDA, limiteBusquedasActivas, useDemo } from '@/datos/tienda';
 import type { PlanTitular } from '@/datos/tipos';
 import { Aviso, Boton, Chip, EstadoVacio, Insignia, Pantalla, Presionable, Tarjeta, Titulo, color, fuente, mostrarToast, radio, tipo } from '@/ui';
-import { ChevronRight, Clock, Lock, Plus, Search, Sparkles, Users } from '@/ui/iconos';
+import { CarFront, ChevronRight, Clock, Lock, Plus, Search, Sparkles, Users } from '@/ui/iconos';
 
 import { textoCambioPlan } from '../bolsa/datos';
 import { Aparecer, InsigniaBolsa, Rotulo } from '../bolsa/piezas';
+import { textoAviso } from './Flota';
 import { ConRegistro } from './piezas';
 
 const OPCIONES_PLAN: { clave: PlanTitular; etiqueta: string }[] = [
@@ -92,6 +93,8 @@ function Contenido() {
   const busquedas = useBusquedasDelTitular();
   const activas = useDerivado(sel.busquedasActivasDelTitular);
   const limite = useDerivado(limiteBusquedasActivas);
+  const avisos = useDerivado((s) => sel.avisosFlota(s));
+  const hayFlota = useDerivado((s) => sel.flotaDelTitularDemo(s).length > 0);
   const totalMatches = busquedas.filter((b) => b.busqueda.estado === 'activa').reduce((n, b) => n + b.coinciden, 0);
 
   const elegirPlan = (p: PlanTitular) => {
@@ -141,6 +144,16 @@ function Contenido() {
         />
       ) : null}
 
+      {avisos.length > 0 ? (
+        <Aviso
+          tono={avisos.some((a) => a.estado === 'vencido') ? 'error' : 'acento'}
+          icono="alerta"
+          titulo={`${sel.patenteVisible(avisos[0].vehiculo.patente)}: ${textoAviso(avisos[0]).toLowerCase()}`}
+          texto={avisos.some((a) => a.estado === 'vencido') ? 'Sube el documento nuevo para que sus búsquedas vuelvan a los matches.' : 'Súbelo antes de que venza para no salir de los matches.'}
+          accion={<Boton titulo="Ver" variante="oscuro" tamano="mediano" onPress={() => router.push({ pathname: '/titular/vehiculo/[id]', params: { id: avisos[0].vehiculo.id } })} />}
+        />
+      ) : null}
+
       {busquedas.length > 0 ? (
         <Tarjeta padding={0} separacion={0} style={{ flexDirection: 'row' }}>
           {[
@@ -156,12 +169,21 @@ function Contenido() {
       ) : null}
 
       {busquedas.length === 0 ? (
-        <EstadoVacio
-          icono={Search}
-          titulo="Crea tu primera búsqueda"
-          texto="Cuéntanos qué vehículo tienes y te mostramos cuántos conductores verificados calzan."
-          accion={{ titulo: 'Nueva búsqueda', onPress: () => router.push('/titular/busqueda/nueva') }}
-        />
+        hayFlota ? (
+          <EstadoVacio
+            icono={Search}
+            titulo="Crea tu primera búsqueda"
+            texto="Elige tu vehículo y te mostramos cuántos conductores verificados calzan."
+            accion={{ titulo: 'Nueva búsqueda', onPress: () => router.push('/titular/busqueda/nueva') }}
+          />
+        ) : (
+          <EstadoVacio
+            icono={CarFront}
+            titulo="Agrega tu primer vehículo"
+            texto="Después crea una búsqueda y te mostramos cuántos conductores verificados calzan."
+            accion={{ titulo: 'Agregar vehículo', onPress: () => router.push('/titular/vehiculo/nuevo') }}
+          />
+        )
       ) : (
         <>
           <Boton titulo="Nueva búsqueda" icono={Plus} variante="principal" onPress={() => router.push('/titular/busqueda/nueva')} />

@@ -3,6 +3,7 @@
 // Una búsqueda es un vehículo o un grupo de vehículos iguales (P2). El titular elige un negocio (solo los
 // activos, con su industria activa) y, si la licencia depende del vehículo, responde una pregunta más: con
 // eso se calcula la licencia exigida (no la llena él). Sin garantía ni modo de contrato (crecimiento futuro).
+// Flota (24-nov): la búsqueda elige uno o más vehículos de la flota; sin vehículos no se puede publicar.
 import { useRef, useState, type ComponentRef } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -13,8 +14,8 @@ import * as sel from '@/datos/selectores';
 import { useDemo } from '@/datos/tienda';
 import type { Dia, Turno } from '@/datos/tipos';
 import { AlertaObligatorios, CabeceraFormulario, EtiquetaGrupo, NotaDemo, NotaObligatorio, irAlPrimerError } from '@/pantallas/ingreso/comunes';
-import { Aviso, Boton, Campo, Chip, Encabezado, EstadoVacio, FilaInterruptor, FilaRadio, OpcionIcono, Pantalla, Stepper, Texto, color, mostrarToast, radio, tipo, type LucideIcon } from '@/ui';
-import { BadgeCheck, Moon, Search, Sun } from '@/ui/iconos';
+import { Aviso, Boton, Campo, Chip, Encabezado, EstadoVacio, FilaCheck, FilaInterruptor, FilaRadio, OpcionIcono, Pantalla, Stepper, Texto, color, mostrarToast, radio, tipo, type LucideIcon } from '@/ui';
+import { BadgeCheck, CarFront, Moon, Search, Sun } from '@/ui/iconos';
 
 import { CampoComuna } from './piezas';
 
@@ -26,9 +27,11 @@ export default function FormularioBusqueda() {
   const existente = useDerivado((s) => (id ? s.busquedas.find((b) => b.id === id && b.titularId === s.titularDemo.titularId) : undefined));
   const grupos = useDerivado((s) => sel.negociosPorIndustria(s, true));
   const catalogos = useDemo((s) => s.catalogos);
+  const flota = useDerivado((s) => sel.flotaDelTitularDemo(s).map((v) => ({ v, nombre: sel.nombreVehiculo(s, v) })));
   const guardarBusqueda = useDemo((s) => s.guardarBusqueda);
   const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
 
+  const [vehiculoIds, setVehiculoIds] = useState<string[]>(() => existente?.vehiculoIds ?? (flota.length === 1 ? [flota[0].v.id] : []));
   const [negocioId, setNegocioId] = useState<string | null>(existente?.negocioId ?? null);
   const [respuesta, setRespuesta] = useState<string | null>(existente?.respuestaVehiculo ?? null);
   const [comunaId, setComunaId] = useState<string | null>(existente?.comunaId ?? null);
@@ -39,6 +42,20 @@ export default function FormularioBusqueda() {
   const [detalle, setDetalle] = useState(existente?.detalle ?? '');
   const [intento, setIntento] = useState(false);
   const [claveComuna, setClaveComuna] = useState(0);
+
+  if (!id && flota.length === 0) {
+    return (
+      <Pantalla>
+        <Encabezado volverA="/titular/busquedas" />
+        <EstadoVacio
+          icono={CarFront}
+          titulo="Primero agrega un vehículo"
+          texto="Cada búsqueda es para vehículos de tu flota. Agrégalo y vuelve a crear la búsqueda."
+          accion={{ titulo: 'Agregar vehículo', onPress: () => router.replace('/titular/vehiculo/nuevo') }}
+        />
+      </Pantalla>
+    );
+  }
 
   if (id && !existente) {
     return (
@@ -51,6 +68,7 @@ export default function FormularioBusqueda() {
 
   const negocio = negocioId ? catalogos.negocios.find((n) => n.id === negocioId) : undefined;
   const errores = {
+    vehiculos: vehiculoIds.length === 0 ? 'Marca al menos un vehículo.' : null,
     negocio: !negocio ? 'Elige un negocio.' : null,
     respuesta: negocio?.pregunta && !respuesta ? 'Responde la pregunta del vehículo.' : null,
     comuna: !comunaId ? 'Elige la comuna de la lista.' : null,
@@ -67,6 +85,7 @@ export default function FormularioBusqueda() {
   const rellenar = () => {
     const primero = grupos[0]?.negocios[0];
     if (!primero) return;
+    setVehiculoIds(flota.slice(0, 1).map((x) => x.v.id));
     setNegocioId(primero.id);
     setRespuesta(primero.pregunta?.respuestas[0]?.clave ?? null);
     setComunaId('providencia');
@@ -86,7 +105,7 @@ export default function FormularioBusqueda() {
       return;
     }
     const r = guardarBusqueda(
-      { negocioId, respuestaVehiculo: respuesta, comunaId, turnos, dias, aniosMinimos: anios, exigeEstacionamiento: estacionamiento, detalle },
+      { vehiculoIds, negocioId, respuestaVehiculo: respuesta, comunaId, turnos, dias, aniosMinimos: anios, exigeEstacionamiento: estacionamiento, detalle },
       existente?.id,
     );
     if (!r.ok || !r.id) {
@@ -112,6 +131,22 @@ export default function FormularioBusqueda() {
         subtitulo="Una búsqueda es un vehículo o un grupo de vehículos iguales.">
         {vacio && !existente ? <NotaDemo texto="Demo:" accion={{ titulo: 'Rellenar con datos de ejemplo', onPress: rellenar }} /> : null}
       </CabeceraFormulario>
+
+      <View style={{ marginTop: 8, gap: 12 }}>
+        <EtiquetaGrupo titulo="¿Para qué vehículos?" obligatorio ayuda="Si son iguales, puedes marcar varios." error={ver && errores.vehiculos} />
+        <View role="group" aria-label="Vehículos" style={{ gap: 8 }}>
+          {flota.map(({ v, nombre }) => (
+            <FilaCheck
+              key={v.id}
+              titulo={nombre}
+              descripcion={sel.patenteVisible(v.patente)}
+              marcada={vehiculoIds.includes(v.id)}
+              onPress={() => setVehiculoIds((l) => alternar(l, v.id))}
+              style={ver && errores.vehiculos ? { borderColor: color.error } : undefined}
+            />
+          ))}
+        </View>
+      </View>
 
       <View style={{ marginTop: 8, gap: 12 }}>
         <EtiquetaGrupo titulo="¿En qué negocio buscas conductor?" obligatorio error={ver && errores.negocio} />

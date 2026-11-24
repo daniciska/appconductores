@@ -79,6 +79,16 @@ export interface Negocio {
   tamanos: string[];
 }
 
+/** Marca de vehículo con sus modelos (listas desplegables de la flota; configurable desde el panel). */
+export interface Marca {
+  id: string;
+  nombre: string;
+  modelos: string[];
+  /** En qué tipos de vehículo aparece (ids de TamanoVehiculo). */
+  tamanos: string[];
+  orden: number;
+}
+
 export interface OpcionLista {
   clave: string;
   nombre: string;
@@ -243,6 +253,46 @@ export interface Titular {
 // Búsquedas (ofertas) y bolsa de trabajo
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Flota del titular (24-nov): cada vehículo con su patente, datos y documentos
+// ---------------------------------------------------------------------------
+
+/** Documento de un vehículo (en la demo solo se guarda el nombre del archivo). */
+export interface DocumentoVehiculo {
+  archivo: string | null;
+  /** Fecha de vencimiento (ISO, solo la fecha). null si el documento no vence (padrón). */
+  venceEl: string | null;
+}
+
+/** 'falta_info': faltan documentos · 'en_revision': lo revisa el equipo · 'revisado': el equipo lo revisó. */
+export type EstadoRevisionVehiculo = 'falta_info' | 'en_revision' | 'revisado';
+
+export interface Vehiculo {
+  id: string; // 'v01'…
+  titularId: string;
+  /** "ABCD12" (sin puntos ni guiones). Solo la ven el titular y el equipo. */
+  patente: string;
+  /** Tipo de vehículo: id de TamanoVehiculo ('liviano'…). */
+  tamanoId: string;
+  marcaId: string;
+  modelo: string;
+  /** Clave de catalogos.colores. */
+  color: string;
+  anio: number;
+  kilometraje: number;
+  padron: DocumentoVehiculo;
+  revisionTecnica: DocumentoVehiculo;
+  soap: DocumentoVehiculo;
+  revision: EstadoRevisionVehiculo;
+  revisadoEl: string | null;
+  /**
+   * Lo que vio el equipo al consultar la patente en el Registro Nacional de Transporte Público y Escolar
+   * (MTT). null = aún no se consulta.
+   */
+  registroTransporte: 'inscrito' | 'no_inscrito' | null;
+  creadoEl: string;
+}
+
 export type EstadoBusqueda = 'activa' | 'pausada' | 'cubierta';
 export type VisibilidadBolsa = 'match' | 'perfiles' | 'todos';
 
@@ -258,6 +308,8 @@ export interface PerfilesBolsa {
 export interface Busqueda {
   id: string; // 'b01'…
   titularId: string;
+  /** Vehículos de la flota del titular que cubre esta búsqueda (24-nov). */
+  vehiculoIds?: string[];
   negocioId: string;
   /** Respuesta a la pregunta del negocio (clave), solo si el negocio la tiene. */
   respuestaVehiculo: string | null;
@@ -388,6 +440,8 @@ export interface Ajustes {
   diasAntiguedadPdf: number;
   /** Segundos que tarda la pre-revisión simulada del agente de IA. */
   segundosPrerevision: number;
+  /** Cuántos días antes de que venzan la revisión técnica o el SOAP de un vehículo se avisa al titular. */
+  diasAvisoVehiculo?: number;
 }
 
 export type PlanId = 'basico' | 'flota_chica' | 'flota';
@@ -397,6 +451,8 @@ export interface Plan {
   id: PlanId;
   nombre: string;
   busquedasActivas: number;
+  /** Vehículos que puede tener en su flota (configurable; 24-nov: 1, 5 y 20 por ahora). */
+  vehiculos?: number;
   ofertasBolsa: number;
   visibilidades: VisibilidadBolsa[];
   destacadasMes: number;
@@ -440,6 +496,9 @@ export interface Catalogos {
   motivosRechazo: MotivoRechazo[];
   motivosReporte: MotivoReporte[];
   planes: Plan[];
+  /** Flota (24-nov). Opcionales para lo guardado antes de la versión 6. */
+  marcas?: Marca[];
+  colores?: OpcionLista[];
 }
 
 // ---------------------------------------------------------------------------
@@ -455,4 +514,6 @@ export type TareaSimulada =
   /** Una persona del equipo (simulada) revisa un documento del usuario. `ronda` = envío que revisa. */
   | { id: string; tipo: 'revision_equipo'; venceEn: number; documento: TipoDocumentoId; ronda: string }
   /** El equipo (simulado) revisa la cédula del titular de la demo (y el RUT en el SII, si es empresa). */
-  | { id: string; tipo: 'revision_titular'; venceEn: number };
+  | { id: string; tipo: 'revision_titular'; venceEn: number }
+  /** El equipo (simulado) revisa los documentos y la patente de un vehículo de la flota. */
+  | { id: string; tipo: 'revision_vehiculo'; venceEn: number; vehiculoId: string };

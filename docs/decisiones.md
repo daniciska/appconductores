@@ -45,3 +45,9 @@ Quiénes trabajan en el proyecto: **Daniela** y **Mario**, socios. Cada entrada 
 - Por qué: simplificar el producto y llevar al titular directo al contacto, que es lo que paga.
 - Impacto: CLAUDE.md (se reemplaza "Mensajes dentro de la app", se ajusta P10, se agregan Reportar y verificación del titular), demo del conductor (sin Mensajes ni Bloquear), prototipo del titular en `aplicacion/` y, más adelante, la Etapa 3 de la base (sin tablas de mensajes).
 - Pendiente: la sección de match del conductor, con tres opciones (no disponible / cualquier trabajo / solo ciertos trabajos con filtros como antigüedad, combustible, particular o empresa): qué filtros entran y si son obligatorios.
+
+## 2026-11-24 — Daniela y Mario
+- Decisión: flota del titular. Por cada vehículo se pide patente, tipo, marca y modelo, color, año, kilometraje, padrón, revisión técnica y SOAP. Cada búsqueda elige vehículos de la flota y sin vehículos no se publica. Revisa el equipo (documentos y patente en el registro del MTT). El conductor ve tipo, año, color y "revisado". Avisos antes de vencer; vencido, sale del match. Vehículos por plan configurables: 1, 5 y 20. Además: clave nueva de la demo y sitio de prueba `dale-contacto-prueba`.
+- Por qué: dar confianza al conductor de que detrás de cada búsqueda hay un vehículo real y al día, y vender planes por tamaño de flota. La clave anterior se perdió.
+- Impacto: demo del titular y del conductor, estado de la demo (versión 6), CLAUDE.md y documentos; más adelante, la Etapa 2 de la base (tabla de vehículos).
+- Pendiente: límites definitivos por plan, lista completa de marcas, servicio pagado por patente (costo y legalidad), canal de los avisos de vencimiento y si el sitio de prueba queda público.

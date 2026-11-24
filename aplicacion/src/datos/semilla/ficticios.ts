@@ -15,6 +15,7 @@ import type {
   EstadoDocumento,
   Postulacion,
   Titular,
+  Vehiculo,
   Busqueda,
   TipoDocumentoId,
 } from '../tipos.ts';
@@ -68,6 +69,8 @@ export function venceEnEjemplo(tipo: TipoDocumentoId, desde: number): string {
 export interface DatosFicticios {
   titulares: Titular[];
   busquedas: Busqueda[];
+  /** Un vehículo por búsqueda (flota, 24-nov). */
+  vehiculos: Vehiculo[];
   conductores: ConductorFicticio[];
   postulaciones: Postulacion[];
 }
@@ -739,5 +742,39 @@ export function crearFicticios(ahora: number): DatosFicticios {
     { id: 'p05', busquedaId: 'b06', conductorId: 'c04', estado: 'vista', postuloEl: hace(2), vistaEl: hace(1, 10), cambioEl: hace(1, 10) },
   ];
 
-  return { titulares, busquedas, conductores, postulaciones };
+  // Flota (24-nov): un vehículo revisado por búsqueda. El de b05 tiene la revisión técnica por vencer.
+  const MODELOS: [string, string][] = [
+    ['toyota', 'Yaris'], ['hyundai', 'Accent'], ['nissan', 'Versa'], ['kia', 'Soluto'], ['chevrolet', 'Sail'],
+    ['toyota', 'Corolla'], ['hyundai', 'Elantra'], ['mg', 'MG5'], ['nissan', 'Sentra'], ['kia', 'Rio'],
+    ['toyota', 'Prius'], ['hyundai', 'Ioniq'], ['byd', 'e5'], ['chevrolet', 'Onix'],
+  ];
+  const LETRAS = ['KX', 'LP', 'RT', 'HJ', 'GF', 'PZ', 'JW', 'SL', 'FR', 'DK', 'BL', 'TY', 'RS', 'HW'];
+  const vehiculos: Vehiculo[] = busquedas.map((b, i) => {
+    const [marcaId, modelo] = MODELOS[i % MODELOS.length];
+    const id = `v${String(i + 1).padStart(2, '0')}`;
+    return {
+      id,
+      titularId: b.titularId,
+      patente: `${LETRAS[i % LETRAS.length]}${String.fromCharCode(66 + (i % 20))}${String.fromCharCode(67 + ((i * 3) % 20))}${String(10 + ((i * 7) % 89)).padStart(2, '0')}`,
+      tamanoId: 'liviano',
+      marcaId,
+      modelo,
+      color: i % 3 === 0 ? 'negro' : i % 3 === 1 ? 'blanco' : 'gris',
+      // El año que dice el detalle de la oferta, si lo dice ("Sedán 2021…").
+      anio: Number(/20\d\d/.exec(b.detalle)?.[0] ?? 2019 + (i % 5)),
+      kilometraje: 40000 + i * 13500,
+      padron: { archivo: 'padron.pdf', venceEl: null },
+      revisionTecnica: { archivo: 'revision-tecnica.jpg', venceEl: b.id === 'b05' ? en(12) : en(120 + i * 9) },
+      soap: { archivo: 'soap.pdf', venceEl: en(60 + i * 11) },
+      revision: 'revisado',
+      revisadoEl: hace(20),
+      registroTransporte: 'inscrito',
+      creadoEl: hace(30),
+    };
+  });
+  busquedas.forEach((b, i) => {
+    b.vehiculoIds = [vehiculos[i].id];
+  });
+
+  return { titulares, busquedas, vehiculos, conductores, postulaciones };
 }

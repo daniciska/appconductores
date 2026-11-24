@@ -64,6 +64,7 @@ import type {
   TipoDocumentoId,
   Titular,
   Turno,
+  Vehiculo,
   VisibilidadBolsa,
 } from './tipos';
 
@@ -81,11 +82,32 @@ export interface Resultado {
 /** Lo que ve el titular de la demo si el equipo suspendió su cuenta (R18: sale del match y no puede escribir). */
 export const TEXTO_CUENTA_SUSPENDIDA = 'Tu cuenta está suspendida: tus búsquedas no salen en los matches.';
 
+/** Lo que pide cada vehículo de la flota (24-nov). Los documentos: nombre del archivo y vencimiento. */
+export interface DatosVehiculo {
+  patente: string;
+  tamanoId: string;
+  marcaId: string;
+  modelo: string;
+  color: string;
+  anio: number;
+  kilometraje: number;
+  padron: string | null;
+  revisionTecnica: string | null;
+  revisionTecnicaVence: string | null;
+  soap: string | null;
+  soapVence: string | null;
+}
+
+/** Segundos que tarda el equipo (simulado) en revisar un vehículo (documentos y patente en el registro del MTT). */
+export const SEGUNDOS_REVISION_VEHICULO = 10;
+
 /** Segundos que tarda el equipo (simulado) en revisar la cédula del titular (y el RUT en el SII). */
 export const SEGUNDOS_REVISION_TITULAR = 8;
 
 /** Lo que pide la búsqueda del titular (T8–T12, T14, T16). Sin garantía ni modo de contrato (crecimiento futuro). */
 export interface DatosBusqueda {
+  /** Vehículos de la flota que cubre (al menos uno; 24-nov). */
+  vehiculoIds: string[];
   negocioId: string;
   respuestaVehiculo: string | null;
   comunaId: string;
@@ -198,6 +220,13 @@ export interface AccionesDemo {
   mostrarContactoA: (busquedaId: string, conductorId: string) => Resultado;
   /** El titular de la demo reporta a un conductor. */
   reportarConductor: (d: { conductorId: string; busquedaId: string | null; motivo: MotivoReporteId; detalle?: string }) => void;
+  /**
+   * Crea (sin id) o edita un vehículo de la flota. Con los 3 documentos queda "En revisión" (el equipo
+   * simulado lo revisa en unos segundos); si falta alguno, queda "Faltan documentos".
+   */
+  guardarVehiculo: (d: DatosVehiculo, id?: string) => Resultado & { id?: string };
+  /** Saca un vehículo de la flota y de sus búsquedas (la búsqueda que queda sin vehículos se pausa). */
+  quitarVehiculo: (id: string) => void;
 }
 
 export type EstadoDemo = DatosDemo & AccionesDemo;
@@ -267,6 +296,12 @@ function nuevaEntrega(s: DatosDemo, busquedaId: string, que: QueSeEntrego[], des
 
 /** Tareas de la simulación que dependen de lo que hizo el usuario (se descartan con los atajos). */
 const TAREAS_DEL_USUARIO = new Set<TareaSimulada['tipo']>(['prerevision', 'revision_equipo', 'respuesta_titular', 'abre_ficha']);
+
+/** Vehículos que permite el plan del titular de la demo (sin plan: 1). */
+const limiteVehiculosDe = (s: DatosDemo): number => {
+  const plan = planDeLaDemo(s);
+  return plan ? (plan.vehiculos ?? plan.busquedasActivas) : 1;
+};
 
 /** Búsquedas activas que permite el plan del titular de la demo. Sin plan: 1 (para ver el adelanto anónimo). */
 export function limiteBusquedasActivas(s: DatosDemo): number {
@@ -1001,13 +1036,14 @@ export const useDemo = create<EstadoDemo>()(
           const s = get();
           const mias = new Set(s.busquedas.filter((b) => b.titularId === ID_TITULAR_USUARIO).map((b) => b.id));
           set({
+            vehiculos: (s.vehiculos ?? []).filter((v) => v.titularId !== ID_TITULAR_USUARIO),
             titularDemo: { titularId: ID_TITULAR_USUARIO, plan: 'sin_plan', destacadasUsadas: 0, registro: registroTitularVacio(), contactoMostrado: {} },
             favoritosTitular: [],
             titulares: s.titulares.filter((t) => t.id !== ID_TITULAR_USUARIO),
             busquedas: s.busquedas.filter((b) => !mias.has(b.id)),
             postulaciones: s.postulaciones.filter((p) => !mias.has(p.busquedaId)),
             favoritos: s.favoritos.filter((id) => !mias.has(id)),
-            pendientes: s.pendientes.filter((t) => t.tipo !== 'revision_titular'),
+            pendientes: s.pendientes.filter((t) => t.tipo !== 'revision_titular' && t.tipo !== 'revision_vehiculo'),
           });
         },
 
@@ -1088,7 +1124,11 @@ export const useDemo = create<EstadoDemo>()(
           if (!d.comunaId) return { ok: false, error: 'Elige la comuna donde se retira el vehículo.' };
           if (d.turnos.length === 0) return { ok: false, error: 'Elige al menos un turno.' };
           if (d.dias.length === 0) return { ok: false, error: 'Elige al menos un día.' };
+          const propios = new Set((s.vehiculos ?? []).filter((v) => v.titularId === titularId).map((v) => v.id));
+          const vehiculoIds = d.vehiculoIds.filter((v) => propios.has(v));
+          if (vehiculoIds.length === 0) return { ok: false, error: 'Elige al menos un vehículo de tu flota.' };
           const campos = {
+            vehiculoIds,
             negocioId: d.negocioId,
             respuestaVehiculo: negocio.pregunta ? d.respuestaVehiculo : null,
             comunaId: d.comunaId,
@@ -1143,6 +1183,84 @@ export const useDemo = create<EstadoDemo>()(
           if (!planDeLaDemo(s)) return { ok: false, error: 'Elige un plan para contactar conductores.' };
           set(cambiosMostrarContacto(s, busquedaId, conductorId));
           return { ok: true };
+        },
+
+        guardarVehiculo: (d, id) => {
+          const s = get();
+          const titularId = s.titularDemo.titularId;
+          if (!titularPorId(s, titularId)) return { ok: false, error: 'Primero completa tus datos.' };
+          const patente = d.patente.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+          if (!/^([A-Z]{4}\d{2}|[A-Z]{2}\d{4}|[A-Z]{3}\d{2,3})$/.test(patente)) return { ok: false, error: 'Revisa la patente.' };
+          const otra = (s.vehiculos ?? []).find((v) => v.patente === patente && v.id !== id);
+          if (otra) return { ok: false, error: 'Esa patente ya está en una flota.' };
+          const flota = (s.vehiculos ?? []).filter((v) => v.titularId === titularId);
+          if (!id && flota.length >= limiteVehiculosDe(s)) {
+            const plan = planDeLaDemo(s);
+            const n = limiteVehiculosDe(s);
+            return {
+              ok: false,
+              error: plan
+                ? `Tu plan ${plan.nombre} permite ${n} ${n === 1 ? 'vehículo' : 'vehículos'}. Elige un plan mayor para agregar más.`
+                : 'Sin plan puedes tener 1 vehículo. Elige un plan para agregar más.',
+            };
+          }
+          const previo = id ? flota.find((v) => v.id === id) : undefined;
+          if (id && !previo) return { ok: false, error: 'No encontramos el vehículo.' };
+          const completo = !!(d.padron && d.revisionTecnica && d.revisionTecnicaVence && d.soap && d.soapVence);
+          // Si cambian la patente o un documento, el equipo lo vuelve a revisar.
+          const cambioRevisable =
+            !previo ||
+            previo.patente !== patente ||
+            previo.padron.archivo !== d.padron ||
+            previo.revisionTecnica.archivo !== d.revisionTecnica ||
+            previo.revisionTecnica.venceEl !== d.revisionTecnicaVence ||
+            previo.soap.archivo !== d.soap ||
+            previo.soap.venceEl !== d.soapVence;
+          const revision = !completo ? 'falta_info' : cambioRevisable ? 'en_revision' : previo!.revision;
+          const vehiculo = {
+            id: previo?.id ?? nuevoId('v'),
+            titularId,
+            patente,
+            tamanoId: d.tamanoId,
+            marcaId: d.marcaId,
+            modelo: d.modelo,
+            color: d.color,
+            anio: d.anio,
+            kilometraje: Math.max(0, Math.round(d.kilometraje)),
+            padron: { archivo: d.padron, venceEl: null },
+            revisionTecnica: { archivo: d.revisionTecnica, venceEl: d.revisionTecnicaVence },
+            soap: { archivo: d.soap, venceEl: d.soapVence },
+            revision,
+            revisadoEl: revision === 'revisado' ? (previo?.revisadoEl ?? null) : null,
+            registroTransporte: revision === 'revisado' ? (previo?.registroTransporte ?? null) : null,
+            creadoEl: previo?.creadoEl ?? ahoraISO(),
+          } satisfies Vehiculo;
+          set({
+            vehiculos: previo ? (s.vehiculos ?? []).map((v) => (v.id === previo.id ? vehiculo : v)) : [...(s.vehiculos ?? []), vehiculo],
+            pendientes:
+              revision === 'en_revision' && (cambioRevisable || !previo)
+                ? [
+                    ...s.pendientes.filter((t) => !(t.tipo === 'revision_vehiculo' && t.vehiculoId === vehiculo.id)),
+                    { id: nuevoId('t'), tipo: 'revision_vehiculo', venceEn: Date.now() + SEGUNDOS_REVISION_VEHICULO * 1000, vehiculoId: vehiculo.id },
+                  ]
+                : s.pendientes,
+          });
+          return { ok: true, id: vehiculo.id };
+        },
+
+        quitarVehiculo: (id) => {
+          const s = get();
+          const v = (s.vehiculos ?? []).find((x) => x.id === id && x.titularId === s.titularDemo.titularId);
+          if (!v) return;
+          set({
+            vehiculos: (s.vehiculos ?? []).filter((x) => x.id !== id),
+            busquedas: s.busquedas.map((b) => {
+              if (!(b.vehiculoIds ?? []).includes(id)) return b;
+              const vehiculoIds = (b.vehiculoIds ?? []).filter((x) => x !== id);
+              return { ...b, vehiculoIds, estado: vehiculoIds.length === 0 && b.estado === 'activa' ? 'pausada' : b.estado };
+            }),
+            pendientes: s.pendientes.filter((t) => !(t.tipo === 'revision_vehiculo' && t.vehiculoId === id)),
+          });
         },
 
         reportarConductor: ({ conductorId, busquedaId, motivo, detalle }) => {
