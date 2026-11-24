@@ -51,3 +51,9 @@ Quiénes trabajan en el proyecto: **Daniela** y **Mario**, socios. Cada entrada 
 - Por qué: dar confianza al conductor de que detrás de cada búsqueda hay un vehículo real y al día, y vender planes por tamaño de flota. La clave anterior se perdió.
 - Impacto: demo del titular y del conductor, estado de la demo (versión 6), CLAUDE.md y documentos; más adelante, la Etapa 2 de la base (tabla de vehículos).
 - Pendiente: límites definitivos por plan, lista completa de marcas, servicio pagado por patente (costo y legalidad), canal de los avisos de vencimiento y si el sitio de prueba queda público.
+
+## 2026-11-24 — Daniela y Mario
+- Decisión: el prototipo del titular, la flota y la clave nueva se aprobaron, se mergearon a `main` y el mockup se publicó desde `main`. El sitio `dale-contacto-prueba` queda público con la clave de la demo, para revisar las próximas ramas.
+- Por qué: dejar lo aprobado publicado y tener dónde probar en el celular antes de aprobar.
+- Impacto: el mockup y /panel piden la clave nueva; la anterior ya no sirve. La app real del conductor no cambió.
+- Pendiente: probar y simplificar (siguiente paso, no empezado) y, después, la Etapa 2 de la base.
