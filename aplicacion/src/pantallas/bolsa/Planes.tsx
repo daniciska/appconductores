@@ -3,7 +3,8 @@
 // Maqueta: docs/maqueta/BolsaPlanes.dc.html
 // Los planes salen del catálogo (en la app real, editable desde el panel). Precios por definir. En la demo, "Elegir"
 // cambia el plan del titular al instante y no se cobra nada.
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/ui/escala';
 
 import { pesos } from '@/datos/formato';
 import { useCatalogos } from '@/datos/hooks';

@@ -3,7 +3,8 @@
 // los datos, de la base (src/datos/documentos.ts): estado de cada documento, avisos de vencimiento y la
 // autorización "Revisión de mis documentos".
 import { useMemo, useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/ui/escala';
 import type { Href } from 'expo-router';
 
 import { GUIAS, esTipoDocumento, type GuiaDocumento } from '@/pantallas/documentos/textos';

@@ -6,7 +6,8 @@
 // "Compartir mi dirección" con confirmación (queda en "Quién recibió mis datos") y menú para
 // reportar o bloquear (D5).
 import { useEffect, useRef, useState, type ComponentRef, type ReactNode } from 'react';
-import { Animated, ScrollView, Text, TextInput, View } from 'react-native';
+import { Animated, ScrollView, View } from 'react-native';
+import { Text, TextInput } from '@/ui/escala';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import EllipsisVertical from 'lucide-react-native/icons/ellipsis-vertical';

@@ -5,7 +5,8 @@
 // de la búsqueda, detalle del titular y aviso de contacto oculto. Sin modo de contrato ni garantía.
 // Abrir este detalle NO entrega datos del conductor (eso pasa del lado del titular).
 import type { ReactNode } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { useLocalSearchParams } from 'expo-router';
 
 import { iniciales, textoDias, textoTurnos } from '@/datos/formato';

@@ -3,7 +3,8 @@
 // Maqueta: docs/maqueta/InicioTitular.dc.html (referencia general: tarjeta de búsqueda y adelanto anónimo)
 // Las búsquedas de Transportes Los Aromos SpA (t01), cuáles están en la bolsa y quién las ve,
 // sus postulantes y un selector del plan de la demo para probar qué cambia con cada plan.
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { router } from 'expo-router';
 
 import { plural } from '@/datos/formato';

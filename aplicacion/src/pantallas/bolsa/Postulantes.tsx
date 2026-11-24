@@ -5,7 +5,8 @@
 // (con "Deshacer"). Si escribe al conductor de la demo, se crea el match con origen "Postulación" y la
 // conversación aparece en sus Mensajes. Sin plan (BT4): solo cuántos postularon y "Ver planes".
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { router, useLocalSearchParams } from 'expo-router';
 
 import { haceCuanto, iniciales, textoDias, textoTurnos } from '@/datos/formato';

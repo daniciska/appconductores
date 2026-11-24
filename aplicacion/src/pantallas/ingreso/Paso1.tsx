@@ -10,10 +10,11 @@
 // y errores con ejemplo; S02 abierto desde el Paso 4 (?editar=1&volver=4) vuelve al Paso 4 al guardar;
 // S11 avisa antes de quitar un negocio elegido al quitar una clase, y antes de salir sin guardar.
 import { useRef, useState, type ComponentRef } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
+import { Text, useGrande } from '@/ui/escala';
 import { router } from 'expo-router';
 
-import { celularCompleto, edad, mascaraFechaEscrita } from '@/datos/formato';
+import { celularEnUnaLinea, edad, mascaraFechaEscrita } from '@/datos/formato';
 import { habilitaNegocio } from '@/datos/match';
 import { useAcciones, useEntorno, useVista } from '@/datos/puerto/contexto';
 import { Boton, Campo, Chip, Dialogo, Encabezado, FilaInterruptor, Insignia, Pantalla, color, fuente, mostrarToast, radio, tipo } from '@/ui';
@@ -88,6 +89,7 @@ export default function Paso1() {
   const [nombres, setNombres] = useState(borrador.inicial.nombres);
   const [apellido1, setApellido1] = useState(borrador.inicial.apellido1);
   const [apellido2, setApellido2] = useState(borrador.inicial.apellido2);
+  const grande = useGrande();
   const [fecha, setFecha] = useState(borrador.inicial.fecha);
   const [correo, setCorreo] = useState(borrador.inicial.correo);
   const [clases, setClases] = useState<string[]>(borrador.inicial.clases);
@@ -203,9 +205,10 @@ export default function Paso1() {
           error={e('nombres')}
         />
 
-        <View style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start' }}>
+        {/* Con "Letra grande", los apellidos van uno bajo el otro (en una fila no caben). */}
+        <View style={grande ? { gap: 18 } : { flexDirection: 'row', gap: 12, alignItems: 'flex-start' }}>
           <Campo
-            style={{ flex: 1, minWidth: 0 }}
+            style={grande ? undefined : { flex: 1, minWidth: 0 }}
             etiqueta="Primer apellido"
             obligatorio
             valor={apellido1}
@@ -216,7 +219,7 @@ export default function Paso1() {
             error={e('apellido1')}
           />
           <Campo
-            style={{ flex: 1, minWidth: 0 }}
+            style={grande ? undefined : { flex: 1, minWidth: 0 }}
             etiqueta="Segundo apellido"
             notaEtiqueta="(si tienes)"
             valor={apellido2}
@@ -297,12 +300,14 @@ export default function Paso1() {
             flexDirection: 'row',
             alignItems: 'center',
             gap: 12,
+            // Con letra grande, si el número y la insignia no caben juntos (320 px), la insignia baja.
+            ...(grande ? { flexWrap: 'wrap' as const, rowGap: 6 } : null),
           }}>
-          <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
+          <View style={grande ? { flexGrow: 1, gap: 2 } : { flex: 1, minWidth: 0, gap: 2 }}>
             <Text style={[tipo.ayuda, { color: color.textoSecundario }]}>
               {cuenta.celularVerificado ? 'Celular verificado' : 'Celular'}
             </Text>
-            <Text style={[tipo.cuerpo, fuente(600), { color: color.texto }]}>{celularCompleto(cuenta.celular)}</Text>
+            <Text style={[tipo.cuerpo, fuente(600), { color: color.texto }]}>{celularEnUnaLinea(cuenta.celular)}</Text>
           </View>
           {cuenta.celularVerificado ? <Insignia texto="Verificado" /> : <Insignia texto="Sin verificar" tono="gris" />}
         </View>

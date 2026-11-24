@@ -8,7 +8,8 @@
 //   - El estado lo decide la base (método de validación): hoy queda aprobado al momento.
 // Formulario como los demás: campos con *, y si falta algo, alerta y el campo en rojo.
 import { useEffect, useRef, useState, type ComponentRef } from 'react';
-import { Image, Linking, ScrollView, Text, View } from 'react-native';
+import { Image, Linking, ScrollView, View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { useLocalSearchParams } from 'expo-router';
 
 import { mascaraFecha } from '@/datos/formato';

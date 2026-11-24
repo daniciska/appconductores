@@ -4,7 +4,8 @@
 // Se llena con las entregas de datos de la demo (state.entregasDatos): titulares que abrieron la ficha,
 // postulaciones vistas y direcciones compartidas. Se actualiza en vivo.
 import { useEffect, useRef, type ReactNode } from 'react';
-import { Animated, Text, View } from 'react-native';
+import { Animated, View } from 'react-native';
+import { Text } from '@/ui/escala';
 
 import { fechaLarga } from '@/datos/formato';
 import { useEntregasDelUsuario } from '@/datos/hooks';

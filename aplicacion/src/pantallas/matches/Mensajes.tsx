@@ -3,7 +3,8 @@
 // Maqueta: docs/maqueta/CondMensajes.dc.html
 // Conversaciones del conductor con titulares de sus matches (la más reciente primero), con no leídos,
 // "escribiendo…" en vivo y la insignia "Contacto compartido".
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { router } from 'expo-router';
 
 import { useBorradores } from '@/datos/borradores';

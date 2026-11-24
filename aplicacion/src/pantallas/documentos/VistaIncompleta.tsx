@@ -6,7 +6,8 @@
 // S09 (aprobada el 24-nov, ajustada): "Completa tu perfil para aparecer en los matches.", sin la nota de
 // la campana en la app real, y las filas "Listo" de los pasos 1 a 4 también se tocan: abren ese paso
 // para revisarlo o cambiarlo (modo edición).
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text, useMedidas } from '@/ui/escala';
 import type { Href } from 'expo-router';
 
 import { avancePerfil } from '@/datos/puerto/derivados';
@@ -33,6 +34,7 @@ export type DocumentosInicio =
   | { modo: 'activo'; subidos: number; ruta: Href; textoEstado?: string; textoListo?: string };
 
 export function VistaIncompleta({ documentos, nota }: { documentos: DocumentosInicio; nota?: string }) {
+  const m = useMedidas();
   const avance = useVistaDerivada(avancePerfil);
   const registrado = useVista((v) => v.conductor.registrado);
   const pasos = useVista((v) => v.conductor.pasosListos);
@@ -108,7 +110,7 @@ export function VistaIncompleta({ documentos, nota }: { documentos: DocumentosIn
                     {f.estado}
                   </Text>
                 </View>
-                {enlace === null ? null : <ChevronRight size={18} color={color.texto} strokeWidth={2} />}
+                {enlace === null ? null : <ChevronRight size={m.icono(18)} color={color.texto} strokeWidth={2} />}
               </>
             );
             const estilo = { minHeight: 56, flexDirection: 'row' as const, alignItems: 'center' as const, gap: 12, paddingVertical: 6 };

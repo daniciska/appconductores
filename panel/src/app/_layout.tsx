@@ -13,10 +13,14 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useDemoHidratada } from '@/datos/hooks';
 import { iniciarSimulacion } from '@/datos/simulacion';
 import { Cargando, HostAvisos, color } from '@/ui';
+import { fijarLetraNormal } from '@/ui/escala';
 import { FUENTES } from '@/ui/fuentes';
 import { PuertaClave } from '@/pantallas/ingreso/PuertaClave';
 
 import { iniciarSesionPanel } from '@panel/sesion';
+
+// "Letra grande" es para la app del conductor: el panel (en el mismo navegador que la demo) no la sigue.
+fijarLetraNormal();
 
 export default function LayoutRaizPanel() {
   const [fuentesListas, errorFuentes] = useFonts(FUENTES);

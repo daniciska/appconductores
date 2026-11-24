@@ -4,7 +4,8 @@
 //     (método de validación). Cada tarjeta muestra el estado real: Falta, Aprobada, En revisión,
 //     No aprobada, Vence pronto o Vencida.
 //   - Con los 4 aprobados, "Ir al inicio". Si no, "Terminar después".
-import { Linking, Text, View } from 'react-native';
+import { Linking, View } from 'react-native';
+import { Text, useMedidas } from '@/ui/escala';
 
 import { CabeceraFormulario, equilibrado } from '@/pantallas/ingreso/comunes';
 import { irAInicioConductor } from '@/pantallas/ingreso/acciones';
@@ -19,6 +20,7 @@ import { AvisosVencimiento, insigniaDocumento, rutaSubir, useDocumentos } from '
 const REGISTRO_CIVIL = 'https://www.registrocivil.cl';
 
 function TarjetaDocumento({ v }: { v: VistaTipo }) {
+  const m = useMedidas();
   const Icono = v.tipo.formato === 'pdf' ? Hoja : Camera;
   const linea = v.estado === 'falta' ? v.tipo.ayuda : lineaFecha(v);
   return (
@@ -39,7 +41,7 @@ function TarjetaDocumento({ v }: { v: VistaTipo }) {
         gap: 12,
       }}>
       <View style={{ width: 40, height: 40, borderRadius: radio.boton44, backgroundColor: color.fondo, alignItems: 'center', justifyContent: 'center' }}>
-        <Icono size={20} color={color.texto} strokeWidth={2} />
+        <Icono size={m.icono(20)} color={color.texto} strokeWidth={2} />
       </View>
       <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
         <Text style={[tipo.cuerpo, fuente(600), { color: color.texto }]}>{v.tipo.nombre}</Text>
@@ -48,12 +50,13 @@ function TarjetaDocumento({ v }: { v: VistaTipo }) {
           <Insignia {...insigniaDocumento(v)} />
         </View>
       </View>
-      <ChevronRight size={18} color={color.textoSecundario} strokeWidth={2} />
+      <ChevronRight size={m.icono(18)} color={color.textoSecundario} strokeWidth={2} />
     </Presionable>
   );
 }
 
 export default function Paso5() {
+  const m = useMedidas();
   const r = useDocumentos();
   const pdf = r.tipos.some((v) => v.tipo.formato === 'pdf');
   const enRevision = r.tipos.some((v) => v.estado === 'en_revision');
@@ -108,7 +111,7 @@ export default function Paso5() {
               gap: 6,
             }}>
             <Text style={[tipo.botonChico, { color: color.texto }]}>Registro Civil</Text>
-            <ArrowUpRight size={16} color={color.texto} strokeWidth={2} />
+            <ArrowUpRight size={m.icono(16)} color={color.texto} strokeWidth={2} />
           </Presionable>
         </View>
       ) : null}

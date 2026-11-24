@@ -3,7 +3,8 @@
 // Maqueta: docs/maqueta/CondPaso5.dc.html
 // Cada documento abre /conductor/documentos/subir/[tipo] (grupo documentos). "Enviar a revisión" se
 // activa con los 4 documentos con archivo; empieza la pre-revisión simulada y abre C2.
-import { Linking, Text, View } from 'react-native';
+import { Linking, View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { router } from 'expo-router';
 
 import { useResumenDocumentos } from '@/datos/hooks';

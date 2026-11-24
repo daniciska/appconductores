@@ -10,7 +10,8 @@
 //   - Pasos listos y los 4 documentos subidos, alguno esperando revisión (si el método de validación no
 //     los aprueba al tiro): "Tus documentos están en revisión"; no le falta nada, solo esperar.
 //   - Arriba, el aviso de un documento que vence pronto o venció (desde 3 meses antes).
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text, useMedidas } from '@/ui/escala';
 import { useNavigation } from 'expo-router';
 
 import { iniciales } from '@/datos/formato';
@@ -49,6 +50,7 @@ function useCambiarDisponible() {
 }
 
 function AvisoReconfirmar() {
+  const m = useMedidas();
   return (
     <Presionable
       role="button"
@@ -72,12 +74,13 @@ function AvisoReconfirmar() {
           Confírmalo para seguir en los matches.
         </Texto>
       </View>
-      <ChevronRight size={18} color={color.texto} strokeWidth={2} />
+      <ChevronRight size={m.icono(18)} color={color.texto} strokeWidth={2} />
     </Presionable>
   );
 }
 
 function VistaCompleta() {
+  const m = useMedidas();
   const disponible = useVista((v) => v.conductor.disponible);
   const confirmadaEn = useVista((v) => v.conductor.disponibilidadConfirmadaEn);
   const { diasReconfirmar } = useEntorno();
@@ -103,7 +106,7 @@ function VistaCompleta() {
 
       <View style={{ alignItems: 'center', gap: 16, paddingVertical: 20, paddingHorizontal: 20 }}>
         <View aria-hidden style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: color.superficieHundida, alignItems: 'center', justifyContent: 'center' }}>
-          <Bell size={28} color={color.texto} strokeWidth={2} />
+          <Bell size={m.icono(28)} color={color.texto} strokeWidth={2} />
         </View>
         <View style={{ gap: 8 }}>
           <Text role="heading" aria-level={2} style={{ fontFamily: 'Sora_700Bold', fontSize: 26, lineHeight: 31, letterSpacing: -0.4, color: color.texto, textAlign: 'center' }}>
@@ -122,6 +125,7 @@ function VistaCompleta() {
 
 /** Fila "Mis documentos" (con la insignia del aviso más próximo, salvo que la tarjeta de arriba ya lo diga). */
 function FilaMisDocumentos({ conAviso = true }: { conAviso?: boolean }) {
+  const m = useMedidas();
   const docs = useDocumentos();
   const aviso = conAviso ? insigniaAviso(docs) : null;
   return (
@@ -149,7 +153,7 @@ function FilaMisDocumentos({ conAviso = true }: { conAviso?: boolean }) {
         </Text>
         {aviso ? <Insignia {...aviso} style={{ marginTop: 4 }} /> : null}
       </View>
-      <ChevronRight size={18} color={color.texto} strokeWidth={2} />
+      <ChevronRight size={m.icono(18)} color={color.texto} strokeWidth={2} />
     </Presionable>
   );
 }

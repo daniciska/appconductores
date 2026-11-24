@@ -1,6 +1,7 @@
 // Información: Insignia, Aviso, EstadoVacio, Cargando y Avatar. (El marcador EnConstruccion de la demo está en ./demo.tsx.)
 import type { ReactNode } from 'react';
-import { ActivityIndicator, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { ActivityIndicator, Text as TextoFijo, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Text, useMedidas } from './escala';
 import type { Href } from 'expo-router';
 
 import { Boton } from './controles';
@@ -39,6 +40,7 @@ export function Insignia({ texto, tono = 'verde', icono, tamano = 'normal', styl
   const grande = tamano === 'grande';
   const elegido = icono === undefined ? (tono === 'verde' ? 'check' : null) : icono;
   const Icono = elegido === 'check' ? Check : elegido;
+  const m = useMedidas();
   return (
     <View
       style={[
@@ -54,7 +56,7 @@ export function Insignia({ texto, tono = 'verde', icono, tamano = 'normal', styl
         },
         style,
       ]}>
-      {Icono ? <Icono size={grande ? 14 : 12} color={t.icono} strokeWidth={elegido === 'check' ? 2.8 : 2.2} /> : null}
+      {Icono ? <Icono size={m.icono(grande ? 14 : 12)} color={t.icono} strokeWidth={elegido === 'check' ? 2.8 : 2.2} /> : null}
       <Text style={[{ ...fuente(700), fontSize: grande ? 13 : 12, lineHeight: grande ? 17 : 16 }, { color: t.texto }]}>{texto}</Text>
     </View>
   );
@@ -92,12 +94,14 @@ export function Aviso({ children, texto, titulo, icono = 'info', tono = 'neutro'
     icono === 'info' ? Info : icono === 'candado' ? Lock : icono === 'alerta' ? CircleAlert : icono === 'chispa' ? Sparkles : icono;
   const fondo = tono === 'exito' ? color.exitoFondo : tono === 'error' ? color.errorFondo : tono === 'acento' ? color.acentoSuave : color.superficieHundida;
   const colorTexto = tono === 'exito' ? color.exitoTexto : tono === 'error' ? color.error : color.textoSuave;
+  const m = useMedidas();
+  const cuadro = m.grande ? 44 : 36;
   return (
     <View
       role={tono === 'error' ? 'alert' : undefined}
       style={[{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: fondo, borderRadius: radio.campo, paddingHorizontal: 16, paddingVertical: 14 }, style]}>
-      <View style={{ width: 36, height: 36, borderRadius: radio.icono, backgroundColor: color.superficie, alignItems: 'center', justifyContent: 'center' }}>
-        <Icono size={18} color={tono === 'error' ? color.error : tono === 'exito' ? color.exito : color.texto} strokeWidth={2} />
+      <View style={{ width: cuadro, height: cuadro, borderRadius: radio.icono, backgroundColor: color.superficie, alignItems: 'center', justifyContent: 'center' }}>
+        <Icono size={m.icono(18)} color={tono === 'error' ? color.error : tono === 'exito' ? color.exito : color.texto} strokeWidth={2} />
       </View>
       <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
         {titulo ? <Text style={[tipo.etiqueta, { color: tono === 'neutro' ? color.texto : colorTexto }]}>{titulo}</Text> : null}
@@ -186,7 +190,8 @@ export function Avatar({ texto, tamano = 48, forma = 'cuadrado', tono = 'oscuro'
         },
         style,
       ]}>
-      <Text style={{ ...fuente(700), fontSize: Math.round(tamano * 0.31), color: letra }}>{texto}</Text>
+      {/* Las iniciales van en proporción al círculo: no siguen la letra grande. */}
+      <TextoFijo style={{ ...fuente(700), fontSize: Math.round(tamano * 0.31), color: letra }}>{texto}</TextoFijo>
     </View>
   );
 }

@@ -8,10 +8,11 @@
 // sirve, se borran las casillas y el cursor vuelve a la primera. Mientras corre la espera solo se ve
 // "¿No te llegó? Pide otro en 0:57"; al llegar a 0:00 aparecen "Reenviar por WhatsApp" y el SMS.
 import { useEffect, useRef, useState, type ComponentRef } from 'react';
-import { Platform, Text, TextInput, View } from 'react-native';
+import { Platform, View } from 'react-native';
+import { Text, TextInput, useGrande, useMedidas } from '@/ui/escala';
 import { router } from 'expo-router';
 
-import { celularCompleto } from '@/datos/formato';
+import { celularEnUnaLinea } from '@/datos/formato';
 import { useAcciones, useEntorno, useVista } from '@/datos/puerto/contexto';
 import type { CanalCodigo } from '@/datos/puerto/tipos';
 import { Boton, Encabezado, Pantalla, color, fuente, mostrarToast, radio, tipo } from '@/ui';
@@ -49,7 +50,9 @@ export default function Codigo() {
     const id = setTimeout(() => setSegundos((n) => n - 1), 1000);
     return () => clearTimeout(id);
   }, [segundos]);
-  const numero = celular.replace(/\D/g, '') ? celularCompleto(celular) : null;
+  const numero = celular.replace(/\D/g, '') ? celularEnUnaLinea(celular) : null;
+  const grande = useGrande();
+  const m = useMedidas();
 
   const verificar = async (escrito: string = codigo) => {
     if (enCurso.current) return;
@@ -107,6 +110,12 @@ export default function Codigo() {
   const activa = Math.min(codigo.length, LARGO - 1);
   const mm = Math.floor(segundos / 60);
   const ss = String(segundos % 60).padStart(2, '0');
+
+  // Con letra grande van uno debajo del otro: sin margen a los lados, para que el borde izquierdo de la
+  // pregunta y de los íconos quede parejo.
+  const alBorde = grande ? { paddingHorizontal: 0 } : undefined;
+  const reenviarWhatsApp = <BotonTexto titulo="Reenviar por WhatsApp" onPress={() => reenviar('whatsapp')} style={alBorde} />;
+  const recibirSms = <BotonTexto titulo="Recibir el código por SMS" icono={MessageSquare} onPress={() => reenviar('sms')} style={alBorde} />;
 
   return (
     <Pantalla>
@@ -176,22 +185,32 @@ export default function Codigo() {
       </View>
 
       {segundos > 0 ? (
-        <View style={{ minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          <Clock size={16} color={color.textoSecundario} strokeWidth={2} />
-          <Text style={[tipo.secundario, { color: color.textoSecundario }]}>
+        <View style={{ minHeight: m.tactil, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <Clock size={m.icono(16)} color={color.textoSecundario} strokeWidth={2} />
+          <Text style={[tipo.secundario, { flex: 1, color: color.textoSecundario }]}>
             ¿No te llegó? Pide otro en{' '}
             <Text style={[fuente(700), { color: color.texto, fontVariant: ['tabular-nums'] }]}>
               {mm}:{ss}
             </Text>
           </Text>
         </View>
+      ) : grande ? (
+        // Con letra grande no caben en una fila: la pregunta y sus dos respuestas, juntas en un bloque y
+        // con el mismo paso entre las tres líneas (cada una en una fila del alto de un toque).
+        <View role="group" aria-label="¿No te llegó?">
+          <View style={{ minHeight: m.tactil, justifyContent: 'center' }}>
+            <Text style={[tipo.secundario, { color: color.textoSecundario }]}>¿No te llegó?</Text>
+          </View>
+          {reenviarWhatsApp}
+          {recibirSms}
+        </View>
       ) : (
         <View style={{ gap: 0 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
             <Text style={[tipo.secundario, { color: color.textoSecundario }]}>¿No te llegó?</Text>
-            <BotonTexto titulo="Reenviar por WhatsApp" onPress={() => reenviar('whatsapp')} />
+            {reenviarWhatsApp}
           </View>
-          <BotonTexto titulo="Recibir el código por SMS" icono={MessageSquare} onPress={() => reenviar('sms')} />
+          {recibirSms}
         </View>
       )}
 

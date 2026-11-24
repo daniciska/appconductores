@@ -1,7 +1,8 @@
 // E2 · Mis documentos (app real). Ruta: /conductor/perfil/documentos. Maqueta: docs/maqueta/CondMisDocumentos.dc.html
 // (pantalla aprobada del mockup, aplicacion/src/pantallas/documentos/MisDocumentos.tsx), con los datos de la
 // base: estado de cada documento, su fecha y, desde N meses antes de que venza (ajuste), el aviso.
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/ui/escala';
 
 import { CuadroIcono, Nota, TituloPantalla } from '@/pantallas/documentos/piezas';
 import { Boton, Encabezado, Insignia, Pantalla, color, fuente } from '@/ui';

@@ -3,7 +3,8 @@
 // Maqueta: docs/maqueta/CondEliminarCuenta.dc.html
 // Borra los datos del usuario de la demo (perfil, documentos, matches, mensajes) y vuelve al selector.
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { useNavigation } from 'expo-router';
 
 import { useDemo } from '@/datos/tienda';

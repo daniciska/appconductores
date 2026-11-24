@@ -144,6 +144,17 @@ Muestrario en vivo: ruta `/componentes`.
 | `BarraInferior`, `MarcoCelular` | — | Ya los usan los layouts. |
 | `BotonDemo`, `EnConstruccion` (`@/ui/demo`) | — · `codigo`, `titulo?` | Solo de la demo: no se exportan desde `@/ui` (la app real no los lleva). |
 
+### "Letra grande" (modo para personas mayores, 24-nov)
+
+Un interruptor "Letra grande" (`InterruptorLetraGrande`, en la Bienvenida con `tono="oscuro"` y en Perfil) agranda **toda** la app del conductor. Se recuerda en el equipo (`localStorage` en la web, clave `dale-letra-grande`; AsyncStorage en el celular). No es un zoom:
+
+- **Textos:** escala propia (`src/ui/escalaTipos.ts`): lo chico crece 3 px y los títulos 2 px (12→15, 13→16, 14→17, 15→18, 16→19, 17→20, 20→23, 26→28, 34→36); el alto de línea mantiene la proporción. Los grises claros (`#9A9A9A`, `#ABABAB`) pasan a `#6B6B6B` (contraste AA).
+- **Controles:** botones, campos, chips, casillas, interruptor, stepper y filas miden 56 px o más (`useMedidas()`); `Presionable` asegura 56 px de alto para tocar.
+- **Regla para pantallas nuevas:** usa `Text` y `TextInput` de `@/ui/escala` (nunca los de `react-native`), o `Texto`/`Titulo`. Si una fila no cabe con letra grande, cambia su disposición con `useGrande()` (ej. los apellidos uno bajo el otro, Día y Noche en columna, el contador de años bajo el chip). Revisa a 360 px de ancho con la letra grande.
+- **Revisa también:** que lo principal se vea sin bajar en un celular común con la barra del navegador (360x640, 390x664; por eso en la Bienvenida con letra grande "Ingresar" sube a la fila del logo, solo en pantallas de menos de 740 px de alto; en las altas queda abajo, como con letra normal); que los enlaces no queden dentro de una frase que se toca para marcar (en "Antes de empezar" con letra grande van como botones aparte); que un dato que se lee entero (un número de celular) no se parta (usa `celularEnUnaLinea` de `formato.ts`); que los íconos junto a un texto crezcan con `useMedidas().icono(n)`; que una caja al lado de un campo (como "+56") use `useMedidas().campo` para medir lo mismo; que el texto de ejemplo de los campos use `color.textoDeshabilitado` (con letra grande pasa solo a `MARCADOR_GRANDE`, #767676, AA y más claro que las ayudas); y sin `text-wrap: balance` con letra grande.
+- **Colores:** solo tokens de `color` (sobre fondo oscuro: `oscuroElevado`, `bordeSobreOscuro`, `iconoSobreOscuro`, `textoSobreOscuro`).
+- Con letra normal todo se ve exactamente igual que antes. El panel no la sigue (`fijarLetraNormal()` en su layout).
+
 `MarcoPanel`, `PaginaPanel` y `Metrica` no están en `@/ui`: son del panel (`panel/src/marco.tsx`). Las fuentes (`FUENTES`) están en `src/ui/fuentes.ts`, que usan los layouts raíz de las dos apps.
 
 **Íconos:** `import { Star, MessageSquare } from '@/ui/iconos'` (lucide, trazo 2). Propios con el dibujo de las maquetas: `Volante`, `Llave` (logo), `AutoFrente` desde `@/ui`. Si falta un ícono, impórtalo en tu carpeta con `import Nombre from 'lucide-react-native/icons/nombre-en-kebab'`. **Nunca** `from 'lucide-react-native'` a secas (carga 2.000 íconos). Tamaños de las maquetas: 22 en la barra, 20 en botones de 44, 18 en filas, 14 en checks.
@@ -246,7 +257,7 @@ Si cambias documentos del usuario a mano, recuerda que `estadoVerificacion` se c
 
 Funciones útiles de `selectores.ts`: `nombreTitular(t)` (razón social o nombre), `insigniaTitular(t)` ("Empresa revisada en SII" / "Cédula revisada"), `nombreCompleto(p)`, `primerNombre(s)`, `textoCondiciones(s, b)`, `lugar(s, comunaId)` → `{ comuna, zona, region }`, `negocioPorId`, `titularPorId`, `busquedaPorId`, `comunaPorId`, `zonasDeRegion`, `comunasDeRegion`, `negocioPermitidoPorDeclaradas(s, negocioId)`, `debeReconfirmarDisponibilidad(s)`, `proximaReconfirmacion(s)`, `documentoVencePronto(doc)`, `simularMatch(s, conductorId, busquedaId)`, `cumplePerfiles(s, conductorId, negocioId, perfiles)`, `puedeElegirVisibilidad(s, v)`, `todosLosConductores(s)`, `SECCIONES`, `TIPOS_DOC_ORDEN`, `ID_USUARIO` (`'yo'`).
 
-`formato.ts`: `textoDias(dias)` ("Lu a Sá", "Todos los días"), `textoTurnos(turnos)` ("Día y noche"), `fechaLarga` (dd/mm/aaaa), `fechaCorta` (dd/mm), `fechaConMes` ("4 nov"), `hora`, `cuandoCorto` (hora, "Ayer" o dd/mm), `haceCuanto`, `diasHasta`, `edad('dd/mm/aaaa')`, `mascaraFecha`, `mascaraCelular`, `celularCompleto`, `iniciales`, `plural`.
+`formato.ts`: `textoDias(dias)` ("Lu a Sá", "Todos los días"), `textoTurnos(turnos)` ("Día y noche"), `fechaLarga` (dd/mm/aaaa), `fechaCorta` (dd/mm), `fechaConMes` ("4 nov"), `hora`, `cuandoCorto` (hora, "Ayer" o dd/mm), `haceCuanto`, `diasHasta`, `edad('dd/mm/aaaa')`, `mascaraFecha`, `mascaraCelular`, `celularCompleto`, `celularEnUnaLinea` (con espacios que no se cortan), `iniciales`, `plural`.
 
 `direcciones.ts`: `sugerirDirecciones(texto, comunas, nombreRegion)` → 3 sugerencias `{ direccion, comunaId, detalle }` (las comunas nombradas en el texto o, si no, comunas de Santiago). Muestra "Sugerencias de Google Maps" como en la maqueta, pero es simulado.
 
@@ -312,12 +323,12 @@ Compara cada captura con la de la maqueta (`render.js`) y ajusta espaciados, tam
 
 ## 6. Detalles que ahorran tiempo
 
-- **Fuentes:** solo funcionan vía `Texto`, `Titulo`, `tipo.*` o `fuente(peso)`. Un `<Text>` suelto sale con la fuente del sistema.
+- **Fuentes:** solo funcionan vía `Texto`, `Titulo`, `tipo.*` o `fuente(peso)`. Un `<Text>` suelto sale con la fuente del sistema. Ese `Text` se importa de `@/ui/escala` (respeta "Letra grande").
 - **Pantallas de pestaña:** `<Pantalla inferior={24}>` y sin `Encabezado` con volver (como las maquetas D1, D3, E1).
 - **Pantallas encima de las pestañas** (detalle, conversación, subir documento…): `<Encabezado volverA="/conductor/…" />` para que el botón volver funcione también si se abrió el enlace directo.
 - **Chat (D4):** usa `cabecera` para el encabezado fijo y `pie` para la barra de escribir; desplaza al final con `scrollRef` (`scrollToEnd`) cuando lleguen mensajes.
 - **Botón final abajo:** `style={{ marginTop: 'auto' }}` en el contenedor de botones (la `Pantalla` estira el contenido al alto de la pantalla).
-- **Accesibilidad:** zonas táctiles de 44 px como mínimo; usa `role`/`aria-*` (ya lo hacen los componentes); `etiquetaAccesible` en botones de solo ícono.
+- **Accesibilidad:** zonas táctiles de 44 px como mínimo (56 con letra grande: ver "Letra grande"); usa `role`/`aria-*` (ya lo hacen los componentes); `etiquetaAccesible` en botones de solo ícono.
 - **Estados:** cada lista con `EstadoVacio`; acciones lentas con `Boton cargando`; errores con `Aviso tono="error"` o `mostrarToast(..., 'error')`.
 - **Animaciones:** sutiles. `Pantalla` ya anima la entrada; para más, `Animated` de React Native con `useNativeDriver: false` (web).
 - **useEffect:** escribe el cuerpo entre llaves (`useEffect(() => { accion(); }, [...])`). Un efecto que devuelve algo que no es una función rompe la pantalla al salir.

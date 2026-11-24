@@ -5,7 +5,8 @@
 // conversación, para que lo revise el equipo (queda abierto hasta que lo resuelvan); bloquear
 // saca ese match y cierra el chat.
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Pressable, ScrollView, Text, View, useWindowDimensions } from 'react-native';
+import { Animated, Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
+import { Text } from '@/ui/escala';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 

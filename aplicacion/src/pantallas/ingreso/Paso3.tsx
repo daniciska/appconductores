@@ -6,8 +6,11 @@
 // Mejoras aprobadas (24-nov): S06 los años se escriben con el teclado (de 1 a 50) y se mantienen los
 // botones − y + para ajustar; aparecen solo al marcar el vehículo. S07 "¿Qué vehículos has manejado?"
 // es obligatorio; S04 "Guardar y terminar después"; S11 avisa antes de salir sin guardar (modo edición).
+// Con "Letra grande" los botones − y + y la cajita miden 56 px y los años van siempre bajo el vehículo,
+// con "Años manejando" encima, alineados a la izquierda (en una fila no caben).
 import { useRef, useState, type ComponentRef } from 'react';
-import { ScrollView, Text, TextInput, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
+import { Text, TextInput, useGrande, useMedidas } from '@/ui/escala';
 import { router } from 'expo-router';
 
 import { useAcciones, useVista } from '@/datos/puerto/contexto';
@@ -41,6 +44,8 @@ const VISIBLES = 7;
 const MAX_ANOS = 50;
 /** Ancho de la columna de años: − (44) + cajita (56) + + (44) y los espacios. */
 const ANCHO_ANOS = 152;
+/** Lo mismo con "Letra grande": − (56) + cajita (64) + + (56) y los espacios. */
+const ANCHO_ANOS_GRANDE = 192;
 /**
  * Ancho mínimo del botón del vehículo junto a los años. Más angosto, palabras como "retroexcavadora"
  * se cortan (pantallas de 375 px o menos): ahí los años pasan a la línea de abajo.
@@ -76,6 +81,8 @@ function AniosVehiculo({
   error: boolean;
 }) {
   const [foco, setFoco] = useState(false);
+  const m = useMedidas();
+  const lado = m.tactil;
   const n = Number(valor);
   const hayNumero = valor.trim() !== '' && Number.isInteger(n);
   const boton = (signo: 'menos' | 'mas') => {
@@ -91,21 +98,21 @@ function AniosVehiculo({
         disabled={bloqueado}
         onPress={() => onCambiar(String(signo === 'menos' ? menos : hayNumero ? Math.min(MAX_ANOS, n + 1) : 1))}
         style={{
-          width: 44,
-          height: 44,
-          borderRadius: radio.boton44,
+          width: lado,
+          height: lado,
+          borderRadius: lado / 2,
           borderWidth: 1,
           borderColor: bloqueado ? color.separador : color.bordeCampo,
           backgroundColor: bloqueado ? '#FAFAFA' : color.fondo,
           alignItems: 'center',
           justifyContent: 'center',
         }}>
-        <Icono size={18} color={bloqueado ? color.iconoDeshabilitado : color.texto} strokeWidth={2} />
+        <Icono size={m.icono(18)} color={bloqueado ? color.iconoDeshabilitado : color.texto} strokeWidth={2} />
       </Presionable>
     );
   };
   return (
-    <View style={{ width: ANCHO_ANOS, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+    <View style={{ width: m.grande ? ANCHO_ANOS_GRANDE : ANCHO_ANOS, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
       {boton('menos')}
       <TextInput
         value={valor}
@@ -124,8 +131,8 @@ function AniosVehiculo({
           // 17 px (más de 16): Safari en iPhone no hace zoom al enfocar.
           { ...fuente(700), fontSize: 17, lineHeight: 22, textAlign: 'center', color: color.texto },
           {
-            width: 56,
-            height: 44,
+            width: m.grande ? 64 : 56,
+            height: lado,
             padding: 0,
             borderRadius: radio.campo,
             backgroundColor: color.superficie,
@@ -172,7 +179,9 @@ export default function Paso3() {
   const [intento, setIntento] = useState(false);
   // Ancho del recuadro de vehículos: en pantallas angostas los años van bajo el vehículo.
   const [anchoGrupo, setAnchoGrupo] = useState(0);
-  const apilar = anchoGrupo > 0 && anchoGrupo - 30 - ANCHO_ANOS - 10 < ANCHO_MIN_VEHICULO;
+  const grande = useGrande();
+  const m = useMedidas();
+  const apilar = grande || (anchoGrupo > 0 && anchoGrupo - 30 - ANCHO_ANOS - 10 < ANCHO_MIN_VEHICULO);
 
   const tamanos = [...tamanosCatalogo].sort((a, b) => a.orden - b.orden);
   const lista = todos ? tamanos : tamanos.slice(0, VISIBLES);
@@ -277,13 +286,18 @@ export default function Paso3() {
                   {apilar ? null : control}
                 </View>
                 {apilar && control ? (
-                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+                  <View
+                    style={
+                      grande
+                        ? { alignItems: 'flex-start', gap: 6, paddingLeft: 4 }
+                        : { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }
+                    }>
                     <Text style={[tipo.mensajeCampo, fuente(600), { color: color.textoSecundario, flexShrink: 1 }]}>Años manejando</Text>
                     {control}
                   </View>
                 ) : null}
                 {errorFila ? (
-                  <Text role="alert" style={[tipo.mensajeCampo, fuente(600), { color: color.error, textAlign: 'right' }]}>
+                  <Text role="alert" style={[tipo.mensajeCampo, fuente(600), { color: color.error, textAlign: grande ? 'left' : 'right' }]}>
                     {errorFila}
                   </Text>
                 ) : null}
@@ -295,9 +309,9 @@ export default function Paso3() {
           <Presionable
             role="button"
             onPress={() => setTodos(true)}
-            style={{ minHeight: 44, alignSelf: 'flex-start', paddingHorizontal: 4, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            style={{ minHeight: m.tactil, alignSelf: 'flex-start', paddingHorizontal: 4, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <Text style={[tipo.fuerte, { color: color.texto }]}>Ver los {tamanos.length} tipos de vehículo</Text>
-            <ChevronDown size={18} color={color.texto} strokeWidth={2} />
+            <ChevronDown size={m.icono(18)} color={color.texto} strokeWidth={2} />
           </Presionable>
         ) : null}
       </View>

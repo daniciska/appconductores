@@ -99,3 +99,4 @@ export { default as CircleDot } from 'lucide-react-native/icons/circle-dot';
 export { default as CirclePlus } from 'lucide-react-native/icons/circle-plus';
 export { default as Heart } from 'lucide-react-native/icons/heart';
 export { default as LoaderCircle } from 'lucide-react-native/icons/loader-circle';
+export { default as ALargeSmall } from 'lucide-react-native/icons/a-large-small';

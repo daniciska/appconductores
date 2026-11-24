@@ -4,7 +4,8 @@
 // El titular decide si su búsqueda va a la bolsa y quién la ve, según su plan (Básico: solo match;
 // Flota chica: + conductores que elija; Flota: + todos y destacar). Respeta el cupo de ofertas del plan.
 import { useMemo, useState, type ReactNode } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { router, useLocalSearchParams } from 'expo-router';
 
 import { useDerivado, useEstado } from '@/datos/hooks';

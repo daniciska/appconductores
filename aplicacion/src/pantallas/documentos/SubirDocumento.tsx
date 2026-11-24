@@ -5,7 +5,8 @@
 // - Durante el registro (Paso 5): queda "Subido" y vuelve al Paso 5.
 // - Si ya había enviado sus documentos (subir de nuevo o renovar): se envía a revisión y abre C2.
 import { useState } from 'react';
-import { Linking, Text, View } from 'react-native';
+import { Linking, View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { router, useLocalSearchParams } from 'expo-router';
 
 import { fechaLarga } from '@/datos/formato';
