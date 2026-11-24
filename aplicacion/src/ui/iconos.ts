@@ -15,6 +15,7 @@ export { default as X } from 'lucide-react-native/icons/x';
 export { default as Plus } from 'lucide-react-native/icons/plus';
 export { default as Minus } from 'lucide-react-native/icons/minus';
 export { default as Star } from 'lucide-react-native/icons/star';
+export { default as CreditCard } from 'lucide-react-native/icons/credit-card';
 export { default as House } from 'lucide-react-native/icons/house';
 export { default as CircleCheck } from 'lucide-react-native/icons/circle-check';
 export { default as CircleCheckBig } from 'lucide-react-native/icons/circle-check-big';

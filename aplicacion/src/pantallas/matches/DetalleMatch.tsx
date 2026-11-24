@@ -2,27 +2,31 @@
 // Ruta: /conductor/matches/[id]
 // Maqueta: docs/maqueta/CondDetalleMatch.dc.html
 // % de coincidencia real (motor de match.ts con las reglas del estado) y qué no coincide, condiciones
-// de la búsqueda, detalle del titular y aviso de contacto oculto. Sin modo de contrato ni garantía.
-// Abrir este detalle NO entrega datos del conductor (eso pasa del lado del titular).
+// de la búsqueda, detalle del titular y su contacto si el titular se lo mostró (24-nov: sin mensajes).
+// Sin modo de contrato ni garantía. Abrir este detalle NO entrega datos del conductor (eso pasa del
+// lado del titular). "Compartir mi dirección" y "Reportar" viven aquí.
+import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
 import { Text } from '@/ui/escala';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 
 import { iniciales, textoDias, textoTurnos } from '@/datos/formato';
-import { useMatchDelUsuario } from '@/datos/hooks';
+import { useDerivado, useMatchDelUsuario } from '@/datos/hooks';
 import { TEXTO_PRECONDICION, aniosEnNegocio } from '@/datos/match';
-import { insigniaTitular, nombreTitular } from '@/datos/selectores';
+import { insigniaTitular, nombreColor, nombreTitular, vehiculosDeBusqueda } from '@/datos/selectores';
 import { useDemo } from '@/datos/tienda';
 import type { CodigoRegla } from '@/datos/tipos';
 import {
   Avatar,
   Aviso,
   Boton,
+  Dialogo,
   Encabezado,
   EstadoVacio,
   Insignia,
   Pantalla,
+  Presionable,
   Separador,
   Texto,
   Titulo,
@@ -33,10 +37,9 @@ import {
   tipo,
   volver,
 } from '@/ui';
-import { CircleHelp, Info, LockOpen, MessageSquare } from '@/ui/iconos';
+import { CircleHelp, Flag, Info, MapPin } from '@/ui/iconos';
 
-import { useIrA, useRegistroFichaVista } from './acciones';
-import { AvisoBloqueado, BotonFavorito, NotaNoCoincide } from './piezas';
+import { BotonFavorito, NotaNoCoincide, TarjetaContacto } from './piezas';
 
 /** "otra zona y no todos los días" */
 function enumerar(lista: string[]): string {
@@ -76,14 +79,21 @@ function TarjetaBlanca({ children, padding }: { children: ReactNode; padding?: {
 }
 
 export default function DetalleMatch() {
-  useRegistroFichaVista();
-  const irA = useIrA();
   const { id } = useLocalSearchParams<{ id: string }>();
   const m = useMatchDelUsuario(id ?? '');
   const conductor = useDemo((s) => s.conductor);
-  const mensajes = useDemo((s) => (id ? s.mensajes[id] : undefined));
-  const desbloquear = useDemo((s) => s.desbloquearTitular);
-  const bloqueado = useDemo((s) => (m ? s.bloqueos.includes(m.titular.id) : false));
+  const compartirDireccion = useDemo((s) => s.compartirMiDireccion);
+  // Flota (24-nov): el conductor ve el tipo, el año y el color del vehículo, y si está revisado (no la patente).
+  const textoVehiculos = useDerivado((s) => {
+    const b = s.busquedas.find((x) => x.id === id);
+    if (!b) return null;
+    const vs = vehiculosDeBusqueda(s, b);
+    if (vs.length === 0) return null;
+    const partes = vs.map((v) => `${s.catalogos.tamanos.find((t) => t.id === v.tamanoId)?.nombre ?? 'Vehículo'} ${v.anio}, ${nombreColor(s, v.color).toLowerCase()}`);
+    const revisados = vs.every((v) => v.revision === 'revisado');
+    return { texto: `${partes.join(' · ')}${revisados ? ' · Revisado' : ''}`, varios: vs.length > 1 };
+  });
+  const [confirmarDireccion, setConfirmarDireccion] = useState(false);
 
   if (!m) {
     return (
@@ -109,7 +119,6 @@ export default function DetalleMatch() {
   };
   const anios = aniosEnNegocio(conductor.experiencia, m.negocio);
   const diasComunes = b.dias.filter((d) => conductor.dias.includes(d)).length;
-  const hayMensajes = (mensajes?.length ?? 0) > 0;
   const porPostulacion = m.origen === 'postulacion' && !r.hayMatch;
   // Primero los filtros obligatorios que fallan (región, turno, negocio, licencia) y después las variables del %.
   // (Si es otra región, "otra zona" sobra.)
@@ -118,7 +127,7 @@ export default function DetalleMatch() {
     ...r.textosFiltrosFallidos,
     ...r.textosNoCoinciden.filter((_, i) => !(otraRegion && r.noCoinciden[i] === 'M2')),
   ];
-  const motivoNoVigente = !m.vigente && !bloqueado
+  const motivoNoVigente = !m.vigente
     ? r.precondicionFallida
       ? TEXTO_PRECONDICION[r.precondicionFallida]
       : motivosNoVigente.length > 0
@@ -149,15 +158,7 @@ export default function DetalleMatch() {
         ) : null}
       </View>
 
-      {bloqueado ? (
-        <AvisoBloqueado
-          nombre={nombre}
-          onDesbloquear={() => {
-            desbloquear(titular.id);
-            mostrarToast(`Desbloqueaste a ${nombre}.`, 'exito');
-          }}
-        />
-      ) : motivoNoVigente ? (
+      {motivoNoVigente ? (
         <Aviso icono={Info} titulo="Este match ya no está vigente" texto={`Motivo: ${motivoNoVigente.charAt(0).toLowerCase()}${motivoNoVigente.slice(1)}.`} />
       ) : null}
 
@@ -184,6 +185,12 @@ export default function DetalleMatch() {
         <Text role="heading" aria-level={2} style={[tipo.tituloTarjeta, { color: color.texto, paddingBottom: 6 }]}>
           Condiciones
         </Text>
+        {textoVehiculos ? (
+          <>
+            <Fila etiqueta={textoVehiculos.varios ? 'Vehículos' : 'Vehículo'} valor={textoVehiculos.texto} nota={null} />
+            <Separador />
+          </>
+        ) : null}
         <Fila
           etiqueta="Retiro"
           valor={[m.comuna?.nombre, m.zona?.nombre].filter(Boolean).join(' · ') || 'Por definir'}
@@ -223,20 +230,41 @@ export default function DetalleMatch() {
       ) : null}
 
       {m.contactoCompartidoEl ? (
-        <Aviso icono={LockOpen} tono="exito" titulo="Te compartió su contacto" texto={titular.telefono} />
+        <>
+          <TarjetaContacto titulo={`Contacto de ${nombre}`} telefono={titular.telefono} correo={titular.correo} />
+          {m.direccionCompartidaEl ? (
+            <Aviso icono={MapPin} tono="exito" texto="Compartiste tu dirección con este titular." />
+          ) : (
+            <Boton titulo="Compartir mi dirección" variante="contorno" icono={MapPin} onPress={() => setConfirmarDireccion(true)} />
+          )}
+        </>
       ) : (
-        <Aviso icono="candado" texto="El contacto del titular está oculto hasta que decida compartirlo contigo." />
+        <Aviso icono="candado" texto="Si el titular tiene un plan, verá tu contacto. Si quiere, te mostrará el suyo." />
       )}
 
-      {!bloqueado ? (
-        <Boton
-          titulo={hayMensajes ? 'Ver conversación' : 'Escribir mensaje'}
-          variante="principal"
-          icono={MessageSquare}
-          onPress={() => irA('conversacion', m.id)}
-          style={{ marginTop: 'auto' }}
-        />
-      ) : null}
+      <Presionable
+        role="link"
+        aria-label={`Reportar a ${nombre}`}
+        onPress={() => router.push({ pathname: '/conductor/matches/[id]/reportar', params: { id: m.id } })}
+        style={{ marginTop: 'auto', minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+        <Flag size={16} color={color.textoSecundario} strokeWidth={2} />
+        <Text style={[tipo.secundario, fuente(600), { color: color.textoSecundario }]}>Reportar a este titular</Text>
+      </Presionable>
+
+      <Dialogo
+        visible={confirmarDireccion}
+        titulo="¿Compartir tu dirección?"
+        texto={`${nombre} verá tu dirección completa.`}
+        confirmar={{
+          titulo: 'Compartir',
+          onPress: () => {
+            compartirDireccion(m.id);
+            setConfirmarDireccion(false);
+            mostrarToast('Compartiste tu dirección.', 'exito');
+          },
+        }}
+        cancelar={{ onPress: () => setConfirmarDireccion(false) }}
+      />
     </Pantalla>
   );
 }

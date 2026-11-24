@@ -40,6 +40,24 @@ Quiénes trabajan en el proyecto: **Daniela** y **Mario**, socios. Cada entrada 
 - Impacto: ninguno en main. La regla de Trello no está en CLAUDE.md de main.
 - Pendiente: decidir más adelante si se integran o se descartan.
 
+## 2026-11-24 — Daniela y Mario
+- Decisión: no hay mensajes entre conductores y titulares. Con el match, el titular **con plan** ve el contacto (teléfono y correo) de los conductores que calzan; **sin plan** solo ve cuántos le harían match. El conductor ve el contacto del titular solo si el titular decide mostrárselo. La bolsa se adapta: al postular, el titular con plan ve el contacto del postulante. Se puede **reportar en las dos direcciones** (conductor → titular y titular → conductor); se saca "Bloquear". Verificación del titular (P12): cédula de quien usa la cuenta y, si es empresa, revisión del RUT en el SII. Se construye ahora el **prototipo del titular en la demo** (datos de ejemplo), en rama aparte.
+- Por qué: simplificar el producto y llevar al titular directo al contacto, que es lo que paga.
+- Impacto: CLAUDE.md (se reemplaza "Mensajes dentro de la app", se ajusta P10, se agregan Reportar y verificación del titular), demo del conductor (sin Mensajes ni Bloquear), prototipo del titular en `aplicacion/` y, más adelante, la Etapa 3 de la base (sin tablas de mensajes).
+- Pendiente: la sección de match del conductor, con tres opciones (no disponible / cualquier trabajo / solo ciertos trabajos con filtros como antigüedad, combustible, particular o empresa): qué filtros entran y si son obligatorios.
+
+## 2026-11-24 — Daniela y Mario
+- Decisión: flota del titular. Por cada vehículo se pide patente, tipo, marca y modelo, color, año, kilometraje, padrón, revisión técnica y SOAP. Cada búsqueda elige vehículos de la flota y sin vehículos no se publica. Revisa el equipo (documentos y patente en el registro del MTT). El conductor ve tipo, año, color y "revisado". Avisos antes de vencer; vencido, sale del match. Vehículos por plan configurables: 1, 5 y 20. Además: clave nueva de la demo y sitio de prueba `dale-contacto-prueba`.
+- Por qué: dar confianza al conductor de que detrás de cada búsqueda hay un vehículo real y al día, y vender planes por tamaño de flota. La clave anterior se perdió.
+- Impacto: demo del titular y del conductor, estado de la demo (versión 6), CLAUDE.md y documentos; más adelante, la Etapa 2 de la base (tabla de vehículos).
+- Pendiente: límites definitivos por plan, lista completa de marcas, servicio pagado por patente (costo y legalidad), canal de los avisos de vencimiento y si el sitio de prueba queda público.
+
+## 2026-11-24 — Daniela y Mario
+- Decisión: el prototipo del titular, la flota y la clave nueva se aprobaron, se mergearon a `main` y el mockup se publicó desde `main`. El sitio `dale-contacto-prueba` queda público con la clave de la demo, para revisar las próximas ramas.
+- Por qué: dejar lo aprobado publicado y tener dónde probar en el celular antes de aprobar.
+- Impacto: el mockup y /panel piden la clave nueva; la anterior ya no sirve. La app real del conductor no cambió.
+- Pendiente: probar y simplificar (siguiente paso, no empezado) y, después, la Etapa 2 de la base.
+
 ## 2026-11-24 — Daniela
 - Decisión: se aprueban y juntan para pasar a main las 3 ramas del 24-nov: mejoras del probador y el simplificador (S01–S14 con sus ajustes y enlaces legales aparte), documentos (Paso 5 con Storage privado, método que aprueba todo, vencimientos, aviso 3 meses antes, "Antes de empezar" con 2 casillas y la autorización de documentos prueba-2 pedida en el Paso 5, tope de 12 archivos; el borrado del servidor queda para el panel) y "Letra grande". Además, "Letra grande" también va en la pantalla del celular (A2, primera del registro), con el mismo estilo que en la Bienvenida y Perfil.
 - Por qué: dejar listo para el lanzamiento lo ya aprobado; quien necesita letra grande tiene que poder elegirla antes de escribir su número.

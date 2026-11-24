@@ -2,7 +2,7 @@
 // Ruta: /conductor/bolsa/[id]
 // Maqueta: docs/maqueta/BolsaDetalle.dc.html
 // "Me interesa" crea una postulación real (el titular ve la ficha, igual que en un match; la
-// dirección sigue privada). Mientras el titular no escriba, se puede retirar.
+// dirección sigue privada). Mientras el titular no le muestre su contacto, se puede retirar.
 import { useState } from 'react';
 import { View } from 'react-native';
 import { Text } from '@/ui/escala';
@@ -30,7 +30,7 @@ import {
   radio,
   tipo,
 } from '@/ui';
-import { Ban, CircleCheck, LockOpen, MessageSquare, Search, Send } from '@/ui/iconos';
+import { Ban, CircleCheck, LockOpen, Search, Send } from '@/ui/iconos';
 
 import { retirarPostulacion } from './acciones';
 import { estadoVisto, motivoNoPostula, type MotivoNoPostula } from './datos';
@@ -91,7 +91,7 @@ export default function DetalleOferta() {
     setTimeout(() => {
       const r = postular(busqueda.id);
       setEnviando(false);
-      if (r.ok) mostrarToast('Postulaste. Te avisaremos si te escribe.', 'exito');
+      if (r.ok) mostrarToast('Postulaste. El titular verá tu ficha.', 'exito');
       else mostrarToast(r.error ?? 'No se pudo postular.', 'error');
     }, 450);
   };
@@ -155,12 +155,12 @@ export default function DetalleOferta() {
     if (estado === 'te_escribio') {
       return (
         <>
-          <EstadoPie icono="mensaje" texto={`${sel.nombreTitular(titular)} te escribió`} />
+          <EstadoPie icono="contacto" texto={`${sel.nombreTitular(titular)} te mostró su contacto`} />
           <Boton
-            titulo="Ver mensajes"
+            titulo="Ver contacto"
             variante="principal"
-            icono={MessageSquare}
-            onPress={() => router.push({ pathname: '/conductor/mensajes/[id]', params: { id: busqueda.id } })}
+            icono={LockOpen}
+            onPress={() => router.push({ pathname: '/conductor/matches/[id]', params: { id: busqueda.id } })}
           />
         </>
       );
@@ -179,7 +179,7 @@ export default function DetalleOferta() {
       <>
         <EstadoPie icono="ok" texto={`Postulaste el ${fechaCorta(postulacion.postuloEl)}`} />
         <Text style={[tipo.ayuda, { color: color.textoSecundario, textAlign: 'center' }]}>
-          {estado === 'vista' ? 'El titular ya vio tu ficha. Te avisaremos si te escribe.' : 'Te avisaremos si el titular te escribe.'}
+          {estado === 'vista' ? 'El titular ya vio tu ficha. Te avisaremos si te muestra su contacto.' : 'Te avisaremos si el titular te muestra su contacto.'}
         </Text>
         <Boton titulo="Retirar postulación" variante="texto" tamano="mediano" anchoCompleto onPress={() => setConfirmarRetiro(true)} />
       </>
@@ -249,9 +249,9 @@ export default function DetalleOferta() {
 }
 
 /** Caja de estado de 56 px (verde "Postulaste el dd/mm", gris "Postulación cerrada"). */
-function EstadoPie({ icono, texto }: { icono: 'ok' | 'mensaje' | 'cerrada'; texto: string }) {
+function EstadoPie({ icono, texto }: { icono: 'ok' | 'contacto' | 'cerrada'; texto: string }) {
   const cerrada = icono === 'cerrada';
-  const Icono = icono === 'mensaje' ? MessageSquare : cerrada ? Ban : CircleCheck;
+  const Icono = icono === 'contacto' ? LockOpen : cerrada ? Ban : CircleCheck;
   return (
     <View
       role="status"

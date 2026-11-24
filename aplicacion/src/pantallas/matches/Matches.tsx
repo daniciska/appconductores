@@ -27,7 +27,6 @@ import {
 } from '@/ui';
 import { Bell, ChevronRight, CircleAlert, Hourglass, Lock, LockOpen, Moon, Star, UserRound } from '@/ui/iconos';
 
-import { useRegistroFichaVista } from './acciones';
 import { Aparecer, BotonFavorito, TituloPestana } from './piezas';
 
 type Filtro = 'todos' | 'favoritos';
@@ -156,7 +155,6 @@ function SinMatches() {
 }
 
 export default function Matches() {
-  useRegistroFichaVista();
   const matches = useMatchesDelUsuario();
   const disponible = useDemo((s) => s.conductor.disponible);
   const [filtro, setFiltro] = useState<Filtro>('todos');

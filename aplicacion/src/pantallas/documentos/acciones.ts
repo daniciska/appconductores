@@ -77,6 +77,6 @@ export function irAlSelector(navegacionRaiz: unknown) {
 }
 
 /** Cambia de pestaña del conductor (desde una pantalla que está dentro de las pestañas). */
-export function irAPestana(navigation: unknown, pestana: 'inicio' | 'matches' | 'bolsa' | 'mensajes' | 'perfil') {
+export function irAPestana(navigation: unknown, pestana: 'inicio' | 'matches' | 'bolsa' | 'perfil') {
   (navigation as Navegacion).dispatch({ type: 'NAVIGATE', payload: { name: pestana } });
 }

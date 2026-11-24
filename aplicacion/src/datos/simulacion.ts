@@ -7,10 +7,10 @@
 //     después de "pedir otra revisión". Para ver un documento no aprobado está el atajo del menú de la
 //     demo (prepararDocumentoNoAprobado). Mientras una persona del equipo revisa a mano en este mismo
 //     navegador (revisionManual.ts), no se simula: los documentos esperan su decisión.
-// (b) respuestas del titular en el chat: a los 2–4 s responde con frases de ejemplo; después del
-//     segundo mensaje del conductor, el titular comparte su contacto (teléfono ficticio).
+// (b) revisión de la cédula del titular de la demo (y del RUT en el SII, si es empresa): a los ~8 s.
 // (c) titulares con plan que abren la ficha del conductor recién verificado ("Quién recibió mis datos").
-// (d) postulaciones de la bolsa: el titular la ve a los ~6 s y, a veces, escribe a los ~14 s.
+// (d) postulaciones de la bolsa: el titular la ve a los ~6 s y, a veces, le muestra su contacto a los ~14 s.
+// Desde el 24-nov no hay mensajes: las tareas 'respuesta_titular' que hayan quedado guardadas se descartan.
 //
 // Las tareas se guardan en el estado (state.pendientes) con su hora de vencimiento, y un reloj
 // (iniciarSimulacion, montado en el layout raíz) las ejecuta. Así sobreviven a cambiar de pantalla
@@ -20,28 +20,9 @@ import { avisar } from './avisos';
 import { CLAVE_ALMACENAMIENTO, VERSION_ESTADO } from './estado';
 import { planificarRevisionEquipo, rondaDe } from './revisionEquipo';
 import { leerRevisionManual } from './revisionManual';
-import { ID_USUARIO, TIPOS_DOC_ORDEN, busquedaPorId, nombreTitular, primerNombre, titularPorId } from './selectores';
-import { SEGUNDOS_REVISION_EQUIPO, ahoraISO, cambiarDocumento, docAprobado, extraAlAprobar, nuevoId, useDemo } from './tienda';
-import type { EntregaDatos, Mensaje, TareaSimulada } from './tipos';
-
-const RESPUESTAS_INICIALES = [
-  'Hola {nombre}, gracias por escribir. ¿Desde cuándo podrías partir?',
-  'Hola {nombre}. Sí, el vehículo sigue disponible. ¿Qué días te acomodan?',
-  'Hola {nombre}, gusto en saludarte. ¿Tienes experiencia en {negocio}?',
-];
-
-const RESPUESTAS_SEGUNDAS = [
-  'Perfecto. Te comparto mi contacto para coordinar una visita y que veas el auto.',
-  'Me parece bien. Te dejo mi contacto para conversar por teléfono.',
-];
-
-const RESPUESTAS_SIGUIENTES = [
-  'Dale, quedamos atentos. Cualquier duda me escribes.',
-  'Buenísimo, nos vemos entonces.',
-  'Gracias, lo reviso y te confirmo.',
-];
-
-const elegir = (lista: string[], semilla: number) => lista[Math.abs(semilla) % lista.length];
+import { ID_USUARIO, TIPOS_DOC_ORDEN, busquedaPorId, nombreTitular, titularPorId } from './selectores';
+import { SEGUNDOS_REVISION_EQUIPO, ahoraISO, cambiarDocumento, cambiosMostrarContacto, docAprobado, extraAlAprobar, nuevoId, useDemo } from './tienda';
+import type { EntregaDatos, TareaSimulada } from './tipos';
 
 /**
  * La pestaña simula solo de respaldo (otra app del mismo sitio, ver iniciarSimulacion): ahí no se
@@ -87,42 +68,35 @@ function procesarTarea(t: TareaSimulada): void {
       return;
     }
 
-    case 'respuesta_titular': {
-      const lista = demo.mensajes[t.busquedaId] ?? [];
-      const b = busquedaPorId(demo, t.busquedaId);
-      const titular = b ? titularPorId(demo, b.titularId) : undefined;
-      // Un titular bloqueado o con la cuenta suspendida no responde.
-      if (!b || !titular || demo.bloqueos.includes(titular.id) || titular.suspendido) {
-        useDemo.setState({ titularEscribiendo: { ...demo.titularEscribiendo, [t.busquedaId]: false } });
-        return;
-      }
-      const delConductor = lista.filter((m) => m.autor === 'conductor').length;
-      const delTitular = lista.filter((m) => m.autor === 'titular').length;
-      const negocio = demo.catalogos.negocios.find((n) => n.id === b.negocioId)?.nombre.toLowerCase() ?? 'esto';
-      const semilla = Number(t.busquedaId.replace(/\D/g, '')) || 0;
-      let texto: string;
-      if (delTitular === 0) texto = elegir(RESPUESTAS_INICIALES, semilla);
-      else if (delConductor >= 2 && !demo.contactoCompartido[t.busquedaId]) texto = elegir(RESPUESTAS_SEGUNDAS, semilla);
-      else texto = elegir(RESPUESTAS_SIGUIENTES, semilla + delTitular);
-      texto = texto.replace('{nombre}', primerNombre(demo)).replace('{negocio}', negocio);
+    case 'respuesta_titular':
+      // Ya no hay mensajes (24-nov): se descarta.
+      return;
 
-      const nuevos: Mensaje[] = [{ id: nuevoId('m'), autor: 'titular', texto, hora: ahoraISO(), leido: false }];
-      const contactoCompartido = { ...demo.contactoCompartido };
-      if (delConductor >= 2 && !contactoCompartido[t.busquedaId]) {
-        contactoCompartido[t.busquedaId] = ahoraISO();
-        nuevos.push({
-          id: nuevoId('m'),
-          autor: 'sistema',
-          texto: `${nombreTitular(titular)} compartió su contacto contigo.`,
-          hora: ahoraISO(),
-          leido: false,
-        });
-      }
+    case 'revision_titular': {
+      const r = demo.titularDemo.registro;
+      if (r.cedula.estado !== 'en_revision') return;
+      const ahora = ahoraISO();
+      const id = demo.titularDemo.titularId;
       useDemo.setState({
-        mensajes: { ...demo.mensajes, [t.busquedaId]: [...lista, ...nuevos] },
-        contactoCompartido,
-        titularEscribiendo: { ...demo.titularEscribiendo, [t.busquedaId]: false },
+        titularDemo: { ...demo.titularDemo, registro: { ...r, cedula: { ...r.cedula, estado: 'aprobado', revisadoEl: ahora } } },
+        titulares: demo.titulares.map((x) => (x.id === id ? { ...x, revisado: true, revisadoEl: ahora } : x)),
       });
+      if (demo.rol === 'titular') avisarConductor(r.tipo === 'empresa' ? 'Tu cuenta y tu empresa fueron revisadas.' : 'Tu cédula fue revisada.', 'exito');
+      return;
+    }
+
+    case 'revision_vehiculo': {
+      const v = (demo.vehiculos ?? []).find((x) => x.id === t.vehiculoId);
+      if (!v || v.revision !== 'en_revision') return;
+      // El equipo revisa los documentos y consulta la patente en el registro del MTT (en la demo, siempre inscrito
+      // si es un vehículo de pasajeros).
+      const pasajeros = ['liviano', 'van', 'bus'].includes(v.tamanoId);
+      useDemo.setState({
+        vehiculos: (demo.vehiculos ?? []).map((x) =>
+          x.id === v.id ? { ...x, revision: 'revisado', revisadoEl: ahoraISO(), registroTransporte: pasajeros ? 'inscrito' : null } : x,
+        ),
+      });
+      if (demo.rol === 'titular') avisarConductor('Revisamos tu vehículo.', 'exito');
       return;
     }
 
@@ -157,12 +131,9 @@ function procesarTarea(t: TareaSimulada): void {
       if (!p || p.conductorId !== ID_USUARIO || p.estado === 'te_escribio' || p.estado === 'descartada') return;
       const b = busquedaPorId(demo, p.busquedaId);
       const titular = b ? titularPorId(demo, b.titularId) : undefined;
-      if (!b || !titular || demo.bloqueos.includes(titular.id) || titular.suspendido) return;
-      demo.escribirAPostulante(
-        p.id,
-        `Hola ${primerNombre(demo)}, vimos tu postulación. ¿Podemos conversar sobre la oferta?`,
-      );
-      avisarConductor(`${nombreTitular(titular)} te escribió.`, 'info');
+      if (!b || !titular || titular.suspendido) return;
+      useDemo.setState(cambiosMostrarContacto(demo, b.id, ID_USUARIO));
+      avisarConductor(`${nombreTitular(titular)} te mostró su contacto.`, 'info');
       return;
     }
   }
@@ -189,12 +160,6 @@ export function procesarPendientes(ahora = Date.now()): number {
   const { pendientes } = useDemo.getState();
   const vencidas = pendientes.filter((t) => t.venceEn <= ahora);
   if (vencidas.length === 0) {
-    // Marca "escribiendo…" mientras haya una respuesta programada.
-    const escribiendo: Record<string, boolean> = {};
-    for (const t of pendientes) if (t.tipo === 'respuesta_titular' && t.venceEn - ahora < 2500) escribiendo[t.busquedaId] = true;
-    const actual = useDemo.getState().titularEscribiendo;
-    const cambia = Object.keys(escribiendo).some((k) => !actual[k]);
-    if (cambia) useDemo.setState({ titularEscribiendo: { ...actual, ...escribiendo } });
     return 0;
   }
   // Primero se sacan de la lista, para no ejecutarlas dos veces.

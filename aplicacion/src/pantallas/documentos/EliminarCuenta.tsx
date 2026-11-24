@@ -1,7 +1,7 @@
 // E5 · Eliminar cuenta
 // Ruta: /conductor/eliminar-cuenta
 // Maqueta: docs/maqueta/CondEliminarCuenta.dc.html
-// Borra los datos del usuario de la demo (perfil, documentos, matches, mensajes) y vuelve al selector.
+// Borra los datos del usuario de la demo (perfil, documentos y matches) y vuelve al selector.
 import { useState } from 'react';
 import { View } from 'react-native';
 import { Text } from '@/ui/escala';
@@ -53,7 +53,7 @@ export default function EliminarCuenta() {
           </View>
         }
         titulo="Eliminar mi cuenta"
-        subtitulo="Se borrarán tu perfil, tus documentos, tus matches y tus mensajes. No se puede deshacer."
+        subtitulo="Se borrarán tu perfil, tus documentos y tus matches. No se puede deshacer."
       />
 
       <Caja gap={12} style={{ alignItems: 'flex-start' }}>

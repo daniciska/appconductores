@@ -1,10 +1,12 @@
 // Forma del estado de la demo (solo datos) y cómo se crea al empezar o al reiniciar.
 import {
   CLASES_LICENCIA,
+  COLORES,
   COMUNAS,
   DIAS,
   IDIOMAS,
   INDUSTRIAS,
+  MARCAS,
   MOTIVOS_RECHAZO,
   MOTIVOS_REPORTE,
   NEGOCIOS,
@@ -22,6 +24,7 @@ import {
   documentosVacios,
 } from './semilla';
 import { migrarDatos } from './migracion';
+import { ID_TITULAR_USUARIO, registroTitularVacio, type RegistroTitular } from './titularRegistro';
 import type {
   AccionEquipo,
   Ajustes,
@@ -42,6 +45,7 @@ import type {
   TareaSimulada,
   TipoDocumentoId,
   Titular,
+  Vehiculo,
 } from './tipos';
 
 /**
@@ -52,8 +56,10 @@ import type {
  * 4 (9-nov): revisión de documentos a mano (revisionManual.ts). La forma de los datos no cambia: se sube
  *   para que una pestaña abierta con la versión anterior, que no conoce la revisión manual, deje de
  *   guardar (y de aprobar sola) y pida recargar. Desde la 3 se conserva todo (migracion.ts).
+ * 5 (24-nov): prototipo del titular (registro, verificación y "Mostrar mi contacto") y sin mensajes.
+ * 6 (24-nov): flota del titular (vehículos, marcas, colores y vehículos por plan).
  */
-export const VERSION_ESTADO = 4;
+export const VERSION_ESTADO = 6;
 /**
  * Clave en el almacenamiento del navegador (localStorage). Desde la versión 3 del estado (7-nov).
  * No cambiarla al subir VERSION_ESTADO: almacenamiento.ts ya evita que las pestañas viejas la pisen.
@@ -72,7 +78,17 @@ export interface TitularDemo {
   plan: PlanTitular;
   /** Destacadas usadas este mes (el plan define cuántas puede). */
   destacadasUsadas: number;
+  /** Registro del titular (celular, "Antes de empezar", "Tus datos" y cédula). */
+  registro: RegistroTitular;
+  /**
+   * A qué conductores les mostró su contacto el titular, por búsqueda: { 'b01|c02': fecha }.
+   * Si es el conductor de la demo ('yo'), también queda en contactoCompartido[busquedaId].
+   */
+  contactoMostrado: Record<string, string>;
 }
+
+/** Clave de contactoMostrado. */
+export const claveContacto = (busquedaId: string, conductorId: string) => `${busquedaId}|${conductorId}`;
 
 export interface DatosDemo {
   version: number;
@@ -85,11 +101,11 @@ export interface DatosDemo {
   documentos: Record<TipoDocumentoId, DocumentoUsuario>;
   /** Ids de búsqueda marcadas como favoritas por el conductor (el id del match es el de la búsqueda). */
   favoritos: string[];
-  /** Conversaciones del conductor, por id de búsqueda. */
+  /** Conversaciones del conductor (ya no se usan desde el 24-nov: no hay mensajes; quedan por compatibilidad). */
   mensajes: Record<string, Mensaje[]>;
   /** Mientras la simulación prepara la respuesta del titular ("escribiendo…"). */
   titularEscribiendo: Record<string, boolean>;
-  /** Fecha en que el titular compartió su contacto, por id de búsqueda. */
+  /** Fecha en que el titular le mostró su contacto al conductor de la demo, por id de búsqueda. */
   contactoCompartido: Record<string, string>;
   /** Fecha en que el conductor compartió su dirección, por id de búsqueda. */
   direccionCompartida: Record<string, string>;
@@ -97,7 +113,7 @@ export interface DatosDemo {
   matchesPorPostulacion: string[];
   /** "Quién recibió mis datos". */
   entregasDatos: EntregaDatos[];
-  /** Titulares bloqueados por el conductor. */
+  /** Titulares bloqueados por el conductor (ya no se usa desde el 24-nov: se saca "Bloquear"). */
   bloqueos: string[];
   /** Búsquedas donde la simulación ya hizo que el titular abriera la ficha. */
   fichasAbiertas: string[];
@@ -110,6 +126,8 @@ export interface DatosDemo {
   // --- Mundo ficticio ---
   titulares: Titular[];
   busquedas: Busqueda[];
+  /** Flota de todos los titulares (24-nov). */
+  vehiculos: Vehiculo[];
   conductores: ConductorFicticio[];
   /** De conductores ficticios y del usuario ('yo'). */
   postulaciones: Postulacion[];
@@ -144,6 +162,8 @@ export function catalogosIniciales(): Catalogos {
     motivosRechazo: copia(MOTIVOS_RECHAZO),
     motivosReporte: copia(MOTIVOS_REPORTE),
     planes: copia(PLANES),
+    marcas: copia(MARCAS),
+    colores: copia(COLORES),
   };
 }
 
@@ -158,6 +178,7 @@ export function ajustesIniciales(): Ajustes {
     diasReconfirmar: 30,
     diasAntiguedadPdf: 30,
     segundosPrerevision: 3,
+    diasAvisoVehiculo: 30,
   };
 }
 
@@ -178,10 +199,12 @@ export function crearEstadoInicial(ahora = Date.now()): DatosDemo {
     entregasDatos: [],
     bloqueos: [],
     fichasAbiertas: [],
-    titularDemo: { titularId: 't01', plan: 'flota_chica', destacadasUsadas: 0 },
-    favoritosTitular: ['c02'],
+    // Quien entra como titular parte registrándose (atajo de la demo: "Empresa de ejemplo").
+    titularDemo: { titularId: ID_TITULAR_USUARIO, plan: 'sin_plan', destacadasUsadas: 0, registro: registroTitularVacio(), contactoMostrado: {} },
+    favoritosTitular: [],
     titulares: f.titulares,
     busquedas: f.busquedas,
+    vehiculos: f.vehiculos,
     conductores: f.conductores,
     postulaciones: f.postulaciones,
     // Solo los que hace el conductor de la demo. Los de ejemplo entre personas ficticias los agrega la otra app.

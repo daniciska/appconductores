@@ -10,7 +10,7 @@
 import { useState } from 'react';
 import { View } from 'react-native';
 import { Text, useMedidas } from '@/ui/escala';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 
 import { useAcciones, useEntorno, useVista } from '@/datos/puerto/contexto';
 import { Boton, Campo, Encabezado, InterruptorLetraGrande, Pantalla, color, fuente, radio, tipo } from '@/ui';
@@ -18,7 +18,15 @@ import { Boton, Campo, Encabezado, InterruptorLetraGrande, Pantalla, color, fuen
 import { celularParaCampo, celularParaGuardar, celularValido, mascaraCampoCelular, usePantallaAbierta } from './acciones';
 import { CabeceraFormulario, NotaDemo, TarjetaInfo, useValidarObligatorios } from './comunes';
 
-export default function Celular() {
+/**
+ * La demo del titular usa esta misma pantalla con otras rutas y otro texto (`volverA`, `alEnviado`, `info`).
+ * La app real del conductor no pasa nada.
+ */
+export default function Celular({
+  volverA = '/conductor/bienvenida',
+  alEnviado,
+  info = 'Con este número entrarás a la app. También es el que verán los titulares con los que hagas match.',
+}: { volverA?: Href; alEnviado?: () => void; info?: string } = {}) {
   const guardado = useVista((v) => v.cuenta.celular);
   const acciones = useAcciones();
   const { ejemplo } = useEntorno();
@@ -56,12 +64,13 @@ export default function Celular() {
       setErrorEnvio(r.error);
       return;
     }
-    router.push('/conductor/codigo');
+    if (alEnviado) alEnviado();
+    else router.push('/conductor/codigo');
   };
 
   return (
     <Pantalla>
-      <Encabezado volverA="/conductor/bienvenida" derecha={<InterruptorLetraGrande compacto />} />
+      <Encabezado volverA={volverA} derecha={<InterruptorLetraGrande compacto />} />
       <CabeceraFormulario titulo="Ingresa tu celular" subtitulo="Te enviaremos un código por WhatsApp. Si no te llega, te lo mandamos por SMS." />
 
       <View style={{ marginTop: 8, gap: 8 }}>
@@ -106,7 +115,7 @@ export default function Celular() {
         </View>
       </View>
 
-      <TarjetaInfo texto="Con este número entrarás a la app. También es el que verán los titulares con los que hagas match." />
+      <TarjetaInfo texto={info} />
 
       {ejemplo && !valor ? (
         <NotaDemo

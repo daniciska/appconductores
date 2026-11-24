@@ -2,7 +2,9 @@
 // Ruta: /conductor/perfil/quien-recibio
 // Maqueta: docs/maqueta/CondQuienVio.dc.html
 // Se llena con las entregas de datos de la demo (state.entregasDatos): titulares que abrieron la ficha,
-// postulaciones vistas y direcciones compartidas. Se actualiza en vivo.
+// postulaciones vistas y direcciones compartidas. Se actualiza en vivo. Desde el 24-nov las entregas
+// llegan "desde" el match ('match' y 'apertura_ficha'), una postulación o una dirección compartida;
+// las de 'conversacion' (guardadas antes, con mensajes) se muestran igual que las del match.
 import { useEffect, useRef, type ReactNode } from 'react';
 import { Animated, View } from 'react-native';
 import { Text } from '@/ui/escala';
@@ -32,6 +34,7 @@ function detalle(e: EntregaDatos, negocio: string): string {
   const fecha = fechaLarga(e.fecha);
   if (e.que.length === 1 && e.que[0] === 'direccion') return `${negocio} · Tu dirección · ${fecha}`;
   if (e.desde === 'postulacion') return `${negocio} · Postulación · ${fecha}`;
+  if (e.desde === 'match') return `${negocio} · Hicieron match · ${fecha}`;
   return `${negocio} · ${fecha}`;
 }
 

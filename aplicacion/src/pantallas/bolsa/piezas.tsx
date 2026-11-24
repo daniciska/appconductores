@@ -23,7 +23,7 @@ import {
   tipo,
   type LucideIcon,
 } from '@/ui';
-import { Ban, Check, ChevronRight, CircleCheck, Eye, Lock, MessageSquare, Send } from '@/ui/iconos';
+import { Ban, Check, ChevronRight, CircleCheck, Eye, Lock, LockOpen, Send } from '@/ui/iconos';
 
 import { estadoVisto, mayuscula, type EstadoVisto } from './datos';
 
@@ -279,7 +279,7 @@ export function TarjetaOferta({ o }: { o: OfertaBolsa }) {
 // ---------------------------------------------------------------------------
 
 const ESTADO_VISTO: Record<EstadoVisto, { texto: string; icono: LucideIcon; fondo: string; tinta: string; trazo: string }> = {
-  te_escribio: { texto: 'Te escribió', icono: MessageSquare, fondo: color.exitoFondo, tinta: color.exitoTexto, trazo: color.exito },
+  te_escribio: { texto: 'Te mostró su contacto', icono: LockOpen, fondo: color.exitoFondo, tinta: color.exitoTexto, trazo: color.exito },
   vista: { texto: 'Vista por el titular', icono: Eye, fondo: color.separador, tinta: color.textoSuave, trazo: color.textoSuave },
   enviada: { texto: 'Enviada', icono: Send, fondo: color.separador, tinta: color.textoSuave, trazo: color.textoSuave },
   cerrada: { texto: 'Cerrada', icono: Ban, fondo: color.borde, tinta: color.textoSecundario, trazo: color.textoSecundario },
@@ -307,7 +307,7 @@ export function PastillaEstado({ estado }: { estado: EstadoVisto }) {
 
 const ORDEN_ESTADO: Record<EstadoVisto, number> = { te_escribio: 0, vista: 1, enviada: 2, cerrada: 3 };
 
-/** Ordena como en la maqueta: Te escribió, Vista, Enviada y al final Cerrada; dentro, las más nuevas. */
+/** Ordena como en la maqueta: Te mostró su contacto, Vista, Enviada y al final Cerrada; dentro, las más nuevas. */
 export function ordenarPostulaciones(lista: PostulacionUsuario[]): PostulacionUsuario[] {
   return [...lista].sort(
     (a, b) =>
@@ -339,11 +339,11 @@ export function TarjetaPostulacion({ p }: { p: PostulacionUsuario }) {
         <PastillaEstado estado={estado} />
         {estado === 'te_escribio' ? (
           <Boton
-            titulo="Ver mensajes"
+            titulo="Ver contacto"
             variante="oscuro"
             tamano="mediano"
             iconoDerecha={ChevronRight}
-            onPress={() => router.push({ pathname: '/conductor/mensajes/[id]', params: { id: p.busqueda.id } })}
+            onPress={() => router.push({ pathname: '/conductor/matches/[id]', params: { id: p.busqueda.id } })}
             style={{ flexShrink: 0, paddingHorizontal: 16 }}
           />
         ) : (

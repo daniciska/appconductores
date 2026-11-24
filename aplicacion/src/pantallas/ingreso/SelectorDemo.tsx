@@ -95,6 +95,7 @@ export default function SelectorDemo() {
   const reiniciarDemo = useDemo((s) => s.reiniciarDemo);
   const prepararConductorVerificado = useDemo((s) => s.prepararConductorVerificado);
   const prepararDocumentoNoAprobado = useDemo((s) => s.prepararDocumentoNoAprobado);
+  const prepararTitularEjemplo = useDemo((s) => s.prepararTitularEjemplo);
   const [confirmar, setConfirmar] = useState(false);
 
   const entrar = (rol: 'conductor' | 'titular', href: Href) => {
@@ -137,14 +138,14 @@ export default function SelectorDemo() {
         <View style={{ marginTop: 'auto', paddingTop: 12, gap: 12 }}>
           <TarjetaRol
             titulo="Ver como conductor"
-            texto="Registro, documentos, matches y mensajes."
+            texto="Registro, documentos y matches."
             icono={Volante}
             variante="clara"
             onPress={() => entrar('conductor', '/conductor')}
           />
           <TarjetaRol
-            titulo="Ver como titular (bolsa)"
-            texto="Publica vehículos en la bolsa y revisa postulantes."
+            titulo="Ver como titular"
+            texto="Registro, búsquedas, matches y planes."
             icono={AutoFrente}
             variante="acento"
             onPress={() => entrar('titular', '/titular')}
@@ -174,6 +175,15 @@ export default function SelectorDemo() {
                 // Inicio queda debajo: al volver desde "No aprobada" se ve la fila con el motivo.
                 router.push('/conductor/inicio');
                 router.push({ pathname: '/conductor/documentos/[tipo]/no-aprobado', params: { tipo: 'hoja_vida' } });
+              }}
+            />
+            <BotonSecundario
+              titulo="Atajo: empresa de ejemplo con plan"
+              icono={Sparkles}
+              onPress={() => {
+                prepararTitularEjemplo();
+                mostrarToast('Listo: entraste como Transportes Los Aromos SpA.', 'exito');
+                router.push('/titular/busquedas');
               }}
             />
             <BotonSecundario titulo="Reiniciar demo" icono={RotateCcw} onPress={() => setConfirmar(true)} />

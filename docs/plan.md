@@ -24,7 +24,13 @@ Construcción **en pausa** hasta que la dueña apruebe el plan (pedido del 16-no
 1. [ ] Pulir el prototipo del conductor (la dueña lo recorre y comenta).
 2. [ ] **Modelo de datos interactivo**: tablas, campos y relaciones; la dueña marca cada campo "queda / cambiar / sacar". *(publicado, en revisión: https://claude.ai/artifact/1ACYaM3MWdn1yiMpe7pwkK)*
    - Se actualiza cada vez que cambia una pantalla de la maqueta; el porqué de cada cambio queda en `docs/modelo-datos-cambios.md`.
-3. [ ] Prototipo del titular, con el mismo detalle (registro, verificación, búsquedas, resultados, planes y pago, mensajes, compartir contacto).
+3. [ ] Prototipo del titular, con el mismo detalle (registro, verificación, búsquedas, resultados, planes y pago, compartir contacto).
+   - [x] **Construido en la demo (24-nov)**, en la rama `claude/funny-wozniak-0saxjy`: registro (celular, código, "Antes de empezar", Tus datos persona/empresa), verificación (cédula y RUT en el SII), búsquedas (nueva, editar, pausar, cubierta), matches (sin plan: cuántos; con plan: lista, ficha con contacto, favoritos, "Mostrar mi contacto", reportar), planes y pago web simulado, perfil. Sin mensajes en todo el producto (decisión del 24-nov). Probado de punta a punta en el navegador.
+   - [x] **Flota (24-nov):** vehículos con patente, tipo, marca y modelo, color, año, kilometraje, padrón, revisión técnica y SOAP; búsquedas ligadas a vehículos; revisión del equipo (simulada); avisos de vencimiento; vehículos por plan (1, 5 y 20).
+   - [x] Versión de prueba en el sitio de Netlify `dale-contacto-prueba` (público, con la clave de la demo). Queda para revisar las próximas ramas antes de mergearlas.
+   - [x] Aprobado, mergeado a `main` y **mockup publicado desde `main` el 24-nov** (con la clave nueva). La app real del conductor no se publicó.
+   - [ ] **Siguiente (pedido el 24-nov, no empezado): probar y simplificar** el titular, la flota y el conductor sin mensajes (probadores que usan la app como un titular y un conductor, y revisión de qué sobra en cada pantalla), como pide el ciclo de ramas. Después, la Etapa 2 de la base (titulares, flota, búsquedas y match).
+   - [ ] Pendiente para la app real: la casilla "Mensajes" de "Antes de empezar" vive en la base ('prueba-1'); hay que cargar una versión nueva de los textos sin esa casilla. El panel todavía ofrece "Ocultar los mensajes" al resolver un reporte.
 4. [ ] Maquetas del panel de administración (revisión de documentos, configuración de campos, catálogos —con activar o desactivar cada negocio—, reglas de match y zonas, reportes, usuarios).
 5. [ ] Retomar lo que está en pausa: documentos, mensajes y zonas.
 7. [x] **Mockup funcional** (4-nov): conductor completo y bolsa de trabajo, con datos de ejemplo, en Expo (`aplicacion/`). **Publicado** en https://dale-contacto-mockup.netlify.app (proyecto Netlify `dale-contacto-mockup`).

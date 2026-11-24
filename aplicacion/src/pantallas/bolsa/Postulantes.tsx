@@ -1,9 +1,10 @@
 // BT3 · BT4 · Postulantes
 // Ruta: /titular/bolsa/[busqueda]/postulantes
 // Maqueta: docs/maqueta/BolsaPostulantes.dc.html, BolsaPostulantesSinPlan.dc.html
-// Con plan (BT3): fichas de quienes postularon, Nuevos / Vistos, ver ficha, escribir y descartar
-// (con "Deshacer"). Si escribe al conductor de la demo, se crea el match con origen "Postulación" y la
-// conversación aparece en sus Mensajes. Sin plan (BT4): solo cuántos postularon y "Ver planes".
+// Con plan (BT3): fichas de quienes postularon (con su teléfono y correo), Nuevos / Vistos, "Mostrar mi
+// contacto" y descartar (con "Deshacer"). Sin mensajes (24-nov). Si le muestra su contacto al conductor de
+// la demo, se crea el match con origen "Postulación" y lo ve en Matches. Sin plan (BT4): solo cuántos
+// postularon y "Ver planes".
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { View } from 'react-native';
 import { Text } from '@/ui/escala';
@@ -20,7 +21,6 @@ import {
   Avatar,
   Boton,
   BotonIcono,
-  Campo,
   ControlSegmentado,
   EstadoVacio,
   FilaDato,
@@ -39,9 +39,9 @@ import {
   tipo,
   volver,
 } from '@/ui';
-import { CircleCheck, Eye, Inbox, Info, Lock, Mail, MessageSquare, Pencil, Phone, Search, Star, UserRound, Users, X } from '@/ui/iconos';
+import { CircleCheck, Eye, Inbox, Info, Lock, LockOpen, Mail, Pencil, Phone, Search, Star, UserRound, Users, X } from '@/ui/iconos';
 
-import { escribirAPostulanteDesdeBolsa, restaurarPostulacion } from './acciones';
+import { mostrarContactoAPostulante, restaurarPostulacion } from './acciones';
 import { TEXTO_VISIBILIDAD, aniosParaBusqueda, mayuscula, textoTamanos } from './datos';
 import { Aparecer, EncabezadoConTexto, InsigniaBolsa } from './piezas';
 
@@ -78,12 +78,12 @@ function Ficha({
   p: pActual,
   negocioId,
   onCerrar,
-  onEscribir,
+  onMostrarContacto,
 }: {
   p: Postulante | null;
   negocioId: string;
   onCerrar: () => void;
-  onEscribir: () => void;
+  onMostrarContacto: (p: Postulante) => void;
 }) {
   const estado = useEstado();
   const alternarFavorito = useDemo((s) => s.alternarFavoritoTitular);
@@ -94,6 +94,7 @@ function Ficha({
   const negocio = sel.negocioPorId(estado, negocioId);
   const suspendido = !!sel.titularPorId(estado, estado.titularDemo.titularId)?.suspendido;
   const favorito = estado.favoritosTitular.includes(c.id);
+  const mostrado = p.postulacion.estado === 'te_escribio' || !!sel.contactoMostradoA(estado, p.postulacion.busquedaId, c.id);
   const docs = c.documentos;
   const idiomas = c.idiomas.map((k) => estado.catalogos.idiomas.find((i) => i.clave === k)?.nombre ?? k);
   const insignias = [
@@ -109,7 +110,14 @@ function Ficha({
       onCerrar={onCerrar}
       pie={
         <View style={{ flexDirection: 'row', gap: 10 }}>
-          <Boton titulo="Escribir" variante="principal" icono={MessageSquare} onPress={onEscribir} deshabilitado={suspendido} style={{ flex: 1 }} />
+          <Boton
+            titulo={mostrado ? 'Contacto mostrado' : 'Mostrar mi contacto'}
+            variante="principal"
+            icono={LockOpen}
+            onPress={() => onMostrarContacto(p)}
+            deshabilitado={suspendido || mostrado}
+            style={{ flex: 1 }}
+          />
           <BotonIcono
             icono={Star}
             tamano={56}
@@ -189,56 +197,6 @@ function FilaContacto({ icono: Icono, texto }: { icono: typeof Phone; texto: str
 }
 
 // ---------------------------------------------------------------------------
-// Escribir (hoja inferior)
-// ---------------------------------------------------------------------------
-
-function Escribir({
-  p: pActual,
-  textoInicial,
-  onCerrar,
-  onEnviar,
-}: {
-  p: Postulante | null;
-  textoInicial: string;
-  onCerrar: () => void;
-  onEnviar: (texto: string) => void;
-}) {
-  const [texto, setTexto] = useState(textoInicial);
-  const [enviando, setEnviando] = useState(false);
-  useEffect(() => {
-    if (textoInicial) setTexto(textoInicial);
-  }, [textoInicial]);
-  const p = useUltimo(pActual);
-  if (!p) return null;
-  const vacio = texto.trim().length === 0;
-  return (
-    <HojaInferior
-      visible={!!pActual}
-      onCerrar={onCerrar}
-      titulo={`Escribir a ${p.conductor.nombres.split(/\s+/)[0]}`}
-      descripcion="Le llega como mensaje privado. Tu contacto sigue oculto."
-      pie={
-        <Boton
-          titulo="Enviar mensaje"
-          variante="principal"
-          icono={MessageSquare}
-          deshabilitado={vacio}
-          cargando={enviando}
-          onPress={() => {
-            setEnviando(true);
-            setTimeout(() => {
-              setEnviando(false);
-              onEnviar(texto.trim());
-            }, 400);
-          }}
-        />
-      }>
-      <Campo valor={texto} onCambiar={setTexto} multilinea maxLength={500} contador aria-label="Mensaje" placeholder="Escribe tu mensaje" />
-    </HojaInferior>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // BT4 · Sin plan
 // ---------------------------------------------------------------------------
 
@@ -301,7 +259,7 @@ function SinPlan({ cuantos, encabezado }: { cuantos: number; encabezado: ReactNo
       </View>
 
       <View style={{ marginTop: 'auto', paddingTop: 8, gap: 14 }}>
-        <Text style={[tipo.parrafo, { color: color.textoSuave, textAlign: 'center' }]}>Elige un plan para ver sus fichas y escribirles.</Text>
+        <Text style={[tipo.parrafo, { color: color.textoSuave, textAlign: 'center' }]}>Elige un plan para ver sus fichas y su contacto.</Text>
         <Boton titulo="Ver planes" variante="principal" onPress={() => router.push('/titular/planes')} />
       </View>
     </Pantalla>
@@ -320,7 +278,6 @@ export default function Postulantes() {
   const [pestana, setPestana] = useState<Pestana>('nuevos');
   const [deshacer, setDeshacer] = useState<{ id: string; estado: EstadoPostulacion } | null>(null);
   const [fichaDe, setFichaDe] = useState<string | null>(null);
-  const [escribirA, setEscribirA] = useState<string | null>(null);
   const reloj = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(
@@ -395,10 +352,6 @@ export default function Postulantes() {
   const vistos = postulantes.filter((p) => p.postulacion.estado !== 'enviada');
   const lista = pestana === 'nuevos' ? nuevos : vistos;
   const enFicha = postulantes.find((p) => p.postulacion.id === fichaDe) ?? null;
-  const aEscribir = postulantes.find((p) => p.postulacion.id === escribirA) ?? null;
-  const textoInicial = aEscribir
-    ? `Hola ${aEscribir.conductor.nombres.split(/\s+/)[0]}, vi tu postulación a ${negocio?.nombre ?? 'mi oferta'}${comuna ? ` en ${comuna.nombre}` : ''}. ¿Podemos conversar?`
-    : '';
 
   const descartarPostulante = (p: Postulante) => {
     setDeshacer({ id: p.postulacion.id, estado: p.postulacion.estado });
@@ -412,16 +365,16 @@ export default function Postulantes() {
     setFichaDe(p.postulacion.id);
   };
 
-  const enviar = (texto: string) => {
-    if (!aEscribir) return;
-    const r = escribirAPostulanteDesdeBolsa(aEscribir.postulacion.id, texto);
-    setEscribirA(null);
+  const mostrarContacto = (p: Postulante) => {
+    const r = mostrarContactoAPostulante(p.postulacion.id);
     if (!r.ok) {
-      mostrarToast(r.error ?? 'No se pudo enviar.', 'error');
+      mostrarToast(r.error ?? 'No se pudo mostrar tu contacto.', 'error');
       return;
     }
     mostrarToast(
-      aEscribir.conductor.esUsuario ? 'Enviado. Lo verá en Mensajes como conductor.' : `Mensaje enviado a ${aEscribir.conductor.nombres.split(/\s+/)[0]}.`,
+      p.conductor.esUsuario
+        ? 'Listo. Lo verá en Matches como conductor.'
+        : `Listo. ${p.conductor.nombres.split(/\s+/)[0]} ya puede ver tu contacto.`,
       'exito',
     );
   };
@@ -527,7 +480,7 @@ export default function Postulantes() {
                     {p.hayMatch ? (
                       <Insignia texto={`También hace match · ${p.porcentaje} %`} tono="gris" icono={CircleCheck} style={{ backgroundColor: color.separador }} />
                     ) : null}
-                    {p.postulacion.estado === 'te_escribio' ? <Insignia texto="Le escribiste" tono="gris" icono={MessageSquare} /> : null}
+                    {p.postulacion.estado === 'te_escribio' ? <Insignia texto="Le mostraste tu contacto" tono="gris" icono={LockOpen} /> : null}
                   </View>
                   <View style={{ flexDirection: 'row', gap: 8 }}>
                     <Boton
@@ -540,14 +493,13 @@ export default function Postulantes() {
                       onPress={() => abrirFicha(p)}
                     />
                     <Boton
-                      titulo="Escribir"
+                      titulo={p.postulacion.estado === 'te_escribio' ? 'Contacto mostrado' : 'Mostrar contacto'}
                       variante="oscuro"
                       tamano="mediano"
-                      icono={MessageSquare}
                       anchoCompleto
-                      deshabilitado={suspendido}
+                      deshabilitado={suspendido || p.postulacion.estado === 'te_escribio'}
                       style={{ flex: 1 }}
-                      onPress={() => setEscribirA(p.postulacion.id)}
+                      onPress={() => mostrarContacto(p)}
                     />
                   </View>
                 </Tarjeta>
@@ -558,20 +510,18 @@ export default function Postulantes() {
       )}
 
       {postulantes.some((p) => p.conductor.esUsuario) ? (
-        <Aviso icono="chispa" texto="Tu conductor de la demo postuló aquí. Escríbele y míralo en sus Mensajes." />
+        <Aviso icono="chispa" texto="Tu conductor de la demo postuló aquí. Muéstrale tu contacto y míralo en sus Matches." />
       ) : null}
 
       <Ficha
         p={enFicha}
         negocioId={b.negocioId}
         onCerrar={() => setFichaDe(null)}
-        onEscribir={() => {
-          const idP = fichaDe;
+        onMostrarContacto={(p) => {
           setFichaDe(null);
-          setEscribirA(idP);
+          mostrarContacto(p);
         }}
       />
-      <Escribir p={aEscribir} textoInicial={textoInicial} onCerrar={() => setEscribirA(null)} onEnviar={enviar} />
     </Pantalla>
   );
 }

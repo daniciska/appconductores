@@ -44,7 +44,6 @@ import {
   House,
   IdCard,
   Inbox,
-  MessageSquare,
   Moon,
   Star,
   Sun,
@@ -73,7 +72,7 @@ export default function Componentes() {
         </Texto>
 
         <TituloSeccion>Botones</TituloSeccion>
-        <Boton titulo="Escribir mensaje" variante="principal" icono={MessageSquare} onPress={() => mostrarToast('Aviso de ejemplo', 'exito')} />
+        <Boton titulo="Ver mis matches" variante="principal" icono={CircleCheck} onPress={() => mostrarToast('Aviso de ejemplo', 'exito')} />
         <Boton titulo="Guardar y continuar" variante="oscuro" />
         <Boton titulo="Guardar y terminar después" variante="contorno" />
         <Boton titulo="Cargando" cargando />
@@ -153,7 +152,7 @@ export default function Componentes() {
           <FilaLista icono={Trash} titulo="Eliminar mi cuenta" peligro onPress={() => setDialogo(true)} flecha={false} />
         </GrupoLista>
         <Tarjeta>
-          <EstadoVacio icono={Inbox} titulo="Aún no tienes mensajes" texto="Cuando escribas a un titular, la conversación aparece aquí." accion={{ titulo: 'Ver mis matches', onPress: () => setHoja(true) }} />
+          <EstadoVacio icono={Inbox} titulo="Aún no tienes favoritos" texto="Marca con la estrella los matches que te interesan." accion={{ titulo: 'Ver mis matches', onPress: () => setHoja(true) }} />
         </Tarjeta>
         <BarraInferior
           activa="matches"
@@ -161,7 +160,6 @@ export default function Componentes() {
             { clave: 'inicio', etiqueta: 'Inicio', icono: House, href: '/' },
             { clave: 'matches', etiqueta: 'Matches', icono: CircleCheck, href: '/' },
             { clave: 'bolsa', etiqueta: 'Bolsa', icono: BriefcaseBusiness, href: '/' },
-            { clave: 'mensajes', etiqueta: 'Mensajes', icono: MessageSquare, href: '/', punto: true },
             { clave: 'perfil', etiqueta: 'Perfil', icono: UserRound, href: '/' },
           ]}
           onElegir={() => undefined}
@@ -173,7 +171,7 @@ export default function Componentes() {
       <Dialogo
         visible={dialogo}
         titulo="¿Eliminar tu cuenta?"
-        texto="Se borran tu perfil, documentos y mensajes."
+        texto="Se borran tu perfil, documentos y matches."
         confirmar={{ titulo: 'Eliminar', peligro: true, onPress: () => setDialogo(false) }}
         cancelar={{ onPress: () => setDialogo(false) }}
       />

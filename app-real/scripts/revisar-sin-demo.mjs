@@ -136,6 +136,8 @@ export const TEXTOS_DEMO = [
   'Aprobar ahora',
   '__daleDemo',
   // El hash de la clave de la demo (aplicacion/src/datos/claveDemo.ts).
+  '09d99f87831c150855c462ffefdf7aa185bd97fe1d072043b5f373314a00eaaa',
+  // El de la clave anterior (hasta el 24-nov).
   'd950af57714f1e1fed4eecadfebc9c2f99c43c0170a6125cc4a5a07b6343a146',
 ];
 

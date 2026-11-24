@@ -68,6 +68,8 @@ export interface EntradaMatch {
   /** Alguno bloqueó al otro. */
   bloqueado?: boolean;
   titularSuspendido?: boolean;
+  /** Todos los vehículos de la búsqueda tienen la revisión técnica o el SOAP vencidos (24-nov). */
+  vehiculosVencidos?: boolean;
 }
 
 export type Precondicion =
@@ -77,6 +79,7 @@ export type Precondicion =
   | 'cuenta_suspendida'
   | 'negocio_inactivo'
   | 'busqueda_no_activa'
+  | 'vehiculo_vencido'
   | 'bloqueado';
 
 export const TEXTO_PRECONDICION: Record<Precondicion, string> = {
@@ -86,6 +89,7 @@ export const TEXTO_PRECONDICION: Record<Precondicion, string> = {
   cuenta_suspendida: 'Cuenta suspendida',
   negocio_inactivo: 'Negocio apagado',
   busqueda_no_activa: 'Búsqueda pausada o cubierta',
+  vehiculo_vencido: 'Vehículo con documentos vencidos',
   bloqueado: 'Bloqueado',
 };
 
@@ -234,6 +238,7 @@ function precondicion(e: EntradaMatch, negocio: Negocio | undefined): Precondici
   const industria = negocio ? catalogo.industrias.find((i) => i.id === negocio.industriaId) : undefined;
   if (!negocio || !negocio.activo || !industria || !industria.activo) return 'negocio_inactivo';
   if (b.estado !== 'activa') return 'busqueda_no_activa';
+  if (e.vehiculosVencidos) return 'vehiculo_vencido';
   return null;
 }
 
