@@ -10,18 +10,22 @@ import {
   errorFechaDocumento,
   fechaCorta,
   fechaDeTexto,
+  hayTextoRevision,
   hoyEnChile,
   lineaFecha,
   mesesAviso,
   mimeDeArchivo,
+  pesoLegible,
   resumenDocumentos,
   rutaArchivo,
   sumarDias,
   sumarMeses,
   textoAviso,
+  textoDocumentosPorRenovar,
   textoEstado,
   textoRevisionPendiente,
   textoTrasSubir,
+  tituloBotonSubir,
   vistaTipo,
   type DocumentoReal,
 } from '../src/datos/documentos.ts';
@@ -163,6 +167,43 @@ describe('textos', () => {
     assert.equal(textoTrasSubir(ced, 'aprobado'), 'Cédula: aprobada.');
     assert.equal(textoTrasSubir(tipo('antecedentes'), 'en_revision'), 'Antecedentes: enviado a revisión.');
     assert.equal(textoTrasSubir(ced, null), 'Cédula: enviada a revisión.');
+  });
+});
+
+describe('pantalla de subir e Inicio', () => {
+  it('el peso del archivo nunca dice "0,0 MB" ni "10,0 MB" junto al error de más de 10 MB', () => {
+    assert.equal(pesoLegible(20 * 1024), '20 KB');
+    assert.equal(pesoLegible(300), '1 KB');
+    assert.equal(pesoLegible(1.74 * 1024 * 1024), '1,8 MB');
+    assert.equal(pesoLegible(10 * 1024 * 1024 + 10_000), '10,1 MB');
+    assert.equal(pesoLegible(10 * 1024 * 1024), '10,0 MB');
+  });
+  it('el botón de subir respeta los nombres propios', () => {
+    assert.deepEqual(
+      ['Cédula', 'Licencia', 'Hoja de Vida', 'Antecedentes'].map(tituloBotonSubir),
+      ['Subir cédula', 'Subir licencia', 'Subir Hoja de Vida', 'Subir antecedentes'],
+    );
+  });
+  it('Inicio: verificado al que se le venció la licencia (no es alguien que recién se registra)', () => {
+    const cuatro = (licencia: Partial<DocumentoReal>) => [
+      doc('cedula', { venceEn: '2030-01-01' }),
+      doc('licencia', { venceEn: '2030-01-01', ...licencia }),
+      doc('hoja_vida', { archivoTipo: 'application/pdf', emitidoEn: '2026-11-20' }),
+      doc('antecedentes', { archivoTipo: 'application/pdf', emitidoEn: '2026-11-21' }),
+    ];
+    const r = (docs: DocumentoReal[]) => textoDocumentosPorRenovar(resumenDocumentos(c.tiposDocumento, docs, HOY, 3));
+    const vencida = r(cuatro({ venceEn: '2026-11-23' }));
+    assert.equal(vencida?.texto, 'Sube de nuevo tu licencia para volver a aparecer en los matches.');
+    assert.equal(vencida?.tipo?.clave, 'licencia');
+    assert.equal(r(cuatro({ estado: 'no_aprobado' }))?.texto, 'Sube de nuevo tu licencia para aparecer en los matches.');
+    assert.equal(r(cuatro({})), null, 'todo al día');
+    assert.equal(r([doc('licencia', { venceEn: '2026-11-23' })]), null, 'si además faltan documentos, sigue el registro');
+    const dos = r([...cuatro({ venceEn: '2026-11-23' }).slice(1), doc('cedula', { estado: 'vencido', venceEn: '2026-11-01' })]);
+    assert.deepEqual([dos?.tipo, dos?.texto], [null, 'Sube de nuevo los documentos marcados para aparecer en los matches.']);
+  });
+  it('sin texto vigente de "Revisión de mis documentos" no se ofrece subir', () => {
+    assert.equal(hayTextoRevision([{ clave: 'terminos_privacidad' }]), false);
+    assert.equal(hayTextoRevision([{ clave: 'revision_documentos' }]), true);
   });
 });
 

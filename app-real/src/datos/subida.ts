@@ -7,7 +7,8 @@
 //      Cada subida usa un nombre nuevo: nunca se pisa un archivo (no hay UPDATE en Storage).
 //   2. La fila en documentos: la base revisa el archivo (que exista, sea suyo y del formato pedido),
 //      la autorización de revisión y las fechas; después corre el método de validación.
-//   3. Si la fila no se pudo guardar, se borra el archivo recién subido (Storage solo deja borrar
+//   3. Si se cortó la red al guardar la fila, se pregunta si quedó (la respuesta pudo perderse).
+//      Si la fila no se pudo guardar, se borra el archivo recién subido (Storage solo deja borrar
 //      archivos que ningún documento vigente usa: si la fila sí quedó y solo se perdió la respuesta,
 //      el borrado no pasa y el documento queda bien).
 //   4. Limpieza: los archivos de la carpeta propia que ya no usa ningún documento (los reemplazados y
@@ -104,6 +105,13 @@ export async function subirDocumento(cliente: Cliente, p: PedidoSubida): Promise
     return { error: r.error ? { ...r.error, status: r.status } : null, data: r.data as { id: number }[] | null };
   });
   if ('vencida' in insercion) return { ok: false, error: TEXTO.sesionVencida, vencida: true };
+  const sinRespuesta = 'sinConexion' in insercion || (insercion.error && esErrorDeRed(insercion.error));
+  if (sinRespuesta) {
+    // Se cortó la red: la fila pudo quedar guardada y solo perderse la respuesta. Se pregunta antes
+    // de decir que no se guardó (si no, la persona vuelve a subir y reemplaza su propio documento).
+    const ya = await filaGuardada(cliente, ruta);
+    if (ya) return { ok: true, valor: { id: ya, ruta } };
+  }
   if ('sinConexion' in insercion || insercion.error || !insercion.data?.[0]) {
     // No quedó la fila: el archivo no lo usa nadie y se borra (si quedó y solo se perdió la respuesta,
     // Storage no deja borrarlo). Sin esperar a que termine: lo que no se borre lo limpia la próxima subida.
@@ -116,6 +124,17 @@ export async function subirDocumento(cliente: Cliente, p: PedidoSubida): Promise
     return { ok: false, error: TEXTO.guardar };
   }
   return { ok: true, valor: { id: insercion.data[0].id, ruta } };
+}
+
+/** El id del documento guardado con ese archivo, o null (si no está o no se pudo preguntar). */
+async function filaGuardada(cliente: Cliente, ruta: string): Promise<number | null> {
+  try {
+    const r = await cliente.from('documentos').select('id').eq('archivo_ruta', ruta).limit(1);
+    const fila = (r.data as { id: number }[] | null)?.[0];
+    return !r.error && fila ? fila.id : null;
+  } catch {
+    return null;
+  }
 }
 
 /** Borra los archivos de la carpeta propia que ningún documento vigente usa. Devuelve cuántos borró. */

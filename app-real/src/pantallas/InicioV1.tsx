@@ -18,7 +18,9 @@ import { Bell, ChevronRight, Clock } from '@/ui/iconos';
 import { Hoja } from '@/ui/iconosPropios';
 import Pause from 'lucide-react-native/icons/pause';
 
-import { AvisosVencimiento, insigniaAviso, useDocumentos } from './documentos/comunes';
+import { textoDocumentosPorRenovar, tituloBotonSubir } from '@real/datos/documentos';
+
+import { AvisosVencimiento, insigniaAviso, rutaSubir, useDocumentos } from './documentos/comunes';
 
 type Navegacion = { dispatch: (accion: { type: string; payload?: Record<string, unknown> }) => void };
 
@@ -76,8 +78,6 @@ function VistaCompleta() {
   const confirmadaEn = useVista((v) => v.conductor.disponibilidadConfirmadaEn);
   const { diasReconfirmar } = useEntorno();
   const cambiar = useCambiarDisponible();
-  const docs = useDocumentos();
-  const aviso = insigniaAviso(docs);
 
   if (!disponible) {
     return (
@@ -111,32 +111,65 @@ function VistaCompleta() {
         </View>
       </View>
 
-      <Presionable
-        role="button"
-        aria-label={`Mis documentos: ${docs.listos} de ${docs.total} aprobados`}
-        href="/conductor/perfil/documentos"
-        style={{
-          backgroundColor: color.superficie,
-          borderWidth: 1,
-          borderColor: color.borde,
-          borderRadius: radio.tarjeta,
-          paddingVertical: 12,
-          paddingHorizontal: 16,
-          minHeight: 64,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 12,
-        }}>
-        <CuadroIcono icono={Hoja} />
-        <View style={{ flex: 1, minWidth: 0, gap: 2, alignItems: 'flex-start' }}>
-          <Text style={[tipo.cuerpo, fuente(600), { color: color.texto }]}>Mis documentos</Text>
-          <Text style={[tipo.ayuda, { color: color.textoSecundario }]}>
-            {docs.listos} de {docs.total} aprobados
-          </Text>
-          {aviso ? <Insignia {...aviso} style={{ marginTop: 4 }} /> : null}
-        </View>
-        <ChevronRight size={18} color={color.texto} strokeWidth={2} />
-      </Presionable>
+      <FilaMisDocumentos />
+    </>
+  );
+}
+
+/** Fila "Mis documentos" (con la insignia del aviso más próximo). */
+function FilaMisDocumentos() {
+  const docs = useDocumentos();
+  const aviso = insigniaAviso(docs);
+  return (
+    <Presionable
+      role="button"
+      aria-label={`Mis documentos: ${docs.listos} de ${docs.total} aprobados`}
+      href="/conductor/perfil/documentos"
+      style={{
+        backgroundColor: color.superficie,
+        borderWidth: 1,
+        borderColor: color.borde,
+        borderRadius: radio.tarjeta,
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        minHeight: 64,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+      }}>
+      <CuadroIcono icono={Hoja} />
+      <View style={{ flex: 1, minWidth: 0, gap: 2, alignItems: 'flex-start' }}>
+        <Text style={[tipo.cuerpo, fuente(600), { color: color.texto }]}>Mis documentos</Text>
+        <Text style={[tipo.ayuda, { color: color.textoSecundario }]}>
+          {docs.listos} de {docs.total} aprobados
+        </Text>
+        {aviso ? <Insignia {...aviso} style={{ marginTop: 4 }} /> : null}
+      </View>
+      <ChevronRight size={18} color={color.texto} strokeWidth={2} />
+    </Presionable>
+  );
+}
+
+/**
+ * Pasos listos y documentos subidos, pero uno venció o no se aprobó (por ejemplo, a un conductor
+ * verificado se le venció la licencia): no es alguien que recién se registra. Se le dice que dejó de
+ * aparecer en los matches y se lo lleva directo a subirlo de nuevo.
+ */
+function VistaPorRenovar({ texto, tipoClave, corto }: { texto: string; tipoClave: string | null; corto: string | null }) {
+  return (
+    <>
+      <TarjetaOscura>
+        <Text role="heading" aria-level={2} style={{ fontFamily: 'Sora_700Bold', fontSize: 20, lineHeight: 25, letterSpacing: -0.2, color: color.blanco }}>
+          No apareces en los matches
+        </Text>
+        <Text style={[tipo.secundario, { lineHeight: 21, color: GRIS_SOBRE_OSCURO }]}>{texto}</Text>
+        {tipoClave && corto ? (
+          <Boton titulo={tituloBotonSubir(corto)} variante="principal" href={rutaSubir(tipoClave)} />
+        ) : (
+          <Boton titulo="Ver mis documentos" variante="principal" href="/conductor/perfil/documentos" />
+        )}
+      </TarjetaOscura>
+      <FilaMisDocumentos />
     </>
   );
 }
@@ -160,6 +193,7 @@ export default function InicioV1() {
       : pasos1a4 && enRevision && docs.subidos === docs.total
         ? { texto: 'En revisión', tono: 'amarilla', icono: Clock }
         : { texto: 'Perfil incompleto', tono: 'amarilla', icono: Clock };
+  const porRenovar = pasos1a4 && !completo ? textoDocumentosPorRenovar(docs) : null;
   const estadoDocs = revisar ? 'Revisa un documento' : enRevision ? 'En revisión' : `${docs.listos} de ${docs.total} aprobados`;
 
   return (
@@ -173,6 +207,8 @@ export default function InicioV1() {
       <AvisosVencimiento avisos={docs.avisos} />
       {completo ? (
         <VistaCompleta />
+      ) : porRenovar ? (
+        <VistaPorRenovar texto={porRenovar.texto} tipoClave={porRenovar.tipo?.clave ?? null} corto={porRenovar.tipo?.corto ?? null} />
       ) : (
         <VistaIncompleta
           documentos={{ modo: 'activo', subidos: docs.subidos, ruta: '/conductor/registro/5', textoEstado: estadoDocs, textoListo: 'Aprobados' }}

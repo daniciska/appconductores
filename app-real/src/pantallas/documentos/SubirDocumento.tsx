@@ -20,7 +20,7 @@ import { Boton, Campo, Encabezado, EstadoVacio, Insignia, Pantalla, Presionable,
 import { Clock, ExternalLink, FileImage, FileText, Lock, Upload } from '@/ui/iconos';
 
 import { elegirArchivo, prepararFoto, type ArchivoElegido } from '@real/datos/archivoWeb';
-import { errorArchivo, errorFechaDocumento, fechaCorta, hoyEnChile, lineaFecha, mimeDeArchivo, textoTrasSubir } from '@real/datos/documentos';
+import { errorArchivo, errorFechaDocumento, fechaCorta, hoyEnChile, lineaFecha, mimeDeArchivo, pesoLegible, textoTrasSubir, tituloBotonSubir } from '@real/datos/documentos';
 import { accionesDocumentos } from '@real/datos/puertoReal';
 import { useTiendaReal } from '@real/datos/tiendaReal';
 
@@ -33,8 +33,6 @@ const DONDE_FECHA: Record<string, string> = {
   hoja_vida: 'Está en el PDF, junto al folio.',
   antecedentes: 'Está en el PDF, junto al folio.',
 };
-
-const megas = (bytes: number) => `${(bytes / (1024 * 1024)).toFixed(1).replace('.', ',')} MB`;
 
 export default function SubirDocumento() {
   const { tipo: clave } = useLocalSearchParams<{ tipo: string }>();
@@ -52,6 +50,8 @@ export default function SubirDocumento() {
   const [intento, setIntento] = useState(false);
   const [errorDeLaBase, setErrorDeLaBase] = useState<string | null>(null);
   const [subiendo, setSubiendo] = useState(false);
+  /** La foto elegida se está achicando (antes de revisar su peso). */
+  const [preparando, setPreparando] = useState(false);
   const [pedirRevision, setPedirRevision] = useState(false);
 
   // La vista previa de la foto se libera al cambiarla o al salir.
@@ -86,7 +86,9 @@ export default function SubirDocumento() {
     archivo: !elegido ? (guia.esPdf ? 'Elige el PDF.' : 'Elige la foto.') : errorArchivo(mime, elegido.archivo.size, t.formato),
     fecha: pideFecha ? errorFechaDocumento(fecha, t, hoy) : null,
   };
-  const ver = (k: keyof typeof errores) => (intento ? errores[k] : null) ?? (k === 'fecha' ? errorDeLaBase : null);
+  // El error del archivo elegido se ve apenas se elige (bajo el campo, sin aviso flotante que tape otros errores).
+  const ver = (k: keyof typeof errores) =>
+    (intento || (k === 'archivo' && elegido) ? errores[k] : null) ?? (k === 'fecha' ? errorDeLaBase : null);
   const faltaObligatorio = intento && (!elegido || (pideFecha && !fecha.trim()));
 
   const elegir = async () => {
@@ -94,10 +96,21 @@ export default function SubirDocumento() {
     if (!a) return;
     if (vistaPrevia.current) URL.revokeObjectURL(vistaPrevia.current);
     vistaPrevia.current = a.vista;
-    setElegido(a);
+    // Las fotos se achican al elegirlas: el tope de 10 MB se revisa con lo que de verdad se sube
+    // (una foto de 12 MB queda en 1 a 2 MB). Los PDF y lo que no se pueda leer quedan tal cual.
     const m = mimeDeArchivo(a.nombre, a.tipo);
-    const e = errorArchivo(m, a.archivo.size, t.formato);
-    if (e) mostrarToast(e, 'error');
+    if (m && t.formato === 'foto') {
+      setPreparando(true);
+      try {
+        const listo = await prepararFoto(a.archivo, m);
+        if (pantalla.salio()) return;
+        setElegido({ ...a, archivo: listo.archivo, tipo: listo.mime });
+      } finally {
+        setPreparando(false);
+      }
+      return;
+    }
+    setElegido(a);
   };
 
   /** `revisionAceptada`: se acaba de aceptar en la hoja (esta función es de antes de leerla). */
@@ -112,10 +125,10 @@ export default function SubirDocumento() {
       setPedirRevision(true);
       return;
     }
+    if (preparando) return;
     setSubiendo(true);
     try {
-      const listo = await prepararFoto(elegido.archivo, mime);
-      const res = await accionesDocumentos.subir({ tipoId: t.id, archivo: listo.archivo, mime: listo.mime, fecha });
+      const res = await accionesDocumentos.subir({ tipoId: t.id, archivo: elegido.archivo, mime, fecha });
       if (pantalla.salio()) return;
       if (!res.ok) {
         if (/fecha|venció|días o menos/i.test(res.error)) setErrorDeLaBase(res.error);
@@ -167,7 +180,7 @@ export default function SubirDocumento() {
           aria-label={elegido ? `${elegido.nombre}. Cambiar archivo` : guia.boton}
           aria-invalid={!!ver('archivo')}
           onPress={elegir}
-          disabled={subiendo}
+          disabled={subiendo || preparando}
           style={{
             backgroundColor: color.superficie,
             borderWidth: 1.5,
@@ -191,7 +204,13 @@ export default function SubirDocumento() {
               {elegido ? elegido.nombre : guia.boton}
             </Text>
             <Text style={[tipo.ayuda, { color: color.textoSecundario }]}>
-              {elegido ? `${megas(elegido.archivo.size)} · Toca para cambiarlo` : guia.esPdf ? 'Tal como lo descargaste' : 'Desde la cámara o tus fotos'}
+              {preparando
+                ? 'Preparando la foto…'
+                : elegido
+                  ? `${pesoLegible(elegido.archivo.size)} · Toca para cambiarlo`
+                  : guia.esPdf
+                    ? 'Tal como lo descargaste'
+                    : 'Desde la cámara o tus fotos'}
             </Text>
           </View>
         </Presionable>
@@ -222,7 +241,7 @@ export default function SubirDocumento() {
       ) : null}
 
       <View style={{ marginTop: 'auto', gap: 10, paddingTop: 8 }}>
-        <Boton titulo={`Subir ${t.corto.charAt(0).toLowerCase()}${t.corto.slice(1)}`} icono={Upload} variante="oscuro" cargando={subiendo} onPress={() => void subir()} />
+        <Boton titulo={tituloBotonSubir(t.corto)} icono={Upload} variante="oscuro" cargando={subiendo || preparando} onPress={() => void subir()} />
         {guia.enlace ? (
           <Boton
             titulo={guia.enlace.titulo}

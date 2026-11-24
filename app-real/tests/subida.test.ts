@@ -178,7 +178,7 @@ describe('subir los 4 documentos', () => {
     assert.equal(sim.archivos.length, antes);
   });
 
-  it('se corta la red al guardar la fila: el archivo se borra; si la fila sí quedó, el archivo no se toca', async () => {
+  it('se corta la red al guardar la fila: el archivo se borra; si la fila sí quedó, se da por subido', async () => {
     const antes = sim.archivos.length;
     sim.fallar((p: { method: string; ruta: string }) => p.method === 'POST' && p.ruta === '/rest/v1/documentos', 'red');
     const r = await subirDocumento(cliente, pedido(uid, 'cedula'));
@@ -189,9 +189,10 @@ describe('subir los 4 documentos', () => {
     const docs = sim.datos.documentos.length;
     sim.fallar((p: { method: string; ruta: string }) => p.method === 'POST' && p.ruta === '/rest/v1/documentos', 'red-despues');
     const r2 = await subirDocumento(cliente, pedido(uid, 'cedula', { venceEn: sumarMeses(HOY, 70) }));
-    assert.equal(r2.ok, false);
     await new Promise((x) => setTimeout(x, 20));
     const nuevo = sim.datos.documentos.at(-1);
+    // La fila quedó y solo se perdió la respuesta: se pregunta y no se pide subirlo de nuevo.
+    assert.deepEqual(r2, { ok: true, valor: { id: nuevo.id, ruta: nuevo.archivo_ruta } });
     assert.equal(sim.datos.documentos.length, docs + 1);
     assert.ok(sim.archivos.some((a: { name: string }) => a.name === nuevo.archivo_ruta), 'el archivo del documento guardado sigue');
     assert.equal(nuevo.estado, 'aprobado');
@@ -228,6 +229,18 @@ describe('cada uno solo lo suyo', () => {
     const { cliente, uid } = await entrar('56990000003');
     await registrar(cliente, uid, { aceptar: false });
     assert.deepEqual(await subirDocumento(cliente, pedido(uid, 'cedula')), { ok: false, error: 'Primero acepta la revisión de tus documentos.' });
+
+    // Sin ningún texto vigente de la revisión, la base no recibe documentos (ni de quien no aceptó nada).
+    const texto = sim.catalogos.textos_autorizacion.find((t: { clave: string; vigente: boolean }) => t.clave === 'revision_documentos' && t.vigente);
+    texto.vigente = false;
+    try {
+      assert.deepEqual(await subirDocumento(cliente, pedido(uid, 'cedula')), {
+        ok: false,
+        error: 'Por ahora no podemos recibir documentos. Inténtalo más tarde.',
+      });
+    } finally {
+      texto.vigente = true;
+    }
 
     const otro = sim.datos.documentos[0];
     const r = await subirDocumento(cliente, { ...pedido(uid, 'cedula'), uid: otro.cuenta_id });

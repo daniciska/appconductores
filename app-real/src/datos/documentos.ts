@@ -369,6 +369,43 @@ export function errorArchivo(mime: string | null, bytes: number, formato: Format
   return null;
 }
 
+/**
+ * Peso del archivo para mostrar: "20 KB", "1,7 MB". Nunca "0,0 MB" (un archivo chico se ve en KB) y
+ * los MB se redondean hacia arriba, para que un archivo de 10,01 MB no diga "10,0 MB" junto al error
+ * "pesa más de 10 MB".
+ */
+export function pesoLegible(bytes: number): string {
+  const kb = bytes / 1024;
+  if (kb < 1000) return `${Math.max(1, Math.ceil(kb))} KB`;
+  const mb = Math.ceil((bytes / (1024 * 1024)) * 10) / 10;
+  return `${mb.toFixed(1).replace('.', ',')} MB`;
+}
+
+/** "Subir cédula", "Subir licencia", "Subir Hoja de Vida" (un nombre propio queda con sus mayúsculas). */
+export function tituloBotonSubir(corto: string): string {
+  const palabras = corto.trim().split(/\s+/);
+  const nombrePropio = palabras.slice(1).some((p) => /^[A-ZÁÉÍÓÚÑ]/.test(p));
+  const texto = nombrePropio ? corto.trim() : `${corto.charAt(0).toLowerCase()}${corto.trim().slice(1)}`;
+  return `Subir ${texto}`;
+}
+
+/**
+ * Inicio con los pasos listos y todos los documentos subidos, pero alguno vencido o no aprobado (por
+ * ejemplo, un conductor verificado al que se le venció la licencia): qué decirle. null si no es el caso.
+ */
+export function textoDocumentosPorRenovar(r: ResumenDocumentos): { texto: string; tipo: TipoDocumentoReal | null } | null {
+  const malos = r.tipos.filter((v) => v.tipo.obligatorio && (v.estado === 'vencido' || v.estado === 'no_aprobado'));
+  const faltan = r.tipos.some((v) => v.tipo.obligatorio && v.estado === 'falta');
+  if (malos.length === 0 || faltan) return null;
+  if (malos.length > 1) return { texto: 'Sube de nuevo los documentos marcados para aparecer en los matches.', tipo: null };
+  const v = malos[0];
+  const tu = tuDocumento(v.tipo);
+  const suyo = `${tu.charAt(0).toLowerCase()}${tu.slice(1)}`;
+  return v.estado === 'vencido'
+    ? { texto: `Sube de nuevo ${suyo} para volver a aparecer en los matches.`, tipo: v.tipo }
+    : { texto: `Sube de nuevo ${suyo} para aparecer en los matches.`, tipo: v.tipo };
+}
+
 /** Ruta en el espacio documentos: '<uid>/<uuid>.<ext>' (la base y Storage exigen esta forma). */
 export function rutaArchivo(uid: string, uuid: string, mime: string): string {
   return `${uid}/${uuid}.${EXT_POR_MIME[mime] ?? 'bin'}`;
@@ -379,6 +416,14 @@ export function archivosSobrantes(nombresEnCarpeta: string[], uid: string, docum
   const usados = new Set(documentos.filter((d) => d.estado !== 'reemplazado').map((d) => d.ruta));
   return nombresEnCarpeta.map((n) => `${uid}/${n}`).filter((r) => !usados.has(r));
 }
+
+/** Hay un texto vigente de "Revisión de mis documentos" (sin él, la base no recibe documentos). */
+export function hayTextoRevision<T extends { clave: string }>(textos: T[]): boolean {
+  return textos.some((x) => x.clave === CLAVE_TEXTO_REVISION);
+}
+
+/** Lo que se muestra si no hay texto vigente de la revisión (falta configurarlo en el panel). */
+export const TEXTO_SIN_REVISION = 'Por ahora no podemos recibir documentos. Inténtalo más tarde.';
 
 /** Hay un texto vigente de "Revisión de mis documentos" que la persona no ha aceptado. */
 export function textoRevisionPendiente<T extends { id: number; clave: string }>(textos: T[], aceptados: number[]): T | null {
