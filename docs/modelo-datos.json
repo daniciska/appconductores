@@ -4378,7 +4378,7 @@
      "tipo": "id",
      "referencia": "",
      "obligatorio": true,
-     "descripcion": "Ej.: umbral_match (66, decidido); forma_umbral ('igual o mayor', propuesta, MD28); dias_reconfirmar_disponibilidad (30, propuesta; cargado y público desde el 9-nov); dias_aviso_vencimiento (7, propuesta); recordatorio_perfil_cada_dias, recordatorio_perfil_maximo y recordatorio_perfil_primer_canal (pendientes, MD6); horas_plazo_revision (pendiente, MD21); dias_borrar_archivos_no_enviados (pendiente, abogado); busquedas_sin_plan (pendiente, MD10); meses_conservar_mensajes (MD13), meses_conservar_matches_no_vigentes, dias_conservar_conversacion_reportada, meses_conservar_reportes, meses_conservar_avisos y meses_borrar_cuenta_incompleta (pendientes, abogado, MD38); dias_responder_solicitudes [verificar con abogado]; max_conductores_nuevos_por_titular_mes y max_cambios_por_busqueda (pendientes, MD34); conductor_ve_lista_matches (sí, propuesta); bolsa_activa (no, hasta que se decida si sale en el lanzamiento); max_postulaciones_por_dia (pendiente, MD49).",
+     "descripcion": "Ej.: umbral_match (66, decidido); forma_umbral ('igual o mayor', propuesta, MD28); dias_reconfirmar_disponibilidad (30, propuesta; cargado y público desde el 9-nov); meses_aviso_vencimiento_documentos (3, decidido el 24-nov; reemplaza a dias_aviso_vencimiento); metodo_validacion_documentos ('aprobar_todo', provisorio desde el 24-nov); recordatorio_perfil_cada_dias, recordatorio_perfil_maximo y recordatorio_perfil_primer_canal (pendientes, MD6); horas_plazo_revision (pendiente, MD21); busquedas_sin_plan (pendiente, MD10); meses_conservar_mensajes (MD13), meses_conservar_matches_no_vigentes, dias_conservar_conversacion_reportada, meses_conservar_reportes, meses_conservar_avisos y meses_borrar_cuenta_incompleta (pendientes, abogado, MD38); dias_responder_solicitudes [verificar con abogado]; max_conductores_nuevos_por_titular_mes y max_cambios_por_busqueda (pendientes, MD34); conductor_ve_lista_matches (sí, propuesta); bolsa_activa (no, hasta que se decida si sale en el lanzamiento); max_postulaciones_por_dia (pendiente, MD49).",
      "quien_ve": "Solo el equipo",
      "codigo": "P5, P16",
      "estado": "propuesta",
@@ -5016,8 +5016,8 @@
   },
   {
    "id": "R14",
-   "nombre": "Borrado de archivos tras la revisión",
-   "descripcion": "Un proceso diario borra el archivo: (a) N días después de decidir, según el tipo de documento (plazo del abogado, MD20); (b) apenas se sube un reemplazo; (c) si se subió y nunca se envió a revisión, tras el plazo de Ajustes y con aviso previo. Anota 'archivo borrado el'. Las filas de documentos reemplazados o no aprobados se borran tras 'meses para conservar' del tipo de documento; queda la fila aprobada vigente. Los archivos van en un espacio privado y el equipo los abre con enlaces de pocos minutos (cada apertura queda en 'Acción del equipo'). Las copias de respaldo se borran en su propio plazo, que se informa en la Política de privacidad. Propuesta técnica a evaluar: cifrar cada archivo con su propia clave y destruirla al borrar.",
+   "nombre": "Archivos guardados mientras la cuenta esté activa",
+   "descripcion": "Decidido el 24-nov: el archivo de un documento se guarda mientras la cuenta esté activa (no se borra después de decidir) y se borra (a) apenas se sube un reemplazo (la app borra los archivos que ningún documento vigente usa, incluidas las subidas que no terminaron) y (b) al borrar la cuenta (proceso a definir con el panel). Ya no existe 'enviar a revisión': cada documento se envía al subirlo. Si el abogado fija un plazo menor (MD20, consulta A31 y A63), se agrega un proceso diario. Las filas de documentos reemplazados o no aprobados se borran tras 'meses para conservar' del tipo de documento; queda la fila aprobada vigente. Los archivos van en un espacio privado y el equipo los abre con enlaces de pocos minutos (cada apertura queda en 'Acción del equipo'). Las copias de respaldo se borran en su propio plazo, que se informa en la Política de privacidad. Propuesta técnica a evaluar: cifrar cada archivo con su propia clave y destruirla al borrar.",
    "entidades": [
     "documentos",
     "tipos_documento",
@@ -5447,8 +5447,8 @@
   },
   {
    "id": "MD20",
-   "pregunta": "¿Cuánto tiempo después de decidir se borra el archivo? (abogado, P1)",
-   "opciones": "a) Apenas se decide. b) Unos días (ej. 7), para atender una segunda revisión. c) El plazo que indique el abogado, que puede ser distinto por documento.",
+   "pregunta": "Decidido el 24-nov: el archivo se guarda mientras la cuenta esté activa. Falta que el abogado confirme que ese plazo es proporcional, sobre todo para el certificado de antecedentes (consulta A31 y A63).",
+   "opciones": "a) Se mantiene: mientras la cuenta esté activa (decisión actual). b) El abogado fija un plazo menor por documento y se agrega un proceso diario que borra el archivo.",
    "entidades": [
     "tipos_documento",
     "documentos",
