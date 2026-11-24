@@ -3,13 +3,15 @@
 // Maqueta: docs/maqueta/CondCelular.dc.html
 // "Enviar código" pide el código (en la demo no se envía nada: guarda el número) y pasa a A3. Si la
 // persona vuelve atrás mientras se envía, se queda donde fue (no se la lleva a A3).
+// "Letra grande" (pedido de Daniela, 24-nov): también aquí, la primera pantalla del registro, con el mismo
+// interruptor que la Bienvenida y Perfil (tono claro, como en Perfil), para quien llega directo o no lo vio.
 import { useState } from 'react';
 import { View } from 'react-native';
 import { Text, useMedidas } from '@/ui/escala';
 import { router } from 'expo-router';
 
 import { useAcciones, useEntorno, useVista } from '@/datos/puerto/contexto';
-import { Boton, Campo, Encabezado, Pantalla, color, fuente, radio, tipo } from '@/ui';
+import { Boton, Campo, Encabezado, InterruptorLetraGrande, Pantalla, color, fuente, radio, tipo } from '@/ui';
 
 import { celularParaCampo, celularParaGuardar, celularValido, mascaraCampoCelular, usePantallaAbierta } from './acciones';
 import { CabeceraFormulario, NotaDemo, TarjetaInfo, useValidarObligatorios } from './comunes';
@@ -103,6 +105,8 @@ export default function Celular() {
       </View>
 
       <TarjetaInfo texto="Con este número entrarás a la app. También es el que verán los titulares con los que hagas match." />
+
+      <InterruptorLetraGrande />
 
       {ejemplo && !valor ? (
         <NotaDemo

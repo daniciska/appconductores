@@ -39,3 +39,9 @@ Quiénes trabajan en el proyecto: **Daniela** y **Mario**, socios. Cada entrada 
 - Por qué: se revisan más adelante; mientras tanto, lo vigente es lo que está en main.
 - Impacto: ninguno en main. La regla de Trello no está en CLAUDE.md de main.
 - Pendiente: decidir más adelante si se integran o se descartan.
+
+## 2026-11-24 — Daniela
+- Decisión: se aprueban y juntan para pasar a main las 3 ramas del 24-nov: mejoras del probador y el simplificador (S01–S14 con sus ajustes y enlaces legales aparte), documentos (Paso 5 con Storage privado, método que aprueba todo, vencimientos, aviso 3 meses antes, "Antes de empezar" con 2 casillas y la autorización de documentos prueba-2 pedida en el Paso 5, tope de 12 archivos; el borrado del servidor queda para el panel) y "Letra grande". Además, "Letra grande" también va en la pantalla del celular (A2, primera del registro), con el mismo estilo que en la Bienvenida y Perfil.
+- Por qué: dejar listo para el lanzamiento lo ya aprobado; quien necesita letra grande tiene que poder elegirla antes de escribir su número.
+- Impacto: rama integracion-24nov (sin tocar main). Al juntarlas: el perfil completo pide el Paso 3 con al menos un vehículo (S07) también en la base; la migración S12 solo apaga las versiones prueba-1; Inicio sin el texto "pronto podrás subir aquí"; Centro de ayuda con "¿Quién ve mis documentos?".
+- Pendiente: revisar y mergear integracion-24nov a main; aplicar en Supabase, en este orden, 20261124120000_experiencia_ejemplo_taxi, 20261124120100_autorizaciones_solo_dos, 20261124120200_ajuste_aviso_reconfirmar y 20261124150000_documentos_conductor; publicar en Netlify desde main; abogado (Términos, Política, A63–A67).

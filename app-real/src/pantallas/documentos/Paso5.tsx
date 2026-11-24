@@ -87,11 +87,12 @@ export default function Paso5() {
             borderRadius: radio.tarjeta,
             paddingVertical: 14,
             paddingHorizontal: 16,
-            flexDirection: 'row',
-            alignItems: 'center',
+            // Con "Letra grande" no caben el texto y el botón en una fila: el botón va debajo.
+            flexDirection: m.grande ? 'column' : 'row',
+            alignItems: m.grande ? 'flex-start' : 'center',
             gap: 12,
           }}>
-          <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
+          <View style={m.grande ? { gap: 2 } : { flex: 1, minWidth: 0, gap: 2 }}>
             <Text style={[tipo.etiqueta, { lineHeight: 19, color: color.texto }]}>¿Te falta la Hoja de Vida o el certificado de antecedentes?</Text>
             <Text style={[tipo.ayuda, { color: color.textoSecundario }]}>Pídelos en línea con tu ClaveÚnica.</Text>
           </View>

@@ -146,7 +146,7 @@ Muestrario en vivo: ruta `/componentes`.
 
 ### "Letra grande" (modo para personas mayores, 24-nov)
 
-Un interruptor "Letra grande" (`InterruptorLetraGrande`, en la Bienvenida con `tono="oscuro"` y en Perfil) agranda **toda** la app del conductor. Se recuerda en el equipo (`localStorage` en la web, clave `dale-letra-grande`; AsyncStorage en el celular). No es un zoom:
+Un interruptor "Letra grande" (`InterruptorLetraGrande`, en la Bienvenida con `tono="oscuro"`, en la pantalla del celular A2 y en Perfil) agranda **toda** la app del conductor. Se recuerda en el equipo (`localStorage` en la web, clave `dale-letra-grande`; AsyncStorage en el celular). No es un zoom:
 
 - **Textos:** escala propia (`src/ui/escalaTipos.ts`): lo chico crece 3 px y los títulos 2 px (12→15, 13→16, 14→17, 15→18, 16→19, 17→20, 20→23, 26→28, 34→36); el alto de línea mantiene la proporción. Los grises claros (`#9A9A9A`, `#ABABAB`) pasan a `#6B6B6B` (contraste AA).
 - **Controles:** botones, campos, chips, casillas, interruptor, stepper y filas miden 56 px o más (`useMedidas()`); `Presionable` asegura 56 px de alto para tocar.

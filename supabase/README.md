@@ -19,15 +19,19 @@ Todavía no hay titulares, búsquedas, match, mensajes ni cobro.
 | `migrations/20261116120000_negocios_con_licencia_b_y_c.sql` | Enciende Transporte por aplicación (B) y Moto delivery (C), y la industria de carga solo con Moto delivery (aprobado el 16-nov). |
 | `pruebas/negocios_con_licencia_b_y_c_pruebas.sql` | Pruebas de esa migración: quien tiene solo B o solo C ya puede elegir un negocio (9). Terminan en `ROLLBACK`. |
 | `migrations/20261124120000_experiencia_ejemplo_taxi.sql` | S07: el ejemplo de "Vehículo liviano" pasa a "auto, taxi, SUV, camioneta" (aprobado el 24-nov). |
-| `migrations/20261124120100_autorizaciones_solo_dos.sql` | S12: "Antes de empezar" pide solo `terminos_privacidad` y `compartir_ficha`; `revision_documentos` y `normas_mensajes` quedan no vigentes (no se borran) hasta que se construyan documentos y mensajes (aprobado el 24-nov). |
+| `migrations/20261124120100_autorizaciones_solo_dos.sql` | S12: "Antes de empezar" pide solo `terminos_privacidad` y `compartir_ficha`; las versiones `prueba-1` de `revision_documentos` y `normas_mensajes` quedan no vigentes (no se borran; aprobado el 24-nov). Solo toca las `prueba-1`: la `prueba-2` de documentos, que agrega la migración de documentos, sigue vigente aunque esta corriera después. |
 | `migrations/20261124120200_ajuste_aviso_reconfirmar.sql` | S14: ajuste público `dias_aviso_reconfirmar = 5` (cuántos días antes del plazo vuelve "Confirmar ahora" en Perfil; aprobado el 24-nov). |
 | `pruebas/mejoras_conductor_24nov_pruebas.sql` | Pruebas de esas 3 migraciones (16). Terminan en `ROLLBACK`. |
 | `migrations/20261124150000_documentos_conductor.sql` | Documentos del conductor (24-nov): `tipos_documento` (los 4, configurable), `documentos`, `revisiones_documento`, ajustes `metodo_validacion_documentos` (`aprobar_todo`) y `meses_aviso_vencimiento_documentos` (3), el método de validación (`privado.validar_documento`), el estado del perfil y de la verificación, los vencimientos y avisos, el espacio privado `documentos` de Storage con sus políticas, la versión `prueba-2` de "Revisión de mis documentos" si no hay una vigente, y la tarea diaria con pg_cron. |
 | `pruebas/storage_simulado.sql` | Imita lo mínimo de Supabase Storage (`storage.buckets`, `storage.objects`, `storage.foldername`). **Nunca se aplica en Supabase.** |
-| `pruebas/documentos_conductor_pruebas.sql` | Pruebas de los documentos (94): catálogo, Storage (nadie lee ni borra lo ajeno), reglas al subir, aprobación automática provisoria, reemplazos, otro método, vencimientos y avisos, perfil completo, catálogo configurable, "Revisión de mis documentos" con 2 o 4 textos y permisos. Terminan en `ROLLBACK`. |
+| `pruebas/documentos_conductor_pruebas.sql` | Pruebas de los documentos (125): catálogo, Storage (nadie lee ni borra lo ajeno), reglas al subir, aprobación automática provisoria, reemplazos, otro método, vencimientos y avisos, perfil completo (también sin el Paso 3), catálogo configurable, "Revisión de mis documentos" con 2 o 4 textos y permisos. Terminan en `ROLLBACK`. |
 | `scripts/generar_zonas.py` | Genera el bloque de regiones, zonas y comunas de la migración de datos desde `docs/propuesta-zonas.csv`. Ese bloque no se edita a mano. |
 | `pruebas/auth_simulado.sql` | Imita lo mínimo de Supabase (roles y `auth.users`) para probar en local. **Nunca se aplica en Supabase.** |
 | `pruebas/etapa1_pruebas.sql` | Pruebas de datos y de seguridad. Terminan en `ROLLBACK`: no dejan datos. |
+
+## Aplicar en Supabase
+
+Se aplican **en orden de nombre**. Las del 24-nov (al mergear `integracion-24nov` a `main`): `20261124120000_experiencia_ejemplo_taxi`, `20261124120100_autorizaciones_solo_dos`, `20261124120200_ajuste_aviso_reconfirmar` y `20261124150000_documentos_conductor`. Así quedan en "Antes de empezar" 2 textos obligatorios y la `prueba-2` de "Revisión de mis documentos" vigente, no obligatoria, pedida en el Paso 5. Los archivos de `pruebas/` nunca se aplican en Supabase.
 
 ## Probar en local (Postgres 16)
 
@@ -56,7 +60,7 @@ su postgres -c "psql -p 5499 -d dale -X -v ON_ERROR_STOP=1 \
 ```
 
 Cada prueba imprime `OK  [código] ...`. Si una falla, psql se detiene con
-`FALLA: ...`. Al final aparecen `FIN: todas las pruebas de la Etapa 1 pasaron.`, `FIN: todas las pruebas de la app del conductor v1 pasaron.`, `FIN: todas las pruebas de las formas de PostgREST de la app v1 pasaron.`, `FIN: todas las pruebas de los negocios con licencia B y C pasaron.`, `FIN: todas las pruebas de las mejoras del conductor del 24-nov pasaron.` y `FIN: todas las pruebas de los documentos del conductor pasaron.` (TOTAL_OK líneas `OK` en total, probado el 24-nov). Si los archivos están en una carpeta que el usuario postgres no puede leer, cópialos antes a una carpeta legible (por ejemplo `/tmp`).
+`FALLA: ...`. Al final aparecen `FIN: todas las pruebas de la Etapa 1 pasaron.`, `FIN: todas las pruebas de la app del conductor v1 pasaron.`, `FIN: todas las pruebas de las formas de PostgREST de la app v1 pasaron.`, `FIN: todas las pruebas de los negocios con licencia B y C pasaron.`, `FIN: todas las pruebas de las mejoras del conductor del 24-nov pasaron.` y `FIN: todas las pruebas de los documentos del conductor pasaron.` (463 líneas `OK` en total, probado el 24-nov con todo integrado). Si los archivos están en una carpeta que el usuario postgres no puede leer, cópialos antes a una carpeta legible (por ejemplo `/tmp`).
 El aviso `no se pudo crear o actualizar la cuenta` es esperado: lo provoca la prueba A8.
 
 Para repetir desde cero: `su postgres -c "dropdb -p 5499 dale"` y volver a crearla.
