@@ -42,6 +42,7 @@ Lista de trabajo para redactar los textos legales con el abogado. Se agrega un p
 ## Etapa de prueba con el equipo (desde el 9-nov)
 
 - [ ] La dueña y su equipo aceptan en la app real los 4 textos de "Antes de empezar" en su **versión de prueba** ('prueba-1', copiados de la maqueta, sin revisión del abogado). Cuando lleguen los definitivos, todos deberán **aceptarlos de nuevo** (versión 'v1').
+- [ ] **Desde el 24-nov (S12):** "Antes de empezar" pide solo **2** autorizaciones (Términos y Política de privacidad con mayoría de edad; compartir ficha y contacto tras el match). La de **revisión de documentos** se pedirá justo antes de subir el primer documento (Paso 5) y la de **normas de los mensajes** antes del primer mensaje. Confirmar con el abogado que pedir cada autorización cuando se usa cumple el consentimiento expreso y específico (P1).
 - [ ] Se guardan **datos reales** del equipo (nombre, fecha de nacimiento, correo, celular, comuna y lo demás de los pasos 1 a 4) **antes** de tener los Términos y la Política aprobados. [verificar con abogado]
 - [ ] Solo entran los **celulares de prueba** que la dueña anota en Supabase; no se envían mensajes. Cómo se borran estos datos de prueba antes del lanzamiento se decide aparte (hoy la base no deja borrar a quien aceptó autorizaciones).
 
