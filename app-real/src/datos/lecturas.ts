@@ -94,7 +94,7 @@ export async function leerPerfil(cliente: Cliente, uid: string): Promise<Lectura
     cliente.from('conductor_negocios').select('negocio_id').eq('conductor_id', uid),
     cliente.from('conductor_opciones').select('opcion_id').eq('conductor_id', uid),
     cliente.from('consentimientos').select('texto_autorizacion_id').eq('cuenta_id', uid).is('revocado_en', null),
-    cliente.from('documentos').select(COLUMNAS_DOCUMENTO).eq('cuenta_id', uid).neq('estado', 'reemplazado').order('subido_en', { ascending: false }),
+    cliente.from('documentos').select(COLUMNAS_DOCUMENTO).eq('cuenta_id', uid).not('estado', 'in', '(reemplazado,retirado)').order('subido_en', { ascending: false }),
   ]);
   for (const r of [cuenta, conductor, licencias, experiencia, negocios, opciones, consentimientos, documentos]) {
     const e = fallo(r);

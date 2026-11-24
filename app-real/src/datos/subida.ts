@@ -11,11 +11,14 @@
 //      Si la fila no se pudo guardar, se borra el archivo recién subido (Storage solo deja borrar
 //      archivos que ningún documento vigente usa: si la fila sí quedó y solo se perdió la respuesta,
 //      el borrado no pasa y el documento queda bien).
-//   4. Limpieza: los archivos de la carpeta propia que ya no usa ningún documento (los reemplazados y
-//      las subidas que no terminaron) se borran. Si falla, se intenta la próxima vez.
+//   4. Limpieza: se borran los archivos del documento que se acaba de reemplazar y los que no usa ningún
+//      documento y tienen más de 10 minutos (subidas que no terminaron). Uno más nuevo no se toca: puede
+//      ser de una subida en curso en otra pestaña u otro celular. Si falla, se intenta la próxima vez.
+//      La base pone un tope de archivos por persona (maximo_archivos_documentos): si Storage rechaza la
+//      subida, se limpia lo que sobra y se intenta una vez más.
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-import { archivosSobrantes, rutaArchivo, type DocumentoReal } from './documentos.ts';
+import { archivosSobrantes, rutaArchivo, type ArchivoEnCarpeta, type DocumentoReal } from './documentos.ts';
 import { TEXTO, esErrorDeRed, esSesionVencida, textoErrorGuardar, type ErrorSupabase } from './errores.ts';
 import { renovarSesion } from './sesion.ts';
 
@@ -29,6 +32,8 @@ export const TEXTO_SUBIDA = {
   pesado: 'El archivo pesa más de 10 MB. Elige otro.',
   formato: 'Ese tipo de archivo no se acepta. Elige una foto o un PDF.',
   subir: 'No pudimos subir el archivo. Inténtalo de nuevo.',
+  /** Storage no deja subir más (tope de archivos lleno de subidas recientes que no terminaron). */
+  tope: 'No pudimos subir el archivo. Inténtalo de nuevo en unos minutos.',
 } as const;
 
 export interface PedidoSubida {
@@ -80,15 +85,23 @@ export async function subirDocumento(cliente: Cliente, p: PedidoSubida): Promise
   } catch {
     return { ok: false, error: 'No pudimos leer el archivo. Elige otro.' };
   }
-  const subida = await conSesion(cliente, async () => {
-    const r = await espacio.upload(ruta, bytes, { contentType: p.mime, upsert: false, cacheControl: '3600' });
-    return { error: r.error as ErrorSupabase | null };
-  });
+  const subirArchivo = () =>
+    conSesion(cliente, async () => {
+      const r = await espacio.upload(ruta, bytes, { contentType: p.mime, upsert: false, cacheControl: '3600' });
+      return { error: r.error as ErrorSupabase | null };
+    });
+  let subida = await subirArchivo();
+  // Storage dice que no (permiso): puede ser el tope de archivos lleno de subidas que no terminaron.
+  // Se borran las que sobran y se intenta una vez más.
+  if (!('vencida' in subida) && !('sinConexion' in subida) && subida.error && textoErrorStorage(subida.error) === TEXTO.sinPermiso) {
+    if ((await limpiarSegunLaBase(cliente, p.uid)) > 0) subida = await subirArchivo();
+  }
   if ('vencida' in subida) return { ok: false, error: TEXTO.sesionVencida, vencida: true };
   if ('sinConexion' in subida) return { ok: false, error: TEXTO_SUBIDA.conexion };
   if (subida.error) {
     if (/row-level security|jwt/i.test(subida.error.message ?? '')) console.warn('Dale Contacto: Storage no dejó subir', subida.error.message);
-    return { ok: false, error: textoErrorStorage(subida.error) };
+    const texto = textoErrorStorage(subida.error);
+    return { ok: false, error: texto === TEXTO.sinPermiso ? TEXTO_SUBIDA.tope : texto };
   }
 
   const fila = {
@@ -137,16 +150,40 @@ async function filaGuardada(cliente: Cliente, ruta: string): Promise<number | nu
   }
 }
 
-/** Borra los archivos de la carpeta propia que ningún documento vigente usa. Devuelve cuántos borró. */
-export async function limpiarArchivosSobrantes(cliente: Cliente, uid: string, documentos: DocumentoReal[]): Promise<number> {
-  const espacio = cliente.storage.from(ESPACIO);
-  const lista = await espacio.list(uid, { limit: 1000 });
-  if (lista.error || !lista.data) return 0;
-  const nombres = lista.data.map((x) => x.name).filter((n) => n && !n.startsWith('.'));
-  const sobrantes = archivosSobrantes(nombres, uid, documentos);
-  if (sobrantes.length === 0) return 0;
-  const r = await espacio.remove(sobrantes);
-  return r.error ? 0 : (r.data?.length ?? 0);
+/**
+ * Borra los archivos de la carpeta propia que sobran (ver archivosSobrantes): los de `reemplazadas` (el
+ * documento que se acaba de reemplazar) y los sueltos de más de 10 minutos. Devuelve cuántos borró.
+ */
+export async function limpiarArchivosSobrantes(
+  cliente: Cliente,
+  uid: string,
+  documentos: Pick<DocumentoReal, 'estado' | 'ruta'>[],
+  reemplazadas: Iterable<string> = [],
+): Promise<number> {
+  try {
+    const espacio = cliente.storage.from(ESPACIO);
+    const lista = await espacio.list(uid, { limit: 1000 });
+    if (lista.error || !lista.data) return 0;
+    const archivos: ArchivoEnCarpeta[] = lista.data.filter((x) => x.name && !x.name.startsWith('.')).map((x) => ({ name: x.name, created_at: x.created_at }));
+    const sobrantes = archivosSobrantes(archivos, uid, documentos, { reemplazadas });
+    if (sobrantes.length === 0) return 0;
+    const r = await espacio.remove(sobrantes);
+    return r.error ? 0 : (r.data?.length ?? 0);
+  } catch {
+    return 0;
+  }
+}
+
+/** Como limpiarArchivosSobrantes, preguntando a la base qué documentos usan archivos. */
+async function limpiarSegunLaBase(cliente: Cliente, uid: string): Promise<number> {
+  try {
+    const r = await cliente.from('documentos').select('archivo_ruta,estado').eq('cuenta_id', uid);
+    if (r.error || !r.data) return 0;
+    const usados = (r.data as { archivo_ruta: string; estado: DocumentoReal['estado'] }[]).map((d) => ({ ruta: d.archivo_ruta, estado: d.estado }));
+    return await limpiarArchivosSobrantes(cliente, uid, usados);
+  } catch {
+    return 0;
+  }
 }
 
 /** Un nombre único para el archivo (uuid v4). */

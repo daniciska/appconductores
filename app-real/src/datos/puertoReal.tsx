@@ -390,6 +390,8 @@ export const accionesDocumentos = {
     const errFecha = errorFechaDocumento(p.fecha, tipo, hoyEnChile());
     if (errFecha) return fallo(errFecha);
     const fecha = tipo.fechaPedida === 'ninguna' ? null : fechaDeTexto(p.fecha);
+    // Los archivos de este tipo antes de subir: los que dejen de estar vigentes se borran al tiro.
+    const antes = e.documentos.filter((d) => d.tipoId === tipo.id).map((d) => d.ruta);
     const r = await subirDocumento(supabase, {
       uid,
       tipoId: tipo.id,
@@ -409,7 +411,8 @@ export const accionesDocumentos = {
       return { ok: true, valor: { estado: null } };
     }
     const despues = useTiendaReal.getState();
-    void limpiarArchivosSobrantes(supabase, uid, despues.documentos).catch(() => 0);
+    const vigentes = new Set(despues.documentos.map((d) => d.ruta));
+    void limpiarArchivosSobrantes(supabase, uid, despues.documentos, antes.filter((ruta) => !vigentes.has(ruta)));
     return { ok: true, valor: { estado: despues.documentos.find((d) => d.id === r.valor.id)?.estado ?? null } };
   },
 };

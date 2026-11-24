@@ -5,7 +5,11 @@
 //   - Perfil completo (pasos 1, 2 y 4 y los 4 documentos aprobados; lo calcula la base): "Perfil
 //     verificado", "Disponible para trabajar", "¿Sigues buscando trabajo?" cuando toca, y "Aún no tienes
 //     matches" (maqueta C6), sin prometer avisos. En pausa, la tarjeta "Estás en pausa".
-//   - Arriba, en los dos casos, el aviso de un documento que vence pronto o venció (desde 3 meses antes).
+//   - Pasos listos y los 4 documentos subidos, pero alguno vencido o no aprobado: "No apareces en los
+//     matches" con el botón para subirlo de nuevo (sin repetir arriba el aviso del mismo documento).
+//   - Pasos listos y los 4 documentos subidos, alguno esperando revisión (si el método de validación no
+//     los aprueba al tiro): "Tus documentos están en revisión"; no le falta nada, solo esperar.
+//   - Arriba, el aviso de un documento que vence pronto o venció (desde 3 meses antes).
 import { Text, View } from 'react-native';
 import { useNavigation } from 'expo-router';
 
@@ -18,7 +22,7 @@ import { Bell, ChevronRight, Clock } from '@/ui/iconos';
 import { Hoja } from '@/ui/iconosPropios';
 import Pause from 'lucide-react-native/icons/pause';
 
-import { textoDocumentosPorRenovar, tituloBotonSubir } from '@real/datos/documentos';
+import { documentosEsperandoRevision, textoDocumentosPorRenovar, tituloBotonSubir } from '@real/datos/documentos';
 
 import { AvisosVencimiento, insigniaAviso, rutaSubir, useDocumentos } from './documentos/comunes';
 
@@ -116,10 +120,10 @@ function VistaCompleta() {
   );
 }
 
-/** Fila "Mis documentos" (con la insignia del aviso más próximo). */
-function FilaMisDocumentos() {
+/** Fila "Mis documentos" (con la insignia del aviso más próximo, salvo que la tarjeta de arriba ya lo diga). */
+function FilaMisDocumentos({ conAviso = true }: { conAviso?: boolean }) {
   const docs = useDocumentos();
-  const aviso = insigniaAviso(docs);
+  const aviso = conAviso ? insigniaAviso(docs) : null;
   return (
     <Presionable
       role="button"
@@ -169,6 +173,24 @@ function VistaPorRenovar({ texto, tipoClave, corto }: { texto: string; tipoClave
           <Boton titulo="Ver mis documentos" variante="principal" href="/conductor/perfil/documentos" />
         )}
       </TarjetaOscura>
+      <FilaMisDocumentos conAviso={false} />
+    </>
+  );
+}
+
+/** Pasos listos y documentos subidos, alguno esperando revisión: no le falta nada, solo esperar. */
+function VistaEnRevision() {
+  return (
+    <>
+      <TarjetaOscura>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <CuadroIcono icono={Clock} fondo="#2A2A2A" colorIcono={color.acento} />
+          <Text role="heading" aria-level={2} style={{ flex: 1, fontFamily: 'Sora_700Bold', fontSize: 20, lineHeight: 25, letterSpacing: -0.2, color: color.blanco }}>
+            Tus documentos están en revisión
+          </Text>
+        </View>
+        <Text style={[tipo.secundario, { lineHeight: 21, color: GRIS_SOBRE_OSCURO }]}>Cuando estén aprobados, empiezas a aparecer en los matches.</Text>
+      </TarjetaOscura>
       <FilaMisDocumentos />
     </>
   );
@@ -194,6 +216,9 @@ export default function InicioV1() {
         ? { texto: 'En revisión', tono: 'amarilla', icono: Clock }
         : { texto: 'Perfil incompleto', tono: 'amarilla', icono: Clock };
   const porRenovar = pasos1a4 && !completo ? textoDocumentosPorRenovar(docs) : null;
+  const esperando = pasos1a4 && !completo && !porRenovar && documentosEsperandoRevision(docs);
+  // La tarjeta "No apareces en los matches" ya lleva a subir esos documentos: su aviso no se repite arriba.
+  const avisos = porRenovar ? docs.avisos.filter((v) => !porRenovar.tipos.some((t) => t.id === v.tipo.id)) : docs.avisos;
   const estadoDocs = revisar ? 'Revisa un documento' : enRevision ? 'En revisión' : `${docs.listos} de ${docs.total} aprobados`;
 
   return (
@@ -204,11 +229,13 @@ export default function InicioV1() {
         insignia={insignia}
         onAvatar={() => navigation.dispatch({ type: 'NAVIGATE', payload: { name: 'perfil' } })}
       />
-      <AvisosVencimiento avisos={docs.avisos} />
+      <AvisosVencimiento avisos={avisos} />
       {completo ? (
         <VistaCompleta />
       ) : porRenovar ? (
         <VistaPorRenovar texto={porRenovar.texto} tipoClave={porRenovar.tipo?.clave ?? null} corto={porRenovar.tipo?.corto ?? null} />
+      ) : esperando ? (
+        <VistaEnRevision />
       ) : (
         <VistaIncompleta
           documentos={{ modo: 'activo', subidos: docs.subidos, ruta: '/conductor/registro/5', textoEstado: estadoDocs, textoListo: 'Aprobados' }}

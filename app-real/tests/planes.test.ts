@@ -138,11 +138,12 @@ describe('Paso 4', () => {
 
 describe('Antes de empezar (A4)', () => {
   it('inserta solo los textos que faltan, por columnas y sin id', () => {
-    const p = planAutorizaciones(UID, textos, [2]);
+    const ids = textos.map((t) => t.id);
+    const p = planAutorizaciones(UID, textos, [ids[1]]);
     assert.equal(p.length, 1);
     assert.ok(p[0].tipo === 'insertar');
-    assert.deepEqual(p[0].filas, [1, 3, 4].map((n) => ({ cuenta_id: UID, texto_autorizacion_id: n })));
-    assert.deepEqual(planAutorizaciones(UID, textos, [1, 2, 3, 4]), []);
+    assert.deepEqual(p[0].filas, ids.filter((_, i) => i !== 1).map((n) => ({ cuenta_id: UID, texto_autorizacion_id: n })));
+    assert.deepEqual(planAutorizaciones(UID, textos, ids), []);
   });
 });
 

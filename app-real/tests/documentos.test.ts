@@ -6,6 +6,7 @@ import { describe, it } from 'node:test';
 
 import {
   archivosSobrantes,
+  documentosEsperandoRevision,
   errorArchivo,
   errorFechaDocumento,
   fechaCorta,
@@ -31,6 +32,7 @@ import {
 } from '../src/datos/documentos.ts';
 import { mapearPerfil, type FilasPerfil } from '../src/datos/perfil.ts';
 import { avancePerfil } from '../../aplicacion/src/datos/puerto/derivados.ts';
+import { mascaraFecha } from '../../aplicacion/src/datos/formato.ts';
 
 import { BASE, catalogosLeidos } from './base.ts';
 
@@ -55,6 +57,14 @@ function doc(clave: string, cambios: Partial<DocumentoReal> = {}): DocumentoReal
   };
 }
 
+/** Los 4 documentos al día, con cambios en la licencia. */
+const cuatro = (licencia: Partial<DocumentoReal>) => [
+  doc('cedula', { venceEn: '2030-01-01' }),
+  doc('licencia', { venceEn: '2030-01-01', ...licencia }),
+  doc('hoja_vida', { archivoTipo: 'application/pdf', emitidoEn: '2026-11-20' }),
+  doc('antecedentes', { archivoTipo: 'application/pdf', emitidoEn: '2026-11-21' }),
+];
+
 describe('catálogo de documentos (de la base)', () => {
   it('los 4 del conductor, en orden, con su fecha y los PDF de 30 días o menos', () => {
     assert.deepEqual(
@@ -66,7 +76,7 @@ describe('catálogo de documentos (de la base)', () => {
         ['antecedentes', 'pdf', 'emision', 30],
       ],
     );
-    assert.equal(tipo('licencia').etiquetaFecha, 'Fecha del próximo control');
+    assert.equal(tipo('licencia').etiquetaFecha, 'Fecha de vencimiento (próximo control)', 'la misma palabra que sus avisos');
     assert.equal(c.mesesAvisoDocumentos, 3);
   });
   it('lo inactivo o de titulares no aparece; el ajuste de meses mal escrito vale 3', () => {
@@ -162,8 +172,9 @@ describe('textos', () => {
     assert.equal(textoEstado(vistaTipo(ced, [doc('cedula', { venceEn: '2030-03-01' })], HOY, 3)), 'Aprobada');
     assert.equal(textoEstado(vistaTipo(tipo('antecedentes'), [doc('antecedentes', { emitidoEn: '2026-11-20' })], HOY, 3)), 'Aprobado');
     assert.equal(lineaFecha(vistaTipo(ced, [doc('cedula', { venceEn: '2030-03-01' })], HOY, 3)), 'Vence el 01/03/2030');
-    assert.equal(lineaFecha(vistaTipo(tipo('licencia'), [doc('licencia', { venceEn: '2030-03-01' })], HOY, 3)), 'Próximo control el 01/03/2030');
-    assert.equal(lineaFecha(vistaTipo(tipo('hoja_vida'), [doc('hoja_vida', { emitidoEn: '2026-11-20' })], HOY, 3)), 'Emitido el 20/11/2026');
+    assert.equal(lineaFecha(vistaTipo(tipo('licencia'), [doc('licencia', { venceEn: '2030-03-01' })], HOY, 3)), 'Vence el 01/03/2030');
+    assert.equal(lineaFecha(vistaTipo(tipo('hoja_vida'), [doc('hoja_vida', { emitidoEn: '2026-11-20' })], HOY, 3)), 'Emitida el 20/11/2026');
+    assert.equal(lineaFecha(vistaTipo(tipo('antecedentes'), [doc('antecedentes', { emitidoEn: '2026-11-20' })], HOY, 3)), 'Emitido el 20/11/2026');
     assert.equal(textoTrasSubir(ced, 'aprobado'), 'Cédula: aprobada.');
     assert.equal(textoTrasSubir(tipo('antecedentes'), 'en_revision'), 'Antecedentes: enviado a revisión.');
     assert.equal(textoTrasSubir(ced, null), 'Cédula: enviada a revisión.');
@@ -185,12 +196,6 @@ describe('pantalla de subir e Inicio', () => {
     );
   });
   it('Inicio: verificado al que se le venció la licencia (no es alguien que recién se registra)', () => {
-    const cuatro = (licencia: Partial<DocumentoReal>) => [
-      doc('cedula', { venceEn: '2030-01-01' }),
-      doc('licencia', { venceEn: '2030-01-01', ...licencia }),
-      doc('hoja_vida', { archivoTipo: 'application/pdf', emitidoEn: '2026-11-20' }),
-      doc('antecedentes', { archivoTipo: 'application/pdf', emitidoEn: '2026-11-21' }),
-    ];
     const r = (docs: DocumentoReal[]) => textoDocumentosPorRenovar(resumenDocumentos(c.tiposDocumento, docs, HOY, 3));
     const vencida = r(cuatro({ venceEn: '2026-11-23' }));
     assert.equal(vencida?.texto, 'Sube de nuevo tu licencia para volver a aparecer en los matches.');
@@ -200,6 +205,28 @@ describe('pantalla de subir e Inicio', () => {
     assert.equal(r([doc('licencia', { venceEn: '2026-11-23' })]), null, 'si además faltan documentos, sigue el registro');
     const dos = r([...cuatro({ venceEn: '2026-11-23' }).slice(1), doc('cedula', { estado: 'vencido', venceEn: '2026-11-01' })]);
     assert.deepEqual([dos?.tipo, dos?.texto], [null, 'Sube de nuevo los documentos marcados para aparecer en los matches.']);
+  });
+  it('el campo de fecha con puntos, guiones o sin ceros (teclado numérico de Android)', () => {
+    const tecleo = (x: string) => [...x].reduce((v, ch) => mascaraFecha(v + ch), '');
+    for (const x of ['15.1.2030', '15-01-2030', '15/01/2030', '15012030', '15 1 2030']) {
+      assert.equal(mascaraFecha(x), '15/01/2030', `pegar ${x}`);
+      assert.equal(tecleo(x), '15/01/2030', `escribir ${x}`);
+    }
+    assert.equal(mascaraFecha('1.1.2030'), '01/01/2030');
+    assert.equal(mascaraFecha('1403198'), '14/03/198');
+    assert.equal(mascaraFecha('15/'), '15', 'nunca una barra al final: borrar no se traba');
+    assert.equal(fechaDeTexto(mascaraFecha('15.1.2030')), '2030-01-15');
+  });
+  it('Inicio con los 4 subidos y alguno en revisión: solo hay que esperar (no "Completa tu perfil")', () => {
+    const e = (docs: DocumentoReal[]) => documentosEsperandoRevision(resumenDocumentos(c.tiposDocumento, docs, HOY, 3));
+    assert.equal(e(cuatro({ estado: 'en_revision' })), true);
+    assert.equal(e(cuatro({})), false, 'todo aprobado');
+    assert.equal(e([doc('licencia', { estado: 'en_revision' })]), false, 'si faltan documentos, sigue el registro');
+    assert.equal(e(cuatro({ estado: 'no_aprobado' })), false, 'uno no aprobado: hay que subirlo de nuevo');
+    // La cédula vence y la nueva espera revisión.
+    const docs = [...cuatro({}).filter((d) => d.tipoId !== tipo('cedula').id), doc('cedula', { estado: 'reemplazado', venceEn: '2026-11-01' }), doc('cedula', { estado: 'en_revision', venceEn: '2031-01-01' })];
+    assert.equal(e(docs), true);
+    assert.equal(textoDocumentosPorRenovar(resumenDocumentos(c.tiposDocumento, docs, HOY, 3)), null);
   });
   it('sin texto vigente de "Revisión de mis documentos" no se ofrece subir', () => {
     assert.equal(hayTextoRevision([{ clave: 'terminos_privacidad' }]), false);
@@ -224,8 +251,27 @@ describe('archivos', () => {
     assert.equal(rutaArchivo(UID, uuid, 'image/jpeg'), `${UID}/${uuid}.jpg`);
     const vigente = doc('cedula');
     const reemplazado = doc('cedula', { estado: 'reemplazado' });
-    const nombres = [vigente.ruta, reemplazado.ruta, `${UID}/suelto.jpg`].map((r) => r.split('/')[1]);
-    assert.deepEqual(archivosSobrantes(nombres, UID, [vigente, reemplazado]), [reemplazado.ruta, `${UID}/suelto.jpg`]);
+    const retirado = doc('licencia', { estado: 'retirado' });
+    const AHORA_MS = Date.parse('2026-11-24T15:00:00Z');
+    const hace = (min: number) => new Date(AHORA_MS - min * 60 * 1000).toISOString();
+    const nombre = (r: string) => r.split('/')[1];
+    const enCarpeta = [
+      { name: nombre(vigente.ruta), created_at: hace(60) },
+      { name: nombre(reemplazado.ruta), created_at: hace(1) },
+      { name: nombre(retirado.ruta), created_at: hace(60) },
+      { name: 'viejo.jpg', created_at: hace(11) },
+      { name: 'en-curso.jpg', created_at: hace(2) },
+      { name: 'sin-fecha.jpg', created_at: null },
+    ];
+    const docs = [vigente, reemplazado, retirado];
+    // Un archivo suelto reciente puede ser de una subida en curso en otro celular: no se borra.
+    assert.deepEqual(archivosSobrantes(enCarpeta, UID, docs, { ahoraMs: AHORA_MS }), [retirado.ruta, `${UID}/viejo.jpg`]);
+    // El que se acaba de reemplazar en este celular se borra al tiro; el vigente, nunca.
+    assert.deepEqual(archivosSobrantes(enCarpeta, UID, docs, { ahoraMs: AHORA_MS, reemplazadas: [reemplazado.ruta, vigente.ruta] }), [
+      reemplazado.ruta,
+      retirado.ruta,
+      `${UID}/viejo.jpg`,
+    ]);
   });
   it('"Revisión de mis documentos": se pide solo si hay un texto vigente sin aceptar', () => {
     const textos = c.textos;

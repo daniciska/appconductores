@@ -12,7 +12,8 @@
 
 export type FormatoDocumento = 'foto' | 'pdf';
 export type FechaPedida = 'vencimiento' | 'emision' | 'ninguna';
-export type EstadoDocumentoBase = 'en_revision' | 'aprobado' | 'no_aprobado' | 'vencido' | 'reemplazado';
+/** 'retirado': la persona retiró la autorización de revisión; ya no se usa (como uno reemplazado). */
+export type EstadoDocumentoBase = 'en_revision' | 'aprobado' | 'no_aprobado' | 'vencido' | 'reemplazado' | 'retirado';
 
 export interface TipoDocumentoReal {
   id: number;
@@ -80,7 +81,9 @@ export const BYTES_MAXIMOS = 10 * 1024 * 1024;
 /** Clave del texto de autorización que se pide antes de subir el primer documento. */
 export const CLAVE_TEXTO_REVISION = 'revision_documentos';
 
-const ESTADOS: EstadoDocumentoBase[] = ['en_revision', 'aprobado', 'no_aprobado', 'vencido', 'reemplazado'];
+const ESTADOS: EstadoDocumentoBase[] = ['en_revision', 'aprobado', 'no_aprobado', 'vencido', 'reemplazado', 'retirado'];
+/** Ya no cuentan: hay uno más nuevo o se retiró la autorización. */
+export const enDesuso = (d: Pick<DocumentoReal, 'estado'>) => d.estado === 'reemplazado' || d.estado === 'retirado';
 const FECHAS: FechaPedida[] = ['vencimiento', 'emision', 'ninguna'];
 
 /** Los tipos que pide el conductor, activos y en orden. */
@@ -217,7 +220,7 @@ export interface VistaTipo {
 const masNuevo = (a: DocumentoReal, b: DocumentoReal) => (a.subidoEn === b.subidoEn ? b.id - a.id : b.subidoEn.localeCompare(a.subidoEn));
 
 export function vistaTipo(tipo: TipoDocumentoReal, documentos: DocumentoReal[], hoy: string, meses: number): VistaTipo {
-  const propios = documentos.filter((d) => d.tipoId === tipo.id && d.estado !== 'reemplazado').sort(masNuevo);
+  const propios = documentos.filter((d) => d.tipoId === tipo.id && !enDesuso(d)).sort(masNuevo);
   const ultimo = propios[0] ?? null;
   const vigente = propios.find((d) => d.estado === 'aprobado' && (d.venceEn === null || d.venceEn >= hoy)) ?? null;
   if (vigente) {
@@ -316,9 +319,9 @@ export function lineaFecha(v: VistaTipo): string {
   if (v.estado === 'en_revision') return `${fem(v.tipo, 'Subida', 'Subido')} el ${fechaCorta(d.subidoEn)}`;
   if (d.venceEn) {
     if (v.estado === 'vencido') return `Venció el ${fechaCorta(d.venceEn)}`;
-    return v.tipo.clave === 'licencia' ? `Próximo control el ${fechaCorta(d.venceEn)}` : `Vence el ${fechaCorta(d.venceEn)}`;
+    return `Vence el ${fechaCorta(d.venceEn)}`;
   }
-  if (d.emitidoEn) return `Emitido el ${fechaCorta(d.emitidoEn)}`;
+  if (d.emitidoEn) return `${fem(v.tipo, 'Emitida', 'Emitido')} el ${fechaCorta(d.emitidoEn)}`;
   return `${fem(v.tipo, 'Subida', 'Subido')} el ${fechaCorta(d.subidoEn)}`;
 }
 
@@ -393,17 +396,30 @@ export function tituloBotonSubir(corto: string): string {
  * Inicio con los pasos listos y todos los documentos subidos, pero alguno vencido o no aprobado (por
  * ejemplo, un conductor verificado al que se le venció la licencia): qué decirle. null si no es el caso.
  */
-export function textoDocumentosPorRenovar(r: ResumenDocumentos): { texto: string; tipo: TipoDocumentoReal | null } | null {
+export function textoDocumentosPorRenovar(r: ResumenDocumentos): { texto: string; tipo: TipoDocumentoReal | null; tipos: TipoDocumentoReal[] } | null {
   const malos = r.tipos.filter((v) => v.tipo.obligatorio && (v.estado === 'vencido' || v.estado === 'no_aprobado'));
   const faltan = r.tipos.some((v) => v.tipo.obligatorio && v.estado === 'falta');
   if (malos.length === 0 || faltan) return null;
-  if (malos.length > 1) return { texto: 'Sube de nuevo los documentos marcados para aparecer en los matches.', tipo: null };
+  const tipos = malos.map((v) => v.tipo);
+  if (malos.length > 1) return { texto: 'Sube de nuevo los documentos marcados para aparecer en los matches.', tipo: null, tipos };
   const v = malos[0];
   const tu = tuDocumento(v.tipo);
   const suyo = `${tu.charAt(0).toLowerCase()}${tu.slice(1)}`;
   return v.estado === 'vencido'
-    ? { texto: `Sube de nuevo ${suyo} para volver a aparecer en los matches.`, tipo: v.tipo }
-    : { texto: `Sube de nuevo ${suyo} para aparecer en los matches.`, tipo: v.tipo };
+    ? { texto: `Sube de nuevo ${suyo} para volver a aparecer en los matches.`, tipo: v.tipo, tipos }
+    : { texto: `Sube de nuevo ${suyo} para aparecer en los matches.`, tipo: v.tipo, tipos };
+}
+
+/**
+ * Inicio con los pasos listos y todos los documentos subidos, sin ninguno vencido ni no aprobado, pero
+ * con alguno esperando la revisión (cuando el método de validación no los apruebe al tiro): al conductor
+ * no le falta nada, solo esperar.
+ */
+export function documentosEsperandoRevision(r: ResumenDocumentos): boolean {
+  const obligatorios = r.tipos.filter((v) => v.tipo.obligatorio);
+  if (obligatorios.length === 0) return false;
+  if (obligatorios.some((v) => v.estado === 'falta' || v.estado === 'vencido' || v.estado === 'no_aprobado')) return false;
+  return obligatorios.some((v) => v.estado === 'en_revision');
 }
 
 /** Ruta en el espacio documentos: '<uid>/<uuid>.<ext>' (la base y Storage exigen esta forma). */
@@ -411,10 +427,35 @@ export function rutaArchivo(uid: string, uuid: string, mime: string): string {
   return `${uid}/${uuid}.${EXT_POR_MIME[mime] ?? 'bin'}`;
 }
 
-/** Archivos de la carpeta propia que ningún documento vigente usa (subidas que no terminaron, reemplazados). */
-export function archivosSobrantes(nombresEnCarpeta: string[], uid: string, documentos: DocumentoReal[]): string[] {
-  const usados = new Set(documentos.filter((d) => d.estado !== 'reemplazado').map((d) => d.ruta));
-  return nombresEnCarpeta.map((n) => `${uid}/${n}`).filter((r) => !usados.has(r));
+/** Minutos que se espera antes de borrar un archivo sin documento (puede ser una subida en curso en otro equipo). */
+export const MINUTOS_ARCHIVO_SUELTO = 10;
+
+export interface ArchivoEnCarpeta {
+  name: string;
+  /** ISO, como lo da Storage (si falta, el archivo no se borra: no se sabe si es de una subida en curso). */
+  created_at?: string | null;
+}
+
+/**
+ * Archivos de la carpeta propia que se pueden borrar:
+ *   - los de un documento que se acaba de reemplazar (`reemplazadas`: sus rutas), al tiro;
+ *   - los que no usa ningún documento vigente y tienen más de MINUTOS_ARCHIVO_SUELTO minutos (subidas
+ *     que no terminaron). Uno más nuevo puede ser de una subida que está ocurriendo en otra pestaña u
+ *     otro celular, cuya fila todavía no se guarda: borrarlo la haría fallar.
+ */
+export function archivosSobrantes(
+  enCarpeta: ArchivoEnCarpeta[],
+  uid: string,
+  documentos: Pick<DocumentoReal, 'estado' | 'ruta'>[],
+  opciones: { reemplazadas?: Iterable<string>; ahoraMs?: number } = {},
+): string[] {
+  const usados = new Set(documentos.filter((d) => !enDesuso(d)).map((d) => d.ruta));
+  const reemplazadas = new Set(opciones.reemplazadas ?? []);
+  const limite = (opciones.ahoraMs ?? Date.now()) - MINUTOS_ARCHIVO_SUELTO * 60 * 1000;
+  return enCarpeta
+    .map((a) => ({ ruta: `${uid}/${a.name}`, creado: a.created_at ? Date.parse(a.created_at) : NaN }))
+    .filter((a) => !usados.has(a.ruta) && (reemplazadas.has(a.ruta) || (Number.isFinite(a.creado) && a.creado <= limite)))
+    .map((a) => a.ruta);
 }
 
 /** Hay un texto vigente de "Revisión de mis documentos" (sin él, la base no recibe documentos). */

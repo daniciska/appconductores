@@ -47,10 +47,13 @@ async function perfil(cliente: Cliente, uid: string): Promise<PerfilLeido> {
   return mapearPerfil(r.datos!, c.mapas, c.textos, '', { tipos: c.tiposDocumento, meses: c.mesesAvisoDocumentos });
 }
 
-/** Pasos 1, 2 y 4 (y, si se pide, las autorizaciones de "Antes de empezar"). */
+/**
+ * Pasos 1, 2 y 4 (y, si se pide, las autorizaciones de "Antes de empezar" más "Revisión de mis
+ * documentos", que el Paso 5 pide antes del primer documento).
+ */
 async function registrar(cliente: Cliente, uid: string, { aceptar = true } = {}) {
   const ok = async (plan: Parameters<typeof ejecutarPlan>[1]) => assert.deepEqual(await ejecutarPlan(cliente, plan), { ok: true, valor: undefined });
-  if (aceptar) await ok(planAutorizaciones(uid, c.textos.filter((t) => t.obligatoria), []));
+  if (aceptar) await ok(planAutorizaciones(uid, c.textos.filter((t) => t.obligatoria || t.clave === 'revision_documentos'), []));
   await ok(
     planPaso1(
       uid,
@@ -139,12 +142,15 @@ describe('subir los 4 documentos', () => {
     assert.equal(sim.datos.documentos.find((d: { id: number }) => d.id === vieja.id).estado, 'reemplazado');
     const pf = await perfil(cliente, uid);
     assert.equal(pf.documentos.length, 4, 'la lectura no trae los reemplazados');
-    const borrados = await limpiarArchivosSobrantes(cliente, uid, pf.documentos);
+    // Sin decirle cuál se reemplazó, el archivo viejo (recién dejado de usar) espera: podría ser de una
+    // subida en curso en otro celular. Como lo hace la app, con la ruta reemplazada se borra al tiro.
+    assert.equal(await limpiarArchivosSobrantes(cliente, uid, pf.documentos), 0);
+    const borrados = await limpiarArchivosSobrantes(cliente, uid, pf.documentos, [vieja.archivo_ruta]);
     assert.equal(borrados, 1);
     assert.ok(!sim.archivos.some((a: { name: string }) => a.name === vieja.archivo_ruta));
     assert.equal(pf.conductor.estadoPerfil, 'completo');
-    // Limpiar otra vez no borra nada (los vigentes no se pueden borrar).
-    assert.equal(await limpiarArchivosSobrantes(cliente, uid, pf.documentos), 0);
+    // Limpiar otra vez no borra nada (los vigentes no se pueden borrar, aunque se pidan).
+    assert.equal(await limpiarArchivosSobrantes(cliente, uid, pf.documentos, pf.documentos.map((d) => d.ruta)), 0);
   });
 
   it('las reglas de la base llegan como textos cortos', async () => {
@@ -243,8 +249,11 @@ describe('cada uno solo lo suyo', () => {
     }
 
     const otro = sim.datos.documentos[0];
+    const delOtro = () => sim.archivos.filter((a: { name: string }) => a.name.startsWith(`${otro.cuenta_id}/`)).map((a: { name: string }) => a.name);
+    const archivosAntes = delOtro();
     const r = await subirDocumento(cliente, { ...pedido(uid, 'cedula'), uid: otro.cuenta_id });
-    assert.deepEqual(r, { ok: false, error: 'No tienes permiso para hacer esto.' });
+    assert.equal(r.ok, false);
+    assert.deepEqual(delOtro(), archivosAntes, 'no sube ni borra nada en la carpeta del otro');
     const lectura = await cliente.from('documentos').select('id').eq('cuenta_id', otro.cuenta_id);
     assert.deepEqual(lectura.data, []);
     const lista = await cliente.storage.from('documentos').list(otro.cuenta_id);

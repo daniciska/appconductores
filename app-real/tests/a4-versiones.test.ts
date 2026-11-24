@@ -49,9 +49,20 @@ interface Persona {
   aceptados(): number[];
 }
 
-/** Entra con el número de prueba; opcionalmente acepta los 4 textos de hoy y hace el Paso 1. */
-async function persona({ aceptar = false, registrar = false } = {}): Promise<Persona> {
+/**
+ * La base con los 4 textos obligatorios de la maqueta (como estaba hasta el 24-nov): la prueba-1 de
+ * "Revisión de mis documentos" vigente y obligatoria. Desde el 24-nov la base pide esa autorización en
+ * el Paso 5 (prueba-2, no obligatoria al entrar), y "Antes de empezar" queda con 3; las reglas de A4 son
+ * las mismas con 2, 3, 4 o 5 textos, y aquí se prueban con 4.
+ */
+function conCuatroObligatorios(sim: Sim) {
+  for (const t of sim.catalogos.textos_autorizacion) if (t.clave === 'revision_documentos') t.vigente = t.version === 'prueba-1';
+}
+
+/** Entra con el número de prueba; opcionalmente acepta los textos de hoy y hace el Paso 1. */
+async function persona({ aceptar = false, registrar = false, baseDeHoy = false } = {}): Promise<Persona> {
   const sim = crearSupabaseSimulado({ numerosDePrueba: { [NUMERO]: CODIGO } });
+  if (!baseDeHoy) conCuatroObligatorios(sim);
   const cliente = createClient(URL_SB, 'sb_publishable_prueba', {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     global: { fetch: sim.fetch },
@@ -133,6 +144,24 @@ describe('A4 · persona nueva', () => {
     assert.equal(despues.autorizacionesCompletas, true);
     assert.equal(guardiaInicio(despues), '/conductor/registro/1');
     assert.equal(pantalla(despues).volver, 'cerrarSesion', 'sin registrarse, Inicio no la deja pasar: ofrece cerrar sesión');
+  });
+});
+
+describe('A4 · con la base de hoy (24-nov)', () => {
+  it('3 casillas: "Revisión de mis documentos" no se pide al entrar, se pide en el Paso 5', async () => {
+    const yo = await persona({ baseDeHoy: true });
+    const { c, p } = await yo.leer();
+    const a4 = pantalla(p);
+    assert.deepEqual(a4.casillas.map((x) => casillaDeLaMaqueta(x.texto)), ['terminos', 'compartir', 'mensajes']);
+    assert.equal(textoMarcaTodas(a4.casillas.length), 'Marca las 3 autorizaciones para continuar.');
+    const r = textosParaAceptar(Object.fromEntries(a4.casillas.map((x) => [x.id, true])), c.textos);
+    assert.ok(r.ok);
+    assert.equal((await ejecutarPlan(yo.cliente, planAutorizaciones(yo.uid, r.valor, p.aceptados))).ok, true);
+    const despues = (await yo.leer()).p;
+    assert.equal(despues.autorizacionesCompletas, true);
+    const revision = c.textos.find((t) => t.clave === 'revision_documentos');
+    assert.ok(revision && !revision.obligatoria && revision.version === 'prueba-2');
+    assert.equal(yo.aceptados().includes(revision.id), false, 'la revisión todavía no se aceptó: se pide antes del primer documento');
   });
 });
 

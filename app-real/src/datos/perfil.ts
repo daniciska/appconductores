@@ -101,6 +101,8 @@ export function textosParaA4(textos: TextoVigente[], aceptados: number[]): Texto
   return textosObligatorios(textos).map((t) => ({ id: String(t.id), texto: t.texto.trim(), aceptado: aceptados.includes(t.id) }));
 }
 
+// La base también tiene 'faltan_documentos' (subió algunos y faltan otros): las pantallas compartidas no
+// lo distinguen de 'sin_documentos' (lo que falta lo muestran con los documentos mismos).
 const VERIFICACION: EstadoVerificacion[] = ['sin_documentos', 'en_revision', 'verificado', 'con_observaciones'];
 const texto = (t: string | null | undefined) => (t ?? '').trim();
 
