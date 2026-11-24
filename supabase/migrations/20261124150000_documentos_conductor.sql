@@ -187,13 +187,19 @@ begin
     raise exception 'Primero guarda tus datos (Paso 1).' using errcode = '23514';
   end if;
 
-  -- "Revisión de mis documentos": si hay un texto vigente, tiene que estar aceptado.
+  -- "Revisión de mis documentos": tiene que haber un texto vigente y estar aceptado. Si no hay
+  -- ninguno vigente (por ejemplo, si una migración apagó todas sus versiones), NO se reciben
+  -- documentos: nunca se guardan datos de antecedentes sin esa autorización (Ley 21.719 art. 25).
   select t.id into v_texto
     from public.textos_autorizacion t
    where t.clave = 'revision_documentos' and t.vigente
      and t.para_quien in (case when v_tipo.para_quien = 'conductor' then 'conductor' else 'titular' end, 'todos')
+   order by t.vigente_desde desc nulls last, t.id desc
    limit 1;
-  if v_texto is not null and not exists (
+  if v_texto is null then
+    raise exception 'Por ahora no podemos recibir documentos. Inténtalo más tarde.' using errcode = '23514';
+  end if;
+  if not exists (
     select 1 from public.consentimientos c
      where c.cuenta_id = new.cuenta_id and c.texto_autorizacion_id = v_texto and c.revocado_en is null
   ) then
@@ -644,14 +650,16 @@ create policy documentos_borrar_sin_uso on storage.objects for delete to authent
 -- (versión prueba-1, obligatoria), no cambia nada. Si no hay ninguna
 -- vigente (porque "Antes de empezar" quedó solo con 2, mejora S12), se
 -- agrega la versión prueba-2, NO obligatoria al entrar: se pide en el
--- Paso 5. Mismo texto de prueba, hasta el definitivo del abogado.
+-- Paso 5. Texto de prueba que no describe un método de revisión en
+-- particular (hoy el método aprueba todo), hasta el definitivo del abogado.
 -- OJO al integrar: si la migración de S12 (autorizaciones_solo_dos) se
 -- aplica DESPUÉS que esta, hay que volver a correr este bloque (no
--- duplica nada).
+-- duplica nada). Si se olvida, la base NO recibe documentos (4.1): falla
+-- a la vista, nunca deja subirlos sin la autorización.
 insert into public.textos_autorizacion
   (clave, nombre, texto, enlace, version, para_quien, obligatoria, exige_aceptar_de_nuevo, vigente, vigente_desde, orden)
 select 'revision_documentos', 'Revisión de documentos',
-       'Revisión de mis documentos: un sistema automático los revisa primero; las dudas y los rechazos los decide una persona de nuestro equipo. Puedo pedir otra revisión.',
+       'Revisión de mis documentos: autorizo que mis documentos se guarden mientras mi cuenta esté activa y se revisen para verificar mi identidad, mi licencia y mis antecedentes.',
        null, 'prueba-2', 'conductor', false, false, true, now(), 3
  where not exists (select 1 from public.textos_autorizacion where clave = 'revision_documentos' and vigente)
 on conflict (clave, version) do update set vigente = true, vigente_desde = now();

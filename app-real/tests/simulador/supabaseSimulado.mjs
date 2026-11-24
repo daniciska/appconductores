@@ -410,7 +410,8 @@ export function crearSupabaseSimulado(opciones = {}) {
     if (!tipo || !tipo.activo) throw new ErrorPg('23514', 'Ese documento ya no se pide. Vuelve a abrir la pantalla.');
     if (tipo.para_quien === 'conductor' && !datos.conductores.some((c) => c.id === uid)) throw new ErrorPg('23514', 'Primero guarda tus datos (Paso 1).');
     const texto = cat.textos_autorizacion.find((t) => t.clave === 'revision_documentos' && t.vigente);
-    if (texto && !datos.consentimientos.some((c) => c.cuenta_id === uid && c.texto_autorizacion_id === texto.id && !c.revocado_en))
+    if (!texto) throw new ErrorPg('23514', 'Por ahora no podemos recibir documentos. Inténtalo más tarde.');
+    if (!datos.consentimientos.some((c) => c.cuenta_id === uid && c.texto_autorizacion_id === texto.id && !c.revocado_en))
       throw new ErrorPg('23514', 'Primero acepta la revisión de tus documentos.');
     const archivo = archivos.find((a) => a.name === fila.archivo_ruta && a.owner_id === uid);
     if (!fila.archivo_ruta || String(fila.archivo_ruta).split('/')[0] !== uid || !archivo) throw new ErrorPg('23514', 'No encontramos el archivo. Vuelve a subirlo.');

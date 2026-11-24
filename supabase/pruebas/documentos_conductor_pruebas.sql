@@ -515,17 +515,22 @@ declare
 begin
   perform pruebas.como('postgres');
   update public.textos_autorizacion set vigente = false where clave in ('revision_documentos', 'normas_mensajes') and vigente;
-  -- Sin ningún texto vigente de documentos, no se exige.
+  -- Sin ningún texto vigente de documentos, la base NO recibe documentos (nunca sin la autorización).
   perform pruebas.registrar('t', false);
-  perform pruebas.subir('t', 'cedula', pruebas.hoy() + 500);
-  perform pruebas.ok(pruebas.perfil('t') = 'incompleto/sin_documentos', '[DC10] sin texto vigente de documentos, se sube igual');
+  perform pruebas.falla($f$select pruebas.subir('t', 'cedula', pruebas.hoy() + 500)$f$,
+    'no podemos recibir documentos', '[DC10] sin texto vigente de documentos, no se sube nada');
+  perform pruebas.falla($f$select pruebas.subir('a', 'antecedentes', null, pruebas.hoy() - 2)$f$,
+    'no podemos recibir documentos', '[DC10] tampoco quien había aceptado la versión anterior');
+  perform pruebas.como('postgres');
+  perform pruebas.ok(not exists (select 1 from public.documentos where cuenta_id = pruebas.id('t')),
+    '[DC10] sin texto vigente, no quedó ningún documento');
 
   -- El bloque 7 de la migración agrega la versión prueba-2, no obligatoria al entrar.
   perform pruebas.como('postgres');
   insert into public.textos_autorizacion
     (clave, nombre, texto, enlace, version, para_quien, obligatoria, exige_aceptar_de_nuevo, vigente, vigente_desde, orden)
   select 'revision_documentos', 'Revisión de documentos',
-         'Revisión de mis documentos: un sistema automático los revisa primero; las dudas y los rechazos los decide una persona de nuestro equipo. Puedo pedir otra revisión.',
+         'Revisión de mis documentos: autorizo que mis documentos se guarden mientras mi cuenta esté activa y se revisen para verificar mi identidad, mi licencia y mis antecedentes.',
          null, 'prueba-2', 'conductor', false, false, true, now(), 3
    where not exists (select 1 from public.textos_autorizacion where clave = 'revision_documentos' and vigente)
   on conflict (clave, version) do update set vigente = true, vigente_desde = now();
@@ -542,6 +547,7 @@ begin
 
   perform pruebas.como('t');
   insert into public.consentimientos (cuenta_id, texto_autorizacion_id) values (pruebas.id('t'), v_texto);
+  perform pruebas.subir('t', 'cedula', pruebas.hoy() + 500);
   perform pruebas.subir('t', 'licencia', pruebas.hoy() + 500);
   perform pruebas.como('t');
   perform pruebas.ok((select count(*) from public.documentos where estado = 'aprobado') = 2, '[DC10] aceptada, se sube y se aprueba');

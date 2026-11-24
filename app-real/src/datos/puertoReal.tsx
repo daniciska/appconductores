@@ -26,6 +26,8 @@ import {
   errorFechaDocumento,
   fechaDeTexto,
   hoyEnChile,
+  hayTextoRevision,
+  TEXTO_SIN_REVISION,
   textoRevisionPendiente,
   type EstadoDocumentoBase,
 } from './documentos';
@@ -381,6 +383,7 @@ export const accionesDocumentos = {
     if (!uid) return fallo(TEXTO.sesionVencida);
     const tipo = e.tiposDocumento.find((t) => t.id === p.tipoId);
     if (!tipo) return fallo('Ese documento ya no se pide. Vuelve a abrir la pantalla.');
+    if (!hayTextoRevision(e.textos)) return fallo(TEXTO_SIN_REVISION);
     if (textoRevisionPendiente(e.textos, e.aceptados)) return fallo('Primero acepta la revisión de tus documentos.');
     const errArchivo = errorArchivo(p.mime, p.archivo.size, tipo.formato);
     if (errArchivo) return fallo(errArchivo);
