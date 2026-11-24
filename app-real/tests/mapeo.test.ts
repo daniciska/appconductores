@@ -118,9 +118,13 @@ describe('perfil propio', () => {
     assert.deepEqual(p.conductor.experiencia, {});
     assert.equal(p.autorizacionesCompletas, false);
   });
-  it('autorizaciones: completas con los 4 textos vigentes; terminos/compartirFicha según su clave', () => {
+  it('autorizaciones: completas con los 2 textos obligatorios vigentes; terminos/compartirFicha según su clave', () => {
+    const solo1 = mapearPerfil(filas({ consentimientos: [{ texto_autorizacion_id: 1 }] }), c.mapas, c.textos);
+    assert.equal(solo1.autorizacionesCompletas, false);
+    assert.equal(solo1.cuenta.autorizaciones.terminos, true);
+    assert.equal(solo1.cuenta.autorizaciones.compartirFicha, false);
     const p = mapearPerfil(filas({ consentimientos: [{ texto_autorizacion_id: 1 }, { texto_autorizacion_id: 2 }] }), c.mapas, c.textos);
-    assert.equal(p.autorizacionesCompletas, false);
+    assert.equal(p.autorizacionesCompletas, true, 'la revisión de documentos (prueba-2) no se pide al entrar');
     assert.equal(p.cuenta.autorizaciones.terminos, true);
     assert.equal(p.cuenta.autorizaciones.compartirFicha, true);
     assert.equal(mapearPerfil(filas(), c.mapas, c.textos).autorizacionesCompletas, true);

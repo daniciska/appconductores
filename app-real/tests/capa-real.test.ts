@@ -82,12 +82,13 @@ describe('ingreso con celular y código', () => {
 });
 
 describe('lecturas', () => {
-  it('catálogos (también sin filtrar por persona) con el ajuste de 30 días y los 4 textos vigentes', async () => {
+  it('catálogos (también sin filtrar por persona) con el ajuste de 30 días y los 3 textos vigentes (2 obligatorios y la revisión del Paso 5)', async () => {
     const r = await leerCatalogos(cliente);
     assert.equal(r.error, null);
     c = mapearCatalogos(r.datos!);
     assert.equal(c.catalogos.comunas.length, 346);
-    assert.equal(c.textos.length, 4);
+    assert.deepEqual(c.textos.map((t) => t.clave), ['terminos_privacidad', 'compartir_ficha', 'revision_documentos']);
+    assert.deepEqual(c.textos.filter((t) => t.obligatoria).map((t) => t.clave), ['terminos_privacidad', 'compartir_ficha']);
     assert.equal(c.diasReconfirmar, 30);
     const negocios = sim.pedidos.find((p: { ruta: string }) => p.ruta === '/rest/v1/negocios');
     assert.match(negocios.query.select, /negocio_clases_licencia\(clase_licencia_id\),negocio_tamanos\(tamano_vehiculo_id\)/);
@@ -107,14 +108,14 @@ describe('lecturas', () => {
 });
 
 describe('guardar cada pantalla', () => {
-  it('A4: se aceptan las 4 (sin id; la fecha la pone el servidor) y repetir no duplica', async () => {
+  it('A4: se aceptan las vigentes (sin id; la fecha la pone el servidor) y repetir no duplica', async () => {
     assert.deepEqual(await ejecutarPlan(cliente, planAutorizaciones(uid, c.textos, [])), { ok: true, valor: undefined });
     const p = ultimos(1)[0];
     assert.deepEqual([p.method, p.ruta], ['POST', '/rest/v1/consentimientos']);
     for (const f of p.body) assert.deepEqual(Object.keys(f).sort(), ['cuenta_id', 'texto_autorizacion_id']);
     // Otra vez (como si la pantalla no supiera que ya estaban): el 23505 se ignora.
     assert.equal((await ejecutarPlan(cliente, planAutorizaciones(uid, c.textos, []))).ok, true);
-    assert.equal(sim.datos.consentimientos.length, 4);
+    assert.equal(sim.datos.consentimientos.length, 3);
     assert.equal((await perfil()).autorizacionesCompletas, true);
   });
   it('Paso 1 con menos de 18 años: el mensaje de la base, tal cual', async () => {

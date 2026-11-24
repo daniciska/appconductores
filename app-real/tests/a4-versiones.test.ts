@@ -51,12 +51,16 @@ interface Persona {
 
 /**
  * La base con los 4 textos obligatorios de la maqueta (como estaba hasta el 24-nov): la prueba-1 de
- * "Revisión de mis documentos" vigente y obligatoria. Desde el 24-nov la base pide esa autorización en
- * el Paso 5 (prueba-2, no obligatoria al entrar), y "Antes de empezar" queda con 3; las reglas de A4 son
- * las mismas con 2, 3, 4 o 5 textos, y aquí se prueban con 4.
+ * "Revisión de mis documentos" vigente y obligatoria, y "Normas de los mensajes" vigente. Desde el 24-nov
+ * la base apaga las normas de los mensajes (S12) y pide la revisión en el Paso 5 (prueba-2, no obligatoria
+ * al entrar), y "Antes de empezar" queda con 2 (el simulador parte así); las reglas de A4 son las mismas
+ * con 2, 3, 4 o 5 textos, y aquí se prueban con 4.
  */
 function conCuatroObligatorios(sim: Sim) {
-  for (const t of sim.catalogos.textos_autorizacion) if (t.clave === 'revision_documentos') t.vigente = t.version === 'prueba-1';
+  for (const t of sim.catalogos.textos_autorizacion) {
+    if (t.clave === 'revision_documentos') t.vigente = t.version === 'prueba-1';
+    if (t.clave === 'normas_mensajes') t.vigente = true;
+  }
 }
 
 /** Entra con el número de prueba; opcionalmente acepta los textos de hoy y hace el Paso 1. */
@@ -148,12 +152,13 @@ describe('A4 · persona nueva', () => {
 });
 
 describe('A4 · con la base de hoy (24-nov)', () => {
-  it('3 casillas: "Revisión de mis documentos" no se pide al entrar, se pide en el Paso 5', async () => {
+  it('2 casillas: sin "Normas de los mensajes" (S12); "Revisión de mis documentos" no se pide al entrar, se pide en el Paso 5', async () => {
     const yo = await persona({ baseDeHoy: true });
     const { c, p } = await yo.leer();
     const a4 = pantalla(p);
-    assert.deepEqual(a4.casillas.map((x) => casillaDeLaMaqueta(x.texto)), ['terminos', 'compartir', 'mensajes']);
-    assert.equal(textoMarcaTodas(a4.casillas.length), 'Marca las 3 autorizaciones para continuar.');
+    assert.deepEqual(a4.casillas.map((x) => casillaDeLaMaqueta(x.texto)), ['terminos', 'compartir']);
+    assert.equal(textoMarcaTodas(a4.casillas.length), 'Marca las 2 autorizaciones para continuar.');
+    assert.equal(c.textos.some((t) => t.clave === 'normas_mensajes'), false, 'la base ya no ofrece las normas de los mensajes');
     const r = textosParaAceptar(Object.fromEntries(a4.casillas.map((x) => [x.id, true])), c.textos);
     assert.ok(r.ok);
     assert.equal((await ejecutarPlan(yo.cliente, planAutorizaciones(yo.uid, r.valor, p.aceptados))).ok, true);

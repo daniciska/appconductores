@@ -16,14 +16,17 @@ import { useDocumentos } from '@real/pantallas/documentos/comunes';
 
 /**
  * Centro de ayuda de la app real (S14, aprobada el 24-nov): solo lo que calza con lo que la app pide hoy. "¿Quién ve
- * mis documentos?" volvió con el Paso 5 (documentos); "¿Quién ve mi dirección?" vuelve cuando la app pida la dirección.
+ * mis documentos?" volvió con el Paso 5 (documentos), con una respuesta que describe lo que pasa hoy: los archivos
+ * quedan privados (solo los ve la persona y el equipo, según las reglas de la base) y la app real todavía no tiene
+ * titulares ni revisión de una persona. La de la demo (PerfilBase) habla de la revisión, que la demo sí simula.
+ * "¿Quién ve mi dirección?" vuelve cuando la app pida la dirección.
  */
 const PREGUNTAS_V1: PreguntaAyuda[] = [
   {
     p: '¿Cuándo aparezco en los matches?',
     r: 'Cuando completes tu perfil, tus documentos estén aprobados y estés disponible para trabajar.',
   },
-  { p: '¿Quién ve mis documentos?', r: 'Solo nuestro equipo de verificación. Los titulares ven una insignia, nunca tus archivos.' },
+  { p: '¿Quién ve mis documentos?', r: 'Solo tú y el equipo de Dale Contacto. Los titulares nunca ven tus archivos.' },
   { p: '¿Cómo dejo de aparecer por un tiempo?', r: 'Apaga "Disponible para trabajar". Puedes volver cuando quieras.' },
 ];
 

@@ -5,6 +5,8 @@
 // persona vuelve atrás mientras se envía, se queda donde fue (no se la lleva a A3).
 // "Letra grande" (pedido de Daniela, 24-nov): también aquí, la primera pantalla del registro, con el mismo
 // interruptor que la Bienvenida y Perfil (tono claro, como en Perfil), para quien llega directo o no lo vio.
+// Va en la cabecera, al lado de "Volver" (versión de una línea): el campo del número se activa solo al
+// entrar y el teclado tapaba el interruptor si iba abajo; además así no baja "Enviar código".
 import { useState } from 'react';
 import { View } from 'react-native';
 import { Text, useMedidas } from '@/ui/escala';
@@ -59,7 +61,7 @@ export default function Celular() {
 
   return (
     <Pantalla>
-      <Encabezado volverA="/conductor/bienvenida" />
+      <Encabezado volverA="/conductor/bienvenida" derecha={<InterruptorLetraGrande compacto />} />
       <CabeceraFormulario titulo="Ingresa tu celular" subtitulo="Te enviaremos un código por WhatsApp. Si no te llega, te lo mandamos por SMS." />
 
       <View style={{ marginTop: 8, gap: 8 }}>
@@ -105,8 +107,6 @@ export default function Celular() {
       </View>
 
       <TarjetaInfo texto="Con este número entrarás a la app. También es el que verán los titulares con los que hagas match." />
-
-      <InterruptorLetraGrande />
 
       {ejemplo && !valor ? (
         <NotaDemo

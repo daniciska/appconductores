@@ -10,6 +10,8 @@
 // marcar ninguno, el aviso de la licencia es el único mensaje sobre los negocios); S04 "Guardar y
 // terminar después"; S11 avisa antes de salir sin guardar (modo edición).
 // Con "Letra grande", Día y Noche van uno bajo el otro y los días en dos filas (más fáciles de tocar).
+// Los días también pasan a dos filas en celulares angostos (menos de 7 botones de 44 px por fila), para que
+// cada botón mida al menos 44 px de ancho.
 import { useRef, useState, type ComponentRef } from 'react';
 import { ScrollView, View } from 'react-native';
 import { router } from 'expo-router';
@@ -36,6 +38,8 @@ import {
   useValidarObligatorios,
 } from './comunes';
 
+/** Ancho mínimo para tocar con el dedo. */
+const ANCHO_MINIMO_DIA = 44;
 const ICONO_TURNO: Record<string, LucideIcon> = { dia: Sun, noche: Moon };
 
 export default function Paso4({ alTerminar }: { /** Después de guardar (sin editar): a dónde sigue. */ alTerminar: () => void }) {
@@ -54,6 +58,8 @@ export default function Paso4({ alTerminar }: { /** Después de guardar (sin edi
   const volverTrasEditar = useVolverTrasEditar();
   const { guardando, ejecutar } = useGuardando();
   const [pulsado, setPulsado] = useState<'continuar' | 'despues'>('continuar');
+  const [anchoDias, setAnchoDias] = useState<number | null>(null);
+  const diasEnDosFilas = grande || (anchoDias !== null && anchoDias < 7 * ANCHO_MINIMO_DIA + 6 * 6);
   const pantalla = usePantallaAbierta();
   const [errorGuardar, setErrorGuardar] = useState<string | null>(null);
 
@@ -202,7 +208,11 @@ export default function Paso4({ alTerminar }: { /** Después de guardar (sin edi
 
       <View style={{ marginTop: 8, gap: 12 }}>
         <EtiquetaGrupo titulo="Días que puedes trabajar" obligatorio ayuda="Marca todos los que puedas." error={ver && errores.dias} />
-        <View role="group" aria-label="Días que puedes trabajar" style={grande ? { flexDirection: 'row', flexWrap: 'wrap', gap: 6 } : { flexDirection: 'row', gap: 6 }}>
+        <View
+          role="group"
+          aria-label="Días que puedes trabajar"
+          onLayout={(e) => setAnchoDias(e.nativeEvent.layout.width)}
+          style={diasEnDosFilas ? { flexDirection: 'row', flexWrap: 'wrap', gap: 6 } : { flexDirection: 'row', gap: 6 }}>
           {diasCatalogo.map((d) => (
             <Chip
               key={d.clave}
@@ -216,7 +226,7 @@ export default function Paso4({ alTerminar }: { /** Después de guardar (sin edi
                   return ordenDias.filter((x) => nueva.includes(x));
                 })
               }
-              style={[grande ? { width: '23%' } : { flex: 1 }, ver && errores.dias ? { borderColor: color.error } : null]}
+              style={[diasEnDosFilas ? { width: '23%' } : { flex: 1 }, ver && errores.dias ? { borderColor: color.error } : null]}
             />
           ))}
         </View>
