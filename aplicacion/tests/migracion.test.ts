@@ -7,15 +7,18 @@ import { describe, it } from 'node:test';
 import type { DatosDemo } from '../src/datos/estado.ts';
 import { migrarDatos } from '../src/datos/migracion.ts';
 
-/** Un estado inicial de mentira con lo que mira la migración (versión 4). */
+/** Un estado inicial de mentira con lo que mira la migración (versión 6). */
 function inicial(): DatosDemo {
   return {
-    version: 4,
+    version: 6,
     rol: null,
+    busquedas: [{ id: 'b01', vehiculoIds: ['v01'] }],
+    vehiculos: [{ id: 'v01' }],
+    titularDemo: { titularId: 'tyo', plan: 'sin_plan', destacadasUsadas: 0, registro: { datosListos: false }, contactoMostrado: {} },
     cuenta: { nombres: '' },
-    catalogos: { negocios: [{ id: 'taxi', activo: true }] },
+    catalogos: { negocios: [{ id: 'taxi', activo: true }], planes: [{ id: 'basico', busquedasActivas: 1, vehiculos: 1 }], marcas: [{ id: 'toyota' }], colores: [{ clave: 'negro' }] },
     reglas: { umbral: 66, reglas: [] },
-    ajustes: { bolsaActiva: true },
+    ajustes: { bolsaActiva: true, diasAvisoVehiculo: 30 },
     titulares: [{ id: 't01', suspendido: false }],
     conductores: [{ id: 'c01', suspendido: false }],
     equipo: [],
@@ -30,7 +33,8 @@ function guardado(): Record<string, unknown> {
     version: 3,
     rol: 'conductor',
     cuenta: { nombres: 'Daniel' },
-    catalogos: { negocios: [{ id: 'taxi', activo: false }] },
+    catalogos: { negocios: [{ id: 'taxi', activo: false }], planes: [{ id: 'basico', busquedasActivas: 1 }] },
+    busquedas: [{ id: 'b01' }],
     reglas: { umbral: 80, reglas: [] },
     ajustes: { bolsaActiva: false },
     titulares: [{ id: 't01', suspendido: true }],
@@ -38,13 +42,14 @@ function guardado(): Record<string, unknown> {
     equipo: [{ id: 'e01' }],
     accionesEquipo: [{ id: 'a01' }],
     pendientes: [{ id: 't1', tipo: 'prerevision' }],
+    titularDemo: { titularId: 't01', plan: 'flota', destacadasUsadas: 1 },
   };
 }
 
 describe('migrarDatos', () => {
   it('desde la versión 3 conserva todo (progreso, configuración, suspensiones y equipo)', () => {
     const r = migrarDatos(guardado(), 3, inicial());
-    assert.equal(r.version, 4);
+    assert.equal(r.version, 6);
     assert.equal(r.rol, 'conductor');
     assert.equal(r.cuenta.nombres, 'Daniel');
     assert.equal(r.catalogos.negocios[0].activo, false);
@@ -55,11 +60,36 @@ describe('migrarDatos', () => {
     assert.equal(r.equipo.length, 1);
     assert.equal(r.accionesEquipo.length, 1);
     assert.equal(r.pendientes.length, 1);
+    // Antes del 24-nov el titular de la demo era siempre la empresa de ejemplo: queda ya registrada.
+    assert.equal(r.titularDemo.titularId, 't01');
+    assert.equal(r.titularDemo.plan, 'flota');
+    assert.equal(r.titularDemo.registro.datosListos, true);
+    assert.deepEqual(r.titularDemo.contactoMostrado, {});
+    // Flota (versión 6): vehículos de ejemplo, listas y vehículos por plan.
+    assert.equal(r.vehiculos.length, 1);
+    assert.deepEqual(r.busquedas[0].vehiculoIds, ['v01']);
+    assert.equal(r.catalogos.planes[0].vehiculos, 1);
+    assert.equal(r.catalogos.marcas?.length, 1);
+    assert.equal(r.ajustes.diasAvisoVehiculo, 30);
+    assert.equal(r.ajustes.bolsaActiva, false);
+  });
+
+  it('desde la versión 4 también completa el registro del titular, y desde la 5 conserva todo', () => {
+    const r4 = migrarDatos({ ...guardado(), version: 4 }, 4, inicial());
+    assert.equal(r4.titularDemo.registro.datosListos, true);
+    const v5 = { ...guardado(), version: 5, titularDemo: { titularId: 'tyo', plan: 'sin_plan', destacadasUsadas: 0, registro: { datosListos: false }, contactoMostrado: { 'b01|c02': 'x' } } };
+    const r5 = migrarDatos(v5, 5, inicial());
+    assert.equal(r5.vehiculos.length, 1);
+    const r6 = migrarDatos({ ...v5, version: 6, vehiculos: [] }, 6, inicial());
+    assert.equal(r6.vehiculos.length, 0);
+    assert.equal(r5.titularDemo.titularId, 'tyo');
+    assert.equal(r5.titularDemo.registro.datosListos, false);
+    assert.equal(r5.titularDemo.contactoMostrado['b01|c02'], 'x');
   });
 
   it('desde la versión 2 conserva el progreso, pero la configuración vuelve a su valor inicial', () => {
     const r = migrarDatos({ ...guardado(), rol: 'admin' }, 2, inicial());
-    assert.equal(r.version, 4);
+    assert.equal(r.version, 6);
     assert.equal(r.rol, null); // 'admin' era el panel dentro de la demo
     assert.equal(r.cuenta.nombres, 'Daniel');
     assert.equal(r.catalogos.negocios[0].activo, true);
@@ -73,6 +103,7 @@ describe('migrarDatos', () => {
     const base = inicial();
     assert.equal(migrarDatos(guardado(), 1, base), base);
     assert.equal(migrarDatos(guardado(), 9, base), base);
+    assert.equal(migrarDatos(guardado(), 7, base), base);
     assert.equal(migrarDatos(null, 3, base), base);
     assert.equal(migrarDatos('texto', 3, base), base);
     assert.equal(migrarDatos([1, 2], 3, base), base);

@@ -1,10 +1,10 @@
-// Piezas visuales propias del grupo "matches" (D1–D5), con las medidas de las maquetas.
+// Piezas visuales propias del grupo "matches" (D1–D3), con las medidas de las maquetas.
 import { useEffect, useRef, type ReactNode } from 'react';
-import { Animated, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Animated, Linking, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { useDemo } from '@/datos/tienda';
-import { Boton, BotonIcono, Titulo, color, duracion, fuente, mostrarToast, radio, tipo } from '@/ui';
-import { Ban, Star } from '@/ui/iconos';
+import { BotonIcono, Presionable, Titulo, color, duracion, fuente, mostrarToast, radio, tipo } from '@/ui';
+import { Mail, MessageCircle, Phone, Star, type LucideIcon } from '@/ui/iconos';
 
 /** Título de pestaña (h1 con 4 px de sangría, como en las maquetas D1 y D3). */
 export function TituloPestana({ children }: { children: ReactNode }) {
@@ -51,7 +51,7 @@ export function BotonFavorito({
   );
 }
 
-/** Aparece suave (sube 6 px). Para tarjetas y mensajes nuevos. */
+/** Aparece suave (sube 6 px). Para tarjetas nuevas. */
 export function Aparecer({ children, retraso = 0, style }: { children: ReactNode; retraso?: number; style?: StyleProp<ViewStyle> }) {
   const v = useRef(new Animated.Value(0)).current;
   useEffect(() => {
@@ -64,50 +64,63 @@ export function Aparecer({ children, retraso = 0, style }: { children: ReactNode
   );
 }
 
-/** Pastilla gris centrada del chat ("Hicieron match · 4 nov", avisos del sistema). */
-export function ChipSistema({ texto, icono }: { texto: string; icono?: ReactNode }) {
-  return (
-    <View
-      style={{
-        alignSelf: 'center',
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-        maxWidth: '90%',
-        backgroundColor: color.superficieHundida,
-        borderRadius: 8,
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-      }}>
-      {icono}
-      <Text style={[fuente(500), { fontSize: 12, lineHeight: 16, color: color.textoSecundario, textAlign: 'center', flexShrink: 1 }]}>
-        {texto}
-      </Text>
-    </View>
-  );
-}
-
 /** Nota corta bajo un valor que no coincide ("Vives en otra zona"). */
 export function NotaNoCoincide({ texto }: { texto: string }) {
   return <Text style={[tipo.pequeno, fuente(600), { color: color.amarilloTexto, textAlign: 'right' }]}>{texto}</Text>;
 }
 
-/** Aviso de titular bloqueado, con el botón para deshacerlo debajo (D2 y D4). */
-export function AvisoBloqueado({ nombre, onDesbloquear }: { nombre: string; onDesbloquear: () => void }) {
+/** Solo los dígitos de un teléfono chileno, con 56 adelante (para tel: y WhatsApp). */
+function digitosTelefono(telefono: string): string {
+  const d = telefono.replace(/\D/g, '');
+  if (d.startsWith('56')) return d;
+  if (d.length === 9) return `56${d}`;
+  if (d.length === 8) return `569${d}`;
+  return d;
+}
+
+function AccionContacto({ etiqueta, icono: Icono, url }: { etiqueta: string; icono: LucideIcon; url: string }) {
   return (
-    <View role="status" style={{ backgroundColor: color.errorFondo, borderRadius: radio.campo, padding: 16, gap: 12 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <View
-          aria-hidden
-          style={{ width: 36, height: 36, borderRadius: radio.icono, backgroundColor: color.superficie, alignItems: 'center', justifyContent: 'center' }}>
-          <Ban size={18} color={color.error} strokeWidth={2} />
-        </View>
-        <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
-          <Text style={[tipo.etiqueta, { color: color.error }]}>Bloqueaste a {nombre}</Text>
-          <Text style={[tipo.ayuda, { lineHeight: 18, color: color.textoSuave }]}>No podrá escribirte y no aparece en tus matches.</Text>
-        </View>
+    <Presionable
+      role="link"
+      aria-label={etiqueta}
+      efecto="escala"
+      onPress={() => Linking.openURL(url).catch(() => mostrarToast('No pudimos abrirlo en este teléfono.', 'error'))}
+      style={{
+        flex: 1,
+        minHeight: 64,
+        borderRadius: radio.campo,
+        backgroundColor: color.fondo,
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 4,
+        paddingVertical: 10,
+      }}>
+      <Icono size={20} color={color.texto} strokeWidth={2} />
+      <Text style={[tipo.pequeno, fuente(600), { color: color.texto }]}>{etiqueta}</Text>
+    </Presionable>
+  );
+}
+
+/**
+ * Contacto de la otra persona (teléfono y correo) con Llamar, WhatsApp y Correo. La usan el detalle del
+ * match del conductor (cuando el titular le mostró su contacto) y las fichas del titular.
+ */
+export function TarjetaContacto({ titulo = 'Contacto', telefono, correo }: { titulo?: string; telefono: string; correo: string }) {
+  const tel = telefono ? digitosTelefono(telefono) : '';
+  return (
+    <View style={{ backgroundColor: color.superficie, borderWidth: 1, borderColor: color.borde, borderRadius: radio.tarjeta, padding: 18, gap: 12 }}>
+      <Text role="heading" aria-level={2} style={[tipo.tituloTarjeta, { color: color.texto }]}>
+        {titulo}
+      </Text>
+      <View style={{ gap: 4 }}>
+        {telefono ? <Text selectable style={[tipo.cuerpo, fuente(600), { color: color.texto }]}>{telefono}</Text> : null}
+        {correo ? <Text selectable style={[tipo.secundario, { color: color.textoSecundario }]}>{correo}</Text> : null}
       </View>
-      <Boton titulo="Desbloquear" variante="contorno" tamano="mediano" anchoCompleto onPress={onDesbloquear} />
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        {tel ? <AccionContacto etiqueta="Llamar" icono={Phone} url={`tel:+${tel}`} /> : null}
+        {tel ? <AccionContacto etiqueta="WhatsApp" icono={MessageCircle} url={`https://wa.me/${tel}`} /> : null}
+        {correo ? <AccionContacto etiqueta="Correo" icono={Mail} url={`mailto:${correo}`} /> : null}
+      </View>
     </View>
   );
 }

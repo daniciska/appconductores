@@ -39,3 +39,15 @@ Quiénes trabajan en el proyecto: **Daniela** y **Mario**, socios. Cada entrada 
 - Por qué: se revisan más adelante; mientras tanto, lo vigente es lo que está en main.
 - Impacto: ninguno en main. La regla de Trello no está en CLAUDE.md de main.
 - Pendiente: decidir más adelante si se integran o se descartan.
+
+## 2026-11-24 — Daniela y Mario
+- Decisión: no hay mensajes entre conductores y titulares. Con el match, el titular **con plan** ve el contacto (teléfono y correo) de los conductores que calzan; **sin plan** solo ve cuántos le harían match. El conductor ve el contacto del titular solo si el titular decide mostrárselo. La bolsa se adapta: al postular, el titular con plan ve el contacto del postulante. Se puede **reportar en las dos direcciones** (conductor → titular y titular → conductor); se saca "Bloquear". Verificación del titular (P12): cédula de quien usa la cuenta y, si es empresa, revisión del RUT en el SII. Se construye ahora el **prototipo del titular en la demo** (datos de ejemplo), en rama aparte.
+- Por qué: simplificar el producto y llevar al titular directo al contacto, que es lo que paga.
+- Impacto: CLAUDE.md (se reemplaza "Mensajes dentro de la app", se ajusta P10, se agregan Reportar y verificación del titular), demo del conductor (sin Mensajes ni Bloquear), prototipo del titular en `aplicacion/` y, más adelante, la Etapa 3 de la base (sin tablas de mensajes).
+- Pendiente: la sección de match del conductor, con tres opciones (no disponible / cualquier trabajo / solo ciertos trabajos con filtros como antigüedad, combustible, particular o empresa): qué filtros entran y si son obligatorios.
+
+## 2026-11-24 — Daniela y Mario
+- Decisión: flota del titular. Por cada vehículo se pide patente, tipo, marca y modelo, color, año, kilometraje, padrón, revisión técnica y SOAP. Cada búsqueda elige vehículos de la flota y sin vehículos no se publica. Revisa el equipo (documentos y patente en el registro del MTT). El conductor ve tipo, año, color y "revisado". Avisos antes de vencer; vencido, sale del match. Vehículos por plan configurables: 1, 5 y 20. Además: clave nueva de la demo y sitio de prueba `dale-contacto-prueba`.
+- Por qué: dar confianza al conductor de que detrás de cada búsqueda hay un vehículo real y al día, y vender planes por tamaño de flota. La clave anterior se perdió.
+- Impacto: demo del titular y del conductor, estado de la demo (versión 6), CLAUDE.md y documentos; más adelante, la Etapa 2 de la base (tabla de vehículos).
+- Pendiente: límites definitivos por plan, lista completa de marcas, servicio pagado por patente (costo y legalidad), canal de los avisos de vencimiento y si el sitio de prueba queda público.

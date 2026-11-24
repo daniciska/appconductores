@@ -9,7 +9,7 @@
 // Al cambiarla, todos los navegadores la vuelven a pedir (lo guardado deja de coincidir).
 
 /** SHA-256 de la clave vigente. */
-export const HASH_CLAVE_DEMO = 'd950af57714f1e1fed4eecadfebc9c2f99c43c0170a6125cc4a5a07b6343a146';
+export const HASH_CLAVE_DEMO = '09d99f87831c150855c462ffefdf7aa185bd97fe1d072043b5f373314a00eaaa';
 
 /** Dónde recuerda el navegador que ya se ingresó la clave (guarda el hash, no la clave). */
 export const CLAVE_ACCESO = 'dale-demo-acceso';

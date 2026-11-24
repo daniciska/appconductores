@@ -6,7 +6,7 @@ import { router, type Href } from 'expo-router';
 import { useAvancePerfil, useOfertasBolsa, usePostulacionesDelUsuario } from '@/datos/hooks';
 import { useDemo } from '@/datos/tienda';
 import { Aviso, EstadoVacio } from '@/ui';
-import { BriefcaseBusiness, MapPin, MessageSquare, Search, Send } from '@/ui/iconos';
+import { BriefcaseBusiness, LockOpen, MapPin, Search, Send } from '@/ui/iconos';
 
 import { Aparecer, ChipFiltro, TarjetaOferta, TarjetaPostulacion, ordenarPostulaciones } from './piezas';
 
@@ -77,7 +77,7 @@ export function ListaOfertas() {
   );
 }
 
-/** "Mis postulaciones": estados Enviada, Vista, Te escribió y Cerrada con datos reales. */
+/** "Mis postulaciones": estados Enviada, Vista, Te mostró su contacto y Cerrada con datos reales. */
 export function ListaPostulaciones({ onVerOfertas }: { onVerOfertas?: () => void }) {
   const postulaciones = usePostulacionesDelUsuario();
   const lista = useMemo(() => ordenarPostulaciones(postulaciones), [postulaciones]);
@@ -102,7 +102,7 @@ export function ListaPostulaciones({ onVerOfertas }: { onVerOfertas?: () => void
           </Aparecer>
         ))}
       </View>
-      <Aviso icono={MessageSquare} texto="Si el titular te escribe, la conversación aparece en Mensajes." />
+      <Aviso icono={LockOpen} texto="Si el titular te muestra su contacto, lo verás en Matches." />
     </>
   );
 }

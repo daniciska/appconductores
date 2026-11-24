@@ -4,6 +4,7 @@
 import type {
   ClaseLicencia,
   Industria,
+  Marca,
   MotivoRechazo,
   MotivoReporte,
   Negocio,
@@ -330,6 +331,7 @@ export const PLANES: Plan[] = [
     id: 'basico',
     nombre: 'Básico',
     busquedasActivas: 1,
+    vehiculos: 1,
     ofertasBolsa: 1,
     visibilidades: ['match'],
     destacadasMes: 0,
@@ -342,6 +344,7 @@ export const PLANES: Plan[] = [
     id: 'flota_chica',
     nombre: 'Flota chica',
     busquedasActivas: 5,
+    vehiculos: 5,
     ofertasBolsa: 3,
     visibilidades: ['match', 'perfiles'],
     destacadasMes: 0,
@@ -354,6 +357,7 @@ export const PLANES: Plan[] = [
     id: 'flota',
     nombre: 'Flota',
     busquedasActivas: 20,
+    vehiculos: 20,
     ofertasBolsa: 10,
     visibilidades: ['match', 'perfiles', 'todos'],
     destacadasMes: 2,
@@ -441,3 +445,35 @@ export const REGLAS_MATCH: ReglaMatch[] = [
 ];
 
 export const UMBRAL_MATCH = 66;
+
+// Flota (24-nov). Listas iniciales para los desplegables de marca, modelo y color; configurables desde el
+// panel. Son una muestra de las marcas más comunes en Chile, no una lista completa [verificar con el panel real].
+const L = ['liviano'];
+export const MARCAS: Marca[] = [
+  { id: 'toyota', nombre: 'Toyota', modelos: ['Yaris', 'Corolla', 'Prius', 'RAV4', 'Hilux', 'Hiace'], tamanos: ['liviano', 'van'], orden: 1 },
+  { id: 'hyundai', nombre: 'Hyundai', modelos: ['Accent', 'Elantra', 'Ioniq', 'Tucson', 'H-1', 'County'], tamanos: ['liviano', 'van', 'bus'], orden: 2 },
+  { id: 'nissan', nombre: 'Nissan', modelos: ['Versa', 'Sentra', 'Kicks', 'NP300', 'Urvan'], tamanos: ['liviano', 'van'], orden: 3 },
+  { id: 'kia', nombre: 'Kia', modelos: ['Rio', 'Soluto', 'Cerato', 'Sportage', 'Frontier'], tamanos: L, orden: 4 },
+  { id: 'chevrolet', nombre: 'Chevrolet', modelos: ['Sail', 'Onix', 'Prisma', 'Tracker', 'N400'], tamanos: ['liviano', 'van'], orden: 5 },
+  { id: 'suzuki', nombre: 'Suzuki', modelos: ['Swift', 'Dzire', 'Baleno', 'Vitara', 'GN125', 'Gixxer'], tamanos: ['liviano', 'moto'], orden: 6 },
+  { id: 'peugeot', nombre: 'Peugeot', modelos: ['208', '301', '2008', 'Partner', 'Boxer'], tamanos: ['liviano', 'van'], orden: 7 },
+  { id: 'mg', nombre: 'MG', modelos: ['MG3', 'MG5', 'ZS', 'ZS EV'], tamanos: L, orden: 8 },
+  { id: 'byd', nombre: 'BYD', modelos: ['Dolphin', 'Seal', 'Yuan Plus', 'e5'], tamanos: L, orden: 9 },
+  { id: 'mercedes', nombre: 'Mercedes-Benz', modelos: ['Sprinter', 'Vito', 'Clase E', 'Atego', 'Actros', 'O500'], tamanos: ['liviano', 'van', 'bus', 'camion', 'articulado'], orden: 10 },
+  { id: 'volvo', nombre: 'Volvo', modelos: ['FH', 'FM', 'VM', 'B8R'], tamanos: ['bus', 'camion', 'articulado'], orden: 11 },
+  { id: 'honda', nombre: 'Honda', modelos: ['CB190', 'XR150', 'Navi', 'City', 'Civic'], tamanos: ['moto', 'liviano'], orden: 12 },
+  { id: 'yamaha', nombre: 'Yamaha', modelos: ['FZ', 'YBR125', 'NMAX', 'XTZ'], tamanos: ['moto'], orden: 13 },
+  { id: 'otra', nombre: 'Otra marca', modelos: ['Otro modelo'], tamanos: ['moto', 'liviano', 'van', 'bus', 'camion', 'articulado', 'maquinaria'], orden: 99 },
+];
+
+export const COLORES: OpcionLista[] = [
+  { clave: 'blanco', nombre: 'Blanco' },
+  { clave: 'negro', nombre: 'Negro' },
+  { clave: 'gris', nombre: 'Gris' },
+  { clave: 'plata', nombre: 'Plata' },
+  { clave: 'rojo', nombre: 'Rojo' },
+  { clave: 'azul', nombre: 'Azul' },
+  { clave: 'amarillo', nombre: 'Amarillo' },
+  { clave: 'verde', nombre: 'Verde' },
+  { clave: 'otro', nombre: 'Otro color' },
+];
