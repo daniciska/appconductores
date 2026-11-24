@@ -15,26 +15,28 @@ import {
 describe('errores al pedir el código (A2 y reenviar)', () => {
   it('número al que no se puede enviar el código: mensaje listo para el lanzamiento (S03), sin textos de prueba', () => {
     const noLlega = 'No pudimos enviar el código. Revisa tu número e inténtalo de nuevo.';
-    assert.equal(textoErrorPedirCodigo({ code: 'sms_send_failed', status: 422 }, true), noLlega);
-    assert.equal(textoErrorPedirCodigo({ code: 'sms_send_failed', status: 422 }, false), noLlega);
-    assert.equal(textoErrorPedirCodigo({ code: 'signup_disabled', status: 422 }, true), noLlega);
+    // El texto no depende de EXPO_PUBLIC_CODIGOS_DE_PRUEBA (S03): ya no se le pasa.
+    assert.equal(textoErrorPedirCodigo({ code: 'sms_send_failed', status: 422 }), noLlega);
+    assert.equal(textoErrorPedirCodigo({ code: 'signup_disabled', status: 422 }), noLlega);
+    assert.equal(textoErrorPedirCodigo({ code: 'otp_disabled', status: 422 }), noLlega);
+    assert.equal(textoErrorPedirCodigo.length, 1);
     for (const t of Object.values(TEXTO)) {
       assert.doesNotMatch(t, /prueba|pronto|celulares del equipo|grupo pequeño/i, `texto temporal: ${t}`);
     }
   });
   it('espera entre códigos: lee los segundos del mensaje (o 60)', () => {
     const e = { code: 'over_sms_send_rate_limit', status: 429, message: 'For security purposes, you can only request this after 37 seconds.' };
-    assert.equal(textoErrorPedirCodigo(e, true), 'Espera 37 segundos para pedir otro código.');
+    assert.equal(textoErrorPedirCodigo(e), 'Espera 37 segundos para pedir otro código.');
     assert.equal(segundosDeEspera('sin número'), 60);
   });
   it('proveedor apagado, demasiados intentos y número mal escrito', () => {
-    assert.equal(textoErrorPedirCodigo({ code: 'phone_provider_disabled' }, true), 'No pudimos enviar el código. Inténtalo más tarde.');
-    assert.equal(textoErrorPedirCodigo({ code: 'over_request_rate_limit', status: 429 }, true), 'Demasiados intentos. Espera unos minutos.');
-    assert.equal(textoErrorPedirCodigo({ code: 'validation_failed', status: 400 }, true), TEXTO.numero);
+    assert.equal(textoErrorPedirCodigo({ code: 'phone_provider_disabled' }), 'No pudimos enviar el código. Inténtalo más tarde.');
+    assert.equal(textoErrorPedirCodigo({ code: 'over_request_rate_limit', status: 429 }), 'Demasiados intentos. Espera unos minutos.');
+    assert.equal(textoErrorPedirCodigo({ code: 'validation_failed', status: 400 }), TEXTO.numero);
   });
   it('sin conexión o tiempo agotado', () => {
-    assert.equal(textoErrorPedirCodigo({ name: 'AuthRetryableFetchError', status: 0, message: 'Failed to fetch' }, true), 'Revisa tu conexión e inténtalo de nuevo.');
-    assert.equal(textoErrorPedirCodigo({ name: 'AuthRetryableFetchError', message: 'signal is aborted without reason' }, true), TEXTO.conexion);
+    assert.equal(textoErrorPedirCodigo({ name: 'AuthRetryableFetchError', status: 0, message: 'Failed to fetch' }), 'Revisa tu conexión e inténtalo de nuevo.');
+    assert.equal(textoErrorPedirCodigo({ name: 'AuthRetryableFetchError', message: 'signal is aborted without reason' }), TEXTO.conexion);
   });
 });
 

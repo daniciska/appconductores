@@ -41,6 +41,11 @@ const VISIBLES = 7;
 const MAX_ANOS = 50;
 /** Ancho de la columna de años: − (44) + cajita (56) + + (44) y los espacios. */
 const ANCHO_ANOS = 152;
+/**
+ * Ancho mínimo del botón del vehículo junto a los años. Más angosto, palabras como "retroexcavadora"
+ * se cortan (pantallas de 375 px o menos): ahí los años pasan a la línea de abajo.
+ */
+const ANCHO_MIN_VEHICULO = 150;
 
 /** Años escritos → número válido (1 a 50) o null. */
 function aniosValidos(texto: string | undefined): number | null {
@@ -75,6 +80,8 @@ function AniosVehiculo({
   const hayNumero = valor.trim() !== '' && Number.isInteger(n);
   const boton = (signo: 'menos' | 'mas') => {
     const bloqueado = signo === 'menos' ? !hayNumero || n <= 1 : hayNumero && n >= MAX_ANOS;
+    // Con un número sobre 50 (escrito), − baja directo a 50.
+    const menos = Math.min(MAX_ANOS, Math.max(1, n - 1));
     const Icono = signo === 'menos' ? Minus : Plus;
     return (
       <Presionable
@@ -82,7 +89,7 @@ function AniosVehiculo({
         aria-label={`${signo === 'menos' ? 'Restar' : 'Sumar'} un año: ${nombre}`}
         aria-disabled={bloqueado}
         disabled={bloqueado}
-        onPress={() => onCambiar(String(signo === 'menos' ? Math.max(1, n - 1) : hayNumero ? Math.min(MAX_ANOS, n + 1) : 1))}
+        onPress={() => onCambiar(String(signo === 'menos' ? menos : hayNumero ? Math.min(MAX_ANOS, n + 1) : 1))}
         style={{
           width: 44,
           height: 44,
@@ -163,6 +170,9 @@ export default function Paso3() {
   useRecordarBorrador(borrador, { marcados, anios, idiomas });
   const [todos, setTodos] = useState(false);
   const [intento, setIntento] = useState(false);
+  // Ancho del recuadro de vehículos: en pantallas angostas los años van bajo el vehículo.
+  const [anchoGrupo, setAnchoGrupo] = useState(0);
+  const apilar = anchoGrupo > 0 && anchoGrupo - 30 - ANCHO_ANOS - 10 < ANCHO_MIN_VEHICULO;
 
   const tamanos = [...tamanosCatalogo].sort((a, b) => a.orden - b.orden);
   const lista = todos ? tamanos : tamanos.slice(0, VISIBLES);
@@ -181,8 +191,8 @@ export default function Paso3() {
   };
 
   const escribirAnios = (id: string, t: string) => {
-    const d = t.replace(/\D/g, '').slice(0, 2);
-    setAnios((a) => ({ ...a, [id]: d && Number(d) > MAX_ANOS ? String(MAX_ANOS) : d }));
+    // Un número sobre 50 no se cambia a escondidas: queda escrito y se avisa al tiro "Escribe entre 1 y 50.".
+    setAnios((a) => ({ ...a, [id]: t.replace(/\D/g, '').slice(0, 2) }));
   };
 
   // S11: ¿hay cambios sin guardar? (vehículos, años de cada uno e idiomas)
@@ -237,6 +247,7 @@ export default function Paso3() {
         <View
           role="group"
           aria-label="¿Qué vehículos has manejado?"
+          onLayout={(e) => setAnchoGrupo(e.nativeEvent.layout.width)}
           style={{
             backgroundColor: color.superficie,
             borderWidth: ver && errores.vehiculos ? 1.5 : 1,
@@ -245,16 +256,13 @@ export default function Paso3() {
             padding: 14,
             gap: 8,
           }}>
-          {marcados.length > 0 ? (
-            <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-              <Text style={[fuente(700), { width: ANCHO_ANOS, textAlign: 'center', fontSize: 13, lineHeight: 17, color: color.textoSecundario }]}>
-                Años manejando
-              </Text>
-            </View>
-          ) : null}
           {lista.map((t) => {
             const sel = marcados.includes(t.id);
-            const errorFila = ver && sel ? errorAnios(anios[t.id]) : null;
+            const sobreMax = Number(anios[t.id] ?? '') > MAX_ANOS;
+            const errorFila = sel && (ver || sobreMax) ? errorAnios(anios[t.id]) : null;
+            const control = sel ? (
+              <AniosVehiculo valor={anios[t.id] ?? ''} onCambiar={(x) => escribirAnios(t.id, x)} nombre={t.nombre} error={!!errorFila} />
+            ) : null;
             return (
               <View key={t.id} style={{ gap: 6 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
@@ -266,10 +274,14 @@ export default function Paso3() {
                     etiquetaAccesible={`${t.nombre} (${t.ayuda})`}
                     style={{ flex: 1, minWidth: 0, paddingHorizontal: 14 }}
                   />
-                  {sel ? (
-                    <AniosVehiculo valor={anios[t.id] ?? ''} onCambiar={(x) => escribirAnios(t.id, x)} nombre={t.nombre} error={!!errorFila} />
-                  ) : null}
+                  {apilar ? null : control}
                 </View>
+                {apilar && control ? (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+                    <Text style={[tipo.mensajeCampo, fuente(600), { color: color.textoSecundario, flexShrink: 1 }]}>Años manejando</Text>
+                    {control}
+                  </View>
+                ) : null}
                 {errorFila ? (
                   <Text role="alert" style={[tipo.mensajeCampo, fuente(600), { color: color.error, textAlign: 'right' }]}>
                     {errorFila}

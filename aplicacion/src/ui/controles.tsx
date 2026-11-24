@@ -405,7 +405,12 @@ export function Chip({
         },
         style,
       ]}>
-      {seleccionado && !cuadrado ? <Check size={14} color={color.blanco} strokeWidth={2.8} /> : null}
+      {seleccionado && !cuadrado ? (
+        // Sin encogerse: en un chip angosto con texto largo, el check se achicaba.
+        <View style={{ flexShrink: 0 }}>
+          <Check size={14} color={color.blanco} strokeWidth={2.8} />
+        </View>
+      ) : null}
       <View style={{ minWidth: 0, flexShrink: 1 }}>
         <Text
           style={[

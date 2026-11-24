@@ -57,15 +57,15 @@ export function segundosDeEspera(mensaje: string | undefined): number {
 export const textoEspera = (mensaje: string | undefined) => `Espera ${segundosDeEspera(mensaje)} segundos para pedir otro código.`;
 
 /** Error al pedir el código (A2 y "Reenviar…" de A3). */
-export function textoErrorPedirCodigo(e: ErrorSupabase, codigosDePrueba: boolean): string {
+export function textoErrorPedirCodigo(e: ErrorSupabase): string {
   if (esErrorDeRed(e)) return TEXTO.conexion;
   switch (e.code) {
     case 'sms_send_failed':
-      // El proveedor no pudo enviarlo a ese número (con números de prueba, uno que no está en la lista).
-      return TEXTO.noLlega;
+    // El proveedor no pudo enviarlo a ese número, o ese número no puede recibir un código (por
+    // ejemplo, si no se aceptan cuentas nuevas). El mismo texto con o sin números de prueba (S03).
     case 'signup_disabled':
     case 'otp_disabled':
-      return codigosDePrueba ? TEXTO.noLlega : TEXTO.sinCelular;
+      return TEXTO.noLlega;
     case 'over_sms_send_rate_limit':
       return textoEspera(e.message);
     case 'phone_provider_disabled':

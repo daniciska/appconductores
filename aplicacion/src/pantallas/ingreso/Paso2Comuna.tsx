@@ -137,8 +137,8 @@ export default function Paso2Comuna() {
       const id = comunaId;
       if (!id) {
         if (siguiente === 'despues') {
-          // Sin comuna no hay nada que guardar en este paso: se sale igual (S04).
-          borrador.olvidar();
+          // Sin comuna, la base no puede guardar el paso (S04): se sale igual, pero el borrador se
+          // conserva para que al volver sigan lo escrito en el buscador y el lugar seguro.
           irAInicioConductor();
           return;
         }

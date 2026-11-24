@@ -17,7 +17,6 @@ import type {
   VistaConductor,
 } from '@/datos/puerto/tipos';
 
-import { CONFIG } from '../config';
 import { almacenSesion, supabase } from '../supabase';
 
 import { mapearCatalogos } from './catalogos';
@@ -256,7 +255,7 @@ const acciones: AccionesConductor = {
     }
     const { error } = await supabase.auth.signInWithOtp({ phone: celularParaAuth(celular8), options: { channel: canal } });
     if (error) {
-      let texto = textoErrorPedirCodigo(error, CONFIG.codigosDePrueba);
+      let texto = textoErrorPedirCodigo(error);
       // S03: si a un número no se le pudo enviar el código e insiste, recibe el mismo mensaje, no la
       // cuenta de segundos (esperar no le serviría).
       if (texto === TEXTO.noLlega) sinEnvio = ocho;

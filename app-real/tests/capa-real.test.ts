@@ -56,7 +56,7 @@ describe('ingreso con celular y código', () => {
   it('un número que no está en la lista de prueba no entra', async () => {
     const { error } = await cliente.auth.signInWithOtp({ phone: '+56990000099', options: { channel: 'whatsapp' } });
     assert.equal(error?.code, 'sms_send_failed');
-    assert.equal(textoErrorPedirCodigo(error!, true), 'No pudimos enviar el código. Revisa tu número e inténtalo de nuevo.');
+    assert.equal(textoErrorPedirCodigo(error!), 'No pudimos enviar el código. Revisa tu número e inténtalo de nuevo.');
     const p = ultimos(1)[0];
     assert.equal(p.ruta, '/auth/v1/otp');
     assert.deepEqual([p.body.phone, p.body.channel], ['+56990000099', 'whatsapp']);
@@ -66,7 +66,7 @@ describe('ingreso con celular y código', () => {
     assert.equal(r.error, null);
     const otra = await cliente.auth.signInWithOtp({ phone: '+' + NUMERO, options: { channel: 'sms' } });
     assert.equal(otra.error?.code, 'over_sms_send_rate_limit');
-    assert.match(textoErrorPedirCodigo(otra.error!, true), /^Espera (59|60) segundos para pedir otro código\.$/);
+    assert.match(textoErrorPedirCodigo(otra.error!), /^Espera (59|60) segundos para pedir otro código\.$/);
     assert.equal(sim.datos.cuentas.length, 0, 'pedir el código no crea la cuenta');
   });
   it('un código malo no entra', async () => {

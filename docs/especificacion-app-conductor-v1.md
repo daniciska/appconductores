@@ -183,7 +183,7 @@ export interface Entorno {
   validarObligatorios: boolean;      // demo: ajustes.validarObligatorios · real: siempre true
   diasReconfirmar: number;           // demo: ajustes · real: ajuste público o 30
   esperaReenvioSegundos: number;     // demo: 30 · real: 60
-  notaCodigo: string | null;         // demo: 'Demo: cualquier código de 6 dígitos' · real con números de prueba: 'Versión de prueba: usa el código que te dio el equipo.'
+  notaCodigo: string | null;         // demo: 'Demo: cualquier código de 6 dígitos' · real: null (24-nov, S03: la app real no muestra textos de prueba)
   bolsaActiva: boolean;              // real: false
   documentosDisponibles: boolean;    // real v1: false → fila "Próximamente"
   ejemplo: EjemploUsuario | null;    // demo: EJEMPLO_USUARIO (botones "Demo: …") · real: null
@@ -300,7 +300,7 @@ No escribe nada. «Soy conductor» e «Ingresar» llevan a `/conductor/celular`.
 - **Llamada:** `supabase.auth.signInWithOtp({ phone, options: { channel: 'whatsapp' } })`. Auth crea `auth.users` con `phone_confirmed_at` vacío; **todavía no hay fila en `cuentas`** (probado).
 - **Si sale bien:** se guarda `{ celular, pedidoEn, canal }` en `sessionStorage['dale-app-ingreso']`, para que una recarga en A3 no pierda el número ni la cuenta regresiva, y se va a A3.
 - **Errores** (por `error.code`):
-  - `sms_send_failed`: con `EXPO_PUBLIC_CODIGOS_DE_PRUEBA=1`, «Por ahora solo pueden entrar los celulares del equipo.»; sin la variable, «No pudimos enviar el código. Inténtalo de nuevo.» [por confirmar].
+  - `sms_send_failed`, `signup_disabled` y `otp_disabled`: «No pudimos enviar el código. Revisa tu número e inténtalo de nuevo.», con o sin `EXPO_PUBLIC_CODIGOS_DE_PRUEBA` (24-nov, S03: sin textos temporales; antes decía «Por ahora solo pueden entrar los celulares del equipo.»). Si insiste con el mismo número, recibe el mismo texto, no la cuenta de segundos.
   - `over_sms_send_rate_limit`: «Espera N segundos para pedir otro código.» (N sale del mensaje; si no se puede leer, 60).
   - `phone_provider_disabled`: «No pudimos enviar el código. Inténtalo más tarde.» (hasta el 24-nov decía «El ingreso con celular no está disponible. Avísale al equipo.»)
   - `over_request_rate_limit`: «Demasiados intentos. Espera unos minutos.»
@@ -309,9 +309,9 @@ No escribe nada. «Soy conductor» e «Ingresar» llevan a `/conductor/celular`.
 ### 6.4 A3 Código
 - **Verificar:** `supabase.auth.verifyOtp({ phone, token, type: 'sms' })`, con el mismo `type` para WhatsApp y SMS (código fuente de Auth). Con eso Auth anota `phone_confirmed_at` y el trigger `dale_contacto_sincronizar_cuenta`, que está encendido en el proyecto (`tgenabled='O'`), crea `cuentas(id, celular '+569…', celular_verificado_en)`.
 - **Errores:**
-  - `otp_expired` o 403: «El código no es correcto o ya venció.», en el texto de error de las cajas.
+  - `otp_expired` o 403: «Ese código no es correcto. Revisa el último mensaje que te enviamos o pide otro.» (24-nov, S08; el código se verifica solo al escribir el sexto número y, si está malo, se borra), en el texto de error de las cajas.
   - 429: el mismo mensaje de espera de A2.
-- **«Reenviar por WhatsApp» y «Recibir el código por SMS»:** llaman a `signInWithOtp` con `whatsapp` o `sms`. La cuenta regresiva arranca en **60** (`entorno.esperaReenvioSegundos`), contada desde `pedidoEn`. El botón de SMS queda activo como en la maqueta: si se pulsa antes de los 60 s, llega el 429 y se muestra el aviso de espera.
+- **«Reenviar por WhatsApp» y «Recibir el código por SMS»:** llaman a `signInWithOtp` con `whatsapp` o `sms`. La cuenta regresiva arranca en **60** (`entorno.esperaReenvioSegundos`), contada desde `pedidoEn`. 24-nov (S08): mientras corre la cuenta se ve «¿No te llegó? Pide otro en 0:57»; al llegar a 0:00 aparecen «Reenviar por WhatsApp» y «Recibir el código por SMS». Si igual llega un 429, se muestra el aviso de espera.
 - **Después de verificar** (la acción `verificarCodigo` devuelve el destino):
   1. Lee su fila de `cuentas`. Si no está, reintenta una vez tras 1 s. Si sigue sin estar: `signOut({ scope: 'local' })` y el mensaje «No pudimos crear tu cuenta. Inténtalo más tarde.» (hasta el 24-nov decía «No pudimos crear tu cuenta. Avísale al equipo.») Esto pasa si el trigger falló, por ejemplo por un número que ya tiene otra cuenta: el trigger solo deja un aviso.
   2. Si hay fila en `conductores` → `'inicio'`.
@@ -428,7 +428,7 @@ consentimientos:      select('texto_autorizacion_id').eq('cuenta_id', uid).is('r
 |---|---|
 | `datos` (Paso 1) | hay fila en `conductores` **y** nombres, primer apellido y correo con texto **y** al menos una clase declarada |
 | `direccion` (Paso 2) | `comuna_id` no nulo **y** `tiene_estacionamiento` no nulo |
-| `experiencia` (Paso 3) | hay al menos 1 fila en `experiencia_conductor` **o** al menos 1 idioma **o** el Paso 4 está listo [por confirmar; MD36 pendiente] |
+| `experiencia` (Paso 3) | hay al menos 1 fila en `experiencia_conductor` (24-nov, S07: «¿Qué vehículos has manejado?» es obligatorio; responde MD36. Antes: experiencia o idiomas o el Paso 4 listo) |
 | `trabajo` (Paso 4) | al menos 1 negocio **y** 1 turno **y** 1 día |
 | `documentos` | siempre `false` en v1 |
 
@@ -583,7 +583,7 @@ Errores de la base que se muestran tal cual (vienen en español): «Tienes que t
     - Barra «4 de 5 pasos listos · 80%».
     - **Sin botón.**
   - **Fila «Tus documentos»:** estado «Próximamente», círculo punteado, sin flecha y sin enlace.
-  - **Nota:** «Mientras tu perfil esté incompleto, no apareces en los matches.» Se quita «Te recordaremos por WhatsApp o correo…», porque no hay recordatorios en v1 [por confirmar].
+  - **Nota:** 24-nov (S09): se quita la nota de la campana; bajo el título va «Completa tu perfil para aparecer en los matches.» y las filas «Listo» se pueden tocar para editar ese paso. Con solo los documentos pendientes, el texto sigue como antes hasta que se construya la subida de documentos.
 
 **Barra inferior:** solo **Inicio** y **Perfil** [por confirmar]. Es un layout propio en `app-real/src/app/conductor/(pestanas)/_layout.tsx` con `BarraInferior`.
 
@@ -601,7 +601,7 @@ Errores de la base que se muestran tal cual (vienen en español): «Tienes que t
 
 | Dónde | Maqueta | v1 |
 |---|---|---|
-| A3 nota sobre «Verificar» | «Demo: cualquier código de 6 dígitos» | «Versión de prueba: usa el código que te dio el equipo.» (solo con `EXPO_PUBLIC_CODIGOS_DE_PRUEBA=1`) |
+| A3 nota sobre «Verificar» | «Demo: cualquier código de 6 dígitos» | sin nota (24-nov, S03; antes «Versión de prueba: usa el código que te dio el equipo.») |
 | A3 cuenta regresiva | 0:30 | 1:00 |
 | A2 nota | «Demo: Usar un número de ejemplo» | (no aparece) |
 | Paso 1 y Paso 2 | «Demo: Rellenar con datos de ejemplo» / «Usar una dirección de ejemplo» | (no aparece) |
@@ -757,7 +757,7 @@ Los archivos se pasan por la entrada estándar porque el usuario `postgres` no l
   - Regla nueva: «direccion vacía = comuna elegida de la lista, no verificada».
 - `conductores.estado_perfil`: nota «v1: la app calcula el avance solo para mostrarlo; en la base queda 'incompleto' hasta la Etapa 3».
 - `cambios`: entrada `n: 40`, con la fecha del día en que se aplique, que resume lo anterior y el «Paso 2 temporal».
-- `pendientes` MD36: nota «en v1 el Paso 3 cuenta como listo con experiencia o idiomas, o con el Paso 4 listo».
+- `pendientes` MD36: resuelto el 24-nov (S07): el Paso 3 cuenta como listo solo con al menos un vehículo marcado.
 - **Además** (al aprobarse):
   - `docs/terminos-y-privacidad.md`: textos provisorios aceptados por el equipo, que deberán volver a aceptarse; datos reales del equipo guardados antes de los Términos; números de prueba.
   - `docs/plan.md`.
