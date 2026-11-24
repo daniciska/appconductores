@@ -20,11 +20,19 @@ import {
   CLAVE_ALMACENAMIENTO,
   CLAVE_ALMACENAMIENTO_ANTERIOR,
   VERSION_ESTADO,
+  claveContacto,
   crearEstadoInicial,
   migrarEstado,
   type DatosDemo,
 } from './estado';
 import { reiniciarRevisionManual } from './revisionManual';
+import {
+  ID_TITULAR_EJEMPLO,
+  ID_TITULAR_USUARIO,
+  registroTitularEjemplo,
+  registroTitularVacio,
+  type DatosTitular,
+} from './titularRegistro';
 import { EJEMPLO_USUARIO, conductorInicial, cuentaInicial, documentoVacio, documentosVacios, venceEnEjemplo } from './semilla';
 import {
   ID_USUARIO,
@@ -39,13 +47,13 @@ import {
 import type {
   Autorizaciones,
   ConductorFicticio,
+  Busqueda,
   CuentaUsuario,
   Dia,
   DocumentoUsuario,
   EntregaDatos,
   EstadoBusqueda,
   EstadoVerificacion,
-  Mensaje,
   MotivoReporteId,
   PerfilConductor,
   PerfilesBolsa,
@@ -54,6 +62,7 @@ import type {
   Rol,
   TareaSimulada,
   TipoDocumentoId,
+  Titular,
   Turno,
   VisibilidadBolsa,
 } from './tipos';
@@ -70,7 +79,22 @@ export interface Resultado {
 }
 
 /** Lo que ve el titular de la demo si el equipo suspendió su cuenta (R18: sale del match y no puede escribir). */
-export const TEXTO_CUENTA_SUSPENDIDA = 'Tu cuenta está suspendida: tus búsquedas no salen en los matches y no puedes escribir.';
+export const TEXTO_CUENTA_SUSPENDIDA = 'Tu cuenta está suspendida: tus búsquedas no salen en los matches.';
+
+/** Segundos que tarda el equipo (simulado) en revisar la cédula del titular (y el RUT en el SII). */
+export const SEGUNDOS_REVISION_TITULAR = 8;
+
+/** Lo que pide la búsqueda del titular (T8–T12, T14, T16). Sin garantía ni modo de contrato (crecimiento futuro). */
+export interface DatosBusqueda {
+  negocioId: string;
+  respuestaVehiculo: string | null;
+  comunaId: string;
+  turnos: Turno[];
+  dias: Dia[];
+  aniosMinimos: number;
+  exigeEstacionamiento: boolean;
+  detalle: string;
+}
 
 /** Cuánto tarda la persona del equipo (simulada) en revisar un documento que no aprobó la IA. */
 export const SEGUNDOS_REVISION_EQUIPO = 12;
@@ -84,7 +108,7 @@ export interface AccionesDemo {
   elegirRol: (rol: Rol | null) => void;
   /** Vuelve todo a como estaba al abrir la demo por primera vez (y vuelve la revisión simulada). */
   reiniciarDemo: () => void;
-  /** Atajo: deja al usuario como conductor con perfil completo y verificado, con 2 conversaciones. */
+  /** Atajo: deja al usuario como conductor con perfil completo y verificado (un titular ya le mostró su contacto). */
   prepararConductorVerificado: () => void;
   /**
    * Atajo: perfil completo con la Hoja de Vida no aprobada (PDF vencido) y los otros 3 documentos
@@ -128,14 +152,11 @@ export interface AccionesDemo {
   confirmarDisponibilidad: () => void;
   eliminarCuenta: () => void;
 
-  // --- Matches y mensajes (D1–D5) ---
+  // --- Matches (D1–D3). Sin mensajes desde el 24-nov ---
   alternarFavorito: (busquedaId: string) => void;
-  enviarMensaje: (busquedaId: string, texto: string) => void;
-  marcarConversacionLeida: (busquedaId: string) => void;
   compartirMiDireccion: (busquedaId: string) => void;
-  reportarConversacion: (d: { busquedaId: string; motivo: MotivoReporteId; detalle?: string }) => void;
-  bloquearTitular: (titularId: string) => void;
-  desbloquearTitular: (titularId: string) => void;
+  /** El conductor de la demo reporta al titular de un match. */
+  reportarTitular: (d: { busquedaId: string; motivo: MotivoReporteId; detalle?: string }) => void;
 
   // --- Bolsa: conductor (BC1–BC3) ---
   postular: (busquedaId: string) => Resultado;
@@ -153,10 +174,30 @@ export interface AccionesDemo {
   quitarDestacado: (busquedaId: string) => void;
   cambiarEstadoBusqueda: (busquedaId: string, estado: EstadoBusqueda) => Resultado;
   verPostulacion: (postulacionId: string) => void;
-  /** El titular le escribe a un postulante (no puede si su cuenta está suspendida: R18). */
-  escribirAPostulante: (postulacionId: string, texto: string) => Resultado;
   descartarPostulacion: (postulacionId: string) => void;
   alternarFavoritoTitular: (conductorId: string) => void;
+
+  // --- Titular de la demo: registro, búsquedas y matches (prototipo del 24-nov) ---
+  /** Atajo: entra como la empresa de ejemplo (Transportes Los Aromos SpA), ya registrada y con plan. */
+  prepararTitularEjemplo: () => void;
+  /** Vuelve a empezar el registro del titular (borra su titular y sus búsquedas; la empresa de ejemplo queda). */
+  reiniciarTitular: () => void;
+  titularVerificarCelular: () => void;
+  titularAceptarAutorizaciones: () => void;
+  /** Guarda "Tus datos": desde aquí existe su titular en la demo. */
+  guardarDatosTitular: (d: DatosTitular) => void;
+  subirCedulaTitular: (nombreArchivo?: string) => void;
+  quitarCedulaTitular: () => void;
+  /** Envía la cédula a revisión (en la demo, el equipo la revisa solo en unos segundos). */
+  enviarCedulaTitular: () => void;
+  /** Crea (sin id) o edita una búsqueda del titular de la demo. Devuelve el id. */
+  guardarBusqueda: (d: DatosBusqueda, id?: string) => Resultado & { id?: string };
+  /** El titular con plan abre la ficha de un conductor que hace match: ve su contacto. */
+  abrirFichaConductor: (busquedaId: string, conductorId: string, desde?: 'match' | 'postulacion') => void;
+  /** "Mostrar mi contacto": el conductor podrá ver el teléfono y el correo del titular. */
+  mostrarContactoA: (busquedaId: string, conductorId: string) => Resultado;
+  /** El titular de la demo reporta a un conductor. */
+  reportarConductor: (d: { conductorId: string; busquedaId: string | null; motivo: MotivoReporteId; detalle?: string }) => void;
 }
 
 export type EstadoDemo = DatosDemo & AccionesDemo;
@@ -208,10 +249,6 @@ export function docAprobado(doc: DocumentoUsuario, quien: 'ia' | 'persona'): Doc
   };
 }
 
-function mensajeSistema(texto: string): Mensaje {
-  return { id: nuevoId('m'), autor: 'sistema', texto, hora: ahoraISO(), leido: true };
-}
-
 function nuevaEntrega(s: DatosDemo, busquedaId: string, que: QueSeEntrego[], desde: EntregaDatos['desde']): EntregaDatos | null {
   const b = busquedaPorId(s, busquedaId);
   const t = b ? titularPorId(s, b.titularId) : undefined;
@@ -230,6 +267,67 @@ function nuevaEntrega(s: DatosDemo, busquedaId: string, que: QueSeEntrego[], des
 
 /** Tareas de la simulación que dependen de lo que hizo el usuario (se descartan con los atajos). */
 const TAREAS_DEL_USUARIO = new Set<TareaSimulada['tipo']>(['prerevision', 'revision_equipo', 'respuesta_titular', 'abre_ficha']);
+
+/** Búsquedas activas que permite el plan del titular de la demo. Sin plan: 1 (para ver el adelanto anónimo). */
+export function limiteBusquedasActivas(s: DatosDemo): number {
+  return planDeLaDemo(s)?.busquedasActivas ?? 1;
+}
+
+export function textoLimiteBusquedas(s: DatosDemo): string {
+  const plan = planDeLaDemo(s);
+  const n = limiteBusquedasActivas(s);
+  if (!plan) return 'Sin plan puedes tener 1 búsqueda activa. Elige un plan para tener más.';
+  return `Tu plan ${plan.nombre} permite ${n} ${n === 1 ? 'búsqueda activa' : 'búsquedas activas'}.`;
+}
+
+/**
+ * El titular de una búsqueda le muestra su contacto a un conductor. No guarda nada: devuelve los cambios.
+ * Si es el conductor de la demo, queda en contactoCompartido (lo ve en el detalle del match). Si el conductor
+ * había postulado a esa búsqueda, su postulación pasa a "Te mostró su contacto" (estado 'te_escribio').
+ */
+export function cambiosMostrarContacto(s: DatosDemo, busquedaId: string, conductorId: string): Partial<DatosDemo> {
+  const ahora = ahoraISO();
+  const cambios: Partial<DatosDemo> = {};
+  const b = busquedaPorId(s, busquedaId);
+  if (b?.titularId === s.titularDemo.titularId) {
+    cambios.titularDemo = {
+      ...s.titularDemo,
+      contactoMostrado: { ...s.titularDemo.contactoMostrado, [claveContacto(busquedaId, conductorId)]: ahora },
+    };
+  }
+  if (conductorId === ID_USUARIO && !s.contactoCompartido[busquedaId]) {
+    cambios.contactoCompartido = { ...s.contactoCompartido, [busquedaId]: ahora };
+    if (b && !s.matchesPorPostulacion.includes(busquedaId) && s.postulaciones.some((p) => p.busquedaId === busquedaId && p.conductorId === ID_USUARIO)) {
+      cambios.matchesPorPostulacion = [...s.matchesPorPostulacion, busquedaId];
+    }
+  }
+  if (s.postulaciones.some((p) => p.busquedaId === busquedaId && p.conductorId === conductorId && p.estado !== 'descartada')) {
+    cambios.postulaciones = s.postulaciones.map((p) =>
+      p.busquedaId === busquedaId && p.conductorId === conductorId && p.estado !== 'descartada'
+        ? { ...p, estado: 'te_escribio', vistaEl: p.vistaEl ?? ahora, cambioEl: ahora }
+        : p,
+    );
+  }
+  return cambios;
+}
+
+/** El titular que crea quien se registra como titular, con lo que escribió en "Tus datos". */
+function titularDesdeRegistro(d: DatosTitular, celular: string, previo: Titular | undefined): Titular {
+  const nombre = [d.nombres, d.apellido1, d.apellido2].map((x) => x.trim()).filter(Boolean).join(' ');
+  return {
+    id: ID_TITULAR_USUARIO,
+    tipo: d.tipo,
+    nombre: nombre || 'Titular de la demo',
+    razonSocial: d.tipo === 'empresa' ? d.razonSocial.trim() || null : null,
+    rut: d.tipo === 'empresa' ? d.rut.trim() || null : null,
+    revisado: previo?.revisado ?? false,
+    revisadoEl: previo?.revisadoEl ?? null,
+    telefono: celular.replace(/\D/g, '') ? `+56 9 ${celular}` : '',
+    correo: d.correo.trim(),
+    suspendido: previo?.suspendido ?? false,
+    creadoEl: previo?.creadoEl ?? ahoraISO(),
+  };
+}
 
 /**
  * Conductor de ejemplo con el perfil completo y los 4 documentos aprobados hace un día (la cédula y
@@ -387,32 +485,12 @@ export const useDemo = create<EstadoDemo>()(
             ...aprobados,
             hoja_vida: { ...aprobados.hoja_vida, venceEn: new Date(ahora + 20 * 24 * 60 * 60 * 1000).toISOString() },
           };
-          const m = (autor: Mensaje['autor'], texto: string, min: number, leido = true): Mensaje => ({
-            id: nuevoId('m'),
-            autor,
-            texto,
-            hora: hace(min),
-            leido,
-          });
-          const mensajes: Record<string, Mensaje[]> = {
-            b01: [
-              m('conductor', 'Hola, vi tu búsqueda. ¿El vehículo se retira en la mañana?', 60 * 5),
-              m('titular', 'Hola Daniel, sí, desde las 7:00 en Providencia. ¿Desde cuándo podrías partir?', 60 * 4 + 40),
-              m('conductor', 'Podría partir el lunes. Tengo estacionamiento en mi casa.', 60 * 4 + 30),
-              m('sistema', 'Transportes Los Aromos SpA compartió su contacto contigo.', 60 * 4),
-              m('titular', 'Perfecto. Te dejé mi contacto para coordinar.', 60 * 4),
-            ],
-            b02: [
-              m('conductor', 'Hola, me interesa el taxi ejecutivo. Tengo 5 años manejando.', 60 * 2),
-              m('titular', 'Hola, gracias por escribir. ¿Tienes experiencia con traslados al aeropuerto?', 25, false),
-            ],
-          };
           set({
             rol: 'conductor',
             cuenta,
             conductor,
             documentos,
-            mensajes,
+            mensajes: {},
             titularEscribiendo: {},
             favoritos: ['b01'],
             contactoCompartido: { b01: hace(60 * 4) },
@@ -668,49 +746,17 @@ export const useDemo = create<EstadoDemo>()(
               : [...s.favoritos, busquedaId],
           })),
 
-        enviarMensaje: (busquedaId, texto) => {
-          const limpio = texto.trim();
-          if (!limpio) return;
-          const s = get();
-          const b = busquedaPorId(s, busquedaId);
-          if (!b || s.bloqueos.includes(b.titularId)) return;
-          const nuevo: Mensaje = { id: nuevoId('m'), autor: 'conductor', texto: limpio, hora: ahoraISO(), leido: true };
-          const yaProgramada = s.pendientes.some((t) => t.tipo === 'respuesta_titular' && t.busquedaId === busquedaId);
-          set({
-            mensajes: { ...s.mensajes, [busquedaId]: [...(s.mensajes[busquedaId] ?? []), nuevo] },
-            pendientes: yaProgramada
-              ? s.pendientes
-              : [
-                  ...s.pendientes,
-                  { id: nuevoId('t'), tipo: 'respuesta_titular', venceEn: Date.now() + 2000 + Math.round(Math.random() * 2000), busquedaId },
-                ],
-          });
-        },
-
-        marcarConversacionLeida: (busquedaId) => {
-          const s = get();
-          const lista = s.mensajes[busquedaId];
-          if (!lista || lista.every((m) => m.leido)) return;
-          set({ mensajes: { ...s.mensajes, [busquedaId]: lista.map((m) => (m.leido ? m : { ...m, leido: true })) } });
-        },
-
         compartirMiDireccion: (busquedaId) => {
           const s = get();
           if (s.direccionCompartida[busquedaId]) return;
-          const b = busquedaPorId(s, busquedaId);
-          const t = b ? titularPorId(s, b.titularId) : undefined;
-          const entrega = nuevaEntrega(s, busquedaId, ['direccion'], 'conversacion');
+          const entrega = nuevaEntrega(s, busquedaId, ['direccion'], 'match');
           set({
             direccionCompartida: { ...s.direccionCompartida, [busquedaId]: ahoraISO() },
-            mensajes: {
-              ...s.mensajes,
-              [busquedaId]: [...(s.mensajes[busquedaId] ?? []), mensajeSistema(`Compartiste tu dirección con ${nombreTitular(t)}.`)],
-            },
             entregasDatos: entrega ? [...s.entregasDatos, entrega] : s.entregasDatos,
           });
         },
 
-        reportarConversacion: ({ busquedaId, motivo, detalle }) => {
+        reportarTitular: ({ busquedaId, motivo, detalle }) => {
           const s = get();
           const b = busquedaPorId(s, busquedaId);
           const t = b ? titularPorId(s, b.titularId) : undefined;
@@ -729,16 +775,11 @@ export const useDemo = create<EstadoDemo>()(
                 queSeHizo: null,
                 reportadoEl: ahoraISO(),
                 resueltoEl: null,
-                conversacion: (s.mensajes[busquedaId] ?? []).map((m) => ({ ...m })),
+                conversacion: [],
               },
             ],
           });
         },
-
-        bloquearTitular: (titularId) =>
-          set((s) => ({ bloqueos: s.bloqueos.includes(titularId) ? s.bloqueos : [...s.bloqueos, titularId] })),
-
-        desbloquearTitular: (titularId) => set((s) => ({ bloqueos: s.bloqueos.filter((x) => x !== titularId) })),
 
         // ------------------------------------------------------------------ Bolsa: conductor
         postular: (busquedaId) => {
@@ -904,10 +945,10 @@ export const useDemo = create<EstadoDemo>()(
           if (!b) return { ok: false, error: 'No encontramos la búsqueda.' };
           if (estado === 'activa' && b.estado !== 'activa' && b.titularId === s.titularDemo.titularId) {
             const plan = planDeLaDemo(s);
-            const limite = plan?.busquedasActivas ?? 0;
+            const limite = limiteBusquedasActivas(s);
             const activas = s.busquedas.filter((x) => x.titularId === b.titularId && x.estado === 'activa').length;
             if (activas >= limite) {
-              return { ok: false, error: plan ? `Tu plan permite ${limite} búsquedas activas.` : 'Elige un plan para activar búsquedas.' };
+              return { ok: false, error: textoLimiteBusquedas(s) };
             }
           }
           set({ busquedas: s.busquedas.map((x) => (x.id === busquedaId ? { ...x, estado } : x)) });
@@ -927,30 +968,6 @@ export const useDemo = create<EstadoDemo>()(
           });
         },
 
-        escribirAPostulante: (postulacionId, texto) => {
-          const s = get();
-          const p = s.postulaciones.find((x) => x.id === postulacionId);
-          if (!p) return { ok: false, error: 'No encontramos la postulación.' };
-          const b = busquedaPorId(s, p.busquedaId);
-          if (b && titularPorId(s, b.titularId)?.suspendido) return { ok: false, error: TEXTO_CUENTA_SUSPENDIDA };
-          const cambios: Partial<DatosDemo> = {
-            postulaciones: s.postulaciones.map((x) =>
-              x.id === postulacionId
-                ? { ...x, estado: 'te_escribio', vistaEl: x.vistaEl ?? ahoraISO(), cambioEl: ahoraISO() }
-                : x,
-            ),
-          };
-          if (p.conductorId === ID_USUARIO) {
-            const nuevo: Mensaje = { id: nuevoId('m'), autor: 'titular', texto: texto.trim(), hora: ahoraISO(), leido: false };
-            cambios.mensajes = { ...s.mensajes, [p.busquedaId]: [...(s.mensajes[p.busquedaId] ?? []), nuevo] };
-            cambios.matchesPorPostulacion = s.matchesPorPostulacion.includes(p.busquedaId)
-              ? s.matchesPorPostulacion
-              : [...s.matchesPorPostulacion, p.busquedaId];
-          }
-          set(cambios);
-          return { ok: true };
-        },
-
         descartarPostulacion: (postulacionId) =>
           set((s) => ({
             postulaciones: s.postulaciones.map((x) =>
@@ -964,6 +981,194 @@ export const useDemo = create<EstadoDemo>()(
               ? s.favoritosTitular.filter((x) => x !== conductorId)
               : [...s.favoritosTitular, conductorId],
           })),
+
+        // ------------------------------------------------------------------ Titular de la demo
+        prepararTitularEjemplo: () => {
+          const s = get();
+          set({
+            rol: 'titular',
+            titularDemo: {
+              ...s.titularDemo,
+              titularId: ID_TITULAR_EJEMPLO,
+              plan: 'flota_chica',
+              registro: registroTitularEjemplo(),
+            },
+            favoritosTitular: s.favoritosTitular.length ? s.favoritosTitular : ['c02'],
+          });
+        },
+
+        reiniciarTitular: () => {
+          const s = get();
+          const mias = new Set(s.busquedas.filter((b) => b.titularId === ID_TITULAR_USUARIO).map((b) => b.id));
+          set({
+            titularDemo: { titularId: ID_TITULAR_USUARIO, plan: 'sin_plan', destacadasUsadas: 0, registro: registroTitularVacio(), contactoMostrado: {} },
+            favoritosTitular: [],
+            titulares: s.titulares.filter((t) => t.id !== ID_TITULAR_USUARIO),
+            busquedas: s.busquedas.filter((b) => !mias.has(b.id)),
+            postulaciones: s.postulaciones.filter((p) => !mias.has(p.busquedaId)),
+            favoritos: s.favoritos.filter((id) => !mias.has(id)),
+            pendientes: s.pendientes.filter((t) => t.tipo !== 'revision_titular'),
+          });
+        },
+
+        titularVerificarCelular: () =>
+          set((s) => ({
+            titularDemo: { ...s.titularDemo, registro: { ...s.titularDemo.registro, celularVerificado: true } },
+          })),
+
+        titularAceptarAutorizaciones: () =>
+          set((s) => ({
+            titularDemo: { ...s.titularDemo, registro: { ...s.titularDemo.registro, autorizadoEl: ahoraISO() } },
+          })),
+
+        guardarDatosTitular: (d) => {
+          const s = get();
+          // Si entró con la empresa de ejemplo y edita sus datos, se editan los de esa empresa.
+          const id = s.titularDemo.titularId;
+          const previo = titularPorId(s, id);
+          const nuevo =
+            id === ID_TITULAR_USUARIO
+              ? titularDesdeRegistro(d, s.cuenta.celular, previo)
+              : {
+                  ...previo!,
+                  tipo: d.tipo,
+                  nombre: [d.nombres, d.apellido1, d.apellido2].map((x) => x.trim()).filter(Boolean).join(' '),
+                  razonSocial: d.tipo === 'empresa' ? d.razonSocial.trim() || null : null,
+                  rut: d.tipo === 'empresa' ? d.rut.trim() || null : null,
+                  correo: d.correo.trim(),
+                };
+          set({
+            titulares: previo ? s.titulares.map((t) => (t.id === id ? nuevo : t)) : [...s.titulares, nuevo],
+            titularDemo: { ...s.titularDemo, registro: { ...s.titularDemo.registro, ...d, datosListos: true } },
+          });
+        },
+
+        subirCedulaTitular: (nombreArchivo) =>
+          set((s) => ({
+            titularDemo: {
+              ...s.titularDemo,
+              registro: {
+                ...s.titularDemo.registro,
+                cedula: { estado: 'subido', archivo: nombreArchivo ?? 'cedula-frente.jpg', enviadoEl: null, revisadoEl: null },
+              },
+            },
+          })),
+
+        quitarCedulaTitular: () =>
+          set((s) => ({
+            titularDemo: {
+              ...s.titularDemo,
+              registro: { ...s.titularDemo.registro, cedula: { estado: 'falta', archivo: null, enviadoEl: null, revisadoEl: null } },
+            },
+          })),
+
+        enviarCedulaTitular: () => {
+          const s = get();
+          const c = s.titularDemo.registro.cedula;
+          if (c.estado !== 'subido') return;
+          set({
+            titularDemo: {
+              ...s.titularDemo,
+              registro: { ...s.titularDemo.registro, cedula: { ...c, estado: 'en_revision', enviadoEl: ahoraISO() } },
+            },
+            pendientes: [
+              ...s.pendientes.filter((t) => t.tipo !== 'revision_titular'),
+              { id: nuevoId('t'), tipo: 'revision_titular', venceEn: Date.now() + SEGUNDOS_REVISION_TITULAR * 1000 },
+            ],
+          });
+        },
+
+        guardarBusqueda: (d, id) => {
+          const s = get();
+          const titularId = s.titularDemo.titularId;
+          if (!titularPorId(s, titularId)) return { ok: false, error: 'Primero completa tus datos.' };
+          const negocio = s.catalogos.negocios.find((n) => n.id === d.negocioId);
+          if (!negocio) return { ok: false, error: 'Elige en qué negocio buscas conductor.' };
+          if (negocio.pregunta && !d.respuestaVehiculo) return { ok: false, error: negocio.pregunta.pregunta };
+          if (!d.comunaId) return { ok: false, error: 'Elige la comuna donde se retira el vehículo.' };
+          if (d.turnos.length === 0) return { ok: false, error: 'Elige al menos un turno.' };
+          if (d.dias.length === 0) return { ok: false, error: 'Elige al menos un día.' };
+          const campos = {
+            negocioId: d.negocioId,
+            respuestaVehiculo: negocio.pregunta ? d.respuestaVehiculo : null,
+            comunaId: d.comunaId,
+            turnos: d.turnos,
+            dias: d.dias,
+            aniosMinimos: Math.max(0, Math.round(d.aniosMinimos)),
+            exigeEstacionamiento: d.exigeEstacionamiento,
+            detalle: d.detalle.trim().slice(0, 300),
+          };
+          if (id) {
+            if (!s.busquedas.some((b) => b.id === id && b.titularId === titularId)) return { ok: false, error: 'No encontramos la búsqueda.' };
+            set({ busquedas: s.busquedas.map((b) => (b.id === id ? { ...b, ...campos } : b)) });
+            return { ok: true, id };
+          }
+          const activas = s.busquedas.filter((b) => b.titularId === titularId && b.estado === 'activa').length;
+          const nueva: Busqueda = {
+            id: nuevoId('b'),
+            titularId,
+            ...campos,
+            detalleOculto: false,
+            // Si ya llegó al límite de su plan, la búsqueda se guarda en pausa.
+            estado: activas < limiteBusquedasActivas(s) ? 'activa' : 'pausada',
+            publicadaEl: ahoraISO(),
+            enBolsa: false,
+            visibilidadBolsa: 'match',
+            perfilesBolsa: null,
+            publicadaBolsaEl: null,
+            destacadaHasta: null,
+          };
+          set({ busquedas: [...s.busquedas, nueva] });
+          return { ok: true, id: nueva.id, error: nueva.estado === 'pausada' ? textoLimiteBusquedas(s) : undefined };
+        },
+
+        abrirFichaConductor: (busquedaId, conductorId, desde = 'match') => {
+          const s = get();
+          if (!planDeLaDemo(s)) return;
+          if (conductorId !== ID_USUARIO) return;
+          // "Quién recibió mis datos": una vez por búsqueda.
+          if (s.fichasAbiertas.includes(busquedaId)) return;
+          const entrega = nuevaEntrega(s, busquedaId, ['ficha', 'telefono', 'correo'], desde);
+          set({
+            entregasDatos: entrega ? [...s.entregasDatos, entrega] : s.entregasDatos,
+            fichasAbiertas: [...s.fichasAbiertas, busquedaId],
+          });
+        },
+
+        mostrarContactoA: (busquedaId, conductorId) => {
+          const s = get();
+          const b = busquedaPorId(s, busquedaId);
+          if (!b || b.titularId !== s.titularDemo.titularId) return { ok: false, error: 'No encontramos la búsqueda.' };
+          if (titularPorId(s, b.titularId)?.suspendido) return { ok: false, error: TEXTO_CUENTA_SUSPENDIDA };
+          if (!planDeLaDemo(s)) return { ok: false, error: 'Elige un plan para contactar conductores.' };
+          set(cambiosMostrarContacto(s, busquedaId, conductorId));
+          return { ok: true };
+        },
+
+        reportarConductor: ({ conductorId, busquedaId, motivo, detalle }) => {
+          const s = get();
+          const t = titularPorId(s, s.titularDemo.titularId);
+          const c = conductorId === ID_USUARIO ? null : s.conductores.find((x) => x.id === conductorId);
+          const nombre = conductorId === ID_USUARIO ? nombreCompleto(s.cuenta) || 'Conductor de la demo' : c ? nombreCompleto(c) : 'Conductor';
+          set({
+            reportes: [
+              ...s.reportes,
+              {
+                id: nuevoId('r'),
+                busquedaId,
+                quienReporta: { id: t?.id ?? s.titularDemo.titularId, nombre: nombreTitular(t), rol: 'titular' },
+                reportado: { id: conductorId, nombre, rol: 'conductor' },
+                motivo,
+                detalle: detalle?.trim() ?? '',
+                estado: 'abierto',
+                queSeHizo: null,
+                reportadoEl: ahoraISO(),
+                resueltoEl: null,
+                conversacion: [],
+              },
+            ],
+          });
+        },
       };
     },
     {

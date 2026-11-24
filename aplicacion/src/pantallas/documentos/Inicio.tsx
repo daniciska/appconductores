@@ -10,7 +10,6 @@ import {
   useDerivado,
   useEstadoInicio,
   useMatchesDelUsuario,
-  useMensajesNoLeidos,
   useResumenDocumentos,
 } from '@/datos/hooks';
 import { useRevisionManual } from '@/datos/revisionManual';
@@ -238,7 +237,7 @@ function VistaRevision() {
 function VistaActiva() {
   const navigation = useNavigation();
   const matches = useMatchesDelUsuario();
-  const noLeidos = useMensajesNoLeidos();
+  const conContacto = matches.filter((m) => m.contactoCompartidoEl).length;
   const ultimos = [...matches]
     .sort((a, b) => (b.busqueda.publicadaEl ?? '').localeCompare(a.busqueda.publicadaEl ?? ''))
     .slice(0, 3);
@@ -254,17 +253,19 @@ function VistaActiva() {
               {n === 1 ? 'match con un titular' : 'matches con titulares'}
             </Text>
           </View>
-          {noLeidos > 0 ? (
+          {conContacto > 0 ? (
             <Presionable
               role="button"
-              aria-label={`${plural(noLeidos, 'mensaje nuevo', 'mensajes nuevos')}. Ver mensajes`}
-              onPress={() => irAPestana(navigation, 'mensajes')}
+              aria-label={`${plural(conContacto, 'titular', 'titulares')} ${conContacto === 1 ? 'te mostró' : 'te mostraron'} su contacto. Ver mis matches`}
+              onPress={() => irAPestana(navigation, 'matches')}
               style={{ flexDirection: 'row', alignItems: 'center', gap: 8, alignSelf: 'flex-start', minHeight: 28, marginVertical: -4 }}>
               <View aria-hidden style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color.acento }} />
-              <Text style={[tipo.secundario, { color: GRIS_SOBRE_OSCURO }]}>{plural(noLeidos, 'mensaje nuevo', 'mensajes nuevos')}</Text>
+              <Text style={[tipo.secundario, { color: GRIS_SOBRE_OSCURO }]}>
+                {plural(conContacto, 'titular', 'titulares')} {conContacto === 1 ? 'te mostró' : 'te mostraron'} su contacto
+              </Text>
             </Presionable>
           ) : (
-            <Text style={[tipo.secundario, { color: GRIS_SOBRE_OSCURO, minHeight: 20, lineHeight: 20 }]}>Sin mensajes nuevos</Text>
+            <Text style={[tipo.secundario, { color: GRIS_SOBRE_OSCURO, minHeight: 20, lineHeight: 20 }]}>Los titulares con plan ven tu contacto</Text>
           )}
         </View>
         <Boton titulo="Ver mis matches" variante="principal" iconoDerecha={ChevronRight} onPress={() => irAPestana(navigation, 'matches')} />
@@ -367,7 +368,7 @@ function VistaPausada() {
           </Text>
         </View>
         <Text style={[tipo.secundario, { lineHeight: 21, color: GRIS_SOBRE_OSCURO }]}>
-          Los titulares no te ven en sus matches. Tus conversaciones siguen abiertas.
+          Los titulares no te ven en sus matches.
         </Text>
         <Boton titulo="Volver a estar disponible" variante="principal" onPress={() => cambiar(true)} />
       </TarjetaOscura>

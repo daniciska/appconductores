@@ -233,6 +233,10 @@ export interface Titular {
   correo: string; // ficticio
   suspendido: boolean;
   creadoEl: string;
+  /** Solo empresa: RUT (lo revisa el equipo en el SII). */
+  rut?: string | null;
+  /** Cuándo el equipo revisó la cédula (y el RUT en el SII, si es empresa). */
+  revisadoEl?: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -302,7 +306,8 @@ export interface Mensaje {
 }
 
 export type QueSeEntrego = 'ficha' | 'telefono' | 'correo' | 'direccion';
-export type DesdeDondeEntrega = 'apertura_ficha' | 'conversacion' | 'postulacion';
+/** 'conversacion' queda solo por compatibilidad con lo guardado antes del 24-nov (ya no hay mensajes). */
+export type DesdeDondeEntrega = 'apertura_ficha' | 'conversacion' | 'postulacion' | 'match';
 
 /** "Quién recibió mis datos": cada vez que datos del conductor de la demo llegan a un titular. */
 export interface EntregaDatos {
@@ -448,4 +453,6 @@ export type TareaSimulada =
   | { id: string; tipo: 'postulacion_vista'; venceEn: number; postulacionId: string }
   | { id: string; tipo: 'postulacion_respuesta'; venceEn: number; postulacionId: string }
   /** Una persona del equipo (simulada) revisa un documento del usuario. `ronda` = envío que revisa. */
-  | { id: string; tipo: 'revision_equipo'; venceEn: number; documento: TipoDocumentoId; ronda: string };
+  | { id: string; tipo: 'revision_equipo'; venceEn: number; documento: TipoDocumentoId; ronda: string }
+  /** El equipo (simulado) revisa la cédula del titular de la demo (y el RUT en el SII, si es empresa). */
+  | { id: string; tipo: 'revision_titular'; venceEn: number };

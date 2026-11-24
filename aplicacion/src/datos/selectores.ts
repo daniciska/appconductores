@@ -643,3 +643,51 @@ export function ofertasEnBolsaDelTitular(s: DatosDemo): number {
 export function busquedasActivasDelTitular(s: DatosDemo): number {
   return s.busquedas.filter((b) => b.titularId === s.titularDemo.titularId && b.estado === 'activa').length;
 }
+
+// ---------------------------------------------------------------------------
+// Titular de la demo: registro, matches y contacto (prototipo del 24-nov)
+// ---------------------------------------------------------------------------
+
+/** ¿El titular de la demo ya le mostró su contacto a este conductor en esta búsqueda? */
+export function contactoMostradoA(s: DatosDemo, busquedaId: string, conductorId: string): string | null {
+  const mostrado = s.titularDemo.contactoMostrado[`${busquedaId}|${conductorId}`] ?? null;
+  // El conductor de la demo guarda lo que le mostraron en contactoCompartido (también lo llenan los atajos).
+  if (!mostrado && conductorId === ID_USUARIO) return s.contactoCompartido[busquedaId] ?? null;
+  return mostrado;
+}
+
+/** Dónde sigue el registro del titular de la demo (null = ya puede usar la app). */
+export type PasoRegistroTitular = 'celular' | 'autorizaciones' | 'datos' | null;
+
+export function pasoRegistroTitular(s: DatosDemo): PasoRegistroTitular {
+  const r = s.titularDemo.registro;
+  if (!r.celularVerificado) return 'celular';
+  if (!r.autorizadoEl) return 'autorizaciones';
+  if (!r.datosListos || !titularPorId(s, s.titularDemo.titularId)) return 'datos';
+  return null;
+}
+
+export interface MatchDelTitular {
+  busqueda: Busqueda;
+  negocio: Negocio;
+  conductor: ConductorVista;
+  resultado: ResultadoMatch;
+}
+
+/** Los conductores favoritos del titular de la demo, con la búsqueda suya donde mejor calzan (si alguna). */
+export function favoritosDelTitular(s: DatosDemo): { conductor: ConductorVista; mejor: MatchDelTitular | null }[] {
+  const mias = s.busquedas.filter((b) => b.titularId === s.titularDemo.titularId);
+  return s.favoritosTitular
+    .map((id) => conductorVista(s, id))
+    .filter((c): c is ConductorVista => !!c)
+    .map((conductor) => {
+      let mejor: MatchDelTitular | null = null;
+      for (const b of mias) {
+        const r = simularMatch(s, conductor.id, b.id);
+        if (r?.hayMatch && (!mejor || r.porcentaje > mejor.resultado.porcentaje)) {
+          mejor = { busqueda: b, negocio: negocioPorId(s, b.negocioId)!, conductor, resultado: r };
+        }
+      }
+      return { conductor, mejor };
+    });
+}

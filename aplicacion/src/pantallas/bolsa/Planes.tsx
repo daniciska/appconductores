@@ -1,9 +1,11 @@
-// BT5 · Planes con la bolsa (propuesta)
+// BT5 · Planes del titular (propuesta)
 // Ruta: /titular/planes
 // Maqueta: docs/maqueta/BolsaPlanes.dc.html
-// Los planes salen del catálogo (en la app real, editable desde el panel). Precios por definir. En la demo, "Elegir"
-// cambia el plan del titular al instante y no se cobra nada.
+// Los planes salen del catálogo (en la app real, editable desde el panel). Precios por definir. Con plan, el
+// titular ve los matches y sus contactos (24-nov); las filas de la bolsa salen solo si la bolsa está activa.
+// "Elegir" lleva al pago web (/titular/pago, simulado en la demo); "Quedarme sin plan" cambia al instante.
 import { Text, View } from 'react-native';
+import { router } from 'expo-router';
 
 import { pesos } from '@/datos/formato';
 import { useCatalogos } from '@/datos/hooks';
@@ -69,7 +71,7 @@ function Fila({ etiqueta, valor, oscuro, nada, si }: { etiqueta: string; valor?:
   );
 }
 
-function TarjetaPlan({ plan, actual, onElegir }: { plan: Plan; actual: boolean; onElegir: () => void }) {
+function TarjetaPlan({ plan, actual, onElegir, bolsa }: { plan: Plan; actual: boolean; onElegir: () => void; bolsa: boolean }) {
   const oscuro = plan.recomendado;
   const extra = plan.visibilidades.filter((v) => v !== 'match');
   const quien = extra.length === 0 ? TEXTO_VISIBILIDAD_PLAN.match : TEXTO_VISIBILIDAD_PLAN[extra[extra.length - 1]];
@@ -116,10 +118,15 @@ function TarjetaPlan({ plan, actual, onElegir }: { plan: Plan; actual: boolean; 
       </View>
       <View>
         <Fila oscuro={oscuro} etiqueta="Búsquedas activas" valor={String(plan.busquedasActivas)} />
-        <Fila oscuro={oscuro} etiqueta="Ofertas en la bolsa" valor={String(plan.ofertasBolsa)} />
-        <Fila oscuro={oscuro} etiqueta="Quién ve tus ofertas" valor={quien} />
-        <Fila oscuro={oscuro} etiqueta="Destacar ofertas" valor={`${plan.destacadasMes} al mes`} nada={plan.destacadasMes <= 0} />
-        <Fila oscuro={oscuro} etiqueta="Ver quién postuló" si={plan.vePostulantes} nada={!plan.vePostulantes} />
+        <Fila oscuro={oscuro} etiqueta="Ver matches y sus contactos" si />
+        {bolsa ? (
+          <>
+            <Fila oscuro={oscuro} etiqueta="Ofertas en la bolsa" valor={String(plan.ofertasBolsa)} />
+            <Fila oscuro={oscuro} etiqueta="Quién ve tus ofertas" valor={quien} />
+            <Fila oscuro={oscuro} etiqueta="Destacar ofertas" valor={`${plan.destacadasMes} al mes`} nada={plan.destacadasMes <= 0} />
+            <Fila oscuro={oscuro} etiqueta="Ver quién postuló" si={plan.vePostulantes} nada={!plan.vePostulantes} />
+          </>
+        ) : null}
       </View>
       <Presionable
         role="button"
@@ -152,28 +159,30 @@ export default function Planes() {
   const catalogos = useCatalogos();
   const planActual = useDemo((s) => s.titularDemo.plan);
   const cambiarPlan = useDemo((s) => s.cambiarPlanTitular);
+  const bolsaActiva = useDemo((s) => s.ajustes.bolsaActiva);
   const planes = [...catalogos.planes].sort((a, b) => a.orden - b.orden);
 
-  const elegir = (id: PlanTitular, nombre: string) => {
-    const cambios = cambiarPlan(id);
-    mostrarToast(textoCambioPlan(id === 'sin_plan' ? 'Ahora estás sin plan' : `Listo: tu plan es ${nombre}`, cambios), cambios.length ? 'info' : 'exito', cambios.length ? 5500 : undefined);
-    volver('/titular');
+  const quedarmeSinPlan = () => {
+    const cambios = cambiarPlan('sin_plan');
+    mostrarToast(textoCambioPlan('Ahora estás sin plan', cambios), cambios.length ? 'info' : 'exito', cambios.length ? 5500 : undefined);
+    volver('/titular/busquedas');
   };
+  const elegir = (id: PlanTitular) => router.push({ pathname: '/titular/pago', params: { plan: id } });
 
   return (
     <Pantalla>
-      <EncabezadoConTexto volverA="/titular" derecha={<Propuesta />} />
-      <Cabecera titulo="Elige tu plan" subtitulo="Publica tus vehículos en la bolsa y recibe postulantes." />
+      <EncabezadoConTexto volverA="/titular/busquedas" derecha={<Propuesta />} />
+      <Cabecera titulo="Elige tu plan" subtitulo="Ve y contacta a los conductores verificados que hacen match con tus búsquedas." />
 
       {planes.map((p) => (
-        <TarjetaPlan key={p.id} plan={p} actual={planActual === p.id} onElegir={() => elegir(p.id, p.nombre)} />
+        <TarjetaPlan key={p.id} plan={p} actual={planActual === p.id} bolsa={bolsaActiva} onElegir={() => elegir(p.id)} />
       ))}
 
       <Text style={[tipo.pequeno, fuente(400), { color: color.textoSecundario, textAlign: 'center', lineHeight: 18 }]}>
         Se renueva cada mes. Cancela cuando quieras.{'\n'}En la demo no se cobra nada.
       </Text>
       {planActual !== 'sin_plan' ? (
-        <Boton titulo="Quedarme sin plan" variante="texto" tamano="mediano" anchoCompleto onPress={() => elegir('sin_plan', '')} />
+        <Boton titulo="Quedarme sin plan" variante="texto" tamano="mediano" anchoCompleto onPress={quedarmeSinPlan} />
       ) : null}
     </Pantalla>
   );

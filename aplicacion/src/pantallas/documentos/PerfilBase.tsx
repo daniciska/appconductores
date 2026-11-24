@@ -40,7 +40,7 @@ const PREGUNTAS: { p: string; r: string }[] = [
     r: 'Cuando tu perfil está completo, tus 4 documentos están aprobados y estás disponible para trabajar.',
   },
   { p: '¿Quién ve mis documentos?', r: 'Solo nuestro equipo de verificación. Los titulares ven una insignia, nunca tus archivos.' },
-  { p: '¿Quién ve mi dirección?', r: 'Nadie. Solo la recibe un titular si tú se la compartes en una conversación.' },
+  { p: '¿Quién ve mi dirección?', r: 'Nadie. Solo la recibe un titular si tú se la compartes desde un match.' },
   { p: '¿Cómo dejo de aparecer por un tiempo?', r: 'Apaga "Disponible para trabajar". Puedes volver cuando quieras.' },
 ];
 

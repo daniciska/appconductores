@@ -47,17 +47,34 @@ Antes de empezar, lee en `/home/user/appconductores/CLAUDE.md` las **Decisiones 
 | documentos | `/conductor/eliminar-cuenta` | E5 | `src/pantallas/documentos/EliminarCuenta.tsx` | `CondEliminarCuenta.dc.html` |
 | matches | `/conductor/matches` (pestaña) | D1 | `src/pantallas/matches/Matches.tsx` | `CondMatches.dc.html` |
 | matches | `/conductor/matches/[id]` | D2 | `src/pantallas/matches/DetalleMatch.tsx` | `CondDetalleMatch.dc.html` |
-| matches | `/conductor/mensajes` (pestaña) | D3 | `src/pantallas/matches/Mensajes.tsx` | `CondMensajes.dc.html` |
-| matches | `/conductor/mensajes/[id]` | D4 | `src/pantallas/matches/Conversacion.tsx` | `CondConversacion.dc.html` |
-| matches | `/conductor/mensajes/[id]/reportar` | D5 | `src/pantallas/matches/Reportar.tsx` | `CondReportar.dc.html` |
+| matches | `/conductor/matches/[id]/reportar` | D5 | `src/pantallas/matches/Reportar.tsx` (exporta también `FormularioReporte`, que usa el titular) | `CondReportar.dc.html` (sin "Bloquear") |
+
+Desde el 24-nov **no hay mensajes** (se sacaron D3 Mensajes y D4 Conversación, y "Bloquear"). El detalle del match (D2) muestra el contacto del titular solo si el titular se lo mostró (`contactoCompartido[busquedaId]`, con `TarjetaContacto` de `matches/piezas.tsx`: Llamar, WhatsApp y Correo), "Compartir mi dirección" (solo después de eso) y "Reportar a este titular".
 | bolsa | `/conductor/bolsa` (pestaña) | BC1 | `src/pantallas/bolsa/BolsaConductor.tsx` | `BolsaLista.dc.html` |
 | bolsa | `/conductor/bolsa/[id]` | BC2 | `src/pantallas/bolsa/DetalleOferta.tsx` | `BolsaDetalle.dc.html` |
 | bolsa | `/conductor/bolsa/postulaciones` | BC3 | `src/pantallas/bolsa/MisPostulaciones.tsx` | `BolsaPostulaciones.dc.html` |
-| bolsa | `/titular` | Titular | `src/pantallas/bolsa/InicioTitular.tsx` | `InicioTitular.dc.html` (referencia general) |
 | bolsa | `/titular/bolsa/[busqueda]/publicar` | BT1 | `src/pantallas/bolsa/Publicar.tsx` | `BolsaPublicar.dc.html` |
 | bolsa | `/titular/bolsa/[busqueda]/perfiles` | BT2 | `src/pantallas/bolsa/Perfiles.tsx` | `BolsaPerfiles.dc.html` |
 | bolsa | `/titular/bolsa/[busqueda]/postulantes` | BT3 · BT4 | `src/pantallas/bolsa/Postulantes.tsx` | `BolsaPostulantes.dc.html`, `BolsaPostulantesSinPlan.dc.html` |
-| bolsa | `/titular/planes` | BT5 | `src/pantallas/bolsa/Planes.tsx` | `BolsaPlanes.dc.html` |
+| bolsa | `/titular/planes` | BT5 · Planes | `src/pantallas/bolsa/Planes.tsx` (ahora es la pantalla de planes del titular: "Ver matches y sus contactos"; las filas de la bolsa solo si está activa; "Elegir" lleva al pago) | `BolsaPlanes.dc.html` |
+
+**Titular (prototipo del 24-nov, sin maqueta previa: se aprueba sobre la demo).** Carpeta `src/pantallas/titular/`. Datos: `titularDemo.registro` (`src/datos/titularRegistro.ts`), `titularDemo.contactoMostrado`, acciones `guardarDatosTitular`, `subirCedulaTitular`/`enviarCedulaTitular` (revisión simulada a los ~8 s, tarea `revision_titular`), `guardarBusqueda`, `abrirFichaConductor`, `mostrarContactoA`, `reportarConductor`, `prepararTitularEjemplo` y `reiniciarTitular`. Quien entra como titular parte registrándose (titular `tyo`); el atajo "Empresa de ejemplo" usa `t01`.
+
+| Grupo | Ruta | Pantalla | Archivo |
+|---|---|---|---|
+| titular | `/titular` | Entrada: lleva al paso del registro que falta o a Mis búsquedas | `src/app/titular/index.tsx` |
+| titular | `/titular/celular` · `/titular/codigo` | Celular y código (las del conductor, con otras rutas y otro texto) | `src/pantallas/titular/Ingreso.tsx` |
+| titular | `/titular/autorizaciones` | Antes de empezar (2 casillas) | `src/pantallas/titular/Ingreso.tsx` |
+| titular | `/titular/datos` (`?editar=1` desde Perfil) | Tus datos: Persona natural / Empresa, razón social y RUT (con dígito verificador), nombres, apellidos y correo | `src/pantallas/titular/Datos.tsx` |
+| titular | `/titular/verificacion` | Cédula (foto) y RUT en el SII si es empresa | `src/pantallas/titular/Verificacion.tsx` |
+| titular | `/titular/busquedas` (pestaña) | Mis búsquedas | `src/pantallas/titular/Busquedas.tsx` |
+| titular | `/titular/busqueda/nueva` · `/titular/busqueda/[id]/editar` | Nueva / editar búsqueda | `src/pantallas/titular/FormularioBusqueda.tsx` |
+| titular | `/titular/busqueda/[id]` | La búsqueda: sin plan, cuántos hacen match; con plan, la lista de matches | `src/pantallas/titular/Resultados.tsx` |
+| titular | `/titular/conductor/[id]?busqueda=` | Ficha del conductor con su contacto, favorito, "Mostrar mi contacto" y Reportar | `src/pantallas/titular/FichaConductor.tsx` |
+| titular | `/titular/conductor/[id]/reportar` | Reportar conductor (`FormularioReporte`) | `src/pantallas/titular/ReportarConductor.tsx` |
+| titular | `/titular/favoritos` (pestaña) | Favoritos | `src/pantallas/titular/Favoritos.tsx` |
+| titular | `/titular/perfil` (pestaña) | Perfil | `src/pantallas/titular/Perfil.tsx` |
+| titular | `/titular/pago?plan=` | Pago web (simulado: no pide datos de pago) | `src/pantallas/titular/Pago.tsx` |
 
 Otras rutas (ya hechas, no se tocan): `/conductor` (redirige a Inicio si ya se registró; si no, a A1), `/componentes` (muestrario del sistema de diseño), `+not-found`.
 
@@ -86,7 +103,7 @@ Mientras el panel está abierto con un rol en otra pestaña del navegador, esta 
 **Layouts (ya hechos):**
 
 - `src/app/conductor/_layout.tsx`: columna de celular (`MarcoCelular`), pila de pantallas y botón "Demo" arriba a la derecha.
-- `src/app/conductor/(pestanas)/_layout.tsx`: pestañas Inicio, Matches, Bolsa (solo si `ajustes.bolsaActiva`), Mensajes (punto amarillo si hay no leídos) y Perfil. Las pantallas de pestaña **no** dibujan la barra: ya está. Las demás rutas del conductor se abren encima, sin barra (como en las maquetas).
+- `src/app/conductor/(pestanas)/_layout.tsx`: pestañas Inicio, Matches, Bolsa (solo si `ajustes.bolsaActiva`) y Perfil (sin Mensajes desde el 24-nov). Las pantallas de pestaña **no** dibujan la barra: ya está. Las demás rutas del conductor se abren encima, sin barra (como en las maquetas).
 - `src/app/titular/_layout.tsx`: igual al del conductor, sin pestañas.
 
 **Navegación:** `import { router } from 'expo-router'`. `router.push('/conductor/matches/b01')` abre encima; `router.replace(...)` cambia sin dejar historial (ej. al terminar el registro o al pasar de un paso a otro si no quieres apilar); `router.dismissTo('/conductor/inicio')` cierra lo que está encima hasta volver a Inicio (dentro de la misma sección). Ojo: en esta versión `router.navigate` **apila** una pantalla nueva aunque ya exista; no lo uses para "volver". Para ir al selector no navegues a `/`: ya está el botón "Demo" (etiqueta accesible "Menú de la demo"), que saca la sección de la pila. Las rutas tienen tipos (typed routes): una ruta mal escrita no compila.
@@ -114,7 +131,7 @@ Muestrario en vivo: ruta `/componentes`.
 | `Titulo` | `nivel`: `'hero'` 34 · `1` 26 (h1) · `2` 20 · `'tarjeta'` 17 negrita; `tono`, `centrado` | Títulos (Sora). |
 | `Texto` | `variante`: `cuerpo`, `parrafo`, `fuerte`, `etiqueta`, `secundario`, `ayuda`, `pequeno`, `seccion`; `tono`: `normal`, `suave`, `secundario`, `deshabilitado`, `exito`, `error`, `blanco`, `acento`; `peso`, `tamano`, `centrado`, `subrayado` | Todo texto. El subtítulo bajo un h1 es `variante="parrafo" tono="secundario"`. |
 | `TituloSeccion` | `children` | "Mi perfil", "Seguridad y privacidad" (14 negrita gris). |
-| `Boton` | `titulo`, `onPress?` o `href?`, `variante`: `principal` (amarillo), `oscuro` (por defecto), `contorno`, `suave`, `texto`, `peligro`; `tamano`: `grande` 56 · `mediano` 44; `icono?`, `iconoDerecha?`, `deshabilitado?`, `cargando?`, `anchoCompleto?` | "Continuar" = oscuro grande; "Escribir mensaje" = principal; "Guardar y terminar después" = contorno; "Ver >" = oscuro mediano con `iconoDerecha={ChevronRight}`. |
+| `Boton` | `titulo`, `onPress?` o `href?`, `variante`: `principal` (amarillo), `oscuro` (por defecto), `contorno`, `suave`, `texto`, `peligro`; `tamano`: `grande` 56 · `mediano` 44; `icono?`, `iconoDerecha?`, `deshabilitado?`, `cargando?`, `anchoCompleto?` | "Continuar" = oscuro grande; "Me interesa" = principal; "Guardar y terminar después" = contorno; "Ver >" = oscuro mediano con `iconoDerecha={ChevronRight}`. |
 | `BotonIcono` | `icono`, `etiquetaAccesible`, `variante`: `borde` (volver) · `suave` · `acento` (favorito marcado) · `oscuro` · `transparente`; `relleno?` (estrella rellena), `colorIcono?`, `tamano=44` | Favorito: `<BotonIcono icono={Star} variante={fav ? 'acento' : 'suave'} relleno={fav} colorIcono={fav ? undefined : color.textoSecundario} />`. |
 | `Presionable` | como `Pressable` + `efecto` (`opacidad`/`escala`/`ninguno`) y `href?` | Para tarjetas o filas tocables propias. |
 | `Campo` | `etiqueta?`, `obligatorio?` (asterisco), `notaEtiqueta?` ("(si tienes)"), `valor`, `onCambiar`, `placeholder`, `ayuda?`, `error?` (texto o `true`), `prefijo?` ("+56 9"), `icono?`, `derecha?`, `multilinea?`, `maxLength`, `contador?`, `deshabilitado?`, `keyboardType`, `autoComplete`, `inputRef?` | Campo de 52 px, radio 14, borde negro al enfocar y rojo con error. |
@@ -179,7 +196,7 @@ import * as sel from '@/datos/selectores';
 
 const nombres = useDemo((s) => s.cuenta.nombres);       // valor simple: OK
 const documentos = useDemo((s) => s.documentos);        // objeto que ya existe en el estado: OK
-const enviarMensaje = useDemo((s) => s.enviarMensaje);  // acción: OK
+const alternarFavorito = useDemo((s) => s.alternarFavorito);  // acción: OK
 const matches = useMatchesDelUsuario();                 // listas derivadas: usa los hooks
 const avance = useDerivado(sel.avancePerfil);           // cualquier selector, memorizado
 ```
@@ -193,7 +210,7 @@ const avance = useDerivado(sel.avancePerfil);           // cualquier selector, m
 - `conductor` (`ConductorUsuario`): `registrado`, `registradoEl`, `pasosListos { datos, direccion, experiencia, trabajo, documentos }`, `pasoActual`, `estadoPerfil` (`incompleto`/`completo`), `estadoVerificacion` (`sin_documentos`/`en_revision`/`verificado`/`con_observaciones`), `disponible`, `disponibilidadConfirmadaEn`, `fechaNacimiento` ('dd/mm/aaaa'), `direccion`, `depto`, `comunaId`, `tieneEstacionamiento`, `clasesDeclaradas`, `clasesRevisadas`, `idiomas`, `experiencia { liviano: 5 }`, `negocios`, `turnos`, `dias`.
   - Al empezar, los textos están vacíos y las selecciones vienen marcadas como en las maquetas (A2 y B; 5 años liviano y 2 van; Español; Taxi y Taxi ejecutivo; Día; lunes a sábado; con estacionamiento; disponible). Los formularios deben **partir con lo que hay en el estado** y guardar lo que la persona cambie. `EJEMPLO_USUARIO` (en `@/datos/semilla`) tiene datos de ejemplo por si quieres ofrecer "Usar datos de ejemplo".
 - `documentos`: `{ cedula, licencia, hoja_vida, antecedentes }` → `DocumentoUsuario { estado: 'falta'|'subido'|'en_revision'|'aprobado'|'rechazado', nombreArchivo, subidoEl, enviadoEl, etapa: 'ia'|'equipo'|null, revisadoEn, venceEn, quienDecidio: 'ia'|'persona'|null, motivo, otraRevisionEl }`.
-- `favoritos` (ids de búsqueda), `mensajes` (`{ [busquedaId]: Mensaje[] }`, `Mensaje { id, autor: 'conductor'|'titular'|'sistema', texto, hora, leido }`), `titularEscribiendo`, `contactoCompartido` y `direccionCompartida` (`{ [busquedaId]: fecha }`), `matchesPorPostulacion`, `entregasDatos` (Quién recibió mis datos), `bloqueos` (ids de titular).
+- `favoritos` (ids de búsqueda), `mensajes` y `titularEscribiendo` (ya no se usan desde el 24-nov; quedan por compatibilidad), `contactoCompartido` y `direccionCompartida` (`{ [busquedaId]: fecha }`), `matchesPorPostulacion`, `entregasDatos` (Quién recibió mis datos), `bloqueos` (ya no se usa: se sacó "Bloquear").
 - `titularDemo`: `{ titularId: 't01', plan: 'sin_plan'|'basico'|'flota_chica'|'flota' (parte en flota_chica), destacadasUsadas }`, `favoritosTitular`.
 - `titulares` (7), `busquedas` (14), `conductores` (10 ficticios), `postulaciones`, `reportes`.
 - `catalogos` (`negocios[].activo/nombre`, `industrias[].activo`, `zonas[].nombre`, `comunas[].zonaId`), `reglas` (`umbral` y `reglas[]` con `uso`: `filtro`/`variable`/`apagado` y `peso`), `ajustes` (`bolsaActiva: true`, `validarObligatorios: false`, `diasReconfirmar: 30`, `diasAntiguedadPdf: 30`, `segundosPrerevision: 3`), `equipo`, `accionesEquipo`. **Esta app solo los lee:** los cambia el panel de la demo (otra app, en `/panel`), y el cambio llega en vivo por el evento "storage". Parten como el lanzamiento: solo Taxi y Taxi ejecutivo, transporte de carga apagado, umbral 66 % y la bolsa encendida. `equipo` y `accionesEquipo` parten vacíos: los llena el panel al entrar. `VERSION_ESTADO` es 4 (9-nov): desde la 3 se conserva todo; lo guardado en la versión 2 (la demo del 4-nov, con el panel dentro) vuelve a los valores iniciales (`migracion.ts`).
@@ -201,14 +218,14 @@ const avance = useDerivado(sel.avancePerfil);           // cualquier selector, m
 
 ### Acciones (`useDemo((s) => s.accion)`; firmas exactas en `AccionesDemo`, `src/datos/tienda.ts`)
 
-- **General:** `elegirRol(rol)`, `reiniciarDemo()`, `prepararConductorVerificado()` (atajo: perfil completo, verificado, 2 conversaciones, 1 favorito y 2 entregas de datos), `prepararDocumentoNoAprobado()` (atajo: perfil completo, la Hoja de Vida no aprobada por PDF vencido y los otros 3 documentos aprobados; sin matches ni conversaciones).
+- **General:** `elegirRol(rol)`, `reiniciarDemo()`, `prepararConductorVerificado()` (atajo: perfil completo, verificado, 1 titular que ya le mostró su contacto, 1 favorito y 2 entregas de datos), `prepararDocumentoNoAprobado()` (atajo: perfil completo, la Hoja de Vida no aprobada por PDF vencido y los otros 3 documentos aprobados; sin matches).
 - **Ingreso:** `guardarCelular(celular)`, `verificarCelular()`, `aceptarAutorizaciones({ terminos, privacidad, compartirFicha, recordatoriosWhatsapp })`, `actualizarCuenta(parcial)`.
 - **Registro:** `guardarPaso1({ nombres, apellido1, apellido2, fechaNacimiento, correo, clasesDeclaradas, disponible })` (desde aquí queda registrado), `guardarPaso2({ direccion, depto, comunaId, tieneEstacionamiento })`, `guardarPaso3({ experiencia, idiomas })`, `guardarPaso4({ negocios, turnos, dias })`, `irAPaso(n)`, `actualizarConductor(parcial)` (ediciones desde Perfil sin marcar pasos). El perfil queda `completo` solo cuando las 5 secciones están listas; la de documentos se marca sola al enviar los 4.
 - **Documentos:** `subirDocumento(tipo, nombreArchivo?)` (queda "Subido"; en la demo no se sube nada), `quitarDocumento(tipo)`, `enviarDocumentosARevision(tipos?)` (empieza la pre-revisión), `pedirOtraRevision(tipo)`, `aprobarPendientesDemo()` (atajo "Aprobar ahora": el equipo simulado aprueba ya lo que está en revisión), `aprobarPorAgenteIA(tipo)` y `aprobarPorEquipo(tipo)` (las usa la simulación).
 - **Disponibilidad y cuenta:** `cambiarDisponible(bool)`, `confirmarDisponibilidad()`, `eliminarCuenta()` (borra lo del usuario; después navega a `/`).
-- **Matches y mensajes:** `alternarFavorito(busquedaId)`, `enviarMensaje(busquedaId, texto)`, `marcarConversacionLeida(busquedaId)` (llámala al abrir D4), `compartirMiDireccion(busquedaId)`, `reportarConversacion({ busquedaId, motivo, detalle? })`, `bloquearTitular(titularId)`, `desbloquearTitular(titularId)`.
+- **Matches:** `alternarFavorito(busquedaId)`, `compartirMiDireccion(busquedaId)`, `reportarTitular({ busquedaId, motivo, detalle? })`.
 - **Bolsa (conductor):** `postular(busquedaId) → { ok, error? }`.
-- **Bolsa (titular):** `cambiarPlanTitular(plan)`, `publicarEnBolsa(busquedaId, { visibilidad, perfiles? }) → { ok, error? }` (respeta visibilidades y cupo del plan), `quitarDeBolsa(id)`, `destacarOferta(id) → { ok, error? }` (solo plan Flota), `quitarDestacado(id)`, `cambiarEstadoBusqueda(id, 'activa'|'pausada'|'cubierta') → { ok, error? }`, `verPostulacion(postulacionId)`, `escribirAPostulante(postulacionId, texto) → { ok, error? }` (no puede si la cuenta del titular está suspendida), `descartarPostulacion(postulacionId)`, `alternarFavoritoTitular(conductorId)`.
+- **Bolsa (titular):** `cambiarPlanTitular(plan)`, `publicarEnBolsa(busquedaId, { visibilidad, perfiles? }) → { ok, error? }` (respeta visibilidades y cupo del plan), `quitarDeBolsa(id)`, `destacarOferta(id) → { ok, error? }` (solo plan Flota), `quitarDestacado(id)`, `cambiarEstadoBusqueda(id, 'activa'|'pausada'|'cubierta') → { ok, error? }`, `verPostulacion(postulacionId)`, `mostrarContactoA(busquedaId, conductorId) → { ok, error? }` (no puede sin plan ni con la cuenta suspendida; en la bolsa, `mostrarContactoAPostulante` de `bolsa/acciones.ts`), `descartarPostulacion(postulacionId)`, `alternarFavoritoTitular(conductorId)`.
 - **Panel:** sus acciones (aprobar o no aprobar documentos, negocios, zonas, reglas, ajustes, reportes, equipo y el registro de acciones) **no están en esta tienda**: viven en `panel/src/datos/acciones.ts` y escriben con `useDemo.setState`. Ninguna pantalla de esta app las usa.
 
 **Acciones propias:** en tu carpeta, `src/pantallas/<grupo>/acciones.ts`:
@@ -232,8 +249,6 @@ Si cambias documentos del usuario a mano, recuerda que `estadoVerificacion` se c
 | `useAvancePerfil()` | `{ listos, total: 5, porcentaje, faltantes, siguientePaso }` |
 | `useDiagnosticoMatches()` | Por qué no hay matches (`precondicion`, `porFiltro`, `bajoUmbral`) |
 | `useResumenDocumentos()` | `{ aprobados, enRevision, rechazados, subidos, faltan, vencenPronto, todosConArchivo }` |
-| `useConversaciones()` | `ConversacionResumen[]` (`busquedaId`, `titular`, `negocio`, `ultimo`, `noLeidos`, `escribiendo`, `contactoCompartido`, `bloqueado`) |
-| `useMensajesNoLeidos()` | número |
 | `useOfertasBolsa()` | `OfertaBolsa[]` que ve el usuario (R29): `busqueda`, `titular`, `negocio`, `comuna`, `esMatch`, `porcentaje`, `destacada`, `postulacion`, `condiciones` |
 | `usePostulacionesDelUsuario()` | `{ postulacion, busqueda, titular, negocio, condiciones }[]` |
 | `useEntregasDelUsuario()` | `EntregaDatos[]` (más recientes primero) |
@@ -268,9 +283,8 @@ Puro, sin React. Lo usan los selectores con las reglas editables del estado; las
 - **Revisión a mano (panel en uso):** mientras el panel de la demo está en uso en el navegador (`useRevisionManual()` es `true`), no se programa la revisión simulada y se quitan las ya programadas: los documentos esperan la decisión del panel. Inicio (C3) dice "Demo: esperando la revisión del equipo." y "Aprobar ahora" sigue funcionando. Al salir del panel (o con "Reiniciar demo") vuelve la simulación: lo que espera se aprueba ~12 s después. Las decisiones del panel llegan por el evento "storage" y se avisan con un toast en las pantallas del conductor (`avisosEntrePestanas.ts`).
 - La simulación corre en la pestaña de esta demo. El panel la enciende de respaldo (`iniciarSimulacion({ respaldo: true })`): la lleva solo si esta demo no está abierta y sin sus avisos; cuando se abre, esta demo retoma el turno.
 - Una pestaña con la versión anterior de la demo (v3) no simula mientras haya una de esta versión: se le deja tomado su turno.
-- Mensajes ocultos por el equipo (`oculto: true`, al resolver un reporte) se ven como "Mensaje oculto por el equipo.". Un titular suspendido no responde ni puede escribir (`escribirAPostulante` devuelve un error).
-- **Chat:** `enviarMensaje()` programa la respuesta del titular a los 2–4 s (`titularEscribiendo[busquedaId]` es `true` durante los últimos ~2,5 s: muestra "escribiendo…"). Después del segundo mensaje del conductor, el titular comparte su contacto (mensaje de sistema y `contactoCompartido[busquedaId]`). El teléfono que se muestra es `titular.telefono` (ficticio).
-- **Bolsa:** al postular a una oferta de otro titular, a los ~6 s queda "Vista" y (una de cada dos) a los ~14 s "Te escribió", con un mensaje nuevo y el match con origen "Postulación". Las postulaciones a ofertas de `t01` (el titular de la demo) cambian cuando alguien entra como titular y responde.
+- Un titular suspendido no puede mostrar su contacto (`mostrarContactoA` devuelve un error).
+- **Bolsa:** al postular a una oferta de otro titular, a los ~6 s queda "Vista" y (una de cada dos) a los ~14 s "Te mostró su contacto", con el match con origen "Postulación". Las postulaciones a ofertas del titular de la demo cambian cuando alguien entra como titular y le muestra su contacto.
 - Las tareas viven en `state.pendientes`: sobreviven a cambiar de pantalla y a recargar.
 
 ### Datos de ejemplo (quién es quién)
@@ -279,7 +293,7 @@ Puro, sin React. Lo usan los selectores con las reglas editables del estado; las
 - **Otros titulares:** `t02` Ejecutivos Cordillera SpA (b02, b04, b13 destacada en la bolsa para todos, b14 bolsa perfiles Zona Oriente), `t03` Rodrigo Pizarro (b03), `t04` Mónica Sepúlveda (b07), `t05` Taxis Bahía Azul Ltda. (Viña y Valparaíso: b08, b10), `t06` Jorge Alarcón (Concepción: b09), `t07` Claudio Espinoza (Puente Alto: b11).
 - **Conductor de ejemplo** (Ñuñoa, A2 y B, 5 años liviano, Taxi y Taxi ejecutivo, día, lunes a sábado, con estacionamiento): **5 matches** `b01` 100 %, `b02` 100 %, `b14` 100 %, `b07` 88 %, `b03` 71 %. En la bolsa ve `b13` (destacada), `b11`, `b14` y, ya verificado, `b01` (que es "solo quienes hacen match"). Con una dirección en otra comuna de Santiago el número cambia (3–5); en Concepción no tiene matches (C6).
 - **Conductores ficticios** `c01`…`c10`: verificados, uno con la licencia rechazada (`c06`), uno incompleto (`c07`) y tres con documentos esperando al equipo (`c03`, `c08`, `c10`: 7 documentos en total; nunca se aprueban solos: los decide el panel de la demo).
-- **Reportes:** `r01` (pide dinero) y `r02` (spam), abiertos, con su conversación. Los resuelve el panel de la demo; un reporte del conductor queda abierto ("Nuestro equipo la está revisando") hasta que el panel lo resuelve.
+- **Reportes:** `r01` (pide dinero) y `r02` (spam), abiertos. Los resuelve el panel de la demo; un reporte del conductor queda abierto ("Nuestro equipo lo está revisando") hasta que el panel lo resuelve.
 
 ## 5. Comandos y comprobación
 
@@ -314,8 +328,7 @@ Compara cada captura con la de la maqueta (`render.js`) y ajusta espaciados, tam
 
 - **Fuentes:** solo funcionan vía `Texto`, `Titulo`, `tipo.*` o `fuente(peso)`. Un `<Text>` suelto sale con la fuente del sistema.
 - **Pantallas de pestaña:** `<Pantalla inferior={24}>` y sin `Encabezado` con volver (como las maquetas D1, D3, E1).
-- **Pantallas encima de las pestañas** (detalle, conversación, subir documento…): `<Encabezado volverA="/conductor/…" />` para que el botón volver funcione también si se abrió el enlace directo.
-- **Chat (D4):** usa `cabecera` para el encabezado fijo y `pie` para la barra de escribir; desplaza al final con `scrollRef` (`scrollToEnd`) cuando lleguen mensajes.
+- **Pantallas encima de las pestañas** (detalle, reportar, subir documento…): `<Encabezado volverA="/conductor/…" />` para que el botón volver funcione también si se abrió el enlace directo.
 - **Botón final abajo:** `style={{ marginTop: 'auto' }}` en el contenedor de botones (la `Pantalla` estira el contenido al alto de la pantalla).
 - **Accesibilidad:** zonas táctiles de 44 px como mínimo; usa `role`/`aria-*` (ya lo hacen los componentes); `etiquetaAccesible` en botones de solo ícono.
 - **Estados:** cada lista con `EstadoVacio`; acciones lentas con `Boton cargando`; errores con `Aviso tono="error"` o `mostrarToast(..., 'error')`.

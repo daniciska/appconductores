@@ -6,13 +6,13 @@ import type { EstadoPostulacion, PerfilesBolsa } from '@/datos/tipos';
 
 /**
  * "Retirar postulación" (BC2): borra la postulación del usuario y las respuestas simuladas que
- * tenía programadas. Solo se puede mientras el titular no le haya escrito.
+ * tenía programadas. Solo se puede mientras el titular no le haya mostrado su contacto.
  */
 export function retirarPostulacion(postulacionId: string): { ok: boolean; error?: string } {
   const s = useDemo.getState();
   const p = s.postulaciones.find((x) => x.id === postulacionId);
   if (!p || p.conductorId !== ID_USUARIO) return { ok: false, error: 'No encontramos tu postulación.' };
-  if (p.estado === 'te_escribio') return { ok: false, error: 'El titular ya te escribió: sigue la conversación en Mensajes.' };
+  if (p.estado === 'te_escribio') return { ok: false, error: 'El titular ya te mostró su contacto: míralo en Matches.' };
   useDemo.setState({
     postulaciones: s.postulaciones.filter((x) => x.id !== postulacionId),
     pendientes: s.pendientes.filter(
@@ -40,14 +40,14 @@ export function restaurarPostulacion(postulacionId: string, estado: EstadoPostul
 }
 
 /**
- * "Escribir" a un postulante (BT3): si aún no la abría, primero cuenta como vista (queda en
- * "Quién recibió mis datos" si es el usuario de la demo) y después le escribe. Si el postulante es
- * el usuario de la demo, se crea el match con origen "Postulación" y la conversación aparece en sus Mensajes.
+ * "Mostrar mi contacto" a un postulante (BT3): si aún no la abría, primero cuenta como vista (queda en
+ * "Quién recibió mis datos" si es el usuario de la demo) y después el titular le muestra su contacto. Si el
+ * postulante es el usuario de la demo, se crea el match con origen "Postulación" y ve el contacto en Matches.
  */
-export function escribirAPostulanteDesdeBolsa(postulacionId: string, texto: string): Resultado {
+export function mostrarContactoAPostulante(postulacionId: string): Resultado {
   const s = useDemo.getState();
   const p = s.postulaciones.find((x) => x.id === postulacionId);
   if (!p) return { ok: false, error: 'No encontramos la postulación.' };
   if (p.estado === 'enviada') s.verPostulacion(postulacionId);
-  return useDemo.getState().escribirAPostulante(postulacionId, texto);
+  return useDemo.getState().mostrarContactoA(p.busquedaId, p.conductorId);
 }

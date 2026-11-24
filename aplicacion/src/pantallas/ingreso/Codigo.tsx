@@ -6,7 +6,7 @@
 // persona vuelve atrás mientras se verifica, se queda donde fue.
 import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import { Platform, Text, TextInput, View } from 'react-native';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 
 import { celularCompleto } from '@/datos/formato';
 import { useAcciones, useEntorno, useVista } from '@/datos/puerto/contexto';
@@ -20,7 +20,8 @@ import { BotonTexto, CabeceraFormulario, NotaDemo } from './comunes';
 const LARGO = 6;
 const NOMBRE_CANAL: Record<CanalCodigo, 'WhatsApp' | 'SMS'> = { whatsapp: 'WhatsApp', sms: 'SMS' };
 
-export default function Codigo() {
+/** La demo del titular usa esta misma pantalla con otras rutas (`volverA`, `alVerificar`). La app real no pasa nada. */
+export default function Codigo({ volverA = '/conductor/celular', alVerificar }: { volverA?: Href; alVerificar?: () => void } = {}) {
   const celular = useVista((v) => v.cuenta.celular);
   const ingreso = useVista((v) => v.ingreso ?? null);
   const acciones = useAcciones();
@@ -65,7 +66,8 @@ export default function Codigo() {
       return;
     }
     mostrarToast('Celular verificado.', 'exito');
-    if (r.valor === 'inicio') irAInicioConductor();
+    if (alVerificar) alVerificar();
+    else if (r.valor === 'inicio') irAInicioConductor();
     else router.push(r.valor === 'paso1' ? RUTA_PASO[1] : '/conductor/autorizaciones');
   };
 
@@ -100,7 +102,7 @@ export default function Codigo() {
 
   return (
     <Pantalla>
-      <Encabezado volverA="/conductor/celular" />
+      <Encabezado volverA={volverA} />
       <CabeceraFormulario
         titulo="Ingresa el código"
         subtitulo={

@@ -14,8 +14,9 @@ Lista de trabajo para redactar los textos legales con el abogado. Se agrega un p
 
 ## Con quién se comparten
 
-- [ ] Tras un match, el titular ve la ficha del conductor y su contacto (**teléfono y correo**).
-- [ ] El titular decide si comparte su propio contacto con un conductor en particular.
+- [ ] Tras un match, el titular **con plan** ve la ficha del conductor y su contacto (**teléfono y correo**). Sin plan solo ve cuántos conductores hacen match (24-nov).
+- [ ] El titular decide si muestra su propio contacto (teléfono y correo) a un conductor en particular; no se puede deshacer.
+- [ ] **Titular:** se piden nombres y apellidos, correo, celular y, si es empresa, razón social y RUT. La foto de su cédula la ve solo el equipo; el RUT de la empresa se revisa en el SII. Los conductores ven su nombre (o el de la empresa) y la insignia de revisado (24-nov).
 - [ ] Registro de quién recibió los datos de cada conductor (el conductor lo puede ver en la app).
 - [ ] **Bolsa de trabajo** (si se lanza): al tocar "Me interesa", el conductor envía su ficha al titular de esa oferta aunque no haya match. Queda en "Quién recibió mis datos". Los titulares solo ven las ofertas según la visibilidad que eligieron; la bolsa no es pública para personas sin cuenta.
 
@@ -28,7 +29,7 @@ Lista de trabajo para redactar los textos legales con el abogado. Se agrega un p
 ## Comunicaciones
 
 - [ ] Recordatorios por WhatsApp o correo para completar el perfil.
-- [ ] Mensajes dentro de la app: normas de trato, reportar y bloquear, cuánto tiempo se guardan.
+- [ ] ~~Mensajes dentro de la app~~: se sacaron el 24-nov. Queda **reportar** en las dos direcciones (conductor → titular y titular → conductor): qué se puede reportar, quién lo revisa y qué puede pasar con la cuenta.
 
 ## App web
 
