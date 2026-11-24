@@ -171,18 +171,12 @@ export function habilitaNegocio(
   return clasesDelConductor.some((c) => habilitan.includes(c));
 }
 
-/** Las clases que pide el negocio, para leer: "A3" / "A1, A2 o A3" (sin las antiguas), o null si no hay. */
-export function textoClasesQuePide(negocio: Negocio, respuestaVehiculo: string | null = null): string | null {
-  const pide = clasesQuePide(negocio, respuestaVehiculo).filter((c) => !c.includes('antigua'));
-  if (pide.length === 0) return null;
-  if (pide.length === 1) return pide[0];
-  return `${pide.slice(0, -1).join(', ')} o ${pide[pide.length - 1]}`;
-}
-
 /** Texto "Pide licencia A3" / "Pide licencia A1, A2 o A3" para los negocios en gris del Paso 4. */
 export function textoPideLicencia(negocio: Negocio, respuestaVehiculo: string | null = null): string {
-  const clases = textoClasesQuePide(negocio, respuestaVehiculo);
-  return clases ? `Pide licencia ${clases}` : 'Pide otra licencia';
+  const pide = clasesQuePide(negocio, respuestaVehiculo).filter((c) => !c.includes('antigua'));
+  if (pide.length === 0) return 'Pide otra licencia';
+  if (pide.length === 1) return `Pide licencia ${pide[0]}`;
+  return `Pide licencia ${pide.slice(0, -1).join(', ')} o ${pide[pide.length - 1]}`;
 }
 
 /** Años de la categoría relacionada con el negocio que tenga más años (M4). */

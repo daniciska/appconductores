@@ -3,16 +3,16 @@
 // Maqueta: docs/maqueta/CondPaso3.dc.html
 // 7 categorías (catálogo de tamaños) con años manejando cada una. "Idiomas que hablas" es opcional y
 // no cuenta en el match.
-// Propuestas (maqueta): S06 los años se escriben (cajita "Años" que aparece al marcar el vehículo, de 1
-// a 50) en vez de sumarlos de a uno; S07 "¿Qué vehículos has manejado?" es obligatorio; S04 "Guardar y
-// terminar después"; S11 avisa antes de salir sin guardar (modo edición).
+// Mejoras aprobadas (24-nov): S06 los años se escriben con el teclado (de 1 a 50) y se mantienen los
+// botones − y + para ajustar; aparecen solo al marcar el vehículo. S07 "¿Qué vehículos has manejado?"
+// es obligatorio; S04 "Guardar y terminar después"; S11 avisa antes de salir sin guardar (modo edición).
 import { useRef, useState, type ComponentRef } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 
 import { useAcciones, useVista } from '@/datos/puerto/contexto';
-import { Boton, Campo, Chip, Encabezado, Pantalla, Presionable, color, fuente, radio, tipo } from '@/ui';
-import { ChevronDown } from '@/ui/iconos';
+import { Boton, Chip, Encabezado, Pantalla, Presionable, color, fuente, radio, tipo } from '@/ui';
+import { ChevronDown, Minus, Plus } from '@/ui/iconos';
 
 import {
   RUTA_PASO,
@@ -38,13 +38,99 @@ import {
 
 /** Cuántas categorías se ven antes de "Ver los N tipos de vehículo" (hoy son 7: se ven todas). */
 const VISIBLES = 7;
-const ANCHO_ANOS = 112;
 const MAX_ANOS = 50;
+/** Ancho de la columna de años: − (44) + cajita (56) + + (44) y los espacios. */
+const ANCHO_ANOS = 152;
 
 /** Años escritos → número válido (1 a 50) o null. */
 function aniosValidos(texto: string | undefined): number | null {
-  const n = Number((texto ?? '').trim());
-  return Number.isInteger(n) && n >= 1 && n <= MAX_ANOS ? n : null;
+  const t = (texto ?? '').trim();
+  const n = Number(t);
+  return t && Number.isInteger(n) && n >= 1 && n <= MAX_ANOS ? n : null;
+}
+
+/** El error de una cajita de años: vacía, o con un número fuera de 1 a 50 (ej. "0"). */
+function errorAnios(texto: string | undefined): string | null {
+  if (!(texto ?? '').trim()) return 'Escribe cuántos años.';
+  return aniosValidos(texto) === null ? `Escribe entre 1 y ${MAX_ANOS}.` : null;
+}
+
+/**
+ * S06 · Años manejando un vehículo: se escriben con el teclado de números y los botones − y + ajustan
+ * de a uno (+ con la cajita vacía pone 1). De 1 a 50.
+ */
+function AniosVehiculo({
+  valor,
+  onCambiar,
+  nombre,
+  error,
+}: {
+  valor: string;
+  onCambiar: (t: string) => void;
+  nombre: string;
+  error: boolean;
+}) {
+  const [foco, setFoco] = useState(false);
+  const n = Number(valor);
+  const hayNumero = valor.trim() !== '' && Number.isInteger(n);
+  const boton = (signo: 'menos' | 'mas') => {
+    const bloqueado = signo === 'menos' ? !hayNumero || n <= 1 : hayNumero && n >= MAX_ANOS;
+    const Icono = signo === 'menos' ? Minus : Plus;
+    return (
+      <Presionable
+        role="button"
+        aria-label={`${signo === 'menos' ? 'Restar' : 'Sumar'} un año: ${nombre}`}
+        aria-disabled={bloqueado}
+        disabled={bloqueado}
+        onPress={() => onCambiar(String(signo === 'menos' ? Math.max(1, n - 1) : hayNumero ? Math.min(MAX_ANOS, n + 1) : 1))}
+        style={{
+          width: 44,
+          height: 44,
+          borderRadius: radio.boton44,
+          borderWidth: 1,
+          borderColor: bloqueado ? color.separador : color.bordeCampo,
+          backgroundColor: bloqueado ? '#FAFAFA' : color.fondo,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+        <Icono size={18} color={bloqueado ? color.iconoDeshabilitado : color.texto} strokeWidth={2} />
+      </Presionable>
+    );
+  };
+  return (
+    <View style={{ width: ANCHO_ANOS, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+      {boton('menos')}
+      <TextInput
+        value={valor}
+        onChangeText={onCambiar}
+        placeholder="Años"
+        placeholderTextColor={color.textoSecundario}
+        keyboardType="number-pad"
+        inputMode="numeric"
+        maxLength={2}
+        selectTextOnFocus
+        aria-label={`Años manejando ${nombre}`}
+        aria-invalid={error}
+        onFocus={() => setFoco(true)}
+        onBlur={() => setFoco(false)}
+        style={[
+          // 17 px (más de 16): Safari en iPhone no hace zoom al enfocar.
+          { ...fuente(700), fontSize: 17, lineHeight: 22, textAlign: 'center', color: color.texto },
+          {
+            width: 56,
+            height: 44,
+            padding: 0,
+            borderRadius: radio.campo,
+            backgroundColor: color.superficie,
+            borderWidth: error || foco ? 1.5 : 1,
+            borderColor: error ? color.error : foco ? color.bordeFuerte : color.bordeCampo,
+          },
+          { outlineStyle: 'none' } as object,
+        ]}
+      />
+      {boton('mas')}
+    </View>
+  );
 }
 
 export default function Paso3() {
@@ -81,10 +167,10 @@ export default function Paso3() {
   const tamanos = [...tamanosCatalogo].sort((a, b) => a.orden - b.orden);
   const lista = todos ? tamanos : tamanos.slice(0, VISIBLES);
 
-  const sinAnios = marcados.filter((id) => aniosValidos(anios[id]) === null);
+  const sinAnios = marcados.filter((id) => errorAnios(anios[id]) !== null);
   const errores = {
     vehiculos: marcados.length === 0 ? 'Marca al menos un vehículo.' : null,
-    anios: sinAnios.length > 0 ? 'Escribe cuántos años.' : null,
+    anios: sinAnios.length > 0 ? 'Revisa los años.' : null,
   };
   const hayErrores = Object.values(errores).some(Boolean);
   const ver = intento && validar;
@@ -154,9 +240,16 @@ export default function Paso3() {
             padding: 14,
             gap: 8,
           }}>
+          {marcados.length > 0 ? (
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+              <Text style={[fuente(700), { width: ANCHO_ANOS, textAlign: 'center', fontSize: 13, lineHeight: 17, color: color.textoSecundario }]}>
+                Años manejando
+              </Text>
+            </View>
+          ) : null}
           {lista.map((t) => {
             const sel = marcados.includes(t.id);
-            const faltan = ver && sel && aniosValidos(anios[t.id]) === null;
+            const errorFila = ver && sel ? errorAnios(anios[t.id]) : null;
             return (
               <View key={t.id} style={{ gap: 6 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
@@ -169,25 +262,12 @@ export default function Paso3() {
                     style={{ flex: 1, minWidth: 0, paddingHorizontal: 14 }}
                   />
                   {sel ? (
-                    <Campo
-                      style={{ width: ANCHO_ANOS }}
-                      valor={anios[t.id] ?? ''}
-                      onCambiar={(x) => escribirAnios(t.id, x)}
-                      placeholder="Años"
-                      keyboardType="number-pad"
-                      inputMode="numeric"
-                      maxLength={2}
-                      aria-label={`Años manejando ${t.nombre}`}
-                      error={faltan || undefined}
-                      derecha={
-                        anios[t.id] ? <Text style={[tipo.secundario, fuente(500), { color: color.textoSecundario }]}>años</Text> : undefined
-                      }
-                    />
+                    <AniosVehiculo valor={anios[t.id] ?? ''} onCambiar={(x) => escribirAnios(t.id, x)} nombre={t.nombre} error={!!errorFila} />
                   ) : null}
                 </View>
-                {faltan ? (
+                {errorFila ? (
                   <Text role="alert" style={[tipo.mensajeCampo, fuente(600), { color: color.error, textAlign: 'right' }]}>
-                    Escribe cuántos años.
+                    {errorFila}
                   </Text>
                 ) : null}
               </View>

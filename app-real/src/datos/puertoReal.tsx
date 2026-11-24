@@ -65,8 +65,8 @@ const ESPERA_REENVIO_S = 60;
 
 /** Mientras se verifica un código: el aviso SIGNED_IN de Auth lo maneja verificarCodigo. */
 let verificando = false;
-/** Último número que no estaba en la lista de prueba (S03: si insiste, se repite el mismo mensaje). */
-let fueraDeLaLista: string | null = null;
+/** Último número al que no se pudo enviar el código (S03: si insiste, se repite el mismo mensaje). */
+let sinEnvio: string | null = null;
 /** Mientras esta pestaña cierra la sesión: el aviso SIGNED_OUT lo maneja quien la cierra. */
 let cerrandoAqui = false;
 let escuchando = false;
@@ -257,10 +257,10 @@ const acciones: AccionesConductor = {
     const { error } = await supabase.auth.signInWithOtp({ phone: celularParaAuth(celular8), options: { channel: canal } });
     if (error) {
       let texto = textoErrorPedirCodigo(error, CONFIG.codigosDePrueba);
-      // S03: un número que no está en la lista de prueba e insiste recibe el mismo mensaje, no la cuenta
-      // de segundos (esperar no le serviría).
-      if (texto === TEXTO.soloEquipo) fueraDeLaLista = ocho;
-      else if (error.code === 'over_sms_send_rate_limit' && fueraDeLaLista === ocho) texto = TEXTO.soloEquipo;
+      // S03: si a un número no se le pudo enviar el código e insiste, recibe el mismo mensaje, no la
+      // cuenta de segundos (esperar no le serviría).
+      if (texto === TEXTO.noLlega) sinEnvio = ocho;
+      else if (error.code === 'over_sms_send_rate_limit' && sinEnvio === ocho) texto = TEXTO.noLlega;
       return fallo(texto);
     }
     guardarIngreso({ celular: `${ocho.slice(0, 4)} ${ocho.slice(4)}`, canal, pedidoEn: Date.now() });
@@ -364,14 +364,15 @@ function useEntornoReal(): Entorno {
       diasReconfirmar,
       diasAvisoReconfirmar,
       esperaReenvioSegundos: ESPERA_REENVIO_S,
-      notaCodigo: CONFIG.codigosDePrueba ? 'Versión de prueba: usa el código que te dio el equipo.' : null,
+      // Sin nota bajo "Verificar": la app real no muestra textos de prueba (S03, regla "listo para lanzar").
+      notaCodigo: null,
       pestanas: 2,
       ejemplo: null,
       textosLegales: { terminos: TEXTO_LEGAL_PRUEBA, privacidad: TEXTO_LEGAL_PRUEBA, nota: null, perfil: TEXTO_LEGAL_PRUEBA },
       textoCerrarSesion: 'Para volver a entrar usarás tu celular y un código.',
       volverDesdeAutorizaciones: 'cerrarSesion',
     }),
-    [diasReconfirmar],
+    [diasReconfirmar, diasAvisoReconfirmar],
   );
 }
 

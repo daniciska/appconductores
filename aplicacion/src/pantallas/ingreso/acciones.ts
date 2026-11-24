@@ -4,7 +4,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 
-import { mascaraCelular } from '@/datos/formato';
+import { mascaraCampoCelular, mascaraCelular } from '@/datos/formato';
 import { useVista } from '@/datos/puerto/contexto';
 import { mostrarToast, volver } from '@/ui';
 
@@ -60,19 +60,8 @@ export function celularParaCampo(guardado: string): string {
   return d ? mascaraCampoCelular('9' + d) : '';
 }
 
-/**
- * Máscara mientras se escribe: "912345678" → "9 1234 5678". Acepta el número como venga (S03): si lo
- * escrito o pegado empieza con +56, 56 o 0 ("+56 9 9000 0001", "09 9000 0001"), eso se quita solo.
- */
-export function mascaraCampoCelular(texto: string): string {
-  let d = texto.replace(/\D/g, '');
-  if (d.startsWith('569')) d = d.slice(2);
-  else d = d.replace(/^0+(?=9)/, '');
-  d = d.slice(0, 9);
-  if (d.length <= 1) return d;
-  if (d.length <= 5) return `${d.slice(0, 1)} ${d.slice(1)}`;
-  return `${d.slice(0, 1)} ${d.slice(1, 5)} ${d.slice(5)}`;
-}
+/** Máscara del campo de celular (está en datos/formato.ts para poder probarla con Node). */
+export { mascaraCampoCelular };
 
 /** ¿El celular escrito es válido? 9 dígitos que empiezan con 9. */
 export function celularValido(escrito: string): boolean {

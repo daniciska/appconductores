@@ -6,7 +6,7 @@
 // campos con *, fecha real, no futura y de 18 años o más (propuesta), correo con formato y al menos una
 // clase de licencia. Si el guardado falla (app real), el mensaje sale arriba de los botones y lo escrito
 // sigue en pantalla.
-// Propuestas (maqueta): S01 pista de qué licencia pide cada negocio abierto; S05 fecha "como en papel"
+// Mejoras aprobadas (24-nov): S05 fecha "como en papel" (cualquier separador, teclado con separador)
 // y errores con ejemplo; S02 abierto desde el Paso 4 (?editar=1&volver=4) vuelve al Paso 4 al guardar;
 // S11 avisa antes de quitar un negocio elegido al quitar una clase, y antes de salir sin guardar.
 import { useRef, useState, type ComponentRef } from 'react';
@@ -15,8 +15,7 @@ import { router } from 'expo-router';
 
 import { celularCompleto, edad, mascaraFechaEscrita } from '@/datos/formato';
 import { habilitaNegocio } from '@/datos/match';
-import { useAcciones, useEntorno, useVista, useVistaDerivada } from '@/datos/puerto/contexto';
-import { pistaLicencias } from '@/datos/puerto/derivados';
+import { useAcciones, useEntorno, useVista } from '@/datos/puerto/contexto';
 import { Boton, Campo, Chip, Dialogo, Encabezado, FilaInterruptor, Insignia, Pantalla, color, fuente, mostrarToast, radio, tipo } from '@/ui';
 
 import {
@@ -66,7 +65,6 @@ export default function Paso1() {
   const conductor = useVista((v) => v.conductor);
   const clasesCatalogo = useVista((v) => v.catalogos.clases);
   const negociosCatalogo = useVista((v) => v.catalogos.negocios);
-  const pista = useVistaDerivada(pistaLicencias);
   const volverTrasEditar = useVolverTrasEditar();
   const { diasReconfirmar, ejemplo } = useEntorno();
   const acciones = useAcciones();
@@ -233,8 +231,10 @@ export default function Paso1() {
           valor={fecha}
           onCambiar={(t) => setFecha(mascaraFechaEscrita(t))}
           placeholder="día/mes/año"
-          keyboardType="number-pad"
-          inputMode="numeric"
+          // Teclado de números CON separador ("." o ","): en el iPhone el teclado "numeric" no trae "/" ni
+          // ningún separador. La máscara acepta cualquier separador o solo números (S05).
+          keyboardType="decimal-pad"
+          inputMode="decimal"
           autoComplete="birthdate-full"
           maxLength={10}
           ayuda="Los titulares solo ven tu edad."
@@ -275,7 +275,6 @@ export default function Paso1() {
               />
             ))}
           </View>
-          {pista ? <Text style={[tipo.mensajeCampo, { color: color.textoSecundario }]}>{pista}</Text> : null}
         </View>
 
         <FilaInterruptor

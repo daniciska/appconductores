@@ -784,7 +784,8 @@ export function FilaInterruptor({
       ]}>
       <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
         <Text style={[tipo.fuerte, { color: color.texto }]}>{titulo}</Text>
-        {ayuda ? <Texto variante="ayuda">{ayuda}</Texto> : null}
+        {/* S13: la ayuda bajo un campo, a 15 px como las demás. */}
+        {ayuda ? <Text style={[tipo.mensajeCampo, { color: color.textoSecundario }]}>{ayuda}</Text> : null}
       </View>
     </ZonaInterruptor>
   );

@@ -33,7 +33,7 @@ export function buscarComunas(texto: string, comunas: Comuna[], maximo = MAXIMO_
 }
 
 /**
- * S10 (propuesta) · La comuna que se elige sola mientras se escribe: lo escrito es el nombre completo de
+ * S10 (aprobada el 24-nov) · La comuna que se elige sola mientras se escribe: lo escrito es el nombre completo de
  * UNA sola comuna (sin tildes; también sus nombres alternativos) y ninguna otra comuna empieza así.
  * Por eso "nunoa" elige Ñuñoa, pero "San Pedro" no se elige solo: puede seguir "de la Paz" o
  * "de Atacama" (lo mismo con Calera, Talca y Chillán). Esas se eligen de la lista.

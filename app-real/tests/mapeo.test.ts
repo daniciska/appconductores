@@ -3,11 +3,11 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { catalogosVacios } from '../src/datos/catalogos.ts';
+import { catalogosVacios, mapearCatalogos, textosObligatorios } from '../src/datos/catalogos.ts';
 import { celularDeLaBase, celularParaAuth, fechaDeLaBase, fechaParaLaBase, mapearPerfil, perfilVacio, type FilasPerfil } from '../src/datos/perfil.ts';
 import { avancePerfil, negocioPermitidoPorDeclaradas, negociosPorIndustria } from '../../aplicacion/src/datos/puerto/derivados.ts';
 
-import { catalogosLeidos } from './base.ts';
+import { catalogosLeidos, filasCatalogo } from './base.ts';
 
 const UID = 'aaaaaaaa-1111-4000-8000-00000000000a';
 const c = catalogosLeidos();
@@ -85,6 +85,20 @@ describe('catálogos', () => {
   it('sin ajuste legible, 30 días', () => {
     assert.equal(catalogosVacios().diasReconfirmar, 30);
   });
+  it('S14: "Confirmar ahora" vuelve dias_aviso_reconfirmar días antes (5 si no se puede leer o no sirve)', () => {
+    assert.equal(mapearCatalogos({ ...filasCatalogo(), diasAvisoReconfirmar: 5 }).diasAvisoReconfirmar, 5);
+    assert.equal(mapearCatalogos({ ...filasCatalogo(), diasAvisoReconfirmar: 7 }).diasAvisoReconfirmar, 7);
+    assert.equal(mapearCatalogos({ ...filasCatalogo(), diasAvisoReconfirmar: null }).diasAvisoReconfirmar, 5);
+    assert.equal(mapearCatalogos({ ...filasCatalogo(), diasAvisoReconfirmar: 'x' }).diasAvisoReconfirmar, 5);
+    assert.equal(mapearCatalogos({ ...filasCatalogo(), diasAvisoReconfirmar: 30 }).diasAvisoReconfirmar, 5, 'no puede ser todo el plazo');
+    assert.equal(catalogosVacios().diasAvisoReconfirmar, 5);
+  });
+  it('S12: con los 2 textos vigentes de la migración del 24-nov, A4 pide solo esos 2', () => {
+    // La base deja de ofrecer revision_documentos y normas_mensajes (vigente = false): la lectura solo trae vigentes.
+    const vigentes = filasCatalogo().textos.filter((t) => ['terminos_privacidad', 'compartir_ficha'].includes(t.clave));
+    const leidos = mapearCatalogos({ ...filasCatalogo(), textos: vigentes });
+    assert.deepEqual(textosObligatorios(leidos.textos).map((t) => t.clave), ['terminos_privacidad', 'compartir_ficha']);
+  });
 });
 
 describe('perfil propio', () => {
@@ -128,18 +142,18 @@ describe('perfil propio', () => {
     assert.equal(p.conductor.comunaId, '94');
     assert.equal(p.conductor.tieneEstacionamiento, false);
   });
-  it('Paso 3 listo con años, o con idiomas, o con el Paso 4 listo (es opcional)', () => {
+  it('Paso 3 listo solo con al menos un vehículo marcado (S07); idiomas o el Paso 4 no bastan', () => {
     const conAnos = mapearPerfil(filas({ experiencia: [{ tamano_vehiculo_id: 2, anos: 5 }] }), c.mapas, c.textos);
     assert.equal(conAnos.conductor.pasosListos.experiencia, true);
     assert.deepEqual(conAnos.conductor.experiencia, { '2': 5 });
-    assert.equal(mapearPerfil(filas({ opciones: [{ opcion_id: op('idioma', 'es') }] }), c.mapas, c.textos).conductor.pasosListos.experiencia, true);
+    assert.equal(mapearPerfil(filas({ opciones: [{ opcion_id: op('idioma', 'es') }] }), c.mapas, c.textos).conductor.pasosListos.experiencia, false);
     const soloPaso4 = mapearPerfil(
       filas({ negocios: [{ negocio_id: Number(id('Taxi')) }], opciones: [{ opcion_id: op('turno', 'dia') }, { opcion_id: op('dia_semana', 'lu') }] }),
       c.mapas,
       c.textos,
     );
     assert.equal(soloPaso4.conductor.pasosListos.trabajo, true);
-    assert.equal(soloPaso4.conductor.pasosListos.experiencia, true);
+    assert.equal(soloPaso4.conductor.pasosListos.experiencia, false);
     assert.equal(mapearPerfil(filas(), c.mapas, c.textos).conductor.pasosListos.experiencia, false);
   });
   it('Paso 4 listo con negocio, turno y día; las opciones se separan por lista', () => {
@@ -157,12 +171,14 @@ describe('perfil propio', () => {
     assert.deepEqual(p.conductor.idiomas, ['en']);
     assert.equal(p.conductor.pasosListos.trabajo, true);
     assert.equal(p.conductor.pasosListos.documentos, false, 'los documentos siempre faltan en la v1');
-    assert.equal(avancePerfil(p).listos, 3);
+    // Paso 1 y Paso 4 (sin vehículos, el Paso 3 no está listo: S07).
+    assert.equal(avancePerfil(p).listos, 2);
   });
   it('con los pasos 1 a 4 listos: 4 de 5 (80 %), paso actual 4', () => {
     const p = mapearPerfil(
       filas({
         conductor: { ...filas().conductor!, comuna_id: 94, tiene_estacionamiento: true },
+        experiencia: [{ tamano_vehiculo_id: 2, anos: 20 }],
         negocios: [{ negocio_id: 1 }],
         opciones: [{ opcion_id: op('turno', 'dia') }, { opcion_id: op('dia_semana', 'lu') }],
       }),

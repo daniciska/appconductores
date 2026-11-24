@@ -3,7 +3,7 @@
 // Maqueta: docs/maqueta/CondPerfil.dc.html
 // Lo que solo tiene la demo (Seguridad y privacidad, Eliminar mi cuenta) llega desde su ruta como
 // bloques extra; la app real v1 no los muestra.
-// Propuesta S14 (maqueta): "Confirmar ahora" aparece solo cuando faltan 5 días o menos para cumplir el
+// S14 (aprobada el 24-nov): "Confirmar ahora" aparece solo cuando faltan 5 días o menos para cumplir el
 // plazo (antes se ve "Confirmado el dd/mm", sin flecha); el Centro de ayuda puede recibir sus preguntas
 // (la app real v1 lleva solo las que calzan con lo que pide).
 import { useState, type ReactNode } from 'react';

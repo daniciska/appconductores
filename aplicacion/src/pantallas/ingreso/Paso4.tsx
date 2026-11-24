@@ -5,7 +5,7 @@
 // licencia declarada no permite aparecen en gris con "Pide licencia X". Turno y días: filtro M3 y
 // variable M7 del match. A dónde lleva "Continuar" lo decide la ruta (`alTerminar`): en la demo, al
 // Paso 5; en la app real v1, a Inicio. Lo guardado de un negocio que hoy no se muestra no se toca.
-// Propuestas (maqueta): S02 botón "¿Tienes otra clase de licencia? Agrégala" (abre "Tus datos" y vuelve
+// Mejoras aprobadas (24-nov): S02 botón "¿Tienes otra clase de licencia? Agrégala" (abre "Tus datos" y vuelve
 // aquí con lo marcado), aviso sin "Paso 1" y sin rojo en lo que no se puede marcar (si no se puede
 // marcar ninguno, el aviso de la licencia es el único mensaje sobre los negocios); S04 "Guardar y
 // terminar después"; S11 avisa antes de salir sin guardar (modo edición).

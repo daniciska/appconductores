@@ -14,7 +14,8 @@ export const TEXTO = {
   conexion: 'Revisa tu conexión e inténtalo de nuevo.',
   guardarConexion: 'No pudimos guardar. Revisa tu conexión e inténtalo de nuevo.',
   guardar: 'No pudimos guardar. Inténtalo de nuevo.',
-  soloEquipo: 'Estamos probando la app con un grupo pequeño. Muy pronto abrimos para todos.',
+  /** El código no se pudo enviar a ese número (S03: mensaje listo para el lanzamiento, sin textos de prueba). */
+  noLlega: 'No pudimos enviar el código. Revisa tu número e inténtalo de nuevo.',
   noSeEnvio: 'No pudimos enviar el código. Inténtalo de nuevo.',
   sinCelular: 'El ingreso con celular no está disponible. Avísale al equipo.',
   demasiados: 'Demasiados intentos. Espera unos minutos.',
@@ -59,11 +60,11 @@ export function textoErrorPedirCodigo(e: ErrorSupabase, codigosDePrueba: boolean
   if (esErrorDeRed(e)) return TEXTO.conexion;
   switch (e.code) {
     case 'sms_send_failed':
-      // Con números de prueba, el proveedor es de relleno: un número que no está en la lista no recibe nada.
-      return codigosDePrueba ? TEXTO.soloEquipo : TEXTO.noSeEnvio;
+      // El proveedor no pudo enviarlo a ese número (con números de prueba, uno que no está en la lista).
+      return TEXTO.noLlega;
     case 'signup_disabled':
     case 'otp_disabled':
-      return codigosDePrueba ? TEXTO.soloEquipo : TEXTO.sinCelular;
+      return codigosDePrueba ? TEXTO.noLlega : TEXTO.sinCelular;
     case 'over_sms_send_rate_limit':
       return textoEspera(e.message);
     case 'phone_provider_disabled':

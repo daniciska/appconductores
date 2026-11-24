@@ -13,9 +13,14 @@ import {
 } from '../src/datos/errores.ts';
 
 describe('errores al pedir el código (A2 y reenviar)', () => {
-  it('número fuera de la lista de prueba', () => {
-    assert.equal(textoErrorPedirCodigo({ code: 'sms_send_failed', status: 422 }, true), 'Por ahora solo pueden entrar los celulares del equipo.');
-    assert.equal(textoErrorPedirCodigo({ code: 'sms_send_failed', status: 422 }, false), 'No pudimos enviar el código. Inténtalo de nuevo.');
+  it('número al que no se puede enviar el código: mensaje listo para el lanzamiento (S03), sin textos de prueba', () => {
+    const noLlega = 'No pudimos enviar el código. Revisa tu número e inténtalo de nuevo.';
+    assert.equal(textoErrorPedirCodigo({ code: 'sms_send_failed', status: 422 }, true), noLlega);
+    assert.equal(textoErrorPedirCodigo({ code: 'sms_send_failed', status: 422 }, false), noLlega);
+    assert.equal(textoErrorPedirCodigo({ code: 'signup_disabled', status: 422 }, true), noLlega);
+    for (const t of Object.values(TEXTO)) {
+      assert.doesNotMatch(t, /prueba|pronto|celulares del equipo|grupo pequeño/i, `texto temporal: ${t}`);
+    }
   });
   it('espera entre códigos: lee los segundos del mensaje (o 60)', () => {
     const e = { code: 'over_sms_send_rate_limit', status: 429, message: 'For security purposes, you can only request this after 37 seconds.' };
@@ -35,7 +40,7 @@ describe('errores al pedir el código (A2 y reenviar)', () => {
 
 describe('errores al verificar el código (A3)', () => {
   it('código malo o vencido', () => {
-    assert.equal(textoErrorVerificar({ code: 'otp_expired', status: 403 }), 'El código no es correcto o ya venció.');
+    assert.equal(textoErrorVerificar({ code: 'otp_expired', status: 403 }), 'Ese código no es correcto. Revisa el último mensaje que te enviamos o pide otro.');
     assert.equal(textoErrorVerificar({ status: 403 }), TEXTO.codigo);
   });
   it('demasiados intentos y red', () => {

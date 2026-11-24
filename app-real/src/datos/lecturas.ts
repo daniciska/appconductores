@@ -35,7 +35,7 @@ export async function leerCatalogos(cliente: Cliente): Promise<Lectura<FilasCata
       .eq('vigente', true)
       .in('para_quien', ['conductor', 'todos'])
       .order('orden'),
-    // S14 (propuesta): también el margen para volver a mostrar "Confirmar ahora" (si no existe, 5 días).
+    // S14 (aprobada el 24-nov): también el margen para volver a mostrar "Confirmar ahora" (si no existe, 5 días).
     cliente.from('ajustes').select('id,valor').in('id', ['dias_reconfirmar_disponibilidad', 'dias_aviso_reconfirmar']),
   ]);
   for (const r of [regiones, zonas, comunas, clases, industrias, tamanos, negocios, listas, textos]) {

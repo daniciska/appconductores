@@ -1,7 +1,7 @@
 // Lecturas derivadas sobre la interfaz de datos (VistaConductor): sirven igual en la demo y en la app
 // real. La demo las reexporta desde selectores.ts (su estado tiene la misma forma).
 // Puras: se pueden probar con Node (por eso las importaciones llevan ".ts").
-import { habilitaNegocio, textoClasesQuePide } from '../match.ts';
+import { habilitaNegocio } from '../match.ts';
 import type { Industria, Negocio, SeccionPerfil } from '../tipos.ts';
 import type { VistaConductor } from './tipos.ts';
 
@@ -48,30 +48,4 @@ export function negociosPorIndustria(v: ConCatalogos, soloActivos = true): { ind
 export function negocioPermitidoPorDeclaradas(v: Pick<VistaConductor, 'catalogos' | 'conductor'>, negocioId: string): boolean {
   const n = v.catalogos.negocios.find((x) => x.id === negocioId);
   return !!n && habilitaNegocio(v.conductor.clasesDeclaradas, n, null, v.catalogos.clases);
-}
-
-/** "Taxi", "Taxi y Taxi ejecutivo", "Taxi, Taxi colectivo y Taxi ejecutivo". */
-function unirNombres(nombres: string[]): string {
-  return nombres.length <= 1 ? (nombres[0] ?? '') : `${nombres.slice(0, -1).join(', ')} y ${nombres[nombres.length - 1]}`;
-}
-
-/**
- * S01 · Pista bajo "Clases de licencia" (Paso 1): qué piden los negocios abiertos que NO se pueden
- * hacer con la clase B, ej. "Taxi y Taxi ejecutivo piden A1, A2 o A3. Moto delivery pide C.". Sale del
- * catálogo: si se abre o se cierra un negocio desde el panel, la frase cambia sola. Vacía si no hay.
- */
-export function pistaLicencias(v: ConCatalogos): string {
-  const grupos = new Map<string, string[]>();
-  for (const g of negociosPorIndustria(v, true)) {
-    for (const n of g.negocios) {
-      if (habilitaNegocio(['B'], n, null, v.catalogos.clases)) continue;
-      const clases = textoClasesQuePide(n);
-      if (!clases) continue;
-      // Espacios que no se cortan: cada nombre ("Moto delivery") queda entero en una línea.
-      grupos.set(clases, [...(grupos.get(clases) ?? []), n.nombre.replace(/ /g, ' ')]);
-    }
-  }
-  return [...grupos.entries()]
-    .map(([clases, nombres]) => `${unirNombres(nombres)} ${nombres.length > 1 ? 'piden' : 'pide'} ${clases}.`)
-    .join(' ');
 }

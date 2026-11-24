@@ -5,7 +5,7 @@
 // aprobado salvo: campo "Tu comuna" con sugerencias de comunas (no de direcciones), sin "Depto, casa o
 // block", sin insignia "Verificada" y sin la nota de dirección privada. El estacionamiento parte apagado
 // o con lo guardado. La zona y la región salen de la comuna.
-// Propuestas (maqueta): S10 una sola "Tu comuna" (la zona y la región, en gris bajo el campo), se elige
+// Mejoras aprobadas (24-nov): S10 una sola "Tu comuna" (la zona y la región, en gris bajo el campo), se elige
 // sola si lo escrito es el nombre completo de una sola comuna y ninguna otra sigue así, un solo error a
 // la vez y estacionamiento más claro;
 // S04 "Guardar y terminar después"; S11 avisa antes de salir sin guardar (modo edición).

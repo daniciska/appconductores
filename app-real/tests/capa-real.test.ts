@@ -56,7 +56,7 @@ describe('ingreso con celular y código', () => {
   it('un número que no está en la lista de prueba no entra', async () => {
     const { error } = await cliente.auth.signInWithOtp({ phone: '+56990000099', options: { channel: 'whatsapp' } });
     assert.equal(error?.code, 'sms_send_failed');
-    assert.equal(textoErrorPedirCodigo(error!, true), 'Por ahora solo pueden entrar los celulares del equipo.');
+    assert.equal(textoErrorPedirCodigo(error!, true), 'No pudimos enviar el código. Revisa tu número e inténtalo de nuevo.');
     const p = ultimos(1)[0];
     assert.equal(p.ruta, '/auth/v1/otp');
     assert.deepEqual([p.body.phone, p.body.channel], ['+56990000099', 'whatsapp']);
@@ -71,7 +71,7 @@ describe('ingreso con celular y código', () => {
   });
   it('un código malo no entra', async () => {
     const { error } = await cliente.auth.verifyOtp({ phone: '+' + NUMERO, token: '000000', type: 'sms' });
-    assert.equal(textoErrorVerificar(error!), 'El código no es correcto o ya venció.');
+    assert.equal(textoErrorVerificar(error!), 'Ese código no es correcto. Revisa el último mensaje que te enviamos o pide otro.');
   });
   it('el código correcto crea la sesión y la cuenta (+569…)', async () => {
     const { data, error } = await cliente.auth.verifyOtp({ phone: '+' + NUMERO, token: CODIGO, type: 'sms' });

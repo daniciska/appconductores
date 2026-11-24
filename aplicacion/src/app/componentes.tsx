@@ -110,7 +110,7 @@ export default function Componentes() {
         <FilaRadio titulo="Solo conductores que hacen match" descripcion="Pasan los filtros y llegan al 66 %." seleccionada={radio === 'match'} onPress={() => setRadio('match')} />
         <FilaRadio titulo="Conductores que tú elijas" seleccionada={radio === 'elijas'} onPress={() => setRadio('elijas')} extra={<Insignia texto="Plan Flota chica" tono="gris" icono={null} />} />
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <Chip etiqueta="Vehículo liviano" subtitulo="auto, SUV, camioneta" seleccionado style={{ flex: 1 }} />
+          <Chip etiqueta="Vehículo liviano" subtitulo="auto, taxi, SUV, camioneta" seleccionado style={{ flex: 1 }} />
           <Stepper valor={anios} onCambiar={setAnios} etiquetaAccesible="años" />
         </View>
         <FilaInterruptor titulo="Disponible para trabajar" ayuda="Te pediremos confirmarlo cada 30 días." valor={disp} onCambiar={setDisp} />

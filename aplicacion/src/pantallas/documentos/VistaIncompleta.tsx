@@ -3,9 +3,10 @@
 // La comparten el Inicio de la demo y el de la app real v1. Lo único que cambia es la fila de los
 // documentos: en la demo lleva al Paso 5 ("N de 4 subidos"); en la app real v1 todavía no se pueden
 // subir ("Próximamente", sin enlace) y, si solo faltan ellos, la tarjeta lo dice y no muestra botón.
-// Propuesta S09 (maqueta): textos que dicen claro qué sigue, sin promesas de avisos; la nota de la
-// campana es opcional (la app real ya no la muestra) y las filas "Listo" de los pasos 1 a 4 también se
-// tocan: abren ese paso para revisarlo o cambiarlo (modo edición, vuelve a Inicio al guardar).
+// S09 (aprobada el 24-nov, ajustada): "Completa tu perfil para aparecer en los matches.", sin la nota de
+// la campana en la app real, y las filas "Listo" de los pasos 1 a 4 también se tocan: abren ese paso
+// para revisarlo o cambiarlo (modo edición). El texto de "solo faltan los documentos" sigue el de main
+// hasta que se construya la subida de documentos.
 import { Text, View } from 'react-native';
 import type { Href } from 'expo-router';
 
@@ -66,7 +67,7 @@ export function VistaIncompleta({ documentos, nota }: { documentos: DocumentosIn
           </Text>
           <Text style={[tipo.secundario, { lineHeight: 21, color: GRIS_SOBRE_OSCURO }]}>
             {soloDocumentos
-              ? 'Por ahora no tienes que hacer nada más. Pronto podrás subir tus documentos aquí.'
+              ? 'Ya guardaste tus datos. Falta un paso: tus documentos, que pronto podrás subir aquí.'
               : registrado
                 ? 'Completa tu perfil para aparecer en los matches.'
                 : 'Crea tu perfil para empezar a aparecer en los matches.'}

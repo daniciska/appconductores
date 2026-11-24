@@ -36,7 +36,8 @@ export default function LayoutRaizPanel() {
         <PuertaClave>
           <View style={{ flex: 1 }}>
             <Stack screenOptions={{ headerShown: false, title: 'Panel · Dale Contacto', contentStyle: { backgroundColor: color.fondo } }} />
-            <HostAvisos />
+            {/* Abajo: arriba está la barra del panel con el botón del menú. */}
+            <HostAvisos posicion="abajo" />
           </View>
         </PuertaClave>
       ) : (

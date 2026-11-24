@@ -6,7 +6,7 @@ import { PerfilBase, type PreguntaAyuda } from '@/pantallas/documentos/PerfilBas
 import { irABienvenidaTrasCerrarSesion } from '@/pantallas/ingreso/acciones';
 
 /**
- * Centro de ayuda de la v1 (propuesta S14): solo lo que calza con lo que la app pide hoy. "¿Quién ve
+ * Centro de ayuda de la v1 (S14, aprobada el 24-nov): solo lo que calza con lo que la app pide hoy. "¿Quién ve
  * mis documentos?" y "¿Quién ve mi dirección?" vuelven cuando la app pida documentos y dirección.
  */
 const PREGUNTAS_V1: PreguntaAyuda[] = [
