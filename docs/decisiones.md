@@ -33,3 +33,9 @@ Quiénes trabajan en el proyecto: **Daniela** y **Mario**, socios. Cada entrada 
 - Por qué: encontrar dónde se traban los conductores antes de abrir la app a personas reales; Don Luis necesitó 56 toques para llegar a Inicio.
 - Impacto: ninguno en main ni en lo publicado. El código de las 14 queda en la rama mejoras-probador-simplificador.
 - Pendiente: que Daniela o Mario decidan cada propuesta (S07 y S12 cambian decisiones; S05 tiene un problema en el teclado del celular). Después: dejar en la rama solo lo aprobado, probar de nuevo, mergear a main y publicar.
+
+## 2026-11-24 — Daniela
+- Decisión: la decisión de Trello de Mario (16-nov) y las ramas antiguas claude/bold-shannon-76cagx (29-oct) y claude/gifted-cori-hbgjz1 (2-nov) quedan en sus ramas, sin llevarlas a main por ahora.
+- Por qué: se revisan más adelante; mientras tanto, lo vigente es lo que está en main.
+- Impacto: ninguno en main. La regla de Trello no está en CLAUDE.md de main.
+- Pendiente: decidir más adelante si se integran o se descartan.

@@ -7,6 +7,7 @@ Este archivo guía a Claude (y a cualquier colaborador) al trabajar en este repo
 - **No inventar ni asumir.** Toda decisión de producto, negocio o técnica que no esté escrita en este archivo debe preguntarse a uno de los dueños del proyecto (Daniela o Mario) antes de construir. Cualquiera de los dos puede decidir y aprobar.
 - **Preguntar antes de construir.** Antes de escribir código o crear estructura nueva, confirmar el alcance.
 - **MVP = "Minimum Value Product".** Lo mínimo que ya sea **vendible** (que un titular pague por usarlo). Salir a las tiendas lo antes posible; cada funcionalidad debe justificar que ayuda a vender, a hacer match o que la exige la ley. Lo demás se anota como "futuro" y no se construye sin aprobación.
+- **Listo para lanzar, nunca a medias (24-nov, pedido de Daniela):** todo lo que se deja funcionando y aprobado debe quedar listo para el lanzamiento: sin mensajes temporales ("versión de prueba", "muy pronto…"), sin funciones a medio hacer y probado en celulares reales (teclados de iPhone y Android incluidos).
 - **Todo configurable.** Los campos de perfil, opciones y catálogos (por ejemplo, modos de contrato) deben poder modificarse sin reescribir la app.
 - Idioma de trabajo y documentación: español.
 - Cuando se tome una decisión, se registra en la sección "Decisiones tomadas" de este archivo.
