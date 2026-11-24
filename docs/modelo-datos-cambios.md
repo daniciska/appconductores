@@ -4,6 +4,12 @@ Cada vez que cambia una pantalla de la maqueta o una decisión, se anota aquí *
 
 Origen: **Comentario** = comentario de la dueña en la maqueta · **Decisión** = decisión registrada en `CLAUDE.md` · **Construcción** = algo que apareció al construir y revisar la base de datos.
 
+## 2026-11-24
+
+| # | Cambio en los datos | Por qué | Origen |
+|---|---|---|---|
+| 42 | **Documentos del conductor, construidos** (migración `20261124150000_documentos_conductor`, sin aplicar en Supabase). **Tipo de documento**: se crea con los 4 del conductor y campos nuevos **fecha pedida** (vencimiento / emisión / ninguna), **etiqueta de la fecha** y **ayuda**; quedan para después revisión automática por tipo, detalle libre, texto de insignia, plazos de borrado, negocios. **Documento subido**: el estado queda en *en revisión, aprobado, no aprobado, vencido, reemplazado* (se envía al subir: sin "subido sin enviar" ni **enviado_en**), con **ruta, tipo y tamaño del archivo**, **fechas anotadas por** (persona hoy; método después) y **aviso de vencimiento enviado**. Un aprobado sigue valiendo hasta que se apruebe el que lo reemplaza. **El archivo ya no se borra después de decidir**: se guarda mientras la cuenta esté activa y se borra al reemplazarse. **Revisión de documento**: suma **método** ("aprobación automática provisoria"). **Ajustes** nuevos: **método de validación** (`aprobar_todo`, solo equipo) y **meses de aviso** (3, la app lo lee). El **estado del perfil** y de la **verificación** ahora los calcula la base (pasos 1, 2, 4 y documentos obligatorios aprobados y vigentes). **Identidad** no se crea todavía (el RUN lo leerá el método real). Espacio privado `documentos` en Storage. 94 pruebas nuevas (416 en total). | Daniela decidió pedir los 4 documentos, que un método de validación en el fondo los apruebe todos por ahora, guardarlos mientras la cuenta esté activa y guardar los vencimientos para avisar 3 meses antes. | Decisión |
+
 ## 2026-11-16
 
 | # | Cambio en los datos | Por qué | Origen |

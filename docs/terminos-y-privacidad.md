@@ -45,3 +45,12 @@ Lista de trabajo para redactar los textos legales con el abogado. Se agrega un p
 - [ ] Se guardan **datos reales** del equipo (nombre, fecha de nacimiento, correo, celular, comuna y lo demás de los pasos 1 a 4) **antes** de tener los Términos y la Política aprobados. [verificar con abogado]
 - [ ] Solo entran los **celulares de prueba** que la dueña anota en Supabase; no se envían mensajes. Cómo se borran estos datos de prueba antes del lanzamiento se decide aparte (hoy la base no deja borrar a quien aceptó autorizaciones).
 
+
+## Documentos del conductor (desde el 24-nov)
+
+- [ ] **Se guardan mientras la cuenta esté activa** (decisión de Daniela, 24-nov): la foto de la cédula y de la licencia, y los PDF de la Hoja de Vida y del certificado de antecedentes, en un espacio privado (solo la persona y, después, el equipo desde el panel). Cuando un documento se reemplaza (por ejemplo, porque venció), el archivo anterior se borra. Esto cambia la propuesta anterior de borrar el archivo después de decidir: el abogado debe confirmar el plazo y la base legal. [verificar con abogado, P1 / MD20]
+- [ ] **Aprobación automática provisoria:** hoy un "método de validación" aprueba todos los documentos que se suben, sin que nadie los mire; su detalle (IA, persona) se define después. Informar que hay una revisión automática y cómo pedir que la revise una persona (decisiones automatizadas). [verificar con abogado: art. 8° bis Ley 21.719]
+- [ ] **Datos de antecedentes:** el certificado de antecedentes y la Hoja de Vida pueden traer datos de infracciones penales; guardarlos mientras la cuenta esté activa es un tratamiento sensible. [verificar con abogado: Ley 21.719 art. 25]
+- [ ] **Fechas de vencimiento y de emisión:** se guardan para avisar al conductor 3 meses antes de que venza un documento (hoy dentro de la app; después por WhatsApp o correo). La persona las anota al subir; después podría leerlas el método automático.
+- [ ] Al borrar una cuenta se borran sus documentos (filas); los archivos de Storage deben borrarse en el mismo proceso [definir con el panel].
+- [ ] Texto de "Revisión de mis documentos": se acepta antes de subir el primer documento (versión de prueba, falta el definitivo del abogado).
