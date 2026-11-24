@@ -1,7 +1,8 @@
 // Piezas visuales propias del grupo "documentos" (Inicio, Perfil y pantallas de documentos).
 // Replican medidas de las maquetas que el sistema de diseño no trae tal cual.
 import { useEffect, useRef, type ReactNode } from 'react';
-import { ActivityIndicator, Animated, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { ActivityIndicator, Animated, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Text } from '@/ui/escala';
 
 import {
   Avatar,

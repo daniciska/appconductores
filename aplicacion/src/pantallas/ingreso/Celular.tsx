@@ -4,7 +4,8 @@
 // "Enviar código" pide el código (en la demo no se envía nada: guarda el número) y pasa a A3. Si la
 // persona vuelve atrás mientras se envía, se queda donde fue (no se la lleva a A3).
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { router } from 'expo-router';
 
 import { useAcciones, useEntorno, useVista } from '@/datos/puerto/contexto';

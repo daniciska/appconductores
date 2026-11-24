@@ -5,7 +5,8 @@
 // "Seguridad y privacidad" (Mis documentos, Quién recibió mis datos, Conversaciones bloqueadas),
 // "Eliminar mi cuenta" y, al cerrar sesión, la vuelta al menú de la demo.
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { useNavigation } from 'expo-router';
 
 import { iniciales } from '@/datos/formato';

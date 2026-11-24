@@ -1,6 +1,7 @@
 // Piezas visuales propias del grupo "bolsa" (BC1–BC3 y BT1–BT5), con las medidas de las maquetas.
 import { useEffect, useRef, type ReactNode } from 'react';
-import { Animated, Platform, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Animated, Platform, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Text } from '@/ui/escala';
 import { router, type Href } from 'expo-router';
 import Sparkle from 'lucide-react-native/icons/sparkle';
 

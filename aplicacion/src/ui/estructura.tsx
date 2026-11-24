@@ -1,22 +1,14 @@
 // Estructura de pantalla: columna de celular, Pantalla, Encabezado, BarraPasos, Tarjeta y listas.
 import { Children, Fragment, createContext, isValidElement, useContext, useEffect, useRef, type ComponentRef, type ReactNode, type Ref } from 'react';
-import {
-  Animated,
-  ScrollView,
-  Text,
-  View,
-  useWindowDimensions,
-  type ScrollViewProps,
-  type StyleProp,
-  type ViewStyle,
-} from 'react-native';
+import { Animated, ScrollView, View, useWindowDimensions, type ScrollViewProps, type StyleProp, type ViewStyle } from 'react-native';
+import { Text, useMedidas } from './escala';
 import { router, type Href } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BotonIcono, Presionable } from './controles';
 import { ChevronLeft, ChevronRight, type LucideIcon } from './iconos';
 import { Texto } from './texto';
-import { ANCHO_CELULAR, alto, color, duracion, espacio, fuente, radio, sombra, tipo } from './tokens';
+import { ANCHO_CELULAR, color, duracion, espacio, fuente, radio, sombra, tipo } from './tokens';
 
 // ---------------------------------------------------------------------------
 // MarcoCelular: en escritorio centra una columna de ~430 px (ya lo usan los layouts de conductor y titular)
@@ -164,11 +156,12 @@ export function volver(volverA: Href = '/') {
 }
 
 export function Encabezado({ onVolver, volverA, sinVolver, titulo, paso, totalPasos = 5, derecha, style }: PropsEncabezado) {
+  const m = useMedidas();
   return (
     <View style={[{ gap: 20 }, style]}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: alto.tactil, gap: 12 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: m.tactil, gap: 12 }}>
         {sinVolver ? (
-          <View style={{ width: 44 }} />
+          <View style={{ width: m.tactil }} />
         ) : (
           <BotonIcono icono={ChevronLeft} etiquetaAccesible="Volver" onPress={onVolver ?? (() => volver(volverA))} />
         )}
@@ -182,7 +175,7 @@ export function Encabezado({ onVolver, volverA, sinVolver, titulo, paso, totalPa
             Paso {paso} de {totalPasos}
           </Text>
         ) : (
-          (derecha ?? <View style={{ width: 44 }} />)
+          (derecha ?? <View style={{ width: m.tactil }} />)
         )}
       </View>
       {paso !== undefined ? <BarraPasos actual={paso} total={totalPasos} /> : null}
@@ -289,6 +282,7 @@ export interface PropsFilaLista {
 }
 
 export function FilaLista({ titulo, subtitulo, icono: Icono, derecha, onPress, href, peligro, flecha, deshabilitada }: PropsFilaLista) {
+  const m = useMedidas();
   const tocable = !!(onPress || href) && !deshabilitada;
   const contenido = (
     <>
@@ -296,14 +290,14 @@ export function FilaLista({ titulo, subtitulo, icono: Icono, derecha, onPress, h
         <View
           aria-hidden
           style={{
-            width: 32,
-            height: 32,
+            width: m.iconoFila,
+            height: m.iconoFila,
             borderRadius: radio.icono,
             backgroundColor: peligro ? color.errorFondo : color.fondo,
             alignItems: 'center',
             justifyContent: 'center',
           }}>
-          <Icono size={18} color={peligro ? color.error : color.texto} strokeWidth={2} />
+          <Icono size={m.icono(18)} color={peligro ? color.error : color.texto} strokeWidth={2} />
         </View>
       ) : null}
       <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
@@ -311,12 +305,14 @@ export function FilaLista({ titulo, subtitulo, icono: Icono, derecha, onPress, h
           {titulo}
         </Text>
         {subtitulo ? <Texto variante="ayuda">{subtitulo}</Texto> : null}
+        {/* Con "Letra grande", lo de la derecha (ej. una insignia) va bajo el título para no apretarlo. */}
+        {m.grande && derecha ? <View style={{ flexDirection: 'row', marginTop: 4 }}>{derecha}</View> : null}
       </View>
-      {derecha}
-      {(flecha ?? tocable) ? <ChevronRight size={18} color={color.textoSecundario} strokeWidth={2} /> : null}
+      {m.grande ? null : derecha}
+      {(flecha ?? tocable) ? <ChevronRight size={m.icono(18)} color={color.textoSecundario} strokeWidth={2} /> : null}
     </>
   );
-  const estilo: ViewStyle = { minHeight: alto.fila, flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8 };
+  const estilo: ViewStyle = { minHeight: m.fila, flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8 };
   if (tocable) {
     return (
       <Presionable role="button" aria-label={titulo} onPress={onPress} href={href} style={estilo}>
@@ -329,8 +325,9 @@ export function FilaLista({ titulo, subtitulo, icono: Icono, derecha, onPress, h
 
 /** Fila "etiqueta … valor" (como las Condiciones del match). */
 export function FilaDato({ etiqueta, valor, tono }: { etiqueta: string; valor: ReactNode; tono?: 'normal' | 'exito' | 'error' }) {
+  const m = useMedidas();
   return (
-    <View style={{ minHeight: alto.fila, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingVertical: 8 }}>
+    <View style={{ minHeight: m.fila, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingVertical: 8 }}>
       <Texto variante="secundario" tono="secundario">
         {etiqueta}
       </Texto>

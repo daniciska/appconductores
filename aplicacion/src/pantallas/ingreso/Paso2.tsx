@@ -6,7 +6,8 @@
 // La dirección es privada. Este es el Paso 2 de la demo; la app real v1 usa Paso2Comuna (la comuna de
 // una lista) mientras no exista la cuenta de Google Cloud.
 import { useMemo, useRef, useState, type ComponentRef } from 'react';
-import { ScrollView, Text, View, type TextInputKeyPressEvent } from 'react-native';
+import { ScrollView, View, type TextInputKeyPressEvent } from 'react-native';
+import { Text } from '@/ui/escala';
 import { router } from 'expo-router';
 
 import { useAcciones, useEntorno, useVista } from '@/datos/puerto/contexto';

@@ -1,10 +1,11 @@
 // E1 · Perfil: lo común de la demo y de la app real (encabezado, "Disponible para trabajar" con
-// "Confirmar ahora", Mi perfil, Ayuda y Cerrar sesión).
+// "Confirmar ahora", Mi perfil, Pantalla ("Letra grande", 24-nov), Ayuda y Cerrar sesión).
 // Maqueta: docs/maqueta/CondPerfil.dc.html
 // Lo que solo tiene la demo (Seguridad y privacidad, Eliminar mi cuenta) llega desde su ruta como
 // bloques extra; la app real v1 no los muestra.
 import { useState, type ReactNode } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text, useGrande } from '@/ui/escala';
 
 import { fechaCorta, iniciales } from '@/datos/formato';
 import { useAcciones, useEntorno, useVista } from '@/datos/puerto/contexto';
@@ -16,6 +17,7 @@ import {
   GrupoLista,
   HojaInferior,
   Insignia,
+  InterruptorLetraGrande,
   Pantalla,
   Presionable,
   Separador,
@@ -67,6 +69,7 @@ export function PerfilBase({ seccionSeguridad, filaEliminar, alCerrarSesion }: P
   const acciones = useAcciones();
   const [hoja, setHoja] = useState<'ayuda' | 'terminos' | null>(null);
   const [salir, setSalir] = useState(false);
+  const grande = useGrande();
 
   const primer = cuenta.nombres.trim().split(/\s+/)[0] ?? '';
   const nombre = [primer, cuenta.apellido1.trim()].filter(Boolean).join(' ') || 'Tu perfil';
@@ -105,9 +108,19 @@ export function PerfilBase({ seccionSeguridad, filaEliminar, alCerrarSesion }: P
               aria-label="Confirmar ahora"
               href="/conductor/disponibilidad"
               style={{ minHeight: 48, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-              <Text style={[fuente(700), { fontSize: 14, color: color.texto }]}>Confirmar ahora</Text>
+              {grande ? (
+                // Con "Letra grande" no cabe en una fila: la fecha va bajo "Confirmar ahora".
+                <View style={{ flex: 1, minWidth: 0, gap: 2, paddingVertical: 8 }}>
+                  <Text style={[fuente(700), { fontSize: 14, color: color.texto }]}>Confirmar ahora</Text>
+                  {conductor.disponibilidadConfirmadaEn ? (
+                    <Texto variante="ayuda">Última vez el {fechaCorta(conductor.disponibilidadConfirmadaEn)}</Texto>
+                  ) : null}
+                </View>
+              ) : (
+                <Text style={[fuente(700), { fontSize: 14, color: color.texto }]}>Confirmar ahora</Text>
+              )}
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                {conductor.disponibilidadConfirmadaEn ? (
+                {conductor.disponibilidadConfirmadaEn && !grande ? (
                   <Texto variante="ayuda">Última vez el {fechaCorta(conductor.disponibilidadConfirmadaEn)}</Texto>
                 ) : null}
                 <ChevronRight size={18} color={color.texto} strokeWidth={2} />
@@ -125,6 +138,11 @@ export function PerfilBase({ seccionSeguridad, filaEliminar, alCerrarSesion }: P
           <FilaLista titulo="Mi experiencia" icono={Volante} href={{ pathname: '/conductor/registro/3', params: { editar: '1' } }} />
           <FilaLista titulo="El trabajo que busco" icono={BriefcaseBusiness} href={{ pathname: '/conductor/registro/4', params: { editar: '1' } }} />
         </GrupoLista>
+      </View>
+
+      <View style={{ gap: 8 }}>
+        <TituloSeccion>Pantalla</TituloSeccion>
+        <InterruptorLetraGrande />
       </View>
 
       {seccionSeguridad}

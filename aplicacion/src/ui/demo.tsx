@@ -2,7 +2,8 @@
 // en construcción. No se exportan desde '@/ui' para que la app real no las lleve en su paquete:
 // se importan desde '@/ui/demo'.
 import type { ReactNode } from 'react';
-import { Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { View, type StyleProp, type ViewStyle } from 'react-native';
+import { Text } from './escala';
 import { router, useNavigation } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 

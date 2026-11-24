@@ -1,7 +1,8 @@
 // Avisos breves (toasts). Muéstralos con mostrarToast('Guardado', 'exito') desde cualquier parte.
 // <HostAvisos /> ya está montado en el layout raíz.
 import { useEffect, useRef } from 'react';
-import { Animated, Text, View } from 'react-native';
+import { Animated, View } from 'react-native';
+import { Text } from './escala';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { avisar, useAvisos, type Aviso } from '../datos/avisos';

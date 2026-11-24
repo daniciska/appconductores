@@ -2,11 +2,13 @@
 // Ruta: /conductor/bienvenida
 // Maqueta: docs/maqueta/CondBienvenida.dc.html
 // Sin "modo de contrato" (crecimiento futuro): el párrafo nombra solo lo que usa el match.
+// Arriba de las tarjetas, el interruptor "Letra grande" (24-nov): agranda toda la app.
 // "Tengo vehículos" se dibuja solo si la ruta pasa `alElegirTitular` (la demo sí; la app real v1, no).
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { router } from 'expo-router';
 
-import { AutoFrente, Llave, Pantalla, Presionable, Volante, color, fuente, radio, tipo, type LucideIcon } from '@/ui';
+import { AutoFrente, InterruptorLetraGrande, Llave, Pantalla, Presionable, Volante, color, fuente, radio, tipo, type LucideIcon } from '@/ui';
 import { ChevronRight } from '@/ui/iconos';
 
 function TarjetaEntrada({
@@ -78,6 +80,7 @@ export default function Bienvenida({ alElegirTitular }: { alElegirTitular?: () =
       </View>
 
       <View style={{ marginTop: 'auto', paddingTop: 24, gap: 12 }}>
+        <InterruptorLetraGrande tono="oscuro" style={{ marginBottom: 4 }} />
         <TarjetaEntrada
           titulo="Soy conductor"
           texto="Encuentra vehículos para trabajar. Gratis."

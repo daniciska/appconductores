@@ -1,7 +1,8 @@
 // Textos: Titulo (Sora) y Texto (Plus Jakarta Sans). Úsalos siempre en vez de <Text> directo,
 // para que todas las pantallas tengan la misma tipografía.
 import type { ReactNode } from 'react';
-import { Text, type StyleProp, type TextProps, type TextStyle } from 'react-native';
+import { type StyleProp, type TextProps, type TextStyle } from 'react-native';
+import { Text } from './escala';
 
 import { color, fuente, tipo, type Peso } from './tokens';
 

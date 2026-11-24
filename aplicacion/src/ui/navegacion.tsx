@@ -1,5 +1,6 @@
 // Navegación: barra inferior de pestañas. (El botón "Demo" de la demo está en ./demo.tsx.)
-import { Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { View, type StyleProp, type ViewStyle } from 'react-native';
+import { Text, useMedidas } from './escala';
 import { router, type Href } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -28,6 +29,7 @@ export interface PropsBarraInferior {
 /** Barra inferior blanca con ícono y nombre, como en las maquetas (4 o 5 pestañas). */
 export function BarraInferior({ pestanas, activa, onElegir }: PropsBarraInferior) {
   const insets = useSafeAreaInsets();
+  const m = useMedidas();
   return (
     <View
       role="tablist"
@@ -51,9 +53,9 @@ export function BarraInferior({ pestanas, activa, onElegir }: PropsBarraInferior
             aria-label={p.etiquetaAccesible ?? p.etiqueta}
             onPress={() => (onElegir ? onElegir(p) : router.navigate(p.href))}
             efecto="opacidad"
-            style={{ flex: 1, minHeight: 44, alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+            style={{ flex: 1, minHeight: m.tactil, alignItems: 'center', justifyContent: 'center', gap: 4 }}>
             <View>
-              <Icono size={22} color={tinta} strokeWidth={2} />
+              <Icono size={m.icono(22)} color={tinta} strokeWidth={2} />
               {p.punto ? (
                 <View
                   aria-hidden

@@ -3,7 +3,8 @@
 // La comparten el Inicio de la demo y el de la app real v1. Lo único que cambia es la fila de los
 // documentos: en la demo lleva al Paso 5 ("N de 4 subidos"); en la app real v1 todavía no se pueden
 // subir ("Próximamente", sin enlace) y, si solo faltan ellos, la tarjeta lo dice y no muestra botón.
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/ui/escala';
 import type { Href } from 'expo-router';
 
 import { avancePerfil } from '@/datos/puerto/derivados';

@@ -4,7 +4,8 @@
 // Diálogo sobre una silueta del Inicio. "Sí, sigo disponible" reconfirma (y vuelve al match);
 // "Pausar por ahora" apaga "Disponible para trabajar" (sale del match).
 import { useEffect, useRef } from 'react';
-import { Animated, Text, View } from 'react-native';
+import { Animated, View } from 'react-native';
+import { Text } from '@/ui/escala';
 
 import { useAcciones, useEntorno, useVista } from '@/datos/puerto/contexto';
 import { Boton, color, duracion, mostrarToast, sombra, volver } from '@/ui';

@@ -3,7 +3,8 @@
 // app del mismo sitio (carpeta panel/ del repositorio).
 // Estilo de la Bienvenida (docs/maqueta/CondBienvenida.dc.html): fondo casi negro y tarjetas grandes.
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { router, type Href } from 'expo-router';
 
 import { nombreCompleto } from '@/datos/selectores';

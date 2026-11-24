@@ -1,7 +1,8 @@
 // Piezas compartidas por las pantallas de ingreso y registro (A1–A4, B1–B5).
 // Copian el estilo exacto de las maquetas (docs/maqueta/Cond*.dc.html).
 import { useEffect, useRef, useState, type ComponentRef, type ReactNode, type RefObject } from 'react';
-import { Platform, ScrollView, Text, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
+import { Platform, ScrollView, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
+import { Text } from '@/ui/escala';
 
 import { borrarBorrador, guardarBorrador, leerBorrador } from '@/datos/borradores';
 import { useEntorno } from '@/datos/puerto/contexto';

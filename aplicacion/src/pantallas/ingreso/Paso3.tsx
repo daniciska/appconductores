@@ -3,8 +3,11 @@
 // Maqueta: docs/maqueta/CondPaso3.dc.html
 // 7 categorías (catálogo de tamaños) con años manejando cada una: el contador solo se activa en las
 // marcadas. "Idiomas que hablas" es opcional y no cuenta en el match.
+// Con "Letra grande" no caben el chip y el contador en una fila: el contador va debajo del chip y solo
+// en las marcadas (en las otras está apagado igual).
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text, useGrande } from '@/ui/escala';
 import { router } from 'expo-router';
 
 import { useAcciones, useVista } from '@/datos/puerto/contexto';
@@ -40,6 +43,7 @@ export default function Paso3() {
   const [idiomas, setIdiomas] = useState<string[]>(borrador.inicial.idiomas);
   useRecordarBorrador(borrador, { marcados, anios, idiomas });
   const [todos, setTodos] = useState(false);
+  const grande = useGrande();
 
   const tamanos = [...tamanosCatalogo].sort((a, b) => a.orden - b.orden);
   const lista = todos ? tamanos : tamanos.slice(0, VISIBLES);
@@ -94,13 +98,41 @@ export default function Paso3() {
             paddingBottom: 14,
             gap: 8,
           }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-            <Text style={[fuente(700), { width: ANCHO_CONTADOR, textAlign: 'center', fontSize: 12, lineHeight: 16, color: color.textoSecundario }]}>
-              Años de experiencia
-            </Text>
-          </View>
+          {grande ? null : (
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+              <Text style={[fuente(700), { width: ANCHO_CONTADOR, textAlign: 'center', fontSize: 12, lineHeight: 16, color: color.textoSecundario }]}>
+                Años de experiencia
+              </Text>
+            </View>
+          )}
           {lista.map((t) => {
             const sel = marcados.includes(t.id);
+            if (grande) {
+              return (
+                <View key={t.id} style={{ gap: 8 }}>
+                  <Chip
+                    etiqueta={t.nombre}
+                    subtitulo={t.ayuda}
+                    seleccionado={sel}
+                    onPress={() => alternar(t.id)}
+                    etiquetaAccesible={`${t.nombre} (${t.ayuda})`}
+                    style={{ paddingHorizontal: 16 }}
+                  />
+                  {sel ? (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, paddingLeft: 16, paddingBottom: 4 }}>
+                      <Text style={[tipo.secundario, fuente(600), { flex: 1, minWidth: 0, color: color.textoSecundario }]}>Años manejando</Text>
+                      <Stepper
+                        valor={anios[t.id] ?? 1}
+                        onCambiar={(n) => setAnios((a) => ({ ...a, [t.id]: n }))}
+                        min={1}
+                        max={50}
+                        etiquetaAccesible={`años manejando ${t.nombre}`}
+                      />
+                    </View>
+                  ) : null}
+                </View>
+              );
+            }
             return (
               <View key={t.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                 <Chip

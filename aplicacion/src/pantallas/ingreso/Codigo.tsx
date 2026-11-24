@@ -5,7 +5,8 @@
 // pedir otro código también (demo 30 s; app real 60 s, contados desde que se pidió el último). Si la
 // persona vuelve atrás mientras se verifica, se queda donde fue.
 import { useEffect, useRef, useState, type ComponentRef } from 'react';
-import { Platform, Text, TextInput, View } from 'react-native';
+import { Platform, View } from 'react-native';
+import { Text, TextInput } from '@/ui/escala';
 import { router } from 'expo-router';
 
 import { celularCompleto } from '@/datos/formato';

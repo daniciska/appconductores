@@ -5,6 +5,7 @@
 // licencia declarada no permite aparecen en gris con "Pide licencia X". Turno y días: filtro M3 y
 // variable M7 del match. A dónde lleva "Continuar" lo decide la ruta (`alTerminar`): en la demo, al
 // Paso 5; en la app real v1, a Inicio. Lo guardado de un negocio que hoy no se muestra no se toca.
+// Con "Letra grande", Día y Noche van uno bajo el otro y los días en dos filas (más fáciles de tocar).
 import { useRef, useState, type ComponentRef } from 'react';
 import { ScrollView, View } from 'react-native';
 
@@ -14,6 +15,7 @@ import { negocioPermitidoPorDeclaradas, negociosPorIndustria } from '@/datos/pue
 import type { Dia, Turno } from '@/datos/tipos';
 import { Aviso, Boton, Chip, Encabezado, FilaCheck, OpcionIcono, Pantalla, Texto, color, type LucideIcon } from '@/ui';
 import { Moon, Sun } from '@/ui/iconos';
+import { useGrande } from '@/ui/escala';
 
 import { terminarEdicion, useGuardando, useModoEdicion, usePantallaAbierta, useVolverDesdePaso } from './acciones';
 import { AlertaObligatorios, CabeceraFormulario, EtiquetaGrupo, irAlPrimerError, useBorradorPaso, useRecordarBorrador, useValidarObligatorios } from './comunes';
@@ -21,6 +23,7 @@ import { AlertaObligatorios, CabeceraFormulario, EtiquetaGrupo, irAlPrimerError,
 const ICONO_TURNO: Record<string, LucideIcon> = { dia: Sun, noche: Moon };
 
 export default function Paso4({ alTerminar }: { /** Después de guardar (sin editar): a dónde sigue. */ alTerminar: () => void }) {
+  const grande = useGrande();
   const guardados = useVista((v) => v.conductor.negocios);
   const turnosGuardados = useVista((v) => v.conductor.turnos);
   const diasGuardados = useVista((v) => v.conductor.dias);
@@ -133,7 +136,7 @@ export default function Paso4({ alTerminar }: { /** Después de guardar (sin edi
 
       <View style={{ marginTop: 8, gap: 12 }}>
         <EtiquetaGrupo titulo="Preferencia de turno" obligatorio ayuda="Puedes marcar los dos." error={ver && errores.turnos} />
-        <View role="group" aria-label="Preferencia de turno" style={{ flexDirection: 'row', gap: 8 }}>
+        <View role="group" aria-label="Preferencia de turno" style={grande ? { gap: 8 } : { flexDirection: 'row', gap: 8 }}>
           {turnosCatalogo.map((t) => (
             <OpcionIcono
               key={t.clave}
@@ -141,7 +144,7 @@ export default function Paso4({ alTerminar }: { /** Después de guardar (sin edi
               icono={ICONO_TURNO[t.clave] ?? Sun}
               seleccionada={turnos.includes(t.clave as Turno)}
               onPress={() => setTurnos((l) => alternar(l, t.clave as Turno))}
-              style={ver && errores.turnos ? { borderColor: color.error } : undefined}
+              style={[grande && { flex: 0 }, ver && errores.turnos ? { borderColor: color.error } : null]}
             />
           ))}
         </View>
@@ -149,7 +152,7 @@ export default function Paso4({ alTerminar }: { /** Después de guardar (sin edi
 
       <View style={{ marginTop: 8, gap: 12 }}>
         <EtiquetaGrupo titulo="Días que puedes trabajar" obligatorio ayuda="Marca todos los que puedas." error={ver && errores.dias} />
-        <View role="group" aria-label="Días que puedes trabajar" style={{ flexDirection: 'row', gap: 6 }}>
+        <View role="group" aria-label="Días que puedes trabajar" style={grande ? { flexDirection: 'row', flexWrap: 'wrap', gap: 6 } : { flexDirection: 'row', gap: 6 }}>
           {diasCatalogo.map((d) => (
             <Chip
               key={d.clave}
@@ -163,7 +166,7 @@ export default function Paso4({ alTerminar }: { /** Después de guardar (sin edi
                   return ordenDias.filter((x) => nueva.includes(x));
                 })
               }
-              style={[{ flex: 1 }, ver && errores.dias ? { borderColor: color.error } : null]}
+              style={[grande ? { width: '23%' } : { flex: 1 }, ver && errores.dias ? { borderColor: color.error } : null]}
             />
           ))}
         </View>

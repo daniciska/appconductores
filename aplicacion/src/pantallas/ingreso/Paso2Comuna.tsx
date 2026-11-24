@@ -6,7 +6,8 @@
 // block", sin insignia "Verificada" y sin la nota de dirección privada. El estacionamiento parte apagado
 // o con lo guardado. La zona y la región salen de la comuna.
 import { useMemo, useRef, useState, type ComponentRef } from 'react';
-import { ScrollView, Text, View, type TextInputKeyPressEvent } from 'react-native';
+import { ScrollView, View, type TextInputKeyPressEvent } from 'react-native';
+import { Text } from '@/ui/escala';
 import { router } from 'expo-router';
 
 import { useAcciones, useVista } from '@/datos/puerto/contexto';

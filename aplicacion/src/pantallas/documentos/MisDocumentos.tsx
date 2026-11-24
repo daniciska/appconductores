@@ -1,7 +1,8 @@
 // E2 · Mis documentos
 // Ruta: /conductor/perfil/documentos
 // Maqueta: docs/maqueta/CondMisDocumentos.dc.html
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/ui/escala';
 import type { Href } from 'expo-router';
 
 import { fechaLarga } from '@/datos/formato';

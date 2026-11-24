@@ -4,7 +4,8 @@
 // Condiciones que funcionan como filtros para ver la oferta en la bolsa. La licencia y la región se
 // exigen siempre. Cuenta en vivo cuántos conductores las cumplen. "Guardar condiciones" las deja en la búsqueda.
 import { useMemo, useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { useLocalSearchParams } from 'expo-router';
 
 import { cortoDia, nombreDia } from '@/datos/formato';

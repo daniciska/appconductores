@@ -7,7 +7,8 @@
 // clase de licencia. Si el guardado falla (app real), el mensaje sale arriba de los botones y lo escrito
 // sigue en pantalla.
 import { useRef, useState, type ComponentRef } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
+import { Text, useGrande } from '@/ui/escala';
 import { router } from 'expo-router';
 
 import { celularCompleto, edad, mascaraFecha } from '@/datos/formato';
@@ -70,6 +71,7 @@ export default function Paso1() {
   const [nombres, setNombres] = useState(borrador.inicial.nombres);
   const [apellido1, setApellido1] = useState(borrador.inicial.apellido1);
   const [apellido2, setApellido2] = useState(borrador.inicial.apellido2);
+  const grande = useGrande();
   const [fecha, setFecha] = useState(borrador.inicial.fecha);
   const [correo, setCorreo] = useState(borrador.inicial.correo);
   const [clases, setClases] = useState<string[]>(borrador.inicial.clases);
@@ -160,9 +162,10 @@ export default function Paso1() {
           error={e('nombres')}
         />
 
-        <View style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start' }}>
+        {/* Con "Letra grande", los apellidos van uno bajo el otro (en una fila no caben). */}
+        <View style={grande ? { gap: 18 } : { flexDirection: 'row', gap: 12, alignItems: 'flex-start' }}>
           <Campo
-            style={{ flex: 1, minWidth: 0 }}
+            style={grande ? undefined : { flex: 1, minWidth: 0 }}
             etiqueta="Primer apellido"
             obligatorio
             valor={apellido1}
@@ -173,7 +176,7 @@ export default function Paso1() {
             error={e('apellido1')}
           />
           <Campo
-            style={{ flex: 1, minWidth: 0 }}
+            style={grande ? undefined : { flex: 1, minWidth: 0 }}
             etiqueta="Segundo apellido"
             notaEtiqueta="(si tienes)"
             valor={apellido2}

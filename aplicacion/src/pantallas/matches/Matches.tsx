@@ -4,7 +4,8 @@
 // Lista los matches vigentes del usuario (motor de match.ts con su perfil real), con pestañas
 // Todos / Favoritos y conteos reales. Sin el contacto del titular: solo dice si lo compartió.
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/ui/escala';
 import { router, type Href } from 'expo-router';
 
 import { useAvancePerfil, useMatchesDelUsuario } from '@/datos/hooks';
