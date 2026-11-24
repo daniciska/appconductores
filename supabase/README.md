@@ -2,7 +2,8 @@
 
 Etapa 1: catálogos, cuentas, equipo, autorizaciones y perfil del conductor.
 Desde el 9-nov, además: los textos de prueba de "Antes de empezar" y los ajustes que la app puede leer (app real del conductor v1).
-Todavía no hay titulares, búsquedas, match, documentos, mensajes ni cobro.
+Desde el 24-nov, además: los documentos del conductor (Paso 5): tipos de documento, documentos, revisiones, el método de validación (hoy aprueba todo), el espacio privado de Storage, los vencimientos y el perfil completo.
+Todavía no hay titulares, búsquedas, match, mensajes ni cobro.
 
 ## Qué hay en cada carpeta
 
@@ -17,6 +18,9 @@ Todavía no hay titulares, búsquedas, match, documentos, mensajes ni cobro.
 | `pruebas/app_conductor_v1_postgrest.sql` | La app real v1 con el SQL que arma PostgREST para sus pedidos (upsert con `DO UPDATE SET` de todas las columnas, `RETURNING id`, insert por columnas) y los ids de catálogo que usan sus pruebas (15). Terminan en `ROLLBACK`. |
 | `migrations/20261116120000_negocios_con_licencia_b_y_c.sql` | Enciende Transporte por aplicación (B) y Moto delivery (C), y la industria de carga solo con Moto delivery (aprobado el 16-nov). |
 | `pruebas/negocios_con_licencia_b_y_c_pruebas.sql` | Pruebas de esa migración: quien tiene solo B o solo C ya puede elegir un negocio (9). Terminan en `ROLLBACK`. |
+| `migrations/20261124150000_documentos_conductor.sql` | Documentos del conductor (24-nov): `tipos_documento` (los 4, configurable), `documentos`, `revisiones_documento`, ajustes `metodo_validacion_documentos` (`aprobar_todo`) y `meses_aviso_vencimiento_documentos` (3), el método de validación (`privado.validar_documento`), el estado del perfil y de la verificación, los vencimientos y avisos, el espacio privado `documentos` de Storage con sus políticas, la versión `prueba-2` de "Revisión de mis documentos" si no hay una vigente, y la tarea diaria con pg_cron. |
+| `pruebas/storage_simulado.sql` | Imita lo mínimo de Supabase Storage (`storage.buckets`, `storage.objects`, `storage.foldername`). **Nunca se aplica en Supabase.** |
+| `pruebas/documentos_conductor_pruebas.sql` | Pruebas de los documentos (94): catálogo, Storage (nadie lee ni borra lo ajeno), reglas al subir, aprobación automática provisoria, reemplazos, otro método, vencimientos y avisos, perfil completo, catálogo configurable, "Revisión de mis documentos" con 2 o 4 textos y permisos. Terminan en `ROLLBACK`. |
 | `scripts/generar_zonas.py` | Genera el bloque de regiones, zonas y comunas de la migración de datos desde `docs/propuesta-zonas.csv`. Ese bloque no se edita a mano. |
 | `pruebas/auth_simulado.sql` | Imita lo mínimo de Supabase (roles y `auth.users`) para probar en local. **Nunca se aplica en Supabase.** |
 | `pruebas/etapa1_pruebas.sql` | Pruebas de datos y de seguridad. Terminan en `ROLLBACK`: no dejan datos. |
@@ -28,6 +32,7 @@ pg_createcluster 16 pruebas -p 5499 && pg_ctlcluster 16 pruebas start
 su postgres -c "createdb -p 5499 dale"
 su postgres -c "psql -p 5499 -d dale -X -v ON_ERROR_STOP=1 \
   -f supabase/pruebas/auth_simulado.sql \
+  -f supabase/pruebas/storage_simulado.sql \
   -f supabase/migrations/20261102120000_etapa1_esquema.sql \
   -f supabase/migrations/20261102120100_etapa1_datos_iniciales.sql \
   -f supabase/pruebas/etapa1_pruebas.sql \
@@ -37,11 +42,13 @@ su postgres -c "psql -p 5499 -d dale -X -v ON_ERROR_STOP=1 \
   -f supabase/pruebas/app_conductor_v1_pruebas.sql \
   -f supabase/pruebas/app_conductor_v1_postgrest.sql \
   -f supabase/migrations/20261116120000_negocios_con_licencia_b_y_c.sql \
-  -f supabase/pruebas/negocios_con_licencia_b_y_c_pruebas.sql"
+  -f supabase/pruebas/negocios_con_licencia_b_y_c_pruebas.sql \
+  -f supabase/migrations/20261124150000_documentos_conductor.sql \
+  -f supabase/pruebas/documentos_conductor_pruebas.sql"
 ```
 
 Cada prueba imprime `OK  [código] ...`. Si una falla, psql se detiene con
-`FALLA: ...`. Al final aparecen `FIN: todas las pruebas de la Etapa 1 pasaron.`, `FIN: todas las pruebas de la app del conductor v1 pasaron.` y `FIN: todas las pruebas de las formas de PostgREST de la app v1 pasaron.` (313 en total). Si los archivos están en una carpeta que el usuario postgres no puede leer, cópialos antes a una carpeta legible (por ejemplo `/tmp`).
+`FALLA: ...`. Al final aparecen `FIN: todas las pruebas de la Etapa 1 pasaron.`, `FIN: todas las pruebas de la app del conductor v1 pasaron.` y `FIN: todas las pruebas de las formas de PostgREST de la app v1 pasaron.`, `FIN: todas las pruebas de los negocios con licencia B y C pasaron.` y `FIN: todas las pruebas de los documentos del conductor pasaron.` (416 en total). Si los archivos están en una carpeta que el usuario postgres no puede leer, cópialos antes a una carpeta legible (por ejemplo `/tmp`).
 El aviso `no se pudo crear o actualizar la cuenta` es esperado: lo provoca la prueba A8.
 
 Para repetir desde cero: `su postgres -c "dropdb -p 5499 dale"` y volver a crearla.
@@ -85,6 +92,20 @@ posteriores se hacen desde el panel o con una migración nueva.
 
 - **Borrar un usuario que aceptó autorizaciones falla a propósito.** Qué se conserva
   al borrar una cuenta lo decide el abogado (R19 / MD23).
+- **Documentos: el método de validación es una pieza aparte.** `privado.validar_documento` decide
+  qué pasa con cada documento recién subido según el ajuste `metodo_validacion_documentos`
+  (`aprobar_todo`: lo aprueba y deja la revisión "aprobación automática provisoria"; cualquier otro
+  valor, por ejemplo `equipo`: queda en revisión). Para cambiar de método se cambia el ajuste o se
+  reemplaza esa función; la app solo muestra el estado. El estado del perfil (`estado_perfil`,
+  `estado_verificacion`) lo calcula `privado.recalcular_conductor` cada vez que cambia algo de los
+  pasos 1, 2, 4 o de los documentos.
+- **Documentos: el archivo primero, después la fila.** La app sube el archivo a
+  `documentos/<su id>/<uuid>.<ext>` y después inserta la fila; la base revisa que el archivo exista y
+  sea suyo. Un archivo solo se puede borrar si ningún documento vigente lo usa.
+- **Vencimientos:** `privado.marcar_documentos_vencidos()` corre cada día con pg_cron (la migración lo
+  agenda si pg_cron está disponible [verificar al aplicarla en Supabase]). `privado.documentos_por_avisar()`
+  deja lista la lista para avisar por WhatsApp o correo; quien envíe el aviso anota
+  `privado.anotar_aviso_vencimiento(id)`. Dentro de la app el aviso se calcula solo.
 - **Vistas futuras:** siempre con `security_invoker = true`; si no, se saltan la RLS.
 - **Funciones futuras:** en el esquema `privado`, con `set search_path = ''`. En `public`
   quedan expuestas por la API. Postgres le da EXECUTE a PUBLIC a cada función nueva y
