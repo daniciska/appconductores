@@ -1,9 +1,11 @@
 // Los textos de "Antes de empezar" (A4), sus casillas y cómo se dibujan. Puro (solo texto y reglas): lo
 // usan la pantalla, la app real y las pruebas.
 //
-// - La demo muestra las 4 casillas de la maqueta (TEXTOS_AUTORIZACION): la versión de prueba 'prueba-1',
-//   igual a la guardada en la base (supabase/migrations/20261110120000_app_conductor_v1_textos_prueba.sql;
-//   lo revisa app-real/tests/autorizaciones.test.ts).
+// - TEXTOS_AUTORIZACION guarda las 4 casillas de la maqueta: la versión de prueba 'prueba-1', igual a la
+//   guardada en la base (supabase/migrations/20261110120000_app_conductor_v1_textos_prueba.sql; lo revisa
+//   app-real/tests/autorizaciones.test.ts).
+// - La demo muestra 3 (CASILLAS_DEMO): desde "Sin mensajes" (24-nov) no hay mensajes, así que no pide
+//   la de mensajes.
 // - La app real muestra UNA casilla por cada texto obligatorio vigente de la base, en su orden, y
 //   registra la aceptación de esos mismos. Así, cuando lleguen los definitivos del abogado o una
 //   autorización nueva (una 5.ª clave), basta con cargarlos en la base: la app los muestra sin publicar
@@ -21,6 +23,9 @@ export const TEXTOS_AUTORIZACION: Record<CasillaAutorizacion, string> = {
 
 /** Las 4 casillas de la maqueta, en su orden. */
 export const CASILLAS_MAQUETA: CasillaAutorizacion[] = ['terminos', 'compartir', 'revision', 'mensajes'];
+
+/** Las casillas que muestra la demo: las de la maqueta menos 'mensajes' (sin mensajes desde el 24-nov). */
+export const CASILLAS_DEMO: CasillaAutorizacion[] = ['terminos', 'compartir', 'revision'];
 
 /** La casilla de la maqueta que tiene exactamente este texto (para dibujarla como en la maqueta), o null. */
 export function casillaDeLaMaqueta(texto: string): CasillaAutorizacion | null {
@@ -45,11 +50,11 @@ export interface CasillaA4 {
  * Las casillas de A4.
  * - App real (`deLaBase`): una por cada texto obligatorio vigente, en su orden, marcada solo si la
  *   persona ya aceptó ESA versión (nunca por deducción de otras claves).
- * - Demo (sin textos de la base): las 4 de la maqueta, como siempre (marcadas si ya las aceptó en la demo).
+ * - Demo (sin textos de la base): las 3 de CASILLAS_DEMO (marcadas si ya las aceptó en la demo).
  */
 export function casillasA4(deLaBase: readonly TextoAutorizacion[] | null | undefined, aceptadasEnLaDemo: boolean): CasillaA4[] {
   if (deLaBase) return deLaBase.map((t) => ({ id: t.id, texto: t.texto, aceptada: t.aceptado }));
-  return CASILLAS_MAQUETA.map((c) => ({ id: c, texto: TEXTOS_AUTORIZACION[c], aceptada: aceptadasEnLaDemo }));
+  return CASILLAS_DEMO.map((c) => ({ id: c, texto: TEXTOS_AUTORIZACION[c], aceptada: aceptadasEnLaDemo }));
 }
 
 /** Cómo parten las marcas: solo lo ya aceptado. */

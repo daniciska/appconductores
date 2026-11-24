@@ -4,9 +4,9 @@
 --
 -- POR QUÉ: antes de escribir su nombre, el conductor leía 4 textos y
 -- marcaba 4 casillas. Dos ("Revisión de mis documentos" y "Mensajes") son
--- de funciones que la app todavía no tiene. Se pedirán justo cuando se
--- usen: la de documentos antes de subir el primero (Paso 5) y la de
--- mensajes antes del primer mensaje [verificar con abogado, P1].
+-- de funciones que la app todavía no tiene. La de documentos se pide
+-- antes de subir el primero (Paso 5) [verificar con abogado, P1]. La de
+-- mensajes ya no se pide: desde "Sin mensajes" (24-nov) no hay mensajes.
 --
 -- QUÉ HACE: deja de ofrecer (vigente = false) las versiones 'prueba-1' de
 -- revision_documentos y normas_mensajes. Siguen obligatorias y vigentes
@@ -18,7 +18,7 @@
 -- puede cambiar. Los textos no se borran: hay aceptaciones que los apuntan
 -- y quedan como registro. Quien ya aceptó las 4 no tiene que hacer nada.
 --
--- CUANDO SE CONSTRUYAN DOCUMENTOS O MENSAJES: se agrega para esa clave una
+-- CUANDO SE CONSTRUYA UNA FUNCIÓN QUE LA PIDA: se agrega para esa clave una
 -- versión nueva con vigente = true (y la app la pide en ese momento). La
 -- de documentos ya existe: la migración 20261124150000_documentos_conductor
 -- agrega la 'prueba-2', vigente y NO obligatoria al entrar (se pide en el

@@ -294,12 +294,13 @@ describe('A4 · "Volver" nunca da vueltas', () => {
         assert.equal(volver === 'inicio', guardia === null, `registrado=${registrado} alDia=${alDia}`);
       }
   });
-  it('la demo sigue igual: sus 4 casillas, marcadas solo si ya las aceptó, y "Volver" al código', () => {
+  it('la demo: sus 3 casillas (sin la de mensajes), marcadas solo si ya las aceptó, y "Volver" al código', () => {
     const sinAceptar = casillasA4(null, false);
-    assert.deepEqual(sinAceptar.map((x) => x.id), ['terminos', 'compartir', 'revision', 'mensajes']);
-    assert.deepEqual(sinAceptar.map((x) => x.texto), Object.values(TEXTOS_AUTORIZACION));
-    assert.deepEqual(marcasIniciales(sinAceptar), { terminos: false, compartir: false, revision: false, mensajes: false });
-    assert.deepEqual(marcasIniciales(casillasA4(undefined, true)), { terminos: true, compartir: true, revision: true, mensajes: true });
+    assert.deepEqual(sinAceptar.map((x) => x.id), ['terminos', 'compartir', 'revision']);
+    assert.deepEqual(sinAceptar.map((x) => x.texto), [TEXTOS_AUTORIZACION.terminos, TEXTOS_AUTORIZACION.compartir, TEXTOS_AUTORIZACION.revision]);
+    assert.ok(sinAceptar.every((x) => !x.texto.includes('Mensajes') && !x.texto.includes('bloquear')), 'nada de mensajes ni bloquear');
+    assert.deepEqual(marcasIniciales(sinAceptar), { terminos: false, compartir: false, revision: false });
+    assert.deepEqual(marcasIniciales(casillasA4(undefined, true)), { terminos: true, compartir: true, revision: true });
     for (const registrado of [true, false]) assert.equal(volverDeA4('codigo', registrado, sinAceptar), 'codigo');
   });
 });

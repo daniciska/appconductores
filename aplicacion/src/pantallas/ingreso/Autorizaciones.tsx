@@ -4,7 +4,7 @@
 // Las casillas parten sin marcar (el consentimiento debe ser expreso): solo parte marcada la que la
 // persona ya aceptó en esa misma versión. Con la validación de obligatorios apagada (por defecto en la
 // demo) se puede continuar igual; en la app real hay que marcarlas todas.
-// Casillas y textos (./textosAutorizacion.ts): la demo muestra las 4 de la maqueta ('prueba-1'); la app
+// Casillas y textos (./textosAutorizacion.ts): la demo muestra 3 de las 4 de la maqueta ('prueba-1', sin la de mensajes); la app
 // real, una por cada texto obligatorio vigente de la base (en su orden), y registra la aceptación de esos
 // mismos. Todas se dibujan igual (partesTexto y enlacesDeLaCasilla): la frase, con su título en negrita,
 // marca la casilla al tocarla en cualquier parte; los documentos que nombra ("Términos", "Política de
@@ -148,7 +148,7 @@ export default function Autorizaciones() {
   const [errorGuardar, setErrorGuardar] = useState<string | null>(null);
   const [salir, setSalir] = useState(false);
 
-  // Demo: las 4 de la maqueta parten marcadas si ya las aceptó en la demo (como siempre).
+  // Demo: sus 3 casillas parten marcadas si ya las aceptó en la demo (como siempre).
   const casillas = casillasA4(deLaBase, guardadas.terminos && guardadas.privacidad && guardadas.compartirFicha);
   const [marcas, setMarcas] = useState<MarcasAutorizacion>(() => marcasIniciales(casillas));
   const [intento, setIntento] = useState(false);

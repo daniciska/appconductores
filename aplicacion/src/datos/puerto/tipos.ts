@@ -35,7 +35,7 @@ export interface VistaConductor {
   /**
    * Textos de "Antes de empezar" (app real): uno por cada texto obligatorio vigente de la base, en su
    * orden. A4 muestra una casilla por cada uno y la app registra la aceptación de estos mismos. La demo
-   * no los tiene (usa las 4 casillas de la pantalla).
+   * no los tiene (usa las casillas de la pantalla: CASILLAS_DEMO).
    */
   textosAutorizacion?: TextoAutorizacion[] | null;
 }
@@ -100,10 +100,10 @@ export interface DatosPaso4 {
   parcial?: boolean;
 }
 
-/** Las 4 casillas de "Antes de empezar" (A4) de la maqueta (las de la demo). */
+/** Las 4 casillas de "Antes de empezar" (A4) de la maqueta (la demo muestra 3: sin mensajes desde el 24-nov). */
 export type CasillaAutorizacion = 'terminos' | 'compartir' | 'revision' | 'mensajes';
 /**
- * Lo marcado en A4, por casilla: en la demo, las 4 de la maqueta ('terminos'…); en la app real, el id
+ * Lo marcado en A4, por casilla: en la demo, sus casillas ('terminos'…); en la app real, el id
  * de cada texto (TextoAutorizacion.id).
  */
 export type MarcasAutorizacion = Record<string, boolean>;
