@@ -236,7 +236,7 @@ describe('A4 · una autorización nueva (5.ª clave)', () => {
     assert.equal(a4.casillas.length, 0);
     assert.equal(alDiaEnA4(a4.casillas), false);
     assert.equal(p.autorizacionesCompletas, false);
-    assert.deepEqual(textosParaAceptar(a4.marcas, c.textos), { ok: false, error: 'Faltan los textos de autorización. Avísale al equipo.' });
+    assert.deepEqual(textosParaAceptar(a4.marcas, c.textos), { ok: false, error: 'No pudimos cargar las autorizaciones. Inténtalo más tarde.' });
     assert.equal(a4.volver, 'cerrarSesion');
   });
 });

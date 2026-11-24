@@ -160,8 +160,10 @@ export default function Paso2Comuna() {
         return;
       }
       borrador.olvidar();
-      if (editar) terminarEdicion(volverTrasEditar);
-      else if (siguiente === 'despues') irAInicioConductor();
+      if (editar) {
+        salir.soltar();
+        terminarEdicion(volverTrasEditar);
+      } else if (siguiente === 'despues') irAInicioConductor();
       else router.push(RUTA_PASO[3]);
     });
 

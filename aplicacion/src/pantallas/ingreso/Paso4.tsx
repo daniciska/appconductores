@@ -120,8 +120,10 @@ export default function Paso4({ alTerminar }: { /** Después de guardar (sin edi
         return;
       }
       borrador.olvidar();
-      if (editar) terminarEdicion(volverTrasEditar);
-      else if (siguiente === 'despues') irAInicioConductor();
+      if (editar) {
+        salir.soltar();
+        terminarEdicion(volverTrasEditar);
+      } else if (siguiente === 'despues') irAInicioConductor();
       else alTerminar();
     });
 

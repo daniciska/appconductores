@@ -55,7 +55,7 @@ describe('textos de "Antes de empezar"', () => {
     const r2 = textosParaAceptar({ ...todas, '9': true }, nueva);
     assert.ok(r2.ok && r2.valor.map((t) => t.id).join() === '1,9,3,4');
     // Sin textos en la base (migración no aplicada) no se registra nada.
-    assert.deepEqual(textosParaAceptar(todas, []), { ok: false, error: 'Faltan los textos de autorización. Avísale al equipo.' });
+    assert.deepEqual(textosParaAceptar(todas, []), { ok: false, error: 'No pudimos cargar las autorizaciones. Inténtalo más tarde.' });
     // Lo que la base tiene es lo que se pide: sin uno, A4 muestra 3 casillas y bastan esas 3.
     const sinUno = vigentes.filter((t: { clave: string }) => t.clave !== 'normas_mensajes');
     assert.equal(textosParaA4(sinUno, []).length, 3);

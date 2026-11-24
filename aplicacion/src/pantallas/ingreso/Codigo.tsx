@@ -154,7 +154,7 @@ export default function Codigo() {
           inputMode="numeric"
           autoComplete="one-time-code"
           textContentType="oneTimeCode"
-          maxLength={LARGO}
+          // Sin tope de largo: así se puede pegar "482 915" o "482-915" (la app se queda con los 6 números).
           autoFocus
           caretHidden
           aria-label="Código de 6 dígitos"

@@ -302,7 +302,7 @@ No escribe nada. «Soy conductor» e «Ingresar» llevan a `/conductor/celular`.
 - **Errores** (por `error.code`):
   - `sms_send_failed`: con `EXPO_PUBLIC_CODIGOS_DE_PRUEBA=1`, «Por ahora solo pueden entrar los celulares del equipo.»; sin la variable, «No pudimos enviar el código. Inténtalo de nuevo.» [por confirmar].
   - `over_sms_send_rate_limit`: «Espera N segundos para pedir otro código.» (N sale del mensaje; si no se puede leer, 60).
-  - `phone_provider_disabled`: «El ingreso con celular no está disponible. Avísale al equipo.»
+  - `phone_provider_disabled`: «No pudimos enviar el código. Inténtalo más tarde.» (hasta el 24-nov decía «El ingreso con celular no está disponible. Avísale al equipo.»)
   - `over_request_rate_limit`: «Demasiados intentos. Espera unos minutos.»
   - Error de red o tiempo agotado: «Revisa tu conexión e inténtalo de nuevo.»
 
@@ -313,7 +313,7 @@ No escribe nada. «Soy conductor» e «Ingresar» llevan a `/conductor/celular`.
   - 429: el mismo mensaje de espera de A2.
 - **«Reenviar por WhatsApp» y «Recibir el código por SMS»:** llaman a `signInWithOtp` con `whatsapp` o `sms`. La cuenta regresiva arranca en **60** (`entorno.esperaReenvioSegundos`), contada desde `pedidoEn`. El botón de SMS queda activo como en la maqueta: si se pulsa antes de los 60 s, llega el 429 y se muestra el aviso de espera.
 - **Después de verificar** (la acción `verificarCodigo` devuelve el destino):
-  1. Lee su fila de `cuentas`. Si no está, reintenta una vez tras 1 s. Si sigue sin estar: `signOut({ scope: 'local' })` y el mensaje «No pudimos crear tu cuenta. Avísale al equipo.» Esto pasa si el trigger falló, por ejemplo por un número que ya tiene otra cuenta: el trigger solo deja un aviso.
+  1. Lee su fila de `cuentas`. Si no está, reintenta una vez tras 1 s. Si sigue sin estar: `signOut({ scope: 'local' })` y el mensaje «No pudimos crear tu cuenta. Inténtalo más tarde.» (hasta el 24-nov decía «No pudimos crear tu cuenta. Avísale al equipo.») Esto pasa si el trigger falló, por ejemplo por un número que ya tiene otra cuenta: el trigger solo deja un aviso.
   2. Si hay fila en `conductores` → `'inicio'`.
   3. Si están aceptados todos los textos vigentes obligatorios → `'paso1'`.
   4. Si no → `'autorizaciones'`.
@@ -335,7 +335,7 @@ No escribe nada. «Soy conductor» e «Ingresar» llevan a `/conductor/celular`.
   1. Se leen las propias vigentes: `consentimientos select texto_autorizacion_id .eq('cuenta_id', uid).is('revocado_en', null)`.
   2. Se **insertan solo las que faltan**: `insert([{ cuenta_id: uid, texto_autorizacion_id }])`, por columnas y sin `id`; `aceptado_en` lo pone el servidor.
   3. **No usar upsert:** `on_conflict=cuenta_id,texto_autorizacion_id` falla porque el índice único es parcial. Un 23505 (`consentimientos_una_activa`) se ignora y se vuelve a leer.
-- **Si falta algún texto vigente** (migración no aplicada): «Faltan los textos de autorización. Avísale al equipo.», y no se avanza.
+- **Si falta algún texto vigente** (migración no aplicada): «No pudimos cargar las autorizaciones. Inténtalo más tarde.» (hasta el 24-nov decía «Faltan los textos de autorización. Avísale al equipo.»), y no se avanza.
 - **Destino:** si ya hay fila en `conductores`, Inicio; si no, Paso 1, como hoy.
 
 ### 6.6 Guardia de rutas (`app-real/src/app/conductor/_layout.tsx` + `index.tsx`)

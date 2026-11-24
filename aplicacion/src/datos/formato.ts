@@ -154,10 +154,11 @@ export function mascaraFechaEscrita(texto: string): string {
 
 /**
  * S03 · Campo de celular mientras se escribe: "912345678" → "9 1234 5678". Acepta el número como venga:
- * si lo escrito o pegado empieza con +56, 56 o 0 ("+56 9 9000 0001", "09 9000 0001"), eso se quita solo.
+ * si lo escrito o pegado empieza con +56, 0056, 56 o 0 ("+56 9 9000 0001", "09 9000 0001"), eso se quita solo.
  */
 export function mascaraCampoCelular(texto: string): string {
   let d = texto.replace(/\D/g, '');
+  if (d.startsWith('00569')) d = d.slice(2); // prefijo internacional escrito con 00
   if (d.startsWith('569')) d = d.slice(2);
   else d = d.replace(/^0+(?=9)/, '');
   d = d.slice(0, 9);

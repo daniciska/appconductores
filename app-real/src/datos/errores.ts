@@ -17,16 +17,17 @@ export const TEXTO = {
   /** El código no se pudo enviar a ese número (S03: mensaje listo para el lanzamiento, sin textos de prueba). */
   noLlega: 'No pudimos enviar el código. Revisa tu número e inténtalo de nuevo.',
   noSeEnvio: 'No pudimos enviar el código. Inténtalo de nuevo.',
-  sinCelular: 'El ingreso con celular no está disponible. Avísale al equipo.',
+  /** Errores de configuración: el conductor no puede hacer nada, así que no se le pide avisar a nadie (24-nov). */
+  sinCelular: 'No pudimos enviar el código. Inténtalo más tarde.',
   demasiados: 'Demasiados intentos. Espera unos minutos.',
   numero: 'Escribe solo tu número, por ejemplo 9 1234 5678.',
   codigo: 'Ese código no es correcto. Revisa el último mensaje que te enviamos o pide otro.',
   noVerifico: 'No pudimos verificar el código. Inténtalo de nuevo.',
-  sinCuenta: 'No pudimos crear tu cuenta. Avísale al equipo.',
+  sinCuenta: 'No pudimos crear tu cuenta. Inténtalo más tarde.',
   cuentaNoEncontrada: 'No encontramos tu cuenta. Vuelve a entrar.',
   sinPermiso: 'No tienes permiso para hacer esto.',
   opcionNoDisponible: 'Esa opción ya no está disponible. Vuelve a abrir la pantalla.',
-  sinTextos: 'Faltan los textos de autorización. Avísale al equipo.',
+  sinTextos: 'No pudimos cargar las autorizaciones. Inténtalo más tarde.',
   /** A4 sin marcar todas (la pantalla ya lo impide; es el resguardo de la acción). */
   marcarTodas: 'Marca todas las autorizaciones para continuar.',
   sesionVencida: 'Tu sesión venció. Vuelve a entrar.',

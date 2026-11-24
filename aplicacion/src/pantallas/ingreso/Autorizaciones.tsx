@@ -96,6 +96,9 @@ const LINEA_AUTORIZACION = 24;
  * S13: en la web, un relleno vertical agranda la zona que se puede tocar del enlace (19 px de letra)
  * hasta llenar su línea, y no más: si pasara a la línea de arriba o de abajo, tocar ese texto abriría
  * el enlace en vez de marcar la casilla (en un texto en línea, el relleno no mueve el texto).
+ * Se probó llevarla a 44 px (lo que decía S13): la parte de la primera casilla que abre un documento en vez
+ * de marcarla pasaba de 14-19 % a 26-30 % (medido en iPhone SE, iPhone 13, Pixel 7 y Galaxy S9+).
+ * Llegar a 44 px sin ese problema obliga a sacar los enlaces de la frase: lo deciden los dueños.
  */
 const AREA_ENLACE = (Platform.OS === 'web' ? { paddingTop: 2.5, paddingBottom: 2.5 } : {}) as TextStyle;
 

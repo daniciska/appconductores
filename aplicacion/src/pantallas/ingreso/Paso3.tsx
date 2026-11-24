@@ -205,20 +205,25 @@ export default function Paso3() {
         const n = aniosValidos(anios[id]);
         if (n !== null) experiencia[id] = n;
       }
+      // Con "terminar después", un vehículo marcado sin años válidos no se puede guardar en la base: el
+      // borrador se conserva para que al volver siga marcado y solo falte escribir los años.
+      const quedaPendiente = marcados.some((id) => aniosValidos(anios[id]) === null);
       setErrorGuardar(null);
       const r = await acciones.guardarPaso3({ experiencia, idiomas, parcial: siguiente === 'despues' });
       if (pantalla.salio()) {
         // Salió mientras se guardaba: lo guardado queda, pero no se la lleva a otra pantalla.
-        if (r.ok) borrador.olvidar();
+        if (r.ok && !quedaPendiente) borrador.olvidar();
         return;
       }
       if (!r.ok) {
         setErrorGuardar(r.error);
         return;
       }
-      borrador.olvidar();
-      if (editar) terminarEdicion(volverTrasEditar);
-      else if (siguiente === 'despues') irAInicioConductor();
+      if (!quedaPendiente) borrador.olvidar();
+      if (editar) {
+        salir.soltar();
+        terminarEdicion(volverTrasEditar);
+      } else if (siguiente === 'despues') irAInicioConductor();
       else router.push(RUTA_PASO[4]);
     });
 

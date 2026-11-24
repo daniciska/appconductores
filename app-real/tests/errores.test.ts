@@ -28,7 +28,7 @@ describe('errores al pedir el código (A2 y reenviar)', () => {
     assert.equal(segundosDeEspera('sin número'), 60);
   });
   it('proveedor apagado, demasiados intentos y número mal escrito', () => {
-    assert.equal(textoErrorPedirCodigo({ code: 'phone_provider_disabled' }, true), 'El ingreso con celular no está disponible. Avísale al equipo.');
+    assert.equal(textoErrorPedirCodigo({ code: 'phone_provider_disabled' }, true), 'No pudimos enviar el código. Inténtalo más tarde.');
     assert.equal(textoErrorPedirCodigo({ code: 'over_request_rate_limit', status: 429 }, true), 'Demasiados intentos. Espera unos minutos.');
     assert.equal(textoErrorPedirCodigo({ code: 'validation_failed', status: 400 }, true), TEXTO.numero);
   });

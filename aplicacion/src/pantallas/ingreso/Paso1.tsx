@@ -168,6 +168,7 @@ export default function Paso1() {
       }
       borrador.olvidar();
       if (editar) {
+        salir.soltar();
         terminarEdicion(volverTrasEditar);
       } else if (siguiente === 'continuar') {
         router.push(RUTA_PASO[2]);

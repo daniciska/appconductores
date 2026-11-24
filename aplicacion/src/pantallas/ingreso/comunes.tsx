@@ -2,7 +2,7 @@
 // Copian el estilo exacto de las maquetas (docs/maqueta/Cond*.dc.html).
 import { useEffect, useRef, useState, type ComponentRef, type ReactNode, type RefObject } from 'react';
 import { Platform, ScrollView, Text, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
-import type { Href } from 'expo-router';
+import { usePreventRemove, type Href } from 'expo-router';
 
 import { borrarBorrador, guardarBorrador, leerBorrador } from '@/datos/borradores';
 import { useEntorno } from '@/datos/puerto/contexto';
@@ -143,13 +143,26 @@ export function EtiquetaGrupo({
 }
 
 /**
- * S11 · Modo edición (desde Perfil o Inicio): si hay cambios sin guardar, "Volver" pregunta antes de
- * salir. Devuelve el onVolver para el Encabezado (undefined si no hay cambios) y el diálogo.
- * Tocar fuera del diálogo solo lo cierra (no sale ni guarda).
+ * S11 · Modo edición (desde Perfil o Inicio): si hay cambios sin guardar, salir pregunta antes. Cubre la
+ * flecha "Volver" de la pantalla y también el atrás del teléfono o del navegador (gesto o botón de Android,
+ * deslizar en iPhone): usePreventRemove frena la salida y abre el mismo diálogo. Devuelve el onVolver para
+ * el Encabezado (undefined si no hay cambios), el diálogo y `soltar`, que se llama justo antes de salir tras
+ * guardar bien (si no, la propia salida quedaría frenada). Tocar fuera del diálogo solo lo cierra.
  */
 export function useSalirSinGuardar(cambiado: boolean, guardar: () => void, volverA: Href) {
   const [abierto, setAbierto] = useState(false);
-  const onVolver = cambiado ? () => setAbierto(true) : undefined;
+  // La salida que se frenó (atrás del teléfono o del navegador), para repetirla si elige salir.
+  const pendiente = useRef<(() => void) | null>(null);
+  const soltar = usePreventRemove(cambiado, ({ repeat }) => {
+    pendiente.current = repeat;
+    setAbierto(true);
+  });
+  const onVolver = cambiado
+    ? () => {
+        pendiente.current = null;
+        setAbierto(true);
+      }
+    : undefined;
   const dialogo = (
     <Dialogo
       visible={abierto}
@@ -159,6 +172,7 @@ export function useSalirSinGuardar(cambiado: boolean, guardar: () => void, volve
         titulo: 'Guardar',
         onPress: () => {
           setAbierto(false);
+          pendiente.current = null;
           guardar();
         },
       }}
@@ -166,13 +180,20 @@ export function useSalirSinGuardar(cambiado: boolean, guardar: () => void, volve
         titulo: 'Salir sin guardar',
         onPress: () => {
           setAbierto(false);
-          volver(volverA);
+          const repetir = pendiente.current;
+          pendiente.current = null;
+          soltar();
+          if (repetir) repetir();
+          else volver(volverA);
         },
       }}
-      alCerrar={() => setAbierto(false)}
+      alCerrar={() => {
+        setAbierto(false);
+        pendiente.current = null;
+      }}
     />
   );
-  return { onVolver, dialogo };
+  return { onVolver, dialogo, soltar };
 }
 
 /** S04 · "Guardar y terminar después" de los pasos 2 a 4 (el mismo botón secundario del Paso 1). */

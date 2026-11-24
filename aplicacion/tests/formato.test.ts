@@ -45,13 +45,14 @@ describe('fecha de nacimiento (S05): cómoda en el teclado del iPhone y de Andro
 
 describe('celular (S03): se acepta el número como venga', () => {
   it('pegado como sale en WhatsApp, con 56 o con 0', () => {
-    for (const escrito of ['+56 9 9000 0001', '+56990000001', '56990000001', '09 9000 0001', '990000001', '9 9000 0001']) {
+    for (const escrito of ['+56 9 9000 0001', '+56990000001', '56990000001', '09 9000 0001', '990000001', '9 9000 0001', '+56 (9) 9000-0001', '0056 9 9000 0001', '0056990000001']) {
       assert.equal(mascaraCampoCelular(escrito), '9 9000 0001', escrito);
     }
   });
   it('tecleado de a uno, también empezando con +56', () => {
     assert.equal(teclear(mascaraCampoCelular, '+56990000001'), '9 9000 0001');
     assert.equal(teclear(mascaraCampoCelular, '990000001'), '9 9000 0001');
+    assert.equal(teclear(mascaraCampoCelular, '0056990000001'), '9 9000 0001');
   });
   it('nunca más de 9 números', () => {
     assert.equal(mascaraCampoCelular('9900000012345'), '9 9000 0001');

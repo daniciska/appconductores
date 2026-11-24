@@ -89,8 +89,9 @@ export default function Celular() {
             textContentType="telephoneNumber"
             aria-label="Número de celular, después de +56"
             error={error}
-            // Deja pegar el número como sale en WhatsApp ("+56 9 9000 0001"): la máscara lo deja en 9 dígitos.
-            maxLength={16}
+            // Deja pegar el número como venga ("+56 (9) 9000-0001", "0056 9 9000 0001"): la máscara lo deja en
+            // 9 dígitos. El tope es holgado para que el navegador no corte lo pegado antes de la máscara.
+            maxLength={24}
             returnKeyType="send"
             onSubmitEditing={enviar}
             autoFocus
