@@ -13,7 +13,7 @@
 // el enlace (sin marcar la casilla).
 import { useState, type ReactNode } from 'react';
 import { View } from 'react-native';
-import { Text } from '@/ui/escala';
+import { Text, useGrande } from '@/ui/escala';
 import { router } from 'expo-router';
 
 import { useAcciones, useEntorno, useVista } from '@/datos/puerto/contexto';
@@ -21,11 +21,12 @@ import type { CasillaAutorizacion, MarcasAutorizacion } from '@/datos/puerto/tip
 import { Boton, Casilla, Dialogo, Encabezado, HojaInferior, Pantalla, Presionable, Texto, color, fuente, radio, tipo } from '@/ui';
 
 import { RUTA_PASO, irABienvenidaTrasCerrarSesion, irAInicioConductor, useGuardando, usePantallaAbierta } from './acciones';
-import { AlertaObligatorios, CabeceraFormulario, useValidarObligatorios } from './comunes';
+import { AlertaObligatorios, BotonTexto, CabeceraFormulario, useValidarObligatorios } from './comunes';
 import {
   TEXTOS_AUTORIZACION,
   casillaDeLaMaqueta,
   casillasA4,
+  documentosEnlazados,
   faltanEnA4,
   marcasIniciales,
   partesTexto,
@@ -88,8 +89,13 @@ function FilaAutorizacion({
   );
 }
 
-/** Enlace en negrita subrayado dentro del texto de una autorización (no marca la casilla). */
+/**
+ * Enlace en negrita subrayado dentro del texto de una autorización (no marca la casilla). Con letra
+ * grande es solo negrita: el enlace va como botón aparte bajo las casillas (ver documentosEnlazados).
+ */
 function EnlaceTexto({ titulo, onPress }: { titulo: string; onPress: () => void }) {
+  const grande = useGrande();
+  if (grande) return <Text style={fuente(700)}>{titulo}</Text>;
   return (
     <Text
       role="link"
@@ -185,6 +191,8 @@ export default function Autorizaciones() {
   const [intento, setIntento] = useState(false);
   const [documento, setDocumento] = useState<DocumentoLegal | null>(null);
 
+  const grande = useGrande();
+  const enlazados = documentosEnlazados(casillas.map((c) => c.texto));
   const faltan = faltanEnA4(casillas, marcas);
   const mostrarErrores = intento && validar && faltan.length > 0;
   const alternar = (id: string) => setMarcas((m) => ({ ...m, [id]: !m[id] }));
@@ -230,6 +238,17 @@ export default function Autorizaciones() {
           </FilaAutorizacion>
         ))}
       </View>
+      {grande && enlazados.length > 0 ? (
+        <View style={{ marginTop: -4 }}>
+          {enlazados.map((d) => (
+            <BotonTexto
+              key={d}
+              titulo={d === 'terminos' ? 'Leer los Términos' : 'Leer la Política de privacidad'}
+              onPress={() => setDocumento(d)}
+            />
+          ))}
+        </View>
+      ) : null}
 
       <View style={{ marginTop: 'auto', paddingTop: 16, gap: 10 }}>
         {mostrarErrores ? <AlertaObligatorios texto={textoMarcaTodas(casillas.length)} /> : null}

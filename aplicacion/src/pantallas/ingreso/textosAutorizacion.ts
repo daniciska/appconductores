@@ -129,3 +129,21 @@ export function partesTexto(texto: string): ParteTexto[] {
   if (desde < resto.length) partes.push({ tipo: 'texto', texto: resto.slice(desde) });
   return partes;
 }
+
+/**
+ * Documentos legales que nombran las casillas, en orden (Términos primero). Con "Letra grande" los
+ * enlaces no van dentro de la frase (son chicos y quedan encima de la casilla, que se marca al tocar):
+ * van como botones aparte bajo las casillas.
+ */
+export function documentosEnlazados(textos: readonly string[]): DocumentoLegal[] {
+  const hay = new Set<DocumentoLegal>();
+  for (const t of textos) {
+    if (casillaDeLaMaqueta(t) === 'terminos') {
+      hay.add('terminos');
+      hay.add('privacidad');
+      continue;
+    }
+    for (const p of partesTexto(t)) if (p.tipo === 'enlace') hay.add(p.documento);
+  }
+  return (['terminos', 'privacidad'] as const).filter((d) => hay.has(d));
+}

@@ -10,7 +10,7 @@ import { describe, it } from 'node:test';
 
 import { textosParaAceptar } from '../src/datos/escrituras.ts';
 import { textosParaA4 } from '../src/datos/perfil.ts';
-import { TEXTOS_AUTORIZACION, casillaDeLaMaqueta, partesTexto } from '../../aplicacion/src/pantallas/ingreso/textosAutorizacion.ts';
+import { TEXTOS_AUTORIZACION, casillaDeLaMaqueta, documentosEnlazados, partesTexto } from '../../aplicacion/src/pantallas/ingreso/textosAutorizacion.ts';
 
 import { BASE } from './base.ts';
 
@@ -95,5 +95,19 @@ describe('textos de "Antes de empezar"', () => {
       assert.equal(t.version, 'prueba-1');
       assert.equal(t.obligatoria, true);
     }
+  });
+});
+
+describe('"Letra grande": enlaces de "Antes de empezar" como botones aparte (documentosEnlazados)', () => {
+  it('con los 4 textos de la maqueta: Términos y Política, en ese orden', () => {
+    assert.deepEqual(documentosEnlazados(Object.values(TEXTOS_AUTORIZACION)), ['terminos', 'privacidad']);
+  });
+  it('sin enlaces en los textos: ninguno', () => {
+    assert.deepEqual(documentosEnlazados([TEXTOS_AUTORIZACION.compartir, TEXTOS_AUTORIZACION.mensajes]), []);
+    assert.deepEqual(documentosEnlazados([]), []);
+  });
+  it('un texto nuevo de la base: los documentos que nombra, sin repetir', () => {
+    assert.deepEqual(documentosEnlazados(['Acepto la Política de privacidad y la Política de privacidad.']), ['privacidad']);
+    assert.deepEqual(documentosEnlazados(['Leí los Términos y condiciones.', 'Acepto la Política de privacidad.']), ['terminos', 'privacidad']);
   });
 });

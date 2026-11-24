@@ -6,7 +6,7 @@
 // persona vuelve atrás mientras se verifica, se queda donde fue.
 import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import { Platform, View } from 'react-native';
-import { Text, TextInput } from '@/ui/escala';
+import { Text, TextInput, useGrande } from '@/ui/escala';
 import { router } from 'expo-router';
 
 import { celularCompleto } from '@/datos/formato';
@@ -46,7 +46,9 @@ export default function Codigo() {
     const id = setTimeout(() => setSegundos((n) => n - 1), 1000);
     return () => clearTimeout(id);
   }, [segundos]);
-  const numero = celular.replace(/\D/g, '') ? celularCompleto(celular) : null;
+  // Espacios que no se cortan: el número se lee entero en una línea (con letra grande se partía en dos).
+  const numero = celular.replace(/\D/g, '') ? celularCompleto(celular).replace(/ /g, '\u00A0') : null;
+  const grande = useGrande();
 
   const verificar = async () => {
     if (verificando) return;
@@ -98,6 +100,14 @@ export default function Codigo() {
   const activa = Math.min(codigo.length, LARGO - 1);
   const mm = Math.floor(segundos / 60);
   const ss = String(segundos % 60).padStart(2, '0');
+
+  const reenviarWhatsApp =
+    segundos > 0 ? (
+      <BotonTexto titulo={`Reenviar por WhatsApp en ${mm}:${ss}`} icono={Clock} deshabilitado />
+    ) : (
+      <BotonTexto titulo="Reenviar por WhatsApp" onPress={() => reenviar('whatsapp')} />
+    );
+  const recibirSms = <BotonTexto titulo="Recibir el código por SMS" icono={MessageSquare} onPress={() => reenviar('sms')} />;
 
   return (
     <Pantalla>
@@ -166,15 +176,22 @@ export default function Codigo() {
         ) : null}
       </View>
 
-      <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
-        <Text style={[tipo.secundario, { color: color.textoSecundario }]}>¿No te llegó?</Text>
-        {segundos > 0 ? (
-          <BotonTexto titulo={`Reenviar por WhatsApp en ${mm}:${ss}`} icono={Clock} deshabilitado />
-        ) : (
-          <BotonTexto titulo="Reenviar por WhatsApp" onPress={() => reenviar('whatsapp')} />
-        )}
-      </View>
-      <BotonTexto titulo="Recibir el código por SMS" icono={MessageSquare} onPress={() => reenviar('sms')} />
+      {grande ? (
+        // Con letra grande no caben en una fila: la pregunta y sus dos respuestas, juntas en un bloque.
+        <View role="group" aria-label="¿No te llegó?" style={{ gap: 0 }}>
+          <Text style={[tipo.secundario, { color: color.textoSecundario, marginBottom: 2 }]}>¿No te llegó?</Text>
+          {reenviarWhatsApp}
+          {recibirSms}
+        </View>
+      ) : (
+        <>
+          <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
+            <Text style={[tipo.secundario, { color: color.textoSecundario }]}>¿No te llegó?</Text>
+            {reenviarWhatsApp}
+          </View>
+          {recibirSms}
+        </>
+      )}
 
       <View style={{ marginTop: 'auto', paddingTop: 16, gap: 8 }}>
         {notaCodigo ? <NotaDemo texto={notaCodigo} centrada /> : null}

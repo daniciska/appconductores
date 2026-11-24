@@ -89,7 +89,7 @@ export function PerfilBase({ seccionSeguridad, filaEliminar, alCerrarSesion }: P
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, paddingHorizontal: 4 }}>
         <Avatar texto={iniciales(nombre === 'Tu perfil' ? 'Conductor' : nombre)} tamano={64} forma="circulo" />
         <View style={{ flex: 1, minWidth: 0, alignItems: 'flex-start', gap: 6 }}>
-          <Text role="heading" aria-level={1} numberOfLines={2} style={{ fontFamily: 'Sora_700Bold', fontSize: 26, lineHeight: 31, letterSpacing: -0.4, color: color.texto }}>
+          <Text role="heading" aria-level={1} numberOfLines={3} style={{ fontFamily: 'Sora_700Bold', fontSize: 26, lineHeight: 31, letterSpacing: -0.4, color: color.texto }}>
             {nombre}
           </Text>
           <Insignia {...insignia} />

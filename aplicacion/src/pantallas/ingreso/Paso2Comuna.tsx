@@ -7,7 +7,7 @@
 // o con lo guardado. La zona y la región salen de la comuna.
 import { useMemo, useRef, useState, type ComponentRef } from 'react';
 import { ScrollView, View, type TextInputKeyPressEvent } from 'react-native';
-import { Text } from '@/ui/escala';
+import { Text, useGrande } from '@/ui/escala';
 import { router } from 'expo-router';
 
 import { useAcciones, useVista } from '@/datos/puerto/contexto';
@@ -29,6 +29,7 @@ import {
 } from './comunes';
 
 export default function Paso2Comuna() {
+  const grande = useGrande();
   const conductor = useVista((v) => v.conductor);
   const catalogos = useVista((v) => v.catalogos);
   const acciones = useAcciones();
@@ -181,7 +182,7 @@ export default function Paso2Comuna() {
                     <Text numberOfLines={1} style={[tipo.cuerpo, fuente(600), { color: color.texto }]}>
                       {c.nombre}
                     </Text>
-                    <Text numberOfLines={1} style={[tipo.ayuda, { color: color.textoSecundario }]}>
+                    <Text numberOfLines={grande ? 2 : 1} style={[tipo.ayuda, { color: color.textoSecundario }]}>
                       {textoRegion(nombreRegion(c.regionId))}
                     </Text>
                   </View>

@@ -2,7 +2,7 @@
 // Copian el estilo exacto de las maquetas (docs/maqueta/Cond*.dc.html).
 import { useEffect, useRef, useState, type ComponentRef, type ReactNode, type RefObject } from 'react';
 import { Platform, ScrollView, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
-import { Text } from '@/ui/escala';
+import { Text, useGrande, useMedidas } from '@/ui/escala';
 
 import { borrarBorrador, guardarBorrador, leerBorrador } from '@/datos/borradores';
 import { useEntorno } from '@/datos/puerto/contexto';
@@ -91,11 +91,13 @@ export function CabeceraFormulario({
   equilibrar?: boolean;
   children?: ReactNode;
 }) {
+  // Con letra grande no se equilibra: las líneas parejas dejan una columna angosta con mucho blanco.
+  const grande = useGrande();
   return (
     <View style={{ marginTop: 8, gap: 6 }}>
       <Titulo>{titulo}</Titulo>
       {subtitulo ? (
-        <Texto variante="parrafo" tono="secundario" style={equilibrar ? equilibrado : undefined}>
+        <Texto variante="parrafo" tono="secundario" style={equilibrar && !grande ? equilibrado : undefined}>
           {subtitulo}
         </Texto>
       ) : null}
@@ -144,6 +146,7 @@ export function EtiquetaGrupo({
 
 /** Alerta roja de la maqueta: "Completa los campos marcados con * para guardar." */
 export function AlertaObligatorios({ texto = 'Completa los campos marcados con * para guardar.' }: { texto?: string }) {
+  const m = useMedidas();
   return (
     <View
       role="alert"
@@ -156,7 +159,7 @@ export function AlertaObligatorios({ texto = 'Completa los campos marcados con *
         paddingVertical: 12,
         paddingHorizontal: 14,
       }}>
-      <CircleAlert size={18} color={color.error} strokeWidth={2} />
+      <CircleAlert size={m.icono(18)} color={color.error} strokeWidth={2} />
       <Text style={[tipo.secundario, fuente(600), { flex: 1, color: color.error }]}>{texto}</Text>
     </View>
   );
@@ -186,9 +189,10 @@ export function NotaDemo({
   centrada?: boolean;
   style?: StyleProp<ViewStyle>;
 }) {
+  const m = useMedidas();
   const contenido = (
     <>
-      <Sparkles size={14} color={color.amarilloTexto} strokeWidth={2.2} />
+      <Sparkles size={m.icono(14)} color={color.amarilloTexto} strokeWidth={2.2} />
       <Text style={[tipo.ayuda, { color: color.textoSecundario }]}>
         {texto}
         {accion ? ' ' : null}
@@ -212,6 +216,7 @@ export function NotaDemo({
 
 /** Tarjeta blanca con ícono de información (A2: "Con este número entrarás a la app…"). */
 export function TarjetaInfo({ texto, icono: Icono = Info }: { texto: string; icono?: LucideIcon }) {
+  const m = useMedidas();
   return (
     <View
       style={{
@@ -225,7 +230,7 @@ export function TarjetaInfo({ texto, icono: Icono = Info }: { texto: string; ico
         paddingVertical: 14,
         paddingHorizontal: 16,
       }}>
-      <Icono size={20} color={color.textoSecundario} strokeWidth={2} />
+      <Icono size={m.icono(20)} color={color.textoSecundario} strokeWidth={2} />
       <Text style={[tipo.secundario, { flex: 1, lineHeight: 20, color: color.textoSuave }]}>{texto}</Text>
     </View>
   );
@@ -248,6 +253,7 @@ export function BotonTexto({
   style?: StyleProp<ViewStyle>;
 }) {
   const tinta = deshabilitado ? color.textoSecundario : color.texto;
+  const m = useMedidas();
   return (
     <Presionable
       role="button"
@@ -255,7 +261,7 @@ export function BotonTexto({
       disabled={deshabilitado}
       onPress={onPress}
       style={[{ minHeight: 44, paddingHorizontal: 4, flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start' }, style]}>
-      {Icono ? <Icono size={16} color={tinta} strokeWidth={2} /> : null}
+      {Icono ? <Icono size={m.icono(16)} color={tinta} strokeWidth={2} /> : null}
       <Text style={[tipo.botonChico, fuente(600), { color: tinta }, subrayado && !deshabilitado && { textDecorationLine: 'underline' }]}>
         {titulo}
       </Text>

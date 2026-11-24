@@ -18,6 +18,10 @@ export const color = {
   superficieHundida: '#EEEEEE', // avisos neutros, pastilla "Pide licencia"
   segmentado: '#EAEAEA', // fondo del control segmentado
   oscuro: '#111111', // botón oscuro, chips marcados, bienvenida
+  oscuroElevado: '#1D1D1D', // fila sobre fondo oscuro (interruptor "Letra grande" de la bienvenida)
+  bordeSobreOscuro: '#2E2E2E', // borde y líneas sobre fondo oscuro
+  iconoSobreOscuro: 'rgba(255,255,255,0.10)', // cuadrito de ícono sobre fondo oscuro
+  textoSobreOscuro: '#BDBDBD', // párrafos y ayudas sobre fondo oscuro
 
   // Bordes
   borde: '#ECECEC', // tarjetas
