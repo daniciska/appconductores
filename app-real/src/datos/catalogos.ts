@@ -7,6 +7,8 @@
 import type { CatalogosRegistro } from '@/datos/puerto/tipos';
 import type { Negocio, OpcionLista, PreguntaVehiculo } from '@/datos/tipos';
 
+import { mapearTiposDocumento, mesesAviso, type FilaTipoDocumento, type TipoDocumentoReal } from './documentos.ts';
+
 export interface FilasCatalogo {
   regiones: { id: number; nombre: string; orden: number }[];
   zonas: { id: number; region_id: number; nombre: string; orden: number; activa: boolean }[];
@@ -33,6 +35,10 @@ export interface FilasCatalogo {
   textos: { id: number; clave: string; version: string; obligatoria: boolean; texto: string }[];
   /** Valor de ajustes.dias_reconfirmar_disponibilidad (null si no se pudo leer). */
   diasReconfirmar: unknown;
+  /** Documentos que se piden (Paso 5). */
+  tiposDocumento: FilaTipoDocumento[];
+  /** Valor de ajustes.meses_aviso_vencimiento_documentos (null si no se pudo leer). */
+  mesesAvisoDocumentos: unknown;
 }
 
 /** Listas de opciones que usa el conductor (turnos, días, idiomas). */
@@ -74,6 +80,10 @@ export interface CatalogosLeidos {
   mapas: MapasCatalogo;
   textos: TextoVigente[];
   diasReconfirmar: number;
+  /** Los documentos que pide el conductor (activos, en orden). */
+  tiposDocumento: TipoDocumentoReal[];
+  /** Cuántos meses antes de vencer se avisa (dentro de la app). */
+  mesesAvisoDocumentos: number;
 }
 
 /** Días entre confirmaciones si el ajuste no se puede leer. */
@@ -153,6 +163,8 @@ export function mapearCatalogos(f: FilasCatalogo): CatalogosLeidos {
     mapas: { claseIdPorCodigo, claseCodigoPorId, opcionIdPorClave, opcionPorId },
     textos: f.textos.map((t) => ({ id: t.id, clave: t.clave, version: t.version, obligatoria: t.obligatoria, texto: t.texto })),
     diasReconfirmar: Number.isInteger(dias) && dias > 0 ? dias : DIAS_RECONFIRMAR_POR_DEFECTO,
+    tiposDocumento: mapearTiposDocumento(f.tiposDocumento ?? []),
+    mesesAvisoDocumentos: mesesAviso(f.mesesAvisoDocumentos),
   };
 }
 
@@ -169,5 +181,7 @@ export function catalogosVacios(): CatalogosLeidos {
     listas: [],
     textos: [],
     diasReconfirmar: null,
+    tiposDocumento: [],
+    mesesAvisoDocumentos: null,
   });
 }

@@ -8,11 +8,13 @@
 //   Paso 2 · comuna y estacionamiento respondidos.
 //   Paso 3 · algún vehículo con años, o algún idioma, o el Paso 4 listo (el Paso 3 es opcional).
 //   Paso 4 · al menos un negocio, un turno y un día.
-//   Paso 5 · documentos: siempre falta en la v1.
+//   Paso 5 · documentos: los obligatorios aprobados y vigentes (./documentos.ts). El estado del perfil
+//            (completo o no) y de la verificación los calcula la base; la app los lee.
 import type { TextoAutorizacion } from '@/datos/puerto/tipos';
 import type { ConductorUsuario, CuentaUsuario, Dia, EstadoVerificacion, Turno } from '@/datos/tipos';
 
 import { textosObligatorios, type MapasCatalogo, type TextoVigente } from './catalogos.ts';
+import { hoyEnChile, mapearDocumentos, resumenDocumentos, type DocumentoReal, type FilaDocumento, type TipoDocumentoReal } from './documentos.ts';
 
 export interface FilasPerfil {
   cuenta: {
@@ -42,6 +44,15 @@ export interface FilasPerfil {
   negocios: { negocio_id: number }[];
   opciones: { opcion_id: number }[];
   consentimientos: { texto_autorizacion_id: number }[];
+  /** Los documentos propios (sin los reemplazados). */
+  documentos?: FilaDocumento[];
+}
+
+/** Para saber si el Paso 5 está listo: los tipos que se piden y el día de hoy en Chile. */
+export interface ContextoDocumentos {
+  tipos: TipoDocumentoReal[];
+  meses: number;
+  hoy?: string;
 }
 
 export interface PerfilLeido {
@@ -53,6 +64,8 @@ export interface PerfilLeido {
   autorizacionesCompletas: boolean;
   /** Ids de textos aceptados y vigentes (sin retirar). */
   aceptados: number[];
+  /** Documentos propios (sin los reemplazados). */
+  documentos: DocumentoReal[];
 }
 
 /** '+56912345678' → '1234 5678' (los 8 dígitos después de +56 9). */
@@ -91,7 +104,13 @@ export function textosParaA4(textos: TextoVigente[], aceptados: number[]): Texto
 const VERIFICACION: EstadoVerificacion[] = ['sin_documentos', 'en_revision', 'verificado', 'con_observaciones'];
 const texto = (t: string | null | undefined) => (t ?? '').trim();
 
-export function mapearPerfil(f: FilasPerfil, mapas: MapasCatalogo, textos: TextoVigente[], ingresoCelular = ''): PerfilLeido {
+export function mapearPerfil(
+  f: FilasPerfil,
+  mapas: MapasCatalogo,
+  textos: TextoVigente[],
+  ingresoCelular = '',
+  contextoDocumentos: ContextoDocumentos = { tipos: [], meses: 3 },
+): PerfilLeido {
   const c = f.cuenta;
   const d = f.conductor;
   const aceptados = f.consentimientos.map((x) => x.texto_autorizacion_id);
@@ -133,15 +152,17 @@ export function mapearPerfil(f: FilasPerfil, mapas: MapasCatalogo, textos: Texto
   const direccion = !!d && d.comuna_id !== null && d.tiene_estacionamiento !== null;
   const trabajo = !!d && negocios.length > 0 && turnos.length > 0 && dias.length > 0;
   const experienciaLista = !!d && (Object.keys(experiencia).length > 0 || idiomas.length > 0 || trabajo);
-  const pasosListos = { datos, direccion, experiencia: experienciaLista, trabajo, documentos: false };
-  const orden = [datos, direccion, experienciaLista, trabajo];
+  const documentos = mapearDocumentos(f.documentos ?? []);
+  const docs = resumenDocumentos(contextoDocumentos.tipos, documentos, contextoDocumentos.hoy ?? hoyEnChile(), contextoDocumentos.meses);
+  const pasosListos = { datos, direccion, experiencia: experienciaLista, trabajo, documentos: !!d && docs.completos };
+  const orden = [datos, direccion, experienciaLista, trabajo, pasosListos.documentos];
   const primero = orden.findIndex((x) => !x);
 
   const conductor: ConductorUsuario = {
     registrado: !!d,
     registradoEl: d?.creado_en ?? null,
     pasosListos,
-    pasoActual: primero === -1 ? 4 : primero + 1,
+    pasoActual: primero === -1 ? 5 : primero + 1,
     fechaNacimiento: fechaDeLaBase(d?.fecha_nacimiento),
     // En la v1 no se pide la dirección (la comuna se elige de una lista).
     direccion: '',
@@ -164,7 +185,7 @@ export function mapearPerfil(f: FilasPerfil, mapas: MapasCatalogo, textos: Texto
       : 'sin_documentos',
   };
 
-  return { cuenta, conductor, textosAutorizacion, autorizacionesCompletas, aceptados };
+  return { cuenta, conductor, textosAutorizacion, autorizacionesCompletas, aceptados, documentos };
 }
 
 /** Perfil vacío (sin sesión): el celular que se está verificando, si hay. */

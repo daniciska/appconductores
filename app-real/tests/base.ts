@@ -19,6 +19,8 @@ export function filasCatalogo(): FilasCatalogo {
     listas: BASE.listas.filter((l: { clave: string }) => ['turno', 'dia_semana', 'idioma'].includes(l.clave)),
     textos: BASE.textos_autorizacion,
     diasReconfirmar: BASE.ajustes.find((a: { id: string }) => a.id === 'dias_reconfirmar_disponibilidad').valor,
+    tiposDocumento: BASE.tipos_documento,
+    mesesAvisoDocumentos: BASE.ajustes.find((a: { id: string }) => a.id === 'meses_aviso_vencimiento_documentos').valor,
   };
 }
 

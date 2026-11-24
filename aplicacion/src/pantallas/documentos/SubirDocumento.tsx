@@ -10,6 +10,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 
 import { fechaLarga } from '@/datos/formato';
 import { TIPOS_DOC_ORDEN } from '@/datos/selectores';
+import type { TipoDocumentoId } from '@/datos/tipos';
 import { useDemo } from '@/datos/tienda';
 import { Boton, Encabezado, EstadoVacio, Pantalla, Presionable, color, fuente, mostrarToast, tipo as tipografia, volver } from '@/ui';
 import { Clock, ExternalLink, FileImage, FileText, Lock, Upload } from '@/ui/iconos';
@@ -17,6 +18,14 @@ import { Clock, ExternalLink, FileImage, FileText, Lock, Upload } from '@/ui/ico
 import { elegirArchivo, formatoValido, subirYEnviar } from './acciones';
 import { AvisoAmarillo, Caja, CuadroIcono, Nota, Pastilla, PasosNumerados, TituloPantalla } from './piezas';
 import { GUIAS, SUBIDO, esTipoDocumento, fem } from './textos';
+
+/** Archivo de ejemplo de la demo ("Usar foto de ejemplo"). */
+const EJEMPLO: Record<TipoDocumentoId, string> = {
+  cedula: 'cedula-frente.jpg',
+  licencia: 'licencia-clases.jpg',
+  hoja_vida: 'hoja-de-vida.pdf',
+  antecedentes: 'certificado-antecedentes.pdf',
+};
 
 export default function SubirDocumento() {
   const { tipo } = useLocalSearchParams<{ tipo: string }>();
@@ -147,7 +156,7 @@ export default function SubirDocumento() {
           variante={guia.enlace ? 'texto' : 'contorno'}
           cargando={subiendo === 'ejemplo'}
           deshabilitado={subiendo === 'archivo'}
-          onPress={() => guardar(guia.ejemplo, 'ejemplo')}
+          onPress={() => guardar(EJEMPLO[tipo], 'ejemplo')}
         />
       </View>
     </Pantalla>

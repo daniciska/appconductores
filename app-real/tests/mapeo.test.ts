@@ -156,10 +156,10 @@ describe('perfil propio', () => {
     assert.deepEqual(p.conductor.dias, ['sa', 'do']);
     assert.deepEqual(p.conductor.idiomas, ['en']);
     assert.equal(p.conductor.pasosListos.trabajo, true);
-    assert.equal(p.conductor.pasosListos.documentos, false, 'los documentos siempre faltan en la v1');
+    assert.equal(p.conductor.pasosListos.documentos, false, 'sin documentos, el Paso 5 falta');
     assert.equal(avancePerfil(p).listos, 3);
   });
-  it('con los pasos 1 a 4 listos: 4 de 5 (80 %), paso actual 4', () => {
+  it('con los pasos 1 a 4 listos: 4 de 5 (80 %), sigue el Paso 5', () => {
     const p = mapearPerfil(
       filas({
         conductor: { ...filas().conductor!, comuna_id: 94, tiene_estacionamiento: true },

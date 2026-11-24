@@ -1,5 +1,7 @@
 // Textos del grupo "documentos": guías para obtener cada documento, motivos de rechazo en palabras
-// simples y el estado de cada documento tal como lo ve el conductor.
+// simples y el estado de cada documento tal como lo ve el conductor. Las guías (GUIAS) las usan también
+// las pantallas de documentos de la app real (app-real/src/pantallas/documentos): aquí no va nada de
+// la demo (los archivos de ejemplo están en SubirDocumento.tsx).
 
 import type { DocumentoUsuario, MotivoRechazo, MotivoRechazoId, TipoDocumentoId } from '@/datos/tipos';
 
@@ -54,8 +56,6 @@ export interface GuiaDocumento {
   /** Tipos de archivo que acepta el selector del navegador. */
   acepta: string;
   esPdf: boolean;
-  /** Nombre del archivo de ejemplo de la demo. */
-  ejemplo: string;
   enlace?: { titulo: string; url: string };
 }
 
@@ -75,7 +75,6 @@ export const GUIAS: Record<TipoDocumentoId, GuiaDocumento> = {
     boton: 'Elegir foto',
     acepta: 'image/*',
     esPdf: false,
-    ejemplo: 'cedula-frente.jpg',
   },
   licencia: {
     descripcion: 'Una foto de tu licencia donde se vean tus clases.',
@@ -90,7 +89,6 @@ export const GUIAS: Record<TipoDocumentoId, GuiaDocumento> = {
     boton: 'Elegir foto',
     acepta: 'image/*',
     esPdf: false,
-    ejemplo: 'licencia-clases.jpg',
   },
   hoja_vida: {
     descripcion: 'Es el certificado del Registro Civil con tu historial como conductor.',
@@ -105,7 +103,6 @@ export const GUIAS: Record<TipoDocumentoId, GuiaDocumento> = {
     boton: 'Elegir PDF',
     acepta: 'application/pdf,.pdf',
     esPdf: true,
-    ejemplo: 'hoja-de-vida.pdf',
     enlace: REGISTRO_CIVIL,
   },
   antecedentes: {
@@ -121,7 +118,6 @@ export const GUIAS: Record<TipoDocumentoId, GuiaDocumento> = {
     boton: 'Elegir PDF',
     acepta: 'application/pdf,.pdf',
     esPdf: true,
-    ejemplo: 'certificado-antecedentes.pdf',
     enlace: REGISTRO_CIVIL,
   },
 };

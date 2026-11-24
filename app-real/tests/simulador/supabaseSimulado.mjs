@@ -5,6 +5,10 @@
 // llaves únicas, los 18 años, los negocios activos y habilitados por la licencia, y "quitar una clase
 // quita los negocios que ya no habilita". No reemplaza a las pruebas SQL (supabase/pruebas): sirve para
 // probar la app contra respuestas con la forma real, sin red y sin tocar la base de verdad.
+// Desde el 24-nov también los documentos (Paso 5): la tabla documentos con las reglas de su trigger
+// (archivo propio y del formato pedido, autorización de revisión, fechas), el método de validación
+// (por defecto 'aprobar_todo'), los reemplazos, los estados del perfil, y Storage (el espacio privado
+// "documentos": subir, listar y borrar, cada uno solo su carpeta).
 //
 // Uso:
 //   const sim = crearSupabaseSimulado({ numerosDePrueba: { '56990000001': '123456' } });
@@ -14,6 +18,8 @@
 //   sim.fallar((p) => p.method === 'PATCH', 'red')                  // la próxima que calce falla
 //   sim.fallar((p) => p.method === 'DELETE', 'red-despues')         // llega a la base, pero se pierde la respuesta
 //   crearSupabaseSimulado({ creaCuenta: false })                    // el trigger de la cuenta falla
+//   sim.metodoValidacion('equipo')                                  // los documentos quedan en revisión
+//   sim.archivos                                                    // lo que hay en Storage (espacio documentos)
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -22,6 +28,14 @@ const BASE = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)
 const DIA_MS = 24 * 60 * 60 * 1000;
 
 const copia = (x) => JSON.parse(JSON.stringify(x));
+/** JSON del cuerpo (o null si no hay o no es JSON, como un archivo). */
+const json = (t) => {
+  try {
+    return t ? JSON.parse(t) : null;
+  } catch {
+    return null;
+  }
+};
 const b64url = (o) => Buffer.from(JSON.stringify(o)).toString('base64url');
 
 /** Columna dueña de cada tabla de personas (la RLS: cada uno ve y escribe solo lo suyo). */
@@ -33,6 +47,7 @@ const DUENO = {
   conductor_opciones: 'conductor_id',
   experiencia_conductor: 'conductor_id',
   consentimientos: 'cuenta_id',
+  documentos: 'cuenta_id',
 };
 /** Llaves únicas (para el 23505 y para on_conflict). */
 const LLAVES = {
@@ -67,6 +82,26 @@ const DEFECTOS = {
 };
 /** Tablas sin INSERT de `id` (el permiso de INSERT es por columnas). */
 const INSERT_SIN_ID = ['consentimientos', 'experiencia_conductor'];
+/** documentos: el INSERT es solo por estas columnas (el estado y las fechas del servidor los pone la base). */
+const COLUMNAS_INSERT_DOCUMENTOS = ['cuenta_id', 'tipo_documento_id', 'archivo_ruta', 'archivo_tipo', 'archivo_bytes', 'emitido_en', 'vence_en'];
+const MIME_FOTO = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+const MIME_ESPACIO = [...MIME_FOTO, 'application/pdf'];
+const LIMITE_ESPACIO = 10 * 1024 * 1024;
+const RUTA_ARCHIVO = /^([0-9a-f-]{36})\/[0-9a-f-]{36}\.(jpg|jpeg|png|webp|heic|heif|pdf)$/;
+
+/** 'aaaa-mm-dd' + días / meses (como Postgres). */
+function masDias(iso, n) {
+  const [a, m, d] = iso.split('-').map(Number);
+  return new Date(Date.UTC(a, m - 1, d + n)).toISOString().slice(0, 10);
+}
+function masMeses(iso, n) {
+  const [a, m, d] = iso.split('-').map(Number);
+  const total = a * 12 + (m - 1) + n;
+  const anio = Math.floor(total / 12);
+  const mes = (total % 12) + 1;
+  const ultimo = new Date(Date.UTC(anio, mes, 0)).getUTCDate();
+  return `${anio}-${String(mes).padStart(2, '0')}-${String(Math.min(d, ultimo)).padStart(2, '0')}`;
+}
 
 class ErrorPg extends Error {
   constructor(code, message, status) {
@@ -97,7 +132,13 @@ export function crearSupabaseSimulado(opciones = {}) {
     conductor_opciones: [],
     experiencia_conductor: [],
     consentimientos: [],
+    documentos: [],
   };
+  /** Storage: espacio "documentos" ({ name, owner_id, metadata: { mimetype, size }, created_at }). */
+  const archivos = [];
+  let metodo = 'aprobar_todo';
+  const revisiones = [];
+  let idDocumento = 0;
   const usuarios = []; // { id, phone, phone_confirmed_at, created_at }
   const codigosPedidos = {}; // phone → ms del último pedido
   const tokens = {}; // access_token → uid
@@ -360,6 +401,156 @@ export function crearSupabaseSimulado(opciones = {}) {
     }
   }
 
+  // --- Documentos (trigger documentos_proteger, el método de validación y los estados del perfil) ---
+  function validarDocumento(fila, uid) {
+    const extra = Object.keys(fila).filter((c) => !COLUMNAS_INSERT_DOCUMENTOS.includes(c));
+    if (extra.length) throw new ErrorPg('42501', 'permission denied for table documentos');
+    if (fila.cuenta_id !== uid) throw new ErrorPg('42501', 'new row violates row-level security policy for table "documentos"');
+    const tipo = cat.tipos_documento.find((t) => t.id === Number(fila.tipo_documento_id));
+    if (!tipo || !tipo.activo) throw new ErrorPg('23514', 'Ese documento ya no se pide. Vuelve a abrir la pantalla.');
+    if (tipo.para_quien === 'conductor' && !datos.conductores.some((c) => c.id === uid)) throw new ErrorPg('23514', 'Primero guarda tus datos (Paso 1).');
+    const texto = cat.textos_autorizacion.find((t) => t.clave === 'revision_documentos' && t.vigente);
+    if (texto && !datos.consentimientos.some((c) => c.cuenta_id === uid && c.texto_autorizacion_id === texto.id && !c.revocado_en))
+      throw new ErrorPg('23514', 'Primero acepta la revisión de tus documentos.');
+    const archivo = archivos.find((a) => a.name === fila.archivo_ruta && a.owner_id === uid);
+    if (!fila.archivo_ruta || String(fila.archivo_ruta).split('/')[0] !== uid || !archivo) throw new ErrorPg('23514', 'No encontramos el archivo. Vuelve a subirlo.');
+    if (datos.documentos.some((d) => d.archivo_ruta === fila.archivo_ruta))
+      throw new ErrorPg('23505', 'duplicate key value violates unique constraint "documentos_archivo_ruta_key"');
+    fila.archivo_tipo = archivo.metadata.mimetype;
+    fila.archivo_bytes = archivo.metadata.size;
+    if (tipo.formato === 'pdf' && fila.archivo_tipo !== 'application/pdf') throw new ErrorPg('23514', 'Sube el documento en PDF.');
+    if (tipo.formato === 'foto' && !MIME_FOTO.includes(fila.archivo_tipo)) throw new ErrorPg('23514', 'Sube una foto (JPG o PNG).');
+    const hoy = hoyEnChile(ahora());
+    if (tipo.fecha_pedida === 'vencimiento') {
+      fila.emitido_en = null;
+      if (!fila.vence_en) throw new ErrorPg('23514', 'Anota la fecha de vencimiento.');
+      if (fila.vence_en < hoy) throw new ErrorPg('23514', 'Ese documento ya venció. Sube uno vigente.');
+      if (fila.vence_en > masMeses(hoy, 240)) throw new ErrorPg('23514', 'Revisa la fecha.');
+    } else if (tipo.fecha_pedida === 'emision') {
+      if (!fila.emitido_en) throw new ErrorPg('23514', 'Anota la fecha de emisión.');
+      if (fila.emitido_en > hoy) throw new ErrorPg('23514', 'La fecha de emisión no puede ser futura.');
+      if (tipo.antiguedad_maxima_dias != null && fila.emitido_en < masDias(hoy, -tipo.antiguedad_maxima_dias))
+        throw new ErrorPg('23514', `Debe tener ${tipo.antiguedad_maxima_dias} días o menos. Saca uno nuevo.`);
+      fila.vence_en = tipo.renovar_cada_meses == null ? null : masMeses(fila.emitido_en, tipo.renovar_cada_meses);
+    } else {
+      fila.emitido_en = null;
+      fila.vence_en = null;
+    }
+    idDocumento += 1;
+    Object.assign(fila, {
+      id: idDocumento,
+      estado: 'en_revision',
+      subido_en: new Date(ahora() + idDocumento).toISOString(),
+      fechas_anotadas_por: 'persona',
+      revisado_en: null,
+      aprobado_automaticamente: false,
+      motivo_rechazo_id: null,
+      aviso_vencimiento_en: null,
+    });
+  }
+
+  /** Lo que hacen los triggers después de subir: reemplazos, el método de validación y el perfil. */
+  function despuesDeSubir(nuevo) {
+    for (const d of datos.documentos) {
+      if (d.id !== nuevo.id && d.cuenta_id === nuevo.cuenta_id && d.tipo_documento_id === nuevo.tipo_documento_id && ['en_revision', 'no_aprobado', 'vencido'].includes(d.estado)) d.estado = 'reemplazado';
+    }
+    if (metodo === 'aprobar_todo') {
+      revisiones.push({ documento_id: nuevo.id, etapa: 'automatica', resultado: 'aprobar', metodo: 'aprobacion_automatica_provisoria' });
+      cambiarEstadoDocumento(nuevo, 'aprobado');
+    }
+    recalcular(nuevo.cuenta_id);
+  }
+
+  function cambiarEstadoDocumento(doc, estado) {
+    doc.estado = estado;
+    if (estado === 'aprobado') {
+      doc.revisado_en = iso();
+      doc.aprobado_automaticamente = metodo === 'aprobar_todo';
+      for (const d of datos.documentos) {
+        if (d.id !== doc.id && d.cuenta_id === doc.cuenta_id && d.tipo_documento_id === doc.tipo_documento_id && d.estado !== 'reemplazado' && d.id < doc.id) d.estado = 'reemplazado';
+      }
+    }
+    recalcular(doc.cuenta_id);
+  }
+
+  /** privado.recalcular_conductor: estado_verificacion y estado_perfil. */
+  function recalcular(uid) {
+    const c = datos.conductores.find((x) => x.id === uid);
+    if (!c) return;
+    const cuenta = datos.cuentas.find((x) => x.id === uid);
+    const texto = (t) => typeof t === 'string' && t.trim() !== '';
+    const datosOk = !!cuenta && texto(cuenta.nombres) && texto(cuenta.primer_apellido) && texto(cuenta.email) && datos.conductor_licencias.some((l) => l.conductor_id === uid && l.origen === 'declarada');
+    const direccionOk = c.comuna_id != null && c.tiene_estacionamiento != null;
+    const listaDe = (id) => cat.listas.find((l) => l.opciones.some((o) => o.id === Number(id)))?.clave;
+    const opciones = datos.conductor_opciones.filter((o) => o.conductor_id === uid).map((o) => listaDe(o.opcion_id));
+    const trabajoOk = datos.conductor_negocios.some((n) => n.conductor_id === uid) && opciones.includes('turno') && opciones.includes('dia_semana');
+    const hoy = hoyEnChile(ahora());
+    const tipos = cat.tipos_documento.filter((t) => t.activo && t.obligatorio && t.para_quien === 'conductor');
+    let ok = 0;
+    let obs = 0;
+    let rev = 0;
+    for (const t of tipos) {
+      const propios = datos.documentos.filter((d) => d.cuenta_id === uid && d.tipo_documento_id === t.id);
+      const listo = propios.some((d) => d.estado === 'aprobado' && (d.vence_en == null || d.vence_en >= hoy));
+      const ultimo = propios.filter((d) => d.estado !== 'reemplazado').sort((a, b) => b.id - a.id)[0];
+      if (listo) ok++;
+      else if (ultimo && ['no_aprobado', 'vencido', 'aprobado'].includes(ultimo.estado)) obs++;
+      else if (ultimo?.estado === 'en_revision') rev++;
+    }
+    const verif = ok === tipos.length ? 'verificado' : obs > 0 ? 'con_observaciones' : rev > 0 ? 'en_revision' : 'sin_documentos';
+    const perfil = datosOk && direccionOk && trabajoOk && verif === 'verificado' ? 'completo' : 'incompleto';
+    c.estado_verificacion = verif;
+    c.perfil_completo_en = perfil === 'completo' ? (c.estado_perfil === 'completo' ? c.perfil_completo_en : iso()) : null;
+    c.estado_perfil = perfil;
+  }
+
+  // --- Storage (espacio "documentos", privado) ---
+  const errorStorage = (status, statusCode, error, message) => ({
+    status,
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ statusCode: String(statusCode), error, message }),
+  });
+
+  function storage(p, ruta, uid, bytes, cuerpoTexto) {
+    const mSubir = /^\/storage\/v1\/object\/documentos\/(.+)$/.exec(ruta);
+    const mListar = ruta === '/storage/v1/object/list/documentos';
+    const mBorrar = ruta === '/storage/v1/object/documentos';
+    if (!uid) return errorStorage(400, 403, 'Unauthorized', 'new row violates row-level security policy');
+    if (p.method === 'POST' && mSubir) {
+      const nombre = decodeURIComponent(mSubir[1]);
+      const m = RUTA_ARCHIVO.exec(nombre);
+      if (!m || m[1] !== uid) return errorStorage(400, 403, 'Unauthorized', 'new row violates row-level security policy');
+      const tipo = String(p.headers['content-type'] ?? '').split(';')[0].trim();
+      if (!MIME_ESPACIO.includes(tipo)) return errorStorage(415, 415, 'invalid_mime_type', `mime type ${tipo} is not supported`);
+      const tamano = bytes ? bytes.length : 0;
+      if (tamano > LIMITE_ESPACIO) return errorStorage(413, 413, 'Payload too large', 'The object exceeded the maximum allowed size');
+      if (archivos.some((a) => a.name === nombre)) return errorStorage(400, 409, 'Duplicate', 'The resource already exists');
+      const id = nuevoId();
+      archivos.push({ id, name: nombre, owner_id: uid, metadata: { mimetype: tipo, size: tamano }, created_at: iso() });
+      return jsonOk({ Key: `documentos/${nombre}`, Id: id });
+    }
+    if (p.method === 'POST' && mListar) {
+      const cuerpo = cuerpoTexto ? JSON.parse(cuerpoTexto) : {};
+      const prefijo = String(cuerpo.prefix ?? '').replace(/\/+$/, '');
+      const lista = archivos
+        .filter((a) => a.owner_id === uid && a.name.split('/')[0] === uid && a.name.startsWith(prefijo + '/'))
+        .map((a) => ({ name: a.name.slice(prefijo.length + 1), id: a.id, metadata: a.metadata, created_at: a.created_at, updated_at: a.created_at }));
+      return jsonOk(lista);
+    }
+    if (p.method === 'DELETE' && mBorrar) {
+      const cuerpo = cuerpoTexto ? JSON.parse(cuerpoTexto) : {};
+      const borrados = [];
+      for (const nombre of cuerpo.prefixes ?? []) {
+        const i = archivos.findIndex((a) => a.name === nombre && a.owner_id === uid && nombre.split('/')[0] === uid);
+        if (i < 0) continue;
+        if (datos.documentos.some((d) => d.archivo_ruta === nombre && d.estado !== 'reemplazado')) continue;
+        borrados.push(archivos.splice(i, 1)[0]);
+      }
+      return jsonOk(borrados.map((a) => ({ name: a.name, id: a.id, bucket_id: 'documentos', metadata: a.metadata })));
+    }
+    return errorStorage(404, 404, 'not_found', `Ruta de Storage no simulada: ${p.method} ${ruta}`);
+  }
+
   /** Al quitar una clase declarada se quitan los negocios que ya no habilita ninguna (trigger 6.13). */
   function despuesDeQuitarClase(uid) {
     datos.conductor_negocios = datos.conductor_negocios.filter((n) => n.conductor_id !== uid || licenciaHabilita(uid, n.negocio_id));
@@ -396,6 +587,7 @@ export function crearSupabaseSimulado(opciones = {}) {
     if (!uid) throw new ErrorPg('42501', `permission denied for table ${tabla}`, 401);
     if (tabla === 'cuentas' && p.method !== 'PATCH' && p.method !== 'GET') throw new ErrorPg('42501', 'permission denied for table cuentas');
 
+    if (tabla === 'documentos' && p.method !== 'POST') throw new ErrorPg('42501', 'permission denied for table documentos');
     if (p.method === 'PATCH') {
       const coincide = filtros(query);
       const cambiadas = [];
@@ -408,6 +600,7 @@ export function crearSupabaseSimulado(opciones = {}) {
         return fila;
       });
       datos[tabla] = nuevas;
+      recalcular(uid);
       if (representar) return jsonOk(cambiadas.map((f) => proyectar(f, sel)));
       return { status: 204, headers: {}, body: '' };
     }
@@ -436,12 +629,17 @@ export function crearSupabaseSimulado(opciones = {}) {
         }
         const nueva = { ...(DEFECTOS[tabla] ?? {}), ...f };
         if (tabla === 'experiencia_conductor') nueva.id = copiaTabla.length + 1;
-        antesDeGuardar(tabla, nueva, uid, null);
+        if (tabla === 'documentos') validarDocumento(nueva, uid);
+        else antesDeGuardar(tabla, nueva, uid, null);
         copiaTabla.push(nueva);
         devueltas.push(nueva);
       }
       datos[tabla] = copiaTabla;
-      if (representar) return jsonOk(devueltas.map((f) => proyectar(f, sel)), 201);
+      // Lo que devuelve RETURNING es la fila antes de los triggers AFTER (como en Postgres).
+      const respuesta = devueltas.map((f) => proyectar(f, sel));
+      if (tabla === 'documentos') for (const f of devueltas) despuesDeSubir(f);
+      else recalcular(uid);
+      if (representar) return jsonOk(respuesta, 201);
       return { status: 201, headers: {}, body: '' };
     }
 
@@ -451,6 +649,7 @@ export function crearSupabaseSimulado(opciones = {}) {
       const antes = datos[tabla].length;
       datos[tabla] = datos[tabla].filter((f) => !(f[DUENO[tabla]] === uid && coincide(f)) || (tabla === 'conductor_licencias' && f.origen !== 'declarada'));
       if (tabla === 'conductor_licencias' && datos[tabla].length !== antes) despuesDeQuitarClase(uid);
+      recalcular(uid);
       return { status: 204, headers: {}, body: '' };
     }
     throw new ErrorPg('PGRST000', `método no simulado: ${p.method}`, 405);
@@ -463,8 +662,16 @@ export function crearSupabaseSimulado(opciones = {}) {
    */
   function manejar(p) {
     const url = new URL(p.url);
-    const cuerpo = p.body ? JSON.parse(p.body) : {};
-    const registro = { method: p.method, ruta: url.pathname, query: Object.fromEntries(url.searchParams), prefer: p.headers.prefer ?? null, body: p.body ? JSON.parse(p.body) : null };
+    const cuerpo = json(p.body) ?? {};
+    const registro = {
+      method: p.method,
+      ruta: url.pathname,
+      query: Object.fromEntries(url.searchParams),
+      prefer: p.headers.prefer ?? null,
+      body: json(p.body),
+      bytes: p.bodyBytes ? p.bodyBytes.length : null,
+      tipo: p.headers['content-type'] ?? null,
+    };
     pedidos.push(registro);
     const falla = fallas.findIndex((f) => f.cuando(registro));
     if (falla >= 0) {
@@ -484,6 +691,14 @@ export function crearSupabaseSimulado(opciones = {}) {
   function responder(p, url, cuerpo) {
     const mAuth = /^\/auth\/v1\/([a-z]+)$/.exec(url.pathname);
     if (mAuth) return auth(p, mAuth[1], url.searchParams, cuerpo);
+    if (url.pathname.startsWith('/storage/v1/')) {
+      const portador = (p.headers.authorization ?? '').replace(/^Bearer\s+/i, '');
+      const uid = tokens[portador] ?? null;
+      if (!uid && portador.split('.').length === 3) {
+        return { status: 400, headers: { 'content-type': 'application/json' }, body: JSON.stringify({ statusCode: '403', error: 'InvalidJWT', message: '"exp" claim timestamp check failed' }) };
+      }
+      return storage(p, url.pathname, uid, p.bodyBytes ?? (typeof p.body === 'string' && !url.pathname.includes('/list/') && p.method === 'POST' ? Buffer.from(p.body) : null), typeof p.body === 'string' ? p.body : null);
+    }
     const mRest = /^\/rest\/v1\/([a-z_]+)$/.exec(url.pathname);
     if (mRest) {
       const portador = (p.headers.authorization ?? '').replace(/^Bearer\s+/i, '');
@@ -500,7 +715,7 @@ export function crearSupabaseSimulado(opciones = {}) {
         return { status: 401, headers: { 'content-type': 'application/json' }, body: JSON.stringify({ code: 'PGRST301', details: null, hint: null, message: 'JWT expired' }) };
       }
       try {
-        return rest(p, mRest[1], url.searchParams, p.body ? JSON.parse(p.body) : null, uid);
+        return rest(p, mRest[1], url.searchParams, json(p.body), uid);
       } catch (e) {
         if (!(e instanceof ErrorPg)) throw e;
         return { status: e.status, headers: { 'content-type': 'application/json' }, body: JSON.stringify({ code: e.code, details: null, hint: null, message: e.message }) };
@@ -515,7 +730,13 @@ export function crearSupabaseSimulado(opciones = {}) {
     const headers = {};
     new Headers(init.headers ?? {}).forEach((v, k) => (headers[k.toLowerCase()] = v));
     if (init.signal?.aborted) throw new DOMException('This operation was aborted', 'AbortError');
-    const r = manejar({ method: (init.method ?? 'GET').toUpperCase(), url, headers, body: typeof init.body === 'string' ? init.body : null });
+    let body = typeof init.body === 'string' ? init.body : null;
+    let bodyBytes = null;
+    if (init.body instanceof ArrayBuffer) bodyBytes = Buffer.from(init.body);
+    else if (ArrayBuffer.isView(init.body)) bodyBytes = Buffer.from(init.body.buffer, init.body.byteOffset, init.body.byteLength);
+    else if (typeof Blob !== 'undefined' && init.body instanceof Blob) bodyBytes = Buffer.from(await init.body.arrayBuffer());
+    if (bodyBytes) body = null;
+    const r = manejar({ method: (init.method ?? 'GET').toUpperCase(), url, headers, body, bodyBytes });
     if (r.red) throw new TypeError('fetch failed');
     return new Response(r.status === 204 ? null : r.body, { status: r.status, headers: r.headers });
   }
@@ -526,6 +747,23 @@ export function crearSupabaseSimulado(opciones = {}) {
     datos,
     usuarios,
     pedidos,
+    archivos,
+    revisiones,
+    /** El método de validación de la base: 'aprobar_todo' (hoy) u otro (quedan en revisión). */
+    metodoValidacion(m) {
+      metodo = m;
+    },
+    /** Como el equipo o el método: cambia el estado de un documento (y lo que eso arrastra). */
+    decidirDocumento(id, estado) {
+      const d = datos.documentos.find((x) => x.id === id);
+      if (d) cambiarEstadoDocumento(d, estado);
+    },
+    /** Cambia la fecha de vencimiento de un documento (para probar avisos y vencidos). */
+    fijarVencimiento(id, venceEn) {
+      const d = datos.documentos.find((x) => x.id === id);
+      if (d) d.vence_en = venceEn;
+      if (d) recalcular(d.cuenta_id);
+    },
     catalogos: cat,
     /**
      * La próxima petición que cumpla `cuando` responde `respuesta`: 'red' (no llega), 'red-despues' (la

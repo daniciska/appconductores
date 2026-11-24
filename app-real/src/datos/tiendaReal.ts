@@ -11,6 +11,7 @@ import { borrarTodosLosBorradores } from '@/datos/borradores';
 import type { IngresoPendiente, VistaConductor } from '@/datos/puerto/tipos';
 
 import { catalogosVacios, type MapasCatalogo, type TextoVigente } from './catalogos';
+import type { DocumentoReal, TipoDocumentoReal } from './documentos';
 import { perfilVacio } from './perfil';
 
 export type Fase = 'cargando' | 'listo' | 'sin_conexion';
@@ -26,6 +27,11 @@ export interface EstadoReal {
   aceptados: number[];
   autorizacionesCompletas: boolean;
   diasReconfirmar: number;
+  /** Documentos que pide el conductor (catálogo) y cuántos meses antes de vencer se avisa. */
+  tiposDocumento: TipoDocumentoReal[];
+  mesesAvisoDocumentos: number;
+  /** Los documentos propios (sin los reemplazados), leídos con el perfil. */
+  documentos: DocumentoReal[];
   /**
    * La sesión terminó o cambió de persona fuera del ingreso y del "Cerrar sesión" de esta pestaña
    * (en otra pestaña, o la base ya no la acepta). El layout del conductor lleva a la entrada que
@@ -96,6 +102,9 @@ function estadoInicial(): EstadoReal {
     aceptados: [],
     autorizacionesCompletas: false,
     diasReconfirmar: c.diasReconfirmar,
+    tiposDocumento: c.tiposDocumento,
+    mesesAvisoDocumentos: c.mesesAvisoDocumentos,
+    documentos: [],
     cambioDeSesion: { n: 0, texto: null },
   };
 }
@@ -141,6 +150,7 @@ export function limpiarSesion(): void {
     vista: { ...e.vista, cuenta: p.cuenta, conductor: p.conductor, ingreso, textosAutorizacion: p.textosAutorizacion },
     aceptados: [],
     autorizacionesCompletas: false,
+    documentos: [],
   });
 }
 

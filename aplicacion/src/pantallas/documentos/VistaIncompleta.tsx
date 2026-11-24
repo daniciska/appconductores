@@ -1,8 +1,9 @@
 // B6 · Inicio con el perfil incompleto (tarjeta oscura con el avance y la lista de los 5 pasos).
 // Maqueta: docs/maqueta/CondInicioIncompleto.dc.html
-// La comparten el Inicio de la demo y el de la app real v1. Lo único que cambia es la fila de los
-// documentos: en la demo lleva al Paso 5 ("N de 4 subidos"); en la app real v1 todavía no se pueden
-// subir ("Próximamente", sin enlace) y, si solo faltan ellos, la tarjeta lo dice y no muestra botón.
+// La comparten el Inicio de la demo y el de la app real. Lo único que cambia es la fila de los
+// documentos: en la demo lleva al Paso 5 ("N de 4 subidos"); en la app real también, con el estado
+// real ("N de 4 aprobados", "En revisión"…: textoEstado). El modo 'proximamente' (sin enlace) era el
+// de la v1, antes de poder subir documentos.
 import { Text, View } from 'react-native';
 import type { Href } from 'expo-router';
 
@@ -23,8 +24,11 @@ const NOMBRE_SECCION: Record<string, string> = {
 };
 
 export type DocumentosInicio =
-  /** Demo: la fila lleva al Paso 5 y dice cuántos van subidos. */
-  | { modo: 'activo'; subidos: number; ruta: Href }
+  /**
+   * La fila lleva al Paso 5. Demo: "N de 4 subidos". App real: `textoEstado` ("2 de 4 aprobados",
+   * "En revisión"…) y `textoListo` ("Aprobados") cuando el paso está listo.
+   */
+  | { modo: 'activo'; subidos: number; ruta: Href; textoEstado?: string; textoListo?: string }
   /** App real v1: los documentos llegan después ("Próximamente", sin enlace). */
   | { modo: 'proximamente' };
 
@@ -43,11 +47,13 @@ export function VistaIncompleta({ documentos, nota }: { documentos: DocumentosIn
     const listo = pasos[id];
     const estado = listo
       ? id === 'documentos'
-        ? 'Enviados'
+        ? documentos.modo === 'activo'
+          ? (documentos.textoListo ?? 'Enviados')
+          : 'Enviados'
         : 'Listo'
       : id === 'documentos'
         ? documentos.modo === 'activo'
-          ? `${documentos.subidos} de 4 subidos`
+          ? (documentos.textoEstado ?? `${documentos.subidos} de 4 subidos`)
           : 'Próximamente'
         : 'Falta';
     return { id, paso: i + 1, nombre: NOMBRE_SECCION[id], listo, estado, ruta: rutaDe(i + 1) };
