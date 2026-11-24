@@ -1,6 +1,6 @@
 # Consulta al abogado — Dale Contacto
 
-Preparado el 2-nov-2026 con las notas del proyecto (62 preguntas; 4 más el 24-nov: A63–A66). Versión para compartir: https://claude.ai/artifact/4Zk9iRsYXrAr3nypuKhuMg. Las fuentes son archivos de `docs/` y `docs/investigacion/`, más `CLAUDE.md` (decisiones vigentes). Lo marcado **[verificar]** no está confirmado.
+Preparado el 2-nov-2026 con las notas del proyecto (62 preguntas; 5 más el 24-nov: A63–A67). Versión para compartir: https://claude.ai/artifact/4Zk9iRsYXrAr3nypuKhuMg. Las fuentes son archivos de `docs/` y `docs/investigacion/`, más `CLAUDE.md` (decisiones vigentes). Lo marcado **[verificar]** no está confirmado.
 
 ## Contexto para el abogado
 
@@ -19,7 +19,7 @@ La Ley 21.719 rige desde el **1-dic-2026**, salvo que se apruebe la postergació
 2. **Revisión con IA + persona (A17–A21):** si cumple el art. 8° bis y qué hay que avisarle al conductor.
 3. **Datos fuera de Chile y proveedores (A22–A24):** qué contrato o cláusulas firmar con Supabase (Brasil), el proveedor de IA, Google Maps y los demás proveedores, y cómo informarlo.
 4. **Autorizaciones (A25–A30):** qué va con casilla de consentimiento y qué por "ejecución del contrato". Sin esto no se cierran las pantallas de registro.
-5. **Documentos guardados y aprobación automática (A63–A66, nuevas del 24-nov):** guardar los archivos mientras la cuenta esté activa, incluido el PDF completo de antecedentes; aprobarlos sin revisión y mostrarle al titular un conductor "verificado".
+5. **Documentos guardados y aprobación automática (A63–A67, nuevas del 24-nov):** guardar los archivos mientras la cuenta esté activa, incluido el PDF completo de antecedentes; aprobarlos sin revisión y mostrarle al titular un conductor "verificado".
 6. **Términos, Política de privacidad y plazos de borrado (A31–A35 y A48–A56):** textos listos para publicar, con cuánto se guardan las fotos de documentos, los mensajes y las cuentas borradas.
 
 ## Preguntas
@@ -28,11 +28,11 @@ Cada pregunta tiene un número para que el abogado pueda responder, por ejemplo,
 
 ### 1. Certificado de Antecedentes y Hoja de Vida (Ley 21.719, art. 25)
 
-**Cómo funciona hoy** (decidido en `CLAUDE.md`; cambió el 24-nov, ver A63–A66):
+**Cómo funciona hoy** (decidido en `CLAUDE.md`; cambió el 24-nov, ver A63–A67):
 - El conductor saca la Hoja de Vida y el certificado él mismo en el Registro Civil y los sube a la app, con la fecha de emisión.
 - **Hoy (24-nov):** el método de validación provisorio los aprueba todos al momento, sin que nadie ni nada los lea. Queda anotado como "aprobación automática provisoria".
 - **Diseño propuesto para después:** un agente de IA lee cada documento y lo compara con lo declarado; los casos claros y favorables se aprueban solos y las dudas y los rechazos los decide una persona, que puede atender una segunda revisión.
-- **El archivo completo (con las anotaciones, si las hay) se guarda mientras la cuenta esté activa**, en un espacio privado al que solo accede la persona dueña (y, más adelante, el equipo desde el panel). Se borra con la cuenta. Antes se proponía guardar solo la fecha, el folio y el resultado y borrar el archivo (opción B); eso queda reemplazado por esta decisión y hay que confirmarlo (A63).
+- **El archivo completo (con las anotaciones, si las hay) se guarda mientras la cuenta esté activa**, en un espacio privado al que solo accede la persona dueña (y, más adelante, el equipo desde el panel). Al reemplazar un documento, el archivo anterior lo borra la app; al borrar la cuenta se borran los datos, pero **hoy no hay una tarea del servidor que garantice que se borren los archivos** (ni los reemplazados ni los de una cuenta borrada): queda por construir con el panel. Antes se proponía guardar solo la fecha, el folio y el resultado y borrar el archivo (opción B); eso queda reemplazado por esta decisión y hay que confirmarlo (A63).
 - El titular nunca ve el archivo: solo una insignia (A12).
 
 - **A1.** Con el art. 25 de la Ley 21.719, ¿puede una empresa privada que solo conecta a las partes pedir, revisar y guardar el Certificado de Antecedentes para fines especiales? ¿Sirve el consentimiento?
@@ -223,8 +223,10 @@ Cada pregunta tiene un número para que el abogado pueda responder, por ejemplo,
   *Por qué importa:* el conductor queda aprobado sin que nadie mire el documento. *Fuente:* migración `20261124150000_documentos_conductor.sql` (función `privado.validar_documento`).
 - **A65.** Con esa aprobación automática el conductor queda **"Perfil verificado"** y la app le dice que "los titulares solo ven conductores con sus 4 documentos aprobados". ¿Podemos mostrarle al titular un conductor como verificado (o con una insignia de documentos) si nadie revisó sus documentos? ¿Es publicidad engañosa o un riesgo frente al titular (Ley 19.496) si un documento resulta falso? ¿Qué debe decir la insignia, o hay que esperar el método real antes de mostrarla a los titulares?
   *Por qué importa:* los titulares todavía no usan la app, pero cuando lleguen la insignia comunicará algo que hoy no se verifica (relacionado con A12 y A15). *Fuente:* pantallas Paso 5 e Inicio de la app real.
-- **A66.** El texto de prueba de la autorización "Revisión de mis documentos" que hoy aceptan los conductores (versión prueba-1, desde el 10-nov) dice que un sistema automático los revisa y una persona decide las dudas. Con la aprobación automática eso no pasa. La versión nueva (prueba-2, para cuando "Antes de empezar" quede con 2 textos) ya no describe un método. ¿Qué texto definitivo debe aceptar el conductor, y hay que pedirlo de nuevo a quienes aceptaron el anterior?
+- **A66.** El texto de prueba de la autorización "Revisión de mis documentos" que aceptaron los conductores hasta el 24-nov (versión prueba-1, desde el 10-nov) dice que un sistema automático los revisa, que una persona decide las dudas y que se puede pedir otra revisión. Con la aprobación automática eso no pasa. Por eso, desde el 24-nov la prueba-1 deja de ofrecerse y se pide la prueba-2 en el Paso 5, antes del primer documento (también a quien aceptó la prueba-1): solo dice que los documentos se guardan mientras la cuenta esté activa y se revisan para verificar la identidad, la licencia y los antecedentes. ¿Basta ese texto mientras el método aprueba todo? ¿Qué texto definitivo debe aceptar el conductor cuando exista el método real?
   *Por qué importa:* un consentimiento debe describir lo que de verdad se hace. *Fuente:* migraciones `20261110120000_app_conductor_v1_textos_prueba.sql` y `20261124150000_documentos_conductor.sql` (bloque 7).
+- **A67.** Si el conductor retira la autorización "Revisión de mis documentos", la base deja sus documentos como "retirados": dejan de usarse y su perfil sale de los matches. Los archivos hoy los borra la app en la próxima limpieza; no hay una tarea del servidor que lo haga al momento. ¿Hay que borrarlos al tiro, o se pueden guardar un tiempo (por ejemplo, por un reclamo)? ¿Y al borrar la cuenta?
+  *Por qué importa:* al retirar el consentimiento se deja de tratar el dato (Ley 21.719). *Fuente:* migración `20261124150000_documentos_conductor.sql` (4.10) y `docs/terminos-y-privacidad.md`.
 
 ## Qué llevar a la reunión
 

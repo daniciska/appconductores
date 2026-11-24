@@ -896,7 +896,7 @@
      "tipo": "lista",
      "referencia": "",
      "obligatorio": true,
-     "descripcion": "Se calcula solo con sus documentos (lo escribe el sistema). Opciones fijas: Sin documentos; En revisión; Verificado (los 4 aprobados y vigentes); Con un documento no aprobado o vencido. Solo 'Verificado' entra al match.",
+     "descripcion": "Se calcula solo con sus documentos (lo escribe el sistema). Opciones fijas: Sin documentos (no subió ninguno); Faltan documentos (subió algunos, todos bien, pero faltan otros; desde el 24-nov); En revisión; Verificado (los 4 aprobados y vigentes); Con un documento no aprobado o vencido. Solo 'Verificado' entra al match.",
      "quien_ve": "El conductor y el equipo; el titular solo ve las insignias",
      "codigo": "C16–C19, P8",
      "estado": "propuesta",
@@ -2124,7 +2124,7 @@
      "tipo": "texto",
      "referencia": "",
      "obligatorio": false,
-     "descripcion": "\"Fecha de vencimiento\", \"Fecha del próximo control\", \"Fecha de emisión\".",
+     "descripcion": "\"Fecha de vencimiento\", \"Fecha de vencimiento (próximo control)\" (licencia: la misma palabra que sus avisos), \"Fecha de emisión\".",
      "quien_ve": "La persona que lo sube",
      "codigo": "",
      "estado": "decidido",
@@ -2386,7 +2386,7 @@
      "tipo": "lista",
      "referencia": "",
      "obligatorio": true,
-     "descripcion": "Opciones fijas: En revisión; Aprobado; No aprobado; Vencido; Reemplazado. Se envía a revisión al subirlo. Lo cambian solo el método de validación, el sistema y (después) el equipo. 'Vence pronto' se calcula con la fecha de vencimiento y el ajuste de meses de aviso.",
+     "descripcion": "Opciones fijas: En revisión; Aprobado; No aprobado; Vencido; Reemplazado; Retirado (la persona retiró la autorización 'Revisión de mis documentos': ya no se usa y su archivo se puede borrar). Se envía a revisión al subirlo. Lo cambian solo el método de validación, el sistema y (después) el equipo. 'Vence pronto' se calcula con la fecha de vencimiento y el ajuste de meses de aviso.",
      "quien_ve": "La persona y el equipo; la contraparte solo ve la insignia si está aprobado",
      "codigo": "",
      "estado": "decidido",
@@ -4368,7 +4368,7 @@
    "id": "ajustes",
    "nombre": "Ajuste general",
    "grupo": "configuracion",
-   "descripcion": "Números y reglas generales que se cambian desde el panel: umbral del match (66, decidido), forma de comparar con el umbral, plazos de disponibilidad, avisos, recordatorios, revisión, conservación y borrado de datos, búsquedas sin plan, límites contra la recolección masiva y si el conductor ve su lista de matches. Desde el 24-nov: metodo_validacion_documentos ('aprobar_todo') y meses_aviso_vencimiento_documentos (3).",
+   "descripcion": "Números y reglas generales que se cambian desde el panel: umbral del match (66, decidido), forma de comparar con el umbral, plazos de disponibilidad, avisos, recordatorios, revisión, conservación y borrado de datos, búsquedas sin plan, límites contra la recolección masiva y si el conductor ve su lista de matches. Desde el 24-nov: metodo_validacion_documentos ('aprobar_todo'; solo acepta métodos que existen y no se borra), meses_aviso_vencimiento_documentos (3) y maximo_archivos_documentos (12).",
    "para_que": "Configuración: cambiar el umbral y los plazos sin reprogramar (decidido).",
    "estado": "decidido",
    "campos": [
@@ -5017,7 +5017,7 @@
   {
    "id": "R14",
    "nombre": "Archivos guardados mientras la cuenta esté activa",
-   "descripcion": "Decidido el 24-nov: el archivo de un documento se guarda mientras la cuenta esté activa (no se borra después de decidir) y se borra (a) apenas se sube un reemplazo (la app borra los archivos que ningún documento vigente usa, incluidas las subidas que no terminaron) y (b) al borrar la cuenta (proceso a definir con el panel). Ya no existe 'enviar a revisión': cada documento se envía al subirlo. Si el abogado fija un plazo menor (MD20, consulta A31 y A63), se agrega un proceso diario. Las filas de documentos reemplazados o no aprobados se borran tras 'meses para conservar' del tipo de documento; queda la fila aprobada vigente. Los archivos van en un espacio privado y el equipo los abre con enlaces de pocos minutos (cada apertura queda en 'Acción del equipo'). Las copias de respaldo se borran en su propio plazo, que se informa en la Política de privacidad. Propuesta técnica a evaluar: cifrar cada archivo con su propia clave y destruirla al borrar.",
+   "descripcion": "Decidido el 24-nov: el archivo de un documento se guarda mientras la cuenta esté activa (no se borra después de decidir) y se puede borrar (a) apenas se sube un reemplazo o se retira la autorización (hoy lo borra la app desde el celular: el reemplazado al tiro y las subidas que no terminaron después de 10 minutos) y (b) al borrar la cuenta (proceso a definir con el panel). OJO: hoy no hay una tarea del servidor que lo garantice (Storage no se borra con SQL); si la app no alcanza a limpiar, el archivo queda hasta la próxima subida. Cada persona tiene un tope de archivos (ajuste maximo_archivos_documentos, 12). Ya no existe 'enviar a revisión': cada documento se envía al subirlo. Si el abogado fija un plazo menor (MD20, consulta A31 y A63), se agrega un proceso diario. Las filas de documentos reemplazados o no aprobados se borran tras 'meses para conservar' del tipo de documento; queda la fila aprobada vigente. Los archivos van en un espacio privado y el equipo los abre con enlaces de pocos minutos (cada apertura queda en 'Acción del equipo'). Las copias de respaldo se borran en su propio plazo, que se informa en la Política de privacidad. Propuesta técnica a evaluar: cifrar cada archivo con su propia clave y destruirla al borrar.",
    "entidades": [
     "documentos",
     "tipos_documento",
@@ -6192,6 +6192,31 @@
     "revisiones_documento",
     "ajustes",
     "conductores"
+   ]
+  },
+  {
+   "n": 43,
+   "fecha": "2026-11-24",
+   "cambio": "Sin un texto vigente de 'Revisión de mis documentos' la base no recibe documentos; la prueba-2 del texto ya no describe un método; R14 pasa a 'Archivos guardados mientras la cuenta esté activa'; ajustes de ejemplo con meses_aviso_vencimiento_documentos.",
+   "porque": "Una migración que apagara todas las versiones del texto dejaba subir antecedentes sin autorización (Ley 21.719 art. 25).",
+   "origen": "Construcción",
+   "entidades": [
+    "documentos",
+    "ajustes"
+   ]
+  },
+  {
+   "n": 44,
+   "fecha": "2026-11-24",
+   "cambio": "Documentos, segunda revisión: la prueba-1 de 'Revisión de mis documentos' deja de ofrecerse (prometía una persona y 'pedir otra revisión') y la prueba-2 se pide en el Paso 5; nuevo estado de documento 'retirado' (al retirar la autorización); nuevo estado de verificación 'faltan documentos'; el ajuste del método de validación solo acepta métodos que existen, no se borra y al cambiarlo revisa lo que esperaba; tope de archivos por persona (maximo_archivos_documentos = 12); la etiqueta de la licencia habla de vencimiento.",
+   "porque": "La revisión encontró un consentimiento que no describía lo que se hace, documentos que podían quedar en revisión para siempre, archivos sin límite y nombres que no correspondían.",
+   "origen": "Construcción",
+   "entidades": [
+    "textos_autorizacion",
+    "documentos",
+    "conductores",
+    "ajustes",
+    "tipos_documento"
    ]
   }
  ]
