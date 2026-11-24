@@ -47,9 +47,16 @@ export function useRevisionPendiente() {
   return useMemo(() => textoRevisionPendiente(textos, aceptados), [textos, aceptados]);
 }
 
+/**
+ * Quién ve el archivo, en la app real: lo que permiten hoy las reglas de la base (el conductor y el equipo).
+ * Es la misma respuesta que "¿Quién ve mis documentos?" del Centro de ayuda. No promete una revisión de una
+ * persona, porque el método provisorio aprueba todo; la demo, que sí simula esa revisión, mantiene su texto.
+ */
+export const PRIVACIDAD_DOCUMENTO = 'Solo tú y el equipo de Dale Contacto ven este archivo. Nunca se muestra a los titulares.';
+
 /** La guía del documento (cómo tomar la foto o cómo obtenerlo). Un tipo nuevo del panel usa una general. */
 export function guiaDe(t: TipoDocumentoReal): GuiaDocumento {
-  if (esTipoDocumento(t.clave)) return GUIAS[t.clave];
+  if (esTipoDocumento(t.clave)) return { ...GUIAS[t.clave], privacidad: PRIVACIDAD_DOCUMENTO };
   const pdf = t.formato === 'pdf';
   return {
     descripcion: t.ayuda,
@@ -58,7 +65,7 @@ export function guiaDe(t: TipoDocumentoReal): GuiaDocumento {
       ? ['Descárgalo en PDF.', 'Súbelo aquí tal como lo descargaste.']
       : ['Toma la foto de frente, con buena luz y sin reflejos.', 'Revisa que se lea completo.'],
     aviso: () => 'Debe estar vigente.',
-    privacidad: 'Solo nuestro equipo de verificación lo ve. Nunca se muestra a los titulares.',
+    privacidad: PRIVACIDAD_DOCUMENTO,
     boton: pdf ? 'Elegir PDF' : 'Elegir foto',
     acepta: pdf ? 'application/pdf,.pdf' : 'image/*',
     esPdf: pdf,
